@@ -373,19 +373,20 @@ body {
 }
 .title-collection {
   font-family: 'saar';
-  font-size: 40px;
+  font-size: 32px;
   color: white;
   margin-bottom: 0px;
   position: relative;
-  padding-bottom: 20px;
+  padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Статичная линия */
 }
 
 .collection-tabs {
-  gap: 40px;
+  margin-left: 20px;
+  margin-right: 20px;
   position: relative;
   display: flex;
-  justify-content: center;
+  justify-content:space-between;
   margin-top: 20px;
   padding-bottom: 10px;
 }
