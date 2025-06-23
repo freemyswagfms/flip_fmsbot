@@ -384,6 +384,7 @@ body {
 .title-collection {
   font-family: 'geologica';
   font-size: 40px;
+  margin-bottom: 10px;
 }
 
 .tab {
@@ -421,6 +422,5 @@ body {
   width: 100%;
   height: 1px;
   background-color: rgba(255, 255, 255, 0.2);
-  margin-top: 10px;
-  margin-bottom: 20px;
+  margin: 10px 0 20px 0;
 }
