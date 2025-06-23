@@ -1,5 +1,3 @@
-// main.js
-
 document.addEventListener('DOMContentLoaded', () => {
   const splash = document.getElementById('splash');
   const mainApp = document.getElementById('main-app');
@@ -8,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const navBg = document.querySelector('.nav-bg');
   const pages = document.querySelectorAll('.page');
   const fill = document.querySelector('.progress-bar-fill');
+  const tabs = document.querySelectorAll('.tab');
 
   // Показываем splash сначала
   splash.style.display = 'flex';
@@ -33,6 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Устанавливаем отступ сверху в зависимости от полноэкранного режима
+  function adjustTopPadding() {
+    const isFullscreen = window.innerHeight === screen.height;
+    const paddingTop = isFullscreen ? 70 : 30;
+    mainApp.style.paddingTop = paddingTop + 'px';
+  }
+
   // Splash-анимация и запуск приложения
   setTimeout(() => {
     splash.style.opacity = '0';
@@ -40,18 +46,10 @@ document.addEventListener('DOMContentLoaded', () => {
       splash.style.display = 'none';
       mainApp.style.display = 'block';
 
-      // Пересчёт отступа и кружка после отображения
       adjustTopPadding();
       moveBgToActive(activeIndex);
     }, 500);
   }, 1400);
-
-  // Устанавливаем отступ сверху в зависимости от полноэкранного режима
-  function adjustTopPadding() {
-    const isFullscreen = window.innerHeight === screen.height;
-    const paddingTop = isFullscreen ? 70 : 5;
-    mainApp.style.paddingTop = paddingTop + 'px';
-  }
 
   // Показываем только home при загрузке
   pages.forEach(page => {
@@ -68,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeIndex = navBtns.findIndex(btn => btn.classList.contains('active'));
   if (activeIndex === -1) activeIndex = 0;
 
-  // Переключение страниц и позиция кружка
+  // Переключение страниц
   navBtns.forEach((btn, idx) => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -96,12 +94,12 @@ document.addEventListener('DOMContentLoaded', () => {
       adjustTopPadding();
     });
   });
-});
-const tabs = document.querySelectorAll('.tab');
 
-tabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    tabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
+  // Переключение табов
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
   });
 });
