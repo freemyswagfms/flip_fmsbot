@@ -305,5 +305,14 @@ body {
 .title-shop {
   width: 100%;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
+}
+
+#title-shop {
+  text-underline-offset: 10%;
+  text-decoration: underline;
+}
+
+#title-top {
+  opacity: 0.3;
 }
