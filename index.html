@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru"></html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -8,147 +8,136 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <!--экран загрузки-->
-
-    <!--<div id="splash">
+    <!-- экран загрузки (временно скрыт) -->
+    <div id="splash" style="display: none;">
         <img src="/assets/image/flip-logo.svg" class="splash-logo"/>
         <div class="progress-bar-bg">
-          <div class="progress-bar-fill"></div>
-        </div>
-      </div>
-      <div id="main-app" style="display: none;"> -->
-
- <!--главная-->
-<div class="page" id="home">
-
-<p class="title">Ежедневный дроп</p>
-<div class="carousel">
-    <div class="carousel-images">
-        <!--<img src="assets/image/cyberpank-ian.jpg" class="carousel-img"/>
-        <img src="assets/image/cyberpank-pink-tape.jpg" class="carousel-img"/>
-        <img src="assets/image/gta-pink-tape.jpg"class="carousel-img"/>
-        <img src="assets/image/minecraft-pink-tape.jpg" class="carousel-img"/>
-        <img src="assets/image/simpsons-pink-tape.jpg" class="carousel-img"/>
-        <img src="assets/image/pixel-pink-tape.jpg" class="carousel-img"/>
-        </div> -->
-    </div>
-    <button class="start-btn">Старт</button>
-</div>
-
-<p class="title">Новинки</p>
-<div class="card-wrapper">
-    <div class="main-card">
-        <div class="card-footer">
-            <button class="shop-btn">В магазин</button>
+            <div class="progress-bar-fill"></div>
         </div>
     </div>
-</div>
-  
-<p class="title">Задания</p>
-<div class="tasks">
-    <div class="task">
-        <div class="subs">
-            <div class="sub-1">Подпишись на наш канал</div>
-            <div class="sub-2">+1 карточка</div>
+
+    <div id="main-app" style="display: block;">
+        <!-- Нижнее меню -->
+        <nav class="nav-menu">
+            <div class="nav-bg"></div>
+            <a href="#" class="nav-btn home-icon active" data-page="home">
+                <img src="assets/icons/home.svg">
+            </a>
+            <a href="#" class="nav-btn shop-icon" data-page="shop">
+                <img src="assets/icons/shop.svg">
+            </a>
+            <a href="#" class="nav-btn collection-icon" data-page="collection">
+                <img src="assets/icons/collection.svg">
+            </a>
+            <a href="#" class="nav-btn profile-icon" data-page="profile">
+                <img src="assets/icons/profile.svg">
+            </a>
+        </nav>
+
+        <!-- Главная страница -->
+        <div class="page active" id="home">
+            <p class="title">Ежедневный дроп</p>
+            <div class="carousel">
+                <div class="carousel-images">
+                    <!-- временно отключено -->
+                </div>
+                <button class="start-btn">Старт</button>
+            </div>
+            <p class="title">Новинки</p>
+            <div class="card-wrapper">
+                <div class="main-card">
+                    <div class="card-footer">
+                        <button class="shop-btn">В магазин</button>
+                    </div>
+                </div>
+            </div>
+            <p class="title">Задания</p>
+            <div class="tasks">
+                <div class="task">
+                    <div class="subs">
+                        <div class="sub-1">Подпишись на наш канал</div>
+                        <div class="sub-2">+1 карточка</div>
+                    </div>
+                    <button class="task-btn">Выполнить</button>
+                </div>
+                <div class="task">
+                    <div class="subs">
+                        <div class="sub-1">Подпишись на наш канал</div>
+                        <div class="sub-2">+1 карточка</div>
+                    </div>
+                    <button class="task-btn">Выполнить</button>
+                </div>
+                <div class="task">
+                    <div class="subs">
+                        <div class="sub-1">Подпишись на наш канал</div>
+                        <div class="sub-2">+1 карточка</div>
+                    </div>
+                    <button class="task-btn">Выполнить</button>
+                </div>
+            </div>
         </div>
-            <button class="task-btn">Выполнить</button>
-    </div>
 
-    <div class="task">
-        <div class="subs">
-            <div class="sub-1">Подпишись на наш канал</div>
-            <div class="sub-2">+1 карточка</div>
+        <!-- Магазин -->
+        <div class="page" id="shop">
+            <div class="title-shop">
+                <p class="title" id="title-shop">Магазин</p>
+                <p class="title" id="title-top">Топ пользователей</p>
+            </div>
+            <div class="cards">
+                <div class="card">
+                    <div class="square"></div>
+                    <button class="buy-btn">Купить</button>
+                </div>
+                <div class="card">
+                    <div class="square"></div>
+                    <button class="buy-btn">Купить</button>
+                </div>
+            </div>
+            <p class="title">Новая коллекция</p>
+            <div class="clc">
+                <div class="clc-card"></div>
+                <button class="more-btn">Подробнее</button>
+            </div>
+            <p class="title">Пополнение баланса</p>
+            <div class="tasks">
+                <div class="task">
+                    <div class="subs">
+                        <div class="sub-1">100 рублей</div>
+                        <div class="sub-2">Оплата картой или СБП</div>
+                    </div>
+                    <button class="task-btn">Пополнить</button>
+                </div>
+                <div class="task">
+                    <div class="subs">
+                        <div class="sub-1">100 рублей</div>
+                        <div class="sub-2">Оплата картой или СБП</div>
+                    </div>
+                    <button class="task-btn">Пополнить</button>
+                </div>
+                <div class="task">
+                    <div class="subs">
+                        <div class="sub-1">100 рублей</div>
+                        <div class="sub-2">Оплата картой или СБП</div>
+                    </div>
+                    <button class="task-btn">Пополнить</button>
+                </div>
+            </div>
         </div>
-            <button class="task-btn">Выполнить</button>
-    </div>
 
-    <div class="task">
-        <div class="subs">
-            <div class="sub-1">Подпишись на наш канал</div>
-            <div class="sub-2">+1 карточка</div>
+        <!-- Коллекция -->
+        <div class="page" id="collection">
+            <div class="title-collection">
+                <p class="title" id="title-collection">КОЛЛЕКЦИЯ</p>
+            </div>
         </div>
-            <button class="task-btn">Выполнить</button>
-    </div>
-</div>
 
-<!--магазин-->
-<div class="page" id="shop">
-
-    <div class="title-shop">
-        <p class="title" id="title-shop">Магазин</p>
-        <p class="title" id="title-top">Топ пользователей</p>
-    </div>
-<div class="cards">
-    <div class="card">
-        <div class="square"></div>
-        <button class="buy-btn">Купить</button>
-    </div>
-
-    <div class="card">
-        <div class="square"></div>
-        <button class="buy-btn">Купить</button>
-    </div>
-</div>
-
-<p class="title">Новая коллекция</p>
-<div class="clc">
-    <div class="clc-card"></div>
-    <button class="more-btn">Подробнее</button>
-</div>
-
-<p class="title">Пополнение баланса</p>
-
-<div class="tasks">
-    <div class="task">
-        <div class="subs">
-            <div class="sub-1">100 рублей</div>
-            <div class="sub-2">Оплата картой или СБП</div>
+        <!-- Профиль -->
+        <div class="page" id="profile">
+            <div class="title-profile">
+                <p class="title" id="title-profile">Профиль</p>
+            </div>
         </div>
-            <button class="task-btn">Пополнить</button>
     </div>
-
-    <div class="task">
-        <div class="subs">
-            <div class="sub-1">100 рублей</div>
-            <div class="sub-2">Оплата картой или СБП</div>
-        </div>
-            <button class="task-btn">Пополнить</button>
-    </div>
-
-    <div class="task">
-        <div class="subs">
-            <div class="sub-1">100 рублей</div>
-            <div class="sub-2">Оплата картой или СБП</div>
-        </div>
-            <button class="task-btn">Пополнить</button>
-    </div>
-</div>
-<nav class="nav-menu">
-    <div class="nav-bg"></div>
-    <a href="#" class="nav-btn home-icon active">
-        <img src="assets/icons/home.svg">
-    </a>
-    <a href="#" class="nav-btn shop-icon">
-        <img src="assets/icons/shop.svg">
-    </a>
-    <a href="#" class="nav-btn collection-icon">
-        <img src="assets/icons/collection.svg">
-    </a>
-    <a href="#" class="nav-btn profile-icon">
-        <img src="assets/icons/profile.svg">
-    </a>
-</nav>
-
-
-    
-
-
-
-
-
-
-
-
 
     <script src="main.js"></script>
 </body>
