@@ -319,7 +319,7 @@ body {
 .nav-menu {
   position: fixed;
   left: 0; right: 0; bottom: 0;
-  height: 75px;
+  height: 70px;
   display: flex;
   justify-content: space-around;
   align-items: flex-start;
