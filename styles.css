@@ -319,18 +319,19 @@ body {
 .nav-menu {
   position: fixed;
   left: 0; right: 0; bottom: 0;
-  height: 100px;
+  height: 70px;
   display: flex;
   justify-content: space-around;
   align-items: flex-start;
    padding-top: 8px;
-  z-index: 1000;
+  z-index: 999;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(10px);
   border-top-left-radius: 10px;
   border-bottom-right-radius: 10px;
 }
 .nav-menu a {
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -341,4 +342,7 @@ body {
 .nav-menu a.active {
   background: #5BE84B;
   opacity: 0.5;
+}
+.home-icon {
+  z-index: 1000;
 }
