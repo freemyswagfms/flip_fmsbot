@@ -1,39 +1,39 @@
 @font-face {
-    font-family: 'geologica';
-    src: url('/assets/fonts/geologica-extralight.woff') format('woff');
-    font-weight: 200;
-    font-style: normal;
-  }
+  font-family: 'geologica';
+  src: url('/assets/fonts/geologica-extralight.woff') format('woff');
+  font-weight: 200;
+  font-style: normal;
+}
   
-  @font-face {
-    font-family: 'geologica';
-    src: url('/assets/fonts/geologica-light.woff') format('woff');
-    font-weight: 300;
-    font-style: normal;
-  }
+@font-face {
+  font-family: 'geologica';
+  src: url('/assets/fonts/geologica-light.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+}
   
-  @font-face {
-    font-family: 'geologica';
-    src: url('/assets/fonts/geologica-medium.woff') format('woff');
-    font-weight: 500;
-    font-style: normal;
-  }
+@font-face {
+  font-family: 'geologica';
+  src: url('/assets/fonts/geologica-regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
 
-  @font-face {
-    font-family: 'geologica';
-    src: url('/assets/fonts/geologica-regular.woff') format('woff');
-    font-weight: 400;
-    font-style: normal;
-  }
+@font-face {
+  font-family: 'geologica';
+  src: url('/assets/fonts/geologica-medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+}
 
-  @font-face {
-    font-family: 'saar';
-    src: url('/assets/fonts/saar.woff') format('woff');
-    font-weight: 400;
-    font-style: normal;
-  }
+@font-face {
+  font-family: 'saar';
+  src: url('/assets/fonts/saar.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
 
-  body {
+body {
   box-sizing: border-box;
   font-family: 'geologica';
   font-family: 'saar';
@@ -41,230 +41,269 @@
   margin-left: 20px;
   margin-right: 20px;
   margin-top: 100px;
-  }
+  margin-bottom: 50px;
+}
 
-  #splash {
-    position: fixed;
-    z-index: 9999;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: #0A0A0A;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    transition: opacity .5s;
-  }
+#splash {
+  position: fixed;
+  z-index: 9999;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #0A0A0A;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: opacity .5s;
+}
   
-  .splash-logo {
-    width: 230px;
-    margin-bottom: 20px;
-  }
+.splash-logo {
+  width: 230px;
+  margin-bottom: 20px;
+}
   
-  .progress-bar-bg {
-    width: 230px;
-    height: 5px;
-    background: #282828;
-    border-radius: 1px;
-    overflow: hidden;
-    margin-top: 0px;
-  }
+.progress-bar-bg {
+  width: 230px;
+  height: 5px;
+  background: #282828;
+  border-radius: 1px;
+  overflow: hidden;
+  margin-top: 0px;
+}
   
-  .progress-bar-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #F25B02 0%, #B31414 100%);
-    transition: width 1s cubic-bezier(.68,-0.55,.27,1.55);
-  }
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #F25B02 0%, #B31414 100%);
+  transition: width 1s cubic-bezier(.68,-0.55,.27,1.55);
+}
   
+.title {
+  font-family: 'saar';
+  color: white;
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  text-align: center;
+}
 
-
-  .title {
-    color: white;
-    text-align: center;
-    letter-spacing: 1px;
-    font-size: 32px;
-    font-weight: 400;
-  }
-
-  .carousel {
-    position: relative;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-     
-  }
-  .carousel-images {
-    width: 100%;
-    display: flex;
-    transition: transform 0.5s cubic-bezier(.68,-0.55,.27,1.55);
-    will-change: transform;
-    align-items: center;
-    gap: 15px;
-  }
-  .carousel-img {
-    min-width: 140px;
-    height: 140px;
-    object-fit: cover;
-    user-select: none;
-    pointer-events: none;
-    border-radius: 10px;
-    display: block;
-  }
-
- 
-  .start-btn {
-    font-family: 'geologica';
-    justify-content: center;
-    margin-top: 15px;
-    font-size: 16px;
-    font-weight: 400;
-    background-color: #B31414;
-    border-radius: 100px;
-    border: none;
-    color: white;
-    padding-left: 25px;
-    padding-right: 25px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-  }
-
-  .title-2 {
-    color: white;
-    text-align: center;
-    margin-top: 30px;
-    letter-spacing: 1px;
-    font-family: 'saar';
-    font-weight: 400;
-    font-size: 32px;
-  }
-
+.carousel {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;  
+}
   
-  .card-wrapper {
-    /* чтобы всё было по центру */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+.carousel-images {
+  width: 100%;
+  display: flex;
+  transition: transform 0.5s cubic-bezier(.68,-0.55,.27,1.55);
+  will-change: transform;
+  align-items: center;
+  gap: 15px;
+}
   
-  .main-card {
-    width: 100%;
-    height: 200px;
-    background: #ffffff;
-    border-radius: 10px;
-    position: relative;
-    box-shadow: 0 6px 32px rgba(0,0,0,0.13);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
+.carousel-img {
+  min-width: 140px;
+  height: 140px;
+  object-fit: cover;
+  user-select: none;
+  pointer-events: none;
+  border-radius: 10px;
+  display: block;
+}
+
+.start-btn {
+  font-family: 'geologica';
+  justify-content: center;
+  margin-top: 15px;
+  font-size: 16px;
+  font-weight: 400;
+  background-color: #B31414;
+  border-radius: 100px;
+  border: none;
+  color: white;
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.card-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
   
-  /* Подложка под кнопкой — с вырезом */
-  .card-footer {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 150px;
-    height: 50px;
-    background: #0A0A0A;
-    border-radius: 0 0 100% 0;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-    border-top-left-radius: 25px;
-    border-top-right-radius: 25px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    z-index: 2;
-  }
+.main-card {
+  width: 100%;
+  height: 200px;
+  background: #ffffff;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.13);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.card-footer {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 50px;
+  background: #0A0A0A;
+  border-radius: 0 0 100% 0;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+  border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 2;
+}
   
-  /* Кнопка */
-  .shop-btn {
-    font-family: 'geologica';
-    font-size: 16px;
-    margin-top: 10px;
-    padding-left: 25px;
-    padding-right: 25px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    font-weight: 400;
-    color: #fff;
-    background: #e96814;
-    border: none;
-    border-radius: 100px;
-    cursor: pointer;
-    z-index: 3;
-  }
-  
-  .title-3 {
-    color: white;
-    text-align: center;
-    font-family: 'saar';
-    font-weight: 400;
-    letter-spacing: 1px;
-    font-size: 32px;
-    margin-top: 30px;
+.shop-btn {
+  font-family: 'geologica';
+  font-size: 16px;
+  margin-top: 10px;
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-weight: 400;
+  color: #fff;
+  background: #e96814;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  z-index: 3;
+}
+
+.task {
+  box-sizing: border-box;
+  width: 100%;         
+  display: flex;
+  justify-content: space-between;
+  border-radius: 10px;
+  background-color: #ffffff;
+  color: black;
+  font-size: 13px;
+  font-weight: 200;
+  padding-left: 15px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-right: 15px;
+  margin-bottom: 10px;
   }
 
-  .task {
-    box-sizing: border-box;
-    width: 100%;         
-    display: flex;
-    justify-content: space-between;
-    border-radius: 10px;
-    background-color: #ffffff;
-    color: black;
-    font-size: 13px;
-    font-weight: 200;
-    padding-left: 15px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-right: 15px;
-    margin-bottom: 10px;
-  }
-
-
-
-  .sub-1 {
-    font-family: 'geologica';
-    color: black;
-    }
+.sub-1 {
+  font-family: 'geologica';
+  color: black;
+}
   
-  .sub-2 {
+.sub-2 {
   font-family: 'geologica';
   color: black;
   opacity: 0.5;
   font-weight: 200;
-  }
+}
 
 
-  .task-btn {
-    font-family: 'geologica';
-    font-size: 12px;
-    font-weight: 500;
-    color: #ffffff;
-    background: linear-gradient(90deg, #F25B02 0%, #B31414 100%);
-    border: none;
-    border-radius: 8px;
-    padding: 10px 25px;
-  }
+.task-btn {
+  font-family: 'geologica';
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
+  background: linear-gradient(90deg, #F25B02 0%, #B31414 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 25px;
+}
 
-  .tasks {
-    font-family: 'geologica';
-  }
+.tasks {
+  font-family: 'geologica';
+}
 
-  .card {
-    width: 100%;
-    background-color: white;
-    border-radius: 10px;
-    aspect-ratio: 1/1;
-    gap: 20px;
-    max-width: 300px;
+.card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  justify-content: center;
+  max-width: 300px;
+  align-items: center;
+  justify-content: center;
+}
+  
+.cards {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
 
-  }
-  .cards {
-    width: 100%;
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-  }
+.buy-btn {
+  background-color: #F25B02;
+  color: white;
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  border-radius: 100px;
+  padding: 10px 25px;
+  margin-top: 15px;
+}
+
+.square {
+  width: 100%;
+  background-color: white;
+  border-radius: 10px;
+  aspect-ratio: 1/1;
+  max-width: 300px;
+  flex-direction: column;
+}
+
+.clc {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.more-btn {
+  background-color: #F25B02;
+  color: white;
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  border-radius: 100px;
+  padding: 10px 25px;
+  margin-top: 15px;
+}
+
+.clc-card {
+  width: 100%;
+  display: flex;
+  background-color: white;
+  border-radius: 10px;
+  height: 230px;
+  max-width: 620px;
+  justify-content: center;
+  align-items: center;
+}
+
+.title-balance {
+  font-size: 32px;
+  color: #ffffff;
+  text-align: center;
+}
+
+.title-shop {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
