@@ -64,6 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
           page.classList.remove('active');
         }
       });
+
+      // Обеспечиваем достаточную высоту контента
+      const appHeight = Math.max(window.innerHeight, mainApp.scrollHeight);
+      mainApp.style.minHeight = appHeight + 'px';
     });
   });
 });
