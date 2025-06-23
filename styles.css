@@ -43,8 +43,7 @@ body {
 }
 
 #main-app {
-  padding: max(20px, env(safe-area-inset-top)) 20px 100px;
-
+  padding: calc(40px + env(safe-area-inset-top)) 20px 100px;
   min-height: 100vh;
   box-sizing: border-box;
 }
