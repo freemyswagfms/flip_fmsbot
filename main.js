@@ -16,14 +16,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-window.addEventListener('DOMContentLoaded', () => {
-  if (window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.requestFullscreen === 'function') {
-    Telegram.WebApp.requestFullscreen();
-  }
-});
-if (window.Telegram && Telegram.WebApp && typeof Telegram.WebApp.exitFullscreen === 'function') {
-  Telegram.WebApp.exitFullscreen();
-}
+
 document.addEventListener('DOMContentLoaded', () => {
   const navMenu = document.querySelector('.nav-menu');
   const navBtns = Array.from(document.querySelectorAll('.nav-btn'));
