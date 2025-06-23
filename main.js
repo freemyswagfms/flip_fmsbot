@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Устанавливаем отступ сверху в зависимости от полноэкранного режима
   function adjustTopPadding() {
     const isFullscreen = window.innerHeight === screen.height;
-    const paddingTop = isFullscreen ? 70 : 40;
+    const paddingTop = isFullscreen ? 70 : 30;
     mainApp.style.paddingTop = paddingTop + 'px';
   }
 
