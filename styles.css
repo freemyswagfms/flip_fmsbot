@@ -534,7 +534,8 @@ body {
 .overlay .tasks {
   width: 100%;
   max-width: 500px;
-  padding: 0 20px;
+  padding-left: 0;
+  padding-right: 20px;
   margin: 0 auto;
   box-sizing: border-box;
 }
