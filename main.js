@@ -8,18 +8,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const fill = document.querySelector('.progress-bar-fill');
   const tabs = document.querySelectorAll('.tab');
 
-  // Показываем splash сначала
   splash.style.display = 'flex';
   mainApp.style.display = 'none';
 
-  // Анимация загрузочной полосы
   if (fill) {
     setTimeout(() => {
       fill.style.width = '100%';
     }, 200);
   }
 
-  // Центровка кружка под активной кнопкой
   function moveBgToActive(index) {
     const btn = navBtns[index];
     const menuRect = navMenu.getBoundingClientRect();
@@ -32,14 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Устанавливаем отступ сверху в зависимости от полноэкранного режима
   function adjustTopPadding() {
     const isFullscreen = window.innerHeight === screen.height;
     const paddingTop = isFullscreen ? 70 : 5;
     mainApp.style.paddingTop = paddingTop + 'px';
   }
 
-  // Splash-анимация и запуск приложения
   setTimeout(() => {
     splash.style.opacity = '0';
     setTimeout(() => {
@@ -51,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
   }, 1400);
 
-  // Показываем только home при загрузке
   pages.forEach(page => {
     if (page.id === "home") {
       page.style.display = '';
@@ -62,11 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Инициализация позиции кружка
   let activeIndex = navBtns.findIndex(btn => btn.classList.contains('active'));
   if (activeIndex === -1) activeIndex = 0;
 
-  // Переключение страниц
   navBtns.forEach((btn, idx) => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -95,11 +87,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Переключение табов
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
     });
   });
+
+  const user = window.Telegram.WebApp.initDataUnsafe?.user;
+  const nicknameEl = document.querySelector('.nickname');
+  const balanceEl = document.querySelector('.balance-nick');
+  const avatarEl = document.querySelector('.avatar');
+
+  if (nicknameEl && balanceEl && avatarEl) {
+    if (user) {
+      nicknameEl.textContent = user.username || `id${user.id}`;
+      balanceEl.textContent = 'Баланс: 0 руб.';
+
+      if (user.username) {
+        avatarEl.style.backgroundImage = `url('https://t.me/i/userpic/320/${user.username}.jpg')`;
+      } else {
+        avatarEl.style.backgroundColor = '#ccc';
+      }
+    } else {
+      nicknameEl.textContent = 'Гость';
+      balanceEl.textContent = 'Баланс: 0 руб.';
+      avatarEl.style.backgroundColor = '#ccc';
+    }
+  }
 });
