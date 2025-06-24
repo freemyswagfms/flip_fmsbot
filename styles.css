@@ -464,9 +464,6 @@ body {
 }
 
 .setting-icon {
-  display: flex;
-  align-items: center;
-  gap: 35px;
   width: 16px;
   height: 16px;
   object-fit: contain;
@@ -484,6 +481,9 @@ body {
 }
 
 .setting-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background-color: rgba(255, 255, 255, 0.15);
   padding: 14px 20px;
   border-radius: 8px;
@@ -491,7 +491,10 @@ body {
   color: white;
   font-family: 'geologica';
   font-size: 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px; 
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.setting-item:hover {
+  background-color: rgba(255, 255, 255, 0.25);
 }
