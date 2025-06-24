@@ -451,6 +451,9 @@ body {
   background-color: white;
   border-radius: 50%;
   flex-shrink: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .account {
