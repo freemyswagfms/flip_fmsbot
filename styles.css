@@ -367,7 +367,7 @@ body {
 
 .page {
   min-height: 100vh;
-  padding-bottom: 120px;
+  padding-bottom: 10px;
   box-sizing: border-box;
 }
 
