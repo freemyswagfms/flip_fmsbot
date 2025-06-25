@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
+  if (window.Telegram.WebApp) {
+    Telegram.WebApp.expand();
+  }
+
   const splash = document.getElementById('splash');
   const mainApp = document.getElementById('main-app');
   const navMenu = document.querySelector('.nav-menu');
@@ -8,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const fill = document.querySelector('.progress-bar-fill');
   const tabs = document.querySelectorAll('.tab');
 
-  // Загрузка
   splash.style.display = 'flex';
   mainApp.style.display = 'none';
 
@@ -117,20 +120,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 👇 ДОБАВЛЕННЫЙ БЛОК: обработка оверлея пополнения баланса
-  const balanceSetting = document.querySelector('.setting-item'); // первая кнопка "Пополнение баланса"
+
+  const settingItems = document.querySelectorAll('.setting-item');
   const balanceOverlay = document.getElementById('balance-overlay');
 
-  if (balanceSetting && balanceOverlay) {
-    balanceSetting.addEventListener('click', (e) => {
-      e.preventDefault();
-      balanceOverlay.style.display = 'flex';
+  if (settingItems.length && balanceOverlay) {
+    settingItems.forEach((item) => {
+      if (item.textContent.includes('Пополнение баланса')) {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          balanceOverlay.classList.add('show');
+          balanceOverlay.scrollTo(0, 0);
+        });
+      }
     });
 
-    // Клик по фону — закрывает
     balanceOverlay.addEventListener('click', (e) => {
       if (e.target === balanceOverlay) {
-        balanceOverlay.style.display = 'none';
+        balanceOverlay.classList.remove('show');
       }
     });
   }
