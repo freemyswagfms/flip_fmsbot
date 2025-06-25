@@ -86,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const appHeight = Math.max(window.innerHeight, mainApp.scrollHeight);
-      mainApp.style.minHeight = appHeight + 'px';
       adjustTopPadding();
     });
   });
