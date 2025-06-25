@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   if (window.Telegram.WebApp) {
-    Telegram.WebApp.expand();
+    Telegram.WebApp.ready();         // уведомить Telegram, что всё загружено
+    Telegram.WebApp.expand();        // развернуть WebApp на весь экран
   }
 
   const splash = document.getElementById('splash');
@@ -44,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       splash.style.display = 'none';
       mainApp.style.display = 'block';
-
       adjustTopPadding();
       moveBgToActive(activeIndex);
     }, 500);
