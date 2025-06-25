@@ -1,7 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
   if (window.Telegram.WebApp) {
-    Telegram.WebApp.ready();         // уведомить Telegram, что всё загружено
-    Telegram.WebApp.expand();        // развернуть WebApp на весь экран
+    Telegram.WebApp.ready();         
+    Telegram.WebApp.expand();        
+  }
+
+  // === Применение сохранённой темы ===
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'light') {
+    document.body.classList.add('light');
   }
 
   const splash = document.getElementById('splash');
@@ -168,18 +174,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ========================
-  // Переключение темы (только фон)
+  // Переключение темы (с сохранением в localStorage)
   // ========================
   const themeBtn = document.querySelector('.theme-toggle-btn');
 
   if (themeBtn) {
+    // Установить текст кнопки при загрузке
+    themeBtn.textContent = document.body.classList.contains('light') ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
+
     themeBtn.addEventListener('click', () => {
       document.body.classList.toggle('light');
 
       if (document.body.classList.contains('light')) {
         themeBtn.textContent = 'ВЫКЛЮЧИТЬ';
+        localStorage.setItem('theme', 'light');
       } else {
         themeBtn.textContent = 'ВКЛЮЧИТЬ';
+        localStorage.setItem('theme', 'dark');
       }
     });
   }
