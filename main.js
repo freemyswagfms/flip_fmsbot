@@ -166,4 +166,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // ========================
+  // Переключение темы (только фон)
+  // ========================
+  const themeBtn = document.querySelector('.theme-toggle-btn');
+
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('light');
+
+      if (document.body.classList.contains('light')) {
+        themeBtn.textContent = 'ВЫКЛЮЧИТЬ';
+      } else {
+        themeBtn.textContent = 'ВКЛЮЧИТЬ';
+      }
+    });
+  }
 });
