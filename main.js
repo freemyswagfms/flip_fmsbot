@@ -85,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      const appHeight = Math.max(window.innerHeight, mainApp.scrollHeight);
       adjustTopPadding();
     });
   });
@@ -120,27 +119,50 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ========================
-  // Работа с оверлеем баланса
+  // Работа с оверлеями
   // ========================
   const settingItems = document.querySelectorAll('.setting-item');
   const balanceOverlay = document.getElementById('balance-overlay');
+  const themeOverlay = document.getElementById('theme-overlay');
 
-  if (settingItems.length && balanceOverlay) {
+  if (settingItems.length) {
     settingItems.forEach((item) => {
-      if (item.textContent.includes('Пополнение баланса')) {
+      const text = item.textContent.trim();
+
+      if (text.includes('Пополнение баланса') && balanceOverlay) {
         item.addEventListener('click', (e) => {
           e.preventDefault();
           balanceOverlay.classList.add('show');
           balanceOverlay.scrollTo(0, 0);
-          console.log("Оверлей открыт");
+          console.log("Оверлей баланса открыт");
+        });
+      }
+
+      if (text.includes('Внешний вид') && themeOverlay) {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          themeOverlay.classList.add('show');
+          themeOverlay.scrollTo(0, 0);
+          console.log("Оверлей внешнего вида открыт");
         });
       }
     });
+  }
 
+  if (balanceOverlay) {
     balanceOverlay.addEventListener('click', (e) => {
       if (e.target === balanceOverlay) {
         balanceOverlay.classList.remove('show');
-        console.log("Оверлей закрыт");
+        console.log("Оверлей баланса закрыт");
+      }
+    });
+  }
+
+  if (themeOverlay) {
+    themeOverlay.addEventListener('click', (e) => {
+      if (e.target === themeOverlay) {
+        themeOverlay.classList.remove('show');
+        console.log("Оверлей внешнего вида закрыт");
       }
     });
   }
