@@ -42,7 +42,7 @@ body {
 }
 
 #main-app {
-  padding: calc(40px + env(safe-area-inset-top)) 20px 100px;
+  padding: calc(40px + env(safe-area-inset-top)) 20px calc(70px + env(safe-area-inset-bottom));
   min-height: 100vh;
   box-sizing: border-box;
 }
@@ -319,7 +319,9 @@ body {
 #title-top {
   opacity: 0.3;
 }
+
 .nav-menu {
+  padding-bottom: env(safe-area-inset-bottom);
   position: fixed;
   left: 0; right: 0; bottom: 0;
   height: 70px;
@@ -335,6 +337,7 @@ body {
   border-bottom-right-radius: 10px;
   overflow: visible;
 }
+
 .nav-btn {
   position: relative;
   z-index: 2;
@@ -534,12 +537,14 @@ body {
   box-sizing: border-box;
 }
 
-.overlay .tasks {
+.overlay-inner {
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
+  padding: 0 20px 40px;
   box-sizing: border-box;
 }
+
 
 .overlay-inner {
   width: 100%;
