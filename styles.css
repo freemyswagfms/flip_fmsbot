@@ -38,7 +38,7 @@ body {
   box-sizing: border-box;
   background-color: #0A0A0A;
   margin: 0;
-  padding: 0;
+  padding: 0;  
 }
 
 #main-app {
@@ -369,9 +369,11 @@ body {
 }
 
 .page {
-  min-height: 100vh;
-  padding-bottom: 10px;
+  min-height: calc(100vh - 70px); /* учитываем нижнее меню */
+  padding: 20px 0px 20px; /* отступы сверху/сбоку и отступ под меню */
   box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* для iOS bounce */
 }
 
 .title-collection {
