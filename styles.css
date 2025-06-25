@@ -122,10 +122,10 @@ body {
   margin-top: 15px;
   font-size: 16px;
   font-weight: 400;
-  background-color: #B31414;
+  background-color: #FBFF12;
   border-radius: 100px;
   border: none;
-  color: white;
+  color: black;
   padding-left: 25px;
   padding-right: 25px;
   padding-top: 10px;
@@ -177,8 +177,8 @@ body {
   padding-top: 10px;
   padding-bottom: 10px;
   font-weight: 400;
-  color: #fff;
-  background: #e96814;
+  color: black;
+  background: #42EAD4;
   border: none;
   border-radius: 100px;
   cursor: pointer;
@@ -220,7 +220,7 @@ body {
   font-size: 12px;
   font-weight: 500;
   color: #ffffff;
-  background: linear-gradient(90deg, #F25B02 0%, #B31414 100%);
+  background: linear-gradient(90deg, #FF216E 0%, #991442 100%);
   border: none;
   border-radius: 8px;
   padding: 10px 25px;
@@ -248,8 +248,8 @@ body {
 }
 
 .buy-btn {
-  background-color: #F25B02;
-  color: white;
+  background-color: #FBFF12;
+  color: black;
   font-family: 'geologica';
   font-size: 16px;
   font-weight: 500;
@@ -277,8 +277,8 @@ body {
 }
 
 .more-btn {
-  background-color: #F25B02;
-  color: white;
+  background-color: #FBFF12;
+  color: black;
   font-family: 'geologica';
   font-size: 16px;
   font-weight: 500;
@@ -357,7 +357,7 @@ body {
 .nav-bg {
   top: 8px;
   position: absolute;
-  background: #DC644C;
+  background: #42EAD4;
   border-radius: 50%;
   z-index: 1;
   opacity: 0.5;
@@ -440,7 +440,7 @@ body {
   font-family: 'geologica';
   font-size: 12px;
   font-weight: 300;
-  color: #F25B02;
+  color: #42EAD4;
   margin: 0;
   margin-top: 4px;
 }
@@ -598,14 +598,13 @@ body {
 }
 
 body.light {
-  background-color: #F2F2F2; /* светлый фон */
+  background-color: #F2F2F2; 
   color: black;
 }
 
 body.light .title,
 body.light .settings-title,
 body.light .nickname,
-body.light .balance-nick,
 body.light .tab,
 body.light .sub-1,
 body.light .sub-2 {
@@ -631,7 +630,7 @@ body.light .task {
 }
 
 body.light .task-btn {
-  color: #fff; /* оставить белый текст на градиентной кнопке */
+  color: #fff;
 }
 
 body.light .theme-toggle-btn {
@@ -641,4 +640,8 @@ body.light .theme-toggle-btn {
 
 body.light .card-footer {
   background: #D9D9D9;
+}
+
+body.light .balance-nick, {
+  color: #048876
 }
