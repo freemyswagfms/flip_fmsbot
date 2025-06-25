@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function adjustTopPadding() {
     const isFullscreen = window.innerHeight === screen.height;
-    const paddingTop = isFullscreen ? 70 : 5;
+    const paddingTop = isFullscreen ? 60 : 1;
     mainApp.style.paddingTop = paddingTop + 'px';
   }
 
