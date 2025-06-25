@@ -120,7 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-
+  // ========================
+  // Работа с оверлеем баланса
+  // ========================
   const settingItems = document.querySelectorAll('.setting-item');
   const balanceOverlay = document.getElementById('balance-overlay');
 
@@ -131,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
           e.preventDefault();
           balanceOverlay.classList.add('show');
           balanceOverlay.scrollTo(0, 0);
+          console.log("Оверлей открыт");
         });
       }
     });
@@ -138,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     balanceOverlay.addEventListener('click', (e) => {
       if (e.target === balanceOverlay) {
         balanceOverlay.classList.remove('show');
+        console.log("Оверлей закрыт");
       }
     });
   }
