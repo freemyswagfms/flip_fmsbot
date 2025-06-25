@@ -2,23 +2,23 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#0A0A0A">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <meta name="theme-color" content="#0A0A0A">
     <title>Flip</title>
     <link rel="stylesheet" href="styles.css"/>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script defer src="main.js"></script>
 </head>
 <body>
-    <!-- экран загрузки (временно скрыт) -->
-    <div id="splash" style="display: none;">
+    <!-- экран загрузки -->
+    <div id="splash">
         <img src="/assets/image/flip-logo.svg" class="splash-logo"/>
         <div class="progress-bar-bg">
             <div class="progress-bar-fill"></div>
         </div>
     </div>
 
-    <div id="main-app" style="display: block;">
+    <div id="main-app">
         <!-- Нижнее меню -->
         <nav class="nav-menu">
             <div class="nav-bg"></div>
@@ -40,9 +40,7 @@
         <div class="page active" id="home">
             <p class="title">Ежедневный дроп</p>
             <div class="carousel">
-                <div class="carousel-images">
-                    <!-- временно отключено -->
-                </div>
+                <div class="carousel-images"></div>
                 <button class="start-btn">Старт</button>
             </div>
             <p class="title">Новинки</p>
@@ -127,80 +125,79 @@
         </div>
 
         <!-- Коллекция -->
-<div class="page" id="collection">
-  <p class="title title-collection" id="title-collection">МОЯ КОЛЛЕКЦИЯ</p>
-  <div class="collection-divider"></div>
-  <div class="collection-tabs">
-    <button class="tab active">ВСЕ</button>
-    <button class="tab">АЛЬБОМЫ</button>
-    <button class="tab">СИНГЛЫ</button>
-    <button class="tab">АРТИСТЫ</button>
-  </div>
-</div>
-
-
+        <div class="page" id="collection">
+            <p class="title title-collection" id="title-collection">МОЯ КОЛЛЕКЦИЯ</p>
+            <div class="collection-divider"></div>
+            <div class="collection-tabs">
+                <button class="tab active">ВСЕ</button>
+                <button class="tab">АЛЬБОМЫ</button>
+                <button class="tab">СИНГЛЫ</button>
+                <button class="tab">АРТИСТЫ</button>
+            </div>
+        </div>
 
         <!-- Профиль -->
-<div class="page" id="profile">
-  <div class="title-profile">
-    <p class="title" id="title-profile">МОЙ ПРОФИЛЬ</p>
-    <div class="account">
-      <div class="avatar"></div>
-      <div class="inf-profile">
-        <p class="nickname">Имя</p>
-        <p class="balance-nick">Баланс: 0 руб.</p>
-      </div>
-    </div>
-  </div>
-  <div class="settings">
-  <p class="settings-title">НАСТРОЙКИ</p>
-  <a href="#" class="setting-item">
-    <img src="assets/icons/balance-icon.svg" alt="" class="setting-icon">
-    <span>Пополнение баланса</span>
-  </a>
-  <a href="#" class="setting-item">
-    <img src="assets/icons/theme-icon.svg" alt="" class="setting-icon">
-    <span>Внешний вид</span>
-  </a>
-  <a href="#" class="setting-item">
-    <img src="assets/icons/svyaz-icon.svg" alt="" class="setting-icon">
-    <span>Связь с нами</span>
-  </a>
-  <a href="#" class="setting-item">
-    <img src="assets/icons/contact-icon.svg" alt="" class="setting-icon">
-    <span>Наши соцсети</span>
-  </a>
-  <!-- Оверлей пополнения баланса -->
-<div class="overlay" id="balance-overlay">
-  <div class="overlay-inner">
-    <p class="title">ПОПОЛНЕНИЕ БАЛАНСА</p>
-    <div class="tasks">
-      <div class="task">
-        <div class="subs">
-          <div class="sub-1">100 рублей</div>
-          <div class="sub-2">Оплата картой или СБП</div>
+        <div class="page" id="profile">
+            <div class="title-profile">
+                <p class="title" id="title-profile">МОЙ ПРОФИЛЬ</p>
+                <div class="account">
+                    <div class="avatar"></div>
+                    <div class="inf-profile">
+                        <p class="nickname">Имя</p>
+                        <p class="balance-nick">Баланс: 0 руб.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="settings">
+                <p class="settings-title">НАСТРОЙКИ</p>
+                <a href="#" class="setting-item">
+                    <img src="assets/icons/balance-icon.svg" alt="" class="setting-icon">
+                    <span>Пополнение баланса</span>
+                </a>
+                <a href="#" class="setting-item">
+                    <img src="assets/icons/theme-icon.svg" alt="" class="setting-icon">
+                    <span>Внешний вид</span>
+                </a>
+                <a href="#" class="setting-item">
+                    <img src="assets/icons/svyaz-icon.svg" alt="" class="setting-icon">
+                    <span>Связь с нами</span>
+                </a>
+                <a href="#" class="setting-item">
+                    <img src="assets/icons/contact-icon.svg" alt="" class="setting-icon">
+                    <span>Наши соцсети</span>
+                </a>
+            </div>
         </div>
-        <button class="task-btn">Пополнить</button>
-      </div>
-      <div class="task">
-        <div class="subs">
-          <div class="sub-1">200 рублей</div>
-          <div class="sub-2">Оплата картой или СБП</div>
-        </div>
-        <button class="task-btn">Пополнить</button>
-      </div>
-      <div class="task">
-        <div class="subs">
-          <div class="sub-1">300 рублей</div>
-          <div class="sub-2">Оплата картой или СБП</div>
-        </div>
-        <button class="task-btn">Пополнить</button>
-      </div>
-    </div>
-  </div>
-</div>
 
-
-    <script src="main.js"></script>
+        <!-- Оверлей пополнения баланса -->
+        <div class="overlay" id="balance-overlay">
+            <div class="overlay-inner">
+                <p class="title">ПОПОЛНЕНИЕ БАЛАНСА</p>
+                <div class="tasks">
+                    <div class="task">
+                        <div class="subs">
+                            <div class="sub-1">100 рублей</div>
+                            <div class="sub-2">Оплата картой или СБП</div>
+                        </div>
+                        <button class="task-btn">Пополнить</button>
+                    </div>
+                    <div class="task">
+                        <div class="subs">
+                            <div class="sub-1">200 рублей</div>
+                            <div class="sub-2">Оплата картой или СБП</div>
+                        </div>
+                        <button class="task-btn">Пополнить</button>
+                    </div>
+                    <div class="task">
+                        <div class="subs">
+                            <div class="sub-1">300 рублей</div>
+                            <div class="sub-2">Оплата картой или СБП</div>
+                        </div>
+                        <button class="task-btn">Пополнить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
