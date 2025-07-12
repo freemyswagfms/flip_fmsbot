@@ -27,9 +27,9 @@
 }
 
 @font-face {
-  font-family: 'saar';
-  src: url('/assets/fonts/saar.woff') format('woff');
-  font-weight: 400;
+  font-family: 'cygre';
+  src: url('/assets/fonts/cygre-extrabold.woff') format('woff');
+  font-weight: 800;
   font-style: normal;
 }
 
@@ -81,12 +81,13 @@ body {
 }
 
 .title {
-  font-family: 'saar';
+  font-family: 'cygre';
   color: white;
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 400;
   letter-spacing: 1px;
   text-align: center;
+  text-transform: uppercase;
 }
 
 .carousel {
@@ -644,4 +645,14 @@ body.light .card-footer {
 
 body.light .balance-nick, {
   color: #048876
+}
+
+.drop-timer {
+  font-family: 'geologica';
+  font-size: 14px;
+  color: white;
+  opacity: 0.5;
+  text-align: center;
+  margin-top: -15px;
+  margin-bottom: 30px;
 }
