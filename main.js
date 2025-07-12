@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     Telegram.WebApp.expand();        
   }
 
-  // === Применение сохранённой темы ===
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'light') {
     document.body.classList.add('light');
@@ -124,9 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ========================
-  // Работа с оверлеями
-  // ========================
   const settingItems = document.querySelectorAll('.setting-item');
   const balanceOverlay = document.getElementById('balance-overlay');
   const themeOverlay = document.getElementById('theme-overlay');
@@ -173,13 +169,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ========================
-  // Переключение темы (с сохранением в localStorage)
-  // ========================
   const themeBtn = document.querySelector('.theme-toggle-btn');
 
   if (themeBtn) {
-    // Установить текст кнопки при загрузке
     themeBtn.textContent = document.body.classList.contains('light') ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
 
     themeBtn.addEventListener('click', () => {
@@ -194,4 +186,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // ========================
+  // Таймер дропа (добавлено)
+  // ========================
+  function startDropTimer(hours, minutes) {
+    const display = document.getElementById('drop-countdown');
+    if (!display) return;
+
+    let totalSeconds = hours * 3600 + minutes * 60;
+
+    function updateTimer() {
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      display.textContent = `${h}ч ${m}м`;
+      if (totalSeconds > 0) totalSeconds--;
+      else clearInterval(timer);
+    }
+
+    updateTimer();
+    const timer = setInterval(updateTimer, 60 * 1000); // Обновление каждую минуту
+  }
+
+  // Запуск таймера (начальное значение)
+  startDropTimer(3, 59);
 });
