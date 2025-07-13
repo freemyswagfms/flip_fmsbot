@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   if (window.Telegram.WebApp) {
-    Telegram.WebApp.ready();         
-    Telegram.WebApp.expand();        
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
   }
 
   const savedTheme = localStorage.getItem('theme');
@@ -136,7 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
           e.preventDefault();
           balanceOverlay.classList.add('show');
           balanceOverlay.scrollTo(0, 0);
-          console.log("Оверлей баланса открыт");
         });
       }
 
@@ -145,7 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
           e.preventDefault();
           themeOverlay.classList.add('show');
           themeOverlay.scrollTo(0, 0);
-          console.log("Оверлей внешнего вида открыт");
         });
       }
     });
@@ -155,7 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
     balanceOverlay.addEventListener('click', (e) => {
       if (e.target === balanceOverlay) {
         balanceOverlay.classList.remove('show');
-        console.log("Оверлей баланса закрыт");
       }
     });
   }
@@ -164,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
     themeOverlay.addEventListener('click', (e) => {
       if (e.target === themeOverlay) {
         themeOverlay.classList.remove('show');
-        console.log("Оверлей внешнего вида закрыт");
       }
     });
   }
@@ -187,9 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ========================
-  // Таймер дропа (добавлено)
-  // ========================
+  // Таймер дропа
   function startDropTimer(hours, minutes) {
     const display = document.getElementById('drop-countdown');
     if (!display) return;
@@ -205,9 +199,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updateTimer();
-    const timer = setInterval(updateTimer, 60 * 1000); // Обновление каждую минуту
+    const timer = setInterval(updateTimer, 60000);
   }
 
-  // Запуск таймера (начальное значение)
   startDropTimer(3, 59);
+
+  // ============ 👇 ОБРАБОТКА КНОПКИ СТАРТ 👇 ============
+  const startBtn = document.querySelector('.start-btn');
+  const subscribeOverlay = document.getElementById('subscribe-overlay');
+
+  async function checkSubscription(userId) {
+    try {
+      const response = await fetch('https://your-server.com/check-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+
+      const data = await response.json();
+      return data.subscribed;
+    } catch (err) {
+      console.error('Ошибка запроса:', err);
+      return false;
+    }
+  }
+
+  if (startBtn) {
+    startBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+
+      const userId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+      if (!userId) return alert('Ошибка: пользователь не найден');
+
+      const isSubscribed = await checkSubscription(userId);
+
+      if (!isSubscribed) {
+        subscribeOverlay?.classList.add('show');
+      } else {
+        console.log("Запуск дропа!");
+        // Запуск механики дропа
+      }
+    });
+  }
+
+  if (subscribeOverlay) {
+    subscribeOverlay.addEventListener('click', (e) => {
+      if (e.target === subscribeOverlay) {
+        subscribeOverlay.classList.remove('show');
+      }
+    });
+  }
 });
