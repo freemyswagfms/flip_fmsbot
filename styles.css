@@ -713,23 +713,16 @@ body.light .balance-nick {
   background: #D9D9D9;
   border-radius: 20px;
   padding: 25px 20px;
-  width: 90%;
+  width: 100%;
   max-width: 320px;
   text-align: center;
   box-sizing: border-box;
-}
-
-.subscribe-title {
-  font-family: 'geologica';
-  font-size: 12px;
-  color: gray;
-  margin-bottom: 10px;
-  text-transform: uppercase;
+  margin: 0 0;
 }
 
 .subscribe-text {
   font-family: 'geologica';
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 400;
   color: black;
   margin-bottom: 20px;
@@ -742,8 +735,8 @@ body.light .balance-nick {
   color: white;
   font-family: 'geologica';
   font-size: 14px;
-  font-weight: 500;
-  padding: 10px 20px;
+  font-weight: 400;
+  padding: 12px 35px;
   border-radius: 100px;
   text-decoration: none;
 }

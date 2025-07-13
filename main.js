@@ -24,12 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
   splash.style.display = 'flex';
   mainApp.style.display = 'none';
 
-  // --- Splash анимация
   if (fill) {
     setTimeout(() => { fill.style.width = '100%'; }, 200);
   }
 
-  // --- Навигация
   function moveBgToActive(index) {
     const btn = navBtns[index];
     const menuRect = navMenu.getBoundingClientRect();
@@ -99,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- Профиль
   const nicknameEl = document.querySelector('.nickname');
   const balanceEl = document.querySelector('.balance-nick');
   const avatarEl = document.querySelector('.avatar');
@@ -120,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- Настройки
   const settingItems = document.querySelectorAll('.setting-item');
   const balanceOverlay = document.getElementById('balance-overlay');
   const themeOverlay = document.getElementById('theme-overlay');
@@ -164,7 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Таймер дропа
   function startDropTimer(hours, minutes) {
     const display = document.getElementById('drop-countdown');
     if (!display) return;
@@ -184,40 +179,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   startDropTimer(3, 59);
 
-  // --- Проверка подписки и старт
+  // --- Упрощённый режим (оверлей без проверки подписки)
   const startBtn = document.querySelector('.start-btn');
   const subscribeOverlay = document.getElementById('subscribe-overlay');
 
-  async function checkSubscription(userId) {
-    try {
-      const response = await fetch('https://45c7f00776be.ngrok-free.app/check-subscription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-      });
-
-      const data = await response.json();
-      return data.subscribed;
-    } catch (err) {
-      console.error('Ошибка запроса:', err);
-      return false;
-    }
-  }
-
   if (startBtn) {
-    startBtn.addEventListener('click', async (e) => {
+    startBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      const userId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
-      if (!userId) return alert('Ошибка: пользователь не найден');
-
-      const isSubscribed = await checkSubscription(userId);
-
-      if (!isSubscribed) {
-        subscribeOverlay?.classList.add('show');
-      } else {
-        console.log('✅ Подписка подтверждена — запускаем дроп');
-        // TODO: сюда вставь логику выпадения карточки
-      }
+      subscribeOverlay?.classList.add('show');
     });
   }
 
