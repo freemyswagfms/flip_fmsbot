@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function checkSubscription(userId) {
     try {
-      const response = await fetch('https://your-server.com/check-subscription', {
+      const response = await fetch('https://020dc33ac4c1.ngrok-free.app/check-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         subscribeOverlay?.classList.add('show');
       } else {
         console.log("Запуск дропа!");
-        // Запуск механики дропа
+        // 💥 Запуск механики дропа — тут вставь свою функцию
       }
     });
   }

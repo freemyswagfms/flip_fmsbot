@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
@@ -6,8 +7,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const BOT_TOKEN = 'YOUR_BOT_TOKEN';
-const CHANNEL_USERNAME = '@yourchannel'; // без t.me/ — именно username канала
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const CHANNEL_USERNAME = process.env.CHANNEL_USERNAME;
 
 app.post('/check-subscription', async (req, res) => {
   const { userId } = req.body;
