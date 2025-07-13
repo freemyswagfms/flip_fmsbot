@@ -33,7 +33,10 @@
   font-style: normal;
 }
 
+
+
 body {
+  overflow-x: hidden;
   overscroll-behavior-y: contain;
   box-sizing: border-box;
   background-color: #0A0A0A;
@@ -99,13 +102,16 @@ body {
 }
   
 .carousel-images {
+  margin-bottom: 20px;
   width: 100%;
   display: flex;
-  transition: transform 0.5s cubic-bezier(.68,-0.55,.27,1.55);
-  will-change: transform;
+  justify-content: center; /* ⬅️ Добавь это */
   align-items: center;
   gap: 15px;
+  transition: transform 0.5s cubic-bezier(.68,-0.55,.27,1.55);
+  will-change: transform;
 }
+
   
 .carousel-img {
   min-width: 140px;
@@ -118,12 +124,15 @@ body {
 }
 
 .start-btn {
+  display: block;
+  margin: 15px auto 0 auto;
+  margin-bottom: 50px;
   font-family: 'geologica';
   justify-content: center;
   margin-top: 15px;
   font-size: 16px;
   font-weight: 400;
-  background-color: #FBFF12;
+  background-color: #9EFF44;
   border-radius: 100px;
   border: none;
   color: black;
@@ -179,7 +188,7 @@ body {
   padding-bottom: 10px;
   font-weight: 400;
   color: black;
-  background: #42EAD4;
+  background: #9EFF44;
   border: none;
   border-radius: 100px;
   cursor: pointer;
@@ -370,8 +379,8 @@ body {
 }
 
 .page {
-  min-height: calc(100vh - 70px); /* учитываем нижнее меню */
-  padding: 20px 0px 20px; /* отступы сверху/сбоку и отступ под меню */
+  min-height: calc(100vh - 70px); 
+  padding: 20px 0px 20px; 
   box-sizing: border-box;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch; /* для iOS bounce */
@@ -655,4 +664,27 @@ body.light .balance-nick, {
   text-align: center;
   margin-top: -15px;
   margin-bottom: 30px;
+}
+
+.drop-slot {
+  width: 160px;
+  height: 160px;
+  border-radius: 12px;
+  background-color: #1A1A1A;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.carousel-images,
+.card-wrapper {
+  display: flex;
+  overflow-x: auto;
+  gap: 16px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.carousel-images > *,
+.card-wrapper > * {
+  flex-shrink: 0;
 }
