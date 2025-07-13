@@ -710,17 +710,19 @@ body.light .balance-nick {
 }
 
 .subscribe-inner {
-  background: #D9D9D9;
-  border-radius: 20px;
-  padding: 15px 10px 28px; /* top, left/right, bottom */
+  margin: 0;
+  opacity: 0.8;
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 15px 10px 20px; /* top, left/right, bottom */
   width: calc(100% - 40px);
   text-align: center;
   box-sizing: border-box;
 }
 
-
-
 .subscribe-text {
+  margin: 0;
+  margin-bottom: 25px;
   font-family: 'geologica';
   font-size: 18px;
   font-weight: 400;
