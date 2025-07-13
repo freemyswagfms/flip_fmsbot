@@ -33,10 +33,11 @@
   font-style: normal;
 }
 
-
-
 body {
+  max-width: 100%;
   overflow-x: hidden;
+  overscroll-behavior-x: none;
+  touch-action: pan-y; /* Запрещаем горизонтальный свайп, разрешаем вертикальный */
   overflow-y: auto;
   overscroll-behavior: none;
   box-sizing: border-box;
@@ -46,7 +47,8 @@ body {
 }
 
 #main-app {
-  padding: calc(40px + env(safe-area-inset-top)) 20px calc(70px + env(safe-area-inset-bottom));
+  padding-top: calc(40px + env(safe-area-inset-top));
+  padding-bottom: calc(70px + env(safe-area-inset-bottom));
   min-height: 100vh;
   box-sizing: border-box;
 }
@@ -105,14 +107,11 @@ body {
 .carousel-images {
   display: flex;
   gap: 15px;
-  align-items: center;
-  pointer-events: none;
-  user-select: none;
-  touch-action: none;
   flex-shrink: 0;
+  user-select: none;
+  pointer-events: none;
 }
 
-  
 .carousel-img {
   min-width: 140px;
   height: 140px;
@@ -125,14 +124,11 @@ body {
 
 .carousel-wrapper {
   position: relative;
-  width: 100vw;
+  width: calc(100% + 40px); /* компенсирует padding .page */
   margin-left: -20px;
   margin-right: -20px;
   overflow: hidden;
-  display: flex;
-  justify-content: center;
 }
-
 
 .start-btn {
   display: block;
@@ -234,7 +230,6 @@ body {
   opacity: 0.5;
   font-weight: 200;
 }
-
 
 .task-btn {
   font-family: 'geologica';
@@ -375,6 +370,7 @@ body {
 .home-icon {
   z-index: 1000;
 }
+
 .nav-bg {
   top: 8px;
   position: absolute;
@@ -391,10 +387,10 @@ body {
 
 .page {
   min-height: calc(100vh - 70px); 
-  padding: 20px 0px 20px; 
+  padding: 20px 20px 20px;  /* ← горизонтальные паддинги теперь тут */
   box-sizing: border-box;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch; /* для iOS bounce */
+  -webkit-overflow-scrolling: touch;
 }
 
 .title-collection {
@@ -678,14 +674,15 @@ body.light .balance-nick, {
 }
 
 .drop-slot {
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-drag: none;
+  flex-shrink: 0;
+  flex-grow: 0;
   width: 160px;
   height: 160px;
   border-radius: 12px;
   background-color: #1A1A1A;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  flex-shrink: 0;
+  pointer-events: none;
+  user-select: none;
 }
+
 
