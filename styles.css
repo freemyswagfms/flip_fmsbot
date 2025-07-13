@@ -210,17 +210,17 @@ body {
   color: black;
   font-size: 13px;
   font-weight: 200;
-  padding: 10px; /* 🔧 Было 16px — стало 10px, как в макете */
+  padding: 10px 10px 10px 20px;
   margin-bottom: 10px;
   box-sizing: border-box;
-  min-height: auto; /* нет нужды в 78px — всё считается через padding */
 }
+
 
 .subs {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 6px; /* немного воздуха между sub-1 и sub-2 */
+  gap: 6px;
 }
 
 .sub-1 {
@@ -711,7 +711,7 @@ body.light .balance-nick {
 
 .subscribe-inner {
   margin: 0;
-  opacity: 0.5;
+  opacity: 0.7;
   background: #FFFFFF;
   border-radius: 24px;
   padding: 15px 10px 20px; /* top, left/right, bottom */
