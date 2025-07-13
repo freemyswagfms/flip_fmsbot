@@ -7,8 +7,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const BOT_TOKEN = '7810652179:AAGJyyA6I6FA2IgY1aTJy8SF2BnIENj6XKI';
-const CHANNEL_USERNAME = '@freemyswa9';
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const CHANNEL_USERNAME = process.env.CHANNEL_USERNAME;
+
 
 app.post('/check-subscription', async (req, res) => {
   const { userId } = req.body;
