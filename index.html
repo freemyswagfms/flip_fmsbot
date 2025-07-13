@@ -1,218 +1,208 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-    <meta name="theme-color" content="#0A0A0A">
-    <title>Flip</title>
-    <link rel="stylesheet" href="styles.css"/>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script defer src="main.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#0A0A0A" />
+  <title>Flip</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script defer src="main.js"></script>
 </head>
+
 <body>
-    <!-- экран загрузки -->
-    <div id="splash">
-        <img src="/assets/image/flip-logo.svg" class="splash-logo"/>
-        <div class="progress-bar-bg">
-            <div class="progress-bar-fill"></div>
-        </div>
+  <!-- Экран загрузки -->
+  <div id="splash">
+    <img src="/assets/image/flip-logo.svg" class="splash-logo" />
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill"></div>
     </div>
-
-    <div id="main-app">
-        <!-- Нижнее меню -->
-        <nav class="nav-menu">
-            <div class="nav-bg"></div>
-            <a href="#" class="nav-btn home-icon active" data-page="home">
-                <img src="assets/icons/home.svg">
-            </a>
-            <a href="#" class="nav-btn shop-icon" data-page="shop">
-                <img src="assets/icons/shop.svg">
-            </a>
-            <a href="#" class="nav-btn collection-icon" data-page="collection">
-                <img src="assets/icons/collection.svg">
-            </a>
-            <a href="#" class="nav-btn profile-icon" data-page="profile">
-                <img src="assets/icons/profile-2.svg">
-            </a>
-        </nav>
-
-        <!-- Главная страница -->
-        <div class="page active" id="home">
-  <p class="title">дроп</p>
-  <p class="drop-timer">следующий дроп через: <span id="drop-countdown">3ч 59м</span></p>
-
-  <div class="carousel-wrapper">
-  <div class="carousel-images">
-    <div class="drop-slot"></div>
-    <div class="drop-slot"></div>
-    <div class="drop-slot"></div>
   </div>
-</div>
-  <button class="start-btn">старт</button>
-            <p class="title">Новинки</p>
-            <div class="card-wrapper">
-                <div class="main-card">
-                    <div class="card-footer">
-                        <button class="shop-btn">в магазин</button>
-                    </div>
-                </div>
-            </div>
-            <p class="title">Задания</p>
-            <div class="tasks">
-                <div class="task">
-                    <div class="subs">
-                        <div class="sub-1">Подпишись на наш канал</div>
-                        <div class="sub-2">+1 карточка</div>
-                    </div>
-                    <button class="task-btn">Выполнить</button>
-                </div>
-                <div class="task">
-                    <div class="subs">
-                        <div class="sub-1">Подпишись на наш канал</div>
-                        <div class="sub-2">+1 карточка</div>
-                    </div>
-                    <button class="task-btn">Выполнить</button>
-                </div>
-                <div class="task">
-                    <div class="subs">
-                        <div class="sub-1">Подпишись на наш канал</div>
-                        <div class="sub-2">+1 карточка</div>
-                    </div>
-                    <button class="task-btn">Выполнить</button>
-                </div>
-            </div>
-        </div>
 
-        <!-- Магазин -->
-        <div class="page" id="shop">
-            <div class="title-shop">
-                <p class="title" id="title-shop">Магазин</p>
-                <p class="title" id="title-top">Топ пользователей</p>
-            </div>
-            <div class="cards">
-                <div class="card">
-                    <div class="square"></div>
-                    <button class="buy-btn">Купить</button>
-                </div>
-                <div class="card">
-                    <div class="square"></div>
-                    <button class="buy-btn">Купить</button>
-                </div>
-            </div>
-            <p class="title">Новая коллекция</p>
-            <div class="clc">
-                <div class="clc-card"></div>
-                <button class="more-btn">Подробнее</button>
-            </div>
-            <p class="title">Пополнение баланса</p>
-            <div class="tasks">
-                <div class="task">
-                    <div class="subs">
-                        <div class="sub-1">100 рублей</div>
-                        <div class="sub-2">Оплата картой или СБП</div>
-                    </div>
-                    <button class="task-btn">Пополнить</button>
-                </div>
-                <div class="task">
-                    <div class="subs">
-                        <div class="sub-1">100 рублей</div>
-                        <div class="sub-2">Оплата картой или СБП</div>
-                    </div>
-                    <button class="task-btn">Пополнить</button>
-                </div>
-                <div class="task">
-                    <div class="subs">
-                        <div class="sub-1">100 рублей</div>
-                        <div class="sub-2">Оплата картой или СБП</div>
-                    </div>
-                    <button class="task-btn">Пополнить</button>
-                </div>
-            </div>
-        </div>
+  <div id="main-app">
+    <!-- Нижнее меню -->
+    <nav class="nav-menu">
+      <div class="nav-bg"></div>
+      <a href="#" class="nav-btn home-icon active" data-page="home"><img src="assets/icons/home.svg"></a>
+      <a href="#" class="nav-btn shop-icon" data-page="shop"><img src="assets/icons/shop.svg"></a>
+      <a href="#" class="nav-btn collection-icon" data-page="collection"><img src="assets/icons/collection.svg"></a>
+      <a href="#" class="nav-btn profile-icon" data-page="profile"><img src="assets/icons/profile-2.svg"></a>
+    </nav>
 
-        <!-- Коллекция -->
-        <div class="page" id="collection">
-            <p class="title title-collection" id="title-collection">МОЯ КОЛЛЕКЦИЯ</p>
-            <div class="collection-divider"></div>
-            <div class="collection-tabs">
-                <button class="tab active">ВСЕ</button>
-                <button class="tab">АЛЬБОМЫ</button>
-                <button class="tab">СИНГЛЫ</button>
-                <button class="tab">АРТИСТЫ</button>
-            </div>
-        </div>
-
-        <!-- Профиль -->
-        <div class="page" id="profile">
-            <div class="title-profile">
-                <p class="title" id="title-profile">МОЙ ПРОФИЛЬ</p>
-                <div class="account">
-                    <div class="avatar"></div>
-                    <div class="inf-profile">
-                        <p class="nickname">Имя</p>
-                        <p class="balance-nick">Баланс: 0 руб.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="settings">
-                <p class="settings-title">НАСТРОЙКИ</p>
-                <a href="#" class="setting-item">
-                    <img src="assets/icons/balance-icon.svg" alt="" class="setting-icon">
-                    <span>Пополнение баланса</span>
-                </a>
-                <a href="#" class="setting-item">
-                    <img src="assets/icons/theme-icon.svg" alt="" class="setting-icon">
-                    <span>Внешний вид</span>
-                </a>
-                <a href="#" class="setting-item">
-                    <img src="assets/icons/svyaz-icon.svg" alt="" class="setting-icon">
-                    <span>Связь с нами</span>
-                </a>
-                <a href="#" class="setting-item">
-                    <img src="assets/icons/contact-icon.svg" alt="" class="setting-icon">
-                    <span>Наши соцсети</span>
-                </a>
-            </div>
-        </div>
-
-        <!-- Оверлей пополнения баланса -->
-        <div class="overlay" id="balance-overlay">
-            <div class="overlay-inner">
-                <p class="title">ПОПОЛНЕНИЕ БАЛАНСА</p>
-                <div class="tasks">
-                    <div class="task">
-                        <div class="subs">
-                            <div class="sub-1">100 рублей</div>
-                            <div class="sub-2">Оплата картой или СБП</div>
-                        </div>
-                        <button class="task-btn">Пополнить</button>
-                    </div>
-                    <div class="task">
-                        <div class="subs">
-                            <div class="sub-1">200 рублей</div>
-                            <div class="sub-2">Оплата картой или СБП</div>
-                        </div>
-                        <button class="task-btn">Пополнить</button>
-                    </div>
-                    <div class="task">
-                        <div class="subs">
-                            <div class="sub-1">300 рублей</div>
-                            <div class="sub-2">Оплата картой или СБП</div>
-                        </div>
-                        <button class="task-btn">Пополнить</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Страница: Главная -->
+    <div class="page active" id="home">
+      <div class="drop-section">
+        <p class="title drop-title">ДРОП</p>
+        <p class="drop-timer">следующий дроп через: 3ч 59м</p>
     </div>
-        <!-- Оверлей внешнего вида -->
-        <div class="overlay" id="theme-overlay">
-            <div class="overlay-inner theme-inner">
-                <p class="title theme-title">ВНЕШНИЙ ВИД</p>
-                <button class="theme-toggle-btn">ВКЛЮЧИТЬ</button>
-            </div>
+
+      <div class="carousel-wrapper">
+        <div class="carousel-images">
+          <div class="drop-slot"></div>
+          <div class="drop-slot"></div>
+          <div class="drop-slot"></div>
         </div>
+      </div>
 
+      <button class="start-btn">старт</button>
 
+      <p class="title">Новинки</p>
+      <div class="card-wrapper">
+        <div class="main-card">
+          <div class="card-footer">
+            <button class="shop-btn">в магазин</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="title">Задания</p>
+      <div class="tasks">
+        <!-- Повторяющийся блок заданий (можно в JS шаблонизировать) -->
+        <div class="task">
+          <div class="subs">
+            <div class="sub-1">Подпишись на наш канал</div>
+            <div class="sub-2">+1 карточка</div>
+          </div>
+          <button class="task-btn">Выполнить</button>
+        </div>
+        <div class="task">
+          <div class="subs">
+            <div class="sub-1">Подпишись на наш канал</div>
+            <div class="sub-2">+1 карточка</div>
+          </div>
+          <button class="task-btn">Выполнить</button>
+        </div>
+        <div class="task">
+          <div class="subs">
+            <div class="sub-1">Подпишись на наш канал</div>
+            <div class="sub-2">+1 карточка</div>
+          </div>
+          <button class="task-btn">Выполнить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Страница: Магазин -->
+    <div class="page" id="shop">
+      <div class="title-shop">
+        <p class="title" id="title-shop">Магазин</p>
+        <p class="title" id="title-top">Топ пользователей</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="square"></div>
+          <button class="buy-btn">Купить</button>
+        </div>
+        <div class="card">
+          <div class="square"></div>
+          <button class="buy-btn">Купить</button>
+        </div>
+      </div>
+
+      <p class="title">Новая коллекция</p>
+      <div class="clc">
+        <div class="clc-card"></div>
+        <button class="more-btn">Подробнее</button>
+      </div>
+
+      <p class="title">Пополнение баланса</p>
+      <div class="tasks">
+        <div class="task">
+          <div class="subs">
+            <div class="sub-1">100 рублей</div>
+            <div class="sub-2">Оплата картой или СБП</div>
+          </div>
+          <button class="task-btn">Пополнить</button>
+        </div>
+        <div class="task">
+          <div class="subs">
+            <div class="sub-1">100 рублей</div>
+            <div class="sub-2">Оплата картой или СБП</div>
+          </div>
+          <button class="task-btn">Пополнить</button>
+        </div>
+        <div class="task">
+          <div class="subs">
+            <div class="sub-1">100 рублей</div>
+            <div class="sub-2">Оплата картой или СБП</div>
+          </div>
+          <button class="task-btn">Пополнить</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Страница: Коллекция -->
+    <div class="page" id="collection">
+      <p class="title title-collection" id="title-collection">МОЯ КОЛЛЕКЦИЯ</p>
+      <div class="collection-divider"></div>
+      <div class="collection-tabs">
+        <button class="tab active">ВСЕ</button>
+        <button class="tab">АЛЬБОМЫ</button>
+        <button class="tab">СИНГЛЫ</button>
+        <button class="tab">АРТИСТЫ</button>
+      </div>
+    </div>
+
+    <!-- Страница: Профиль -->
+    <div class="page" id="profile">
+      <div class="title-profile">
+        <p class="title" id="title-profile">МОЙ ПРОФИЛЬ</p>
+        <div class="account">
+          <div class="avatar"></div>
+          <div class="inf-profile">
+            <p class="nickname">Имя</p>
+            <p class="balance-nick">Баланс: 0 руб.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings">
+        <p class="settings-title">НАСТРОЙКИ</p>
+        <a href="#" class="setting-item"><img src="assets/icons/balance-icon.svg" class="setting-icon"><span>Пополнение баланса</span></a>
+        <a href="#" class="setting-item"><img src="assets/icons/theme-icon.svg" class="setting-icon"><span>Внешний вид</span></a>
+        <a href="#" class="setting-item"><img src="assets/icons/svyaz-icon.svg" class="setting-icon"><span>Связь с нами</span></a>
+        <a href="#" class="setting-item"><img src="assets/icons/contact-icon.svg" class="setting-icon"><span>Наши соцсети</span></a>
+      </div>
+    </div>
+
+    <!-- Оверлей: пополнение баланса -->
+    <div class="overlay" id="balance-overlay">
+      <div class="overlay-inner">
+        <p class="title">ПОПОЛНЕНИЕ БАЛАНСА</p>
+        <div class="tasks">
+          <div class="task">
+            <div class="subs">
+              <div class="sub-1">100 рублей</div>
+              <div class="sub-2">Оплата картой или СБП</div>
+            </div>
+            <button class="task-btn">Пополнить</button>
+          </div>
+          <div class="task">
+            <div class="subs">
+              <div class="sub-1">200 рублей</div>
+              <div class="sub-2">Оплата картой или СБП</div>
+            </div>
+            <button class="task-btn">Пополнить</button>
+          </div>
+          <div class="task">
+            <div class="subs">
+              <div class="sub-1">300 рублей</div>
+              <div class="sub-2">Оплата картой или СБП</div>
+            </div>
+            <button class="task-btn">Пополнить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Оверлей: внешний вид -->
+  <div class="overlay" id="theme-overlay">
+    <div class="overlay-inner theme-inner">
+      <p class="title theme-title">ВНЕШНИЙ ВИД</p>
+      <button class="theme-toggle-btn">ВКЛЮЧИТЬ</button>
+    </div>
+  </div>
 </body>
 </html>
