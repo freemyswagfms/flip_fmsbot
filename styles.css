@@ -675,16 +675,3 @@ body.light .balance-nick, {
   flex-shrink: 0;
 }
 
-.carousel-images,
-.card-wrapper {
-  display: flex;
-  overflow-x: auto;
-  gap: 16px;
-  padding: 0 16px;
-  box-sizing: border-box;
-}
-
-.carousel-images > *,
-.card-wrapper > * {
-  flex-shrink: 0;
-}
