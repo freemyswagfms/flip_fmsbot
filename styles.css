@@ -689,3 +689,61 @@ body.light .balance-nick {
   pointer-events: none;
   user-select: none;
 }
+
+#subscribe-overlay {
+  transition: opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#subscribe-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.subscribe-inner {
+  background: #D9D9D9;
+  border-radius: 20px;
+  padding: 25px 20px;
+  width: 90%;
+  max-width: 320px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.subscribe-title {
+  font-family: 'geologica';
+  font-size: 12px;
+  color: gray;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.subscribe-text {
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 400;
+  color: black;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.subscribe-btn {
+  display: inline-block;
+  background: #317BFF;
+  color: white;
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 100px;
+  text-decoration: none;
+}
