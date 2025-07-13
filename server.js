@@ -7,8 +7,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const CHANNEL_USERNAME = process.env.CHANNEL_USERNAME;
+const BOT_TOKEN = '7810652179:AAGJyyA6I6FA2IgY1aTJy8SF2BnIENj6XKI';
+const CHANNEL_USERNAME = '@freemyswa9';
 
 app.post('/check-subscription', async (req, res) => {
   const { userId } = req.body;
@@ -24,8 +24,6 @@ app.post('/check-subscription', async (req, res) => {
     });
 
     const status = response.data.result.status;
-
-    // Подписан, если он member, administrator или creator
     const isSubscribed = ['member', 'administrator', 'creator'].includes(status);
     res.json({ subscribed: isSubscribed });
   } catch (error) {
@@ -38,3 +36,4 @@ const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Сервер запущен на http://localhost:${PORT}`);
 });
+
