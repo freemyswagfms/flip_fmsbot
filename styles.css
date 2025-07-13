@@ -87,6 +87,7 @@ body {
 }
 
 .title {
+  margin-bottom: 30px;
   font-family: 'cygre';
   color: white;
   font-size: 24px;
@@ -94,6 +95,10 @@ body {
   letter-spacing: 1px;
   text-align: center;
   text-transform: uppercase;
+}
+
+.drop-title {
+  margin-bottom: 15px;
 }
 
 .carousel {
@@ -159,12 +164,14 @@ body {
   width: 100%;
   height: 200px;
   background: #ffffff;
-  border-radius: 10px;
+  border-radius: 10px; 
   position: relative;
   box-shadow: 0 6px 32px rgba(0,0,0,0.13);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  overflow: hidden;
+  margin-bottom: 50px;
 }
 
 .card-footer {
@@ -174,9 +181,6 @@ body {
   width: 150px;
   height: 50px;
   background: #0A0A0A;
-  border-radius: 0 0 100% 0;
-  border-bottom-left-radius: 0px;
-  border-bottom-right-radius: 0px;
   border-top-left-radius: 25px;
   border-top-right-radius: 25px;
   display: flex;
@@ -184,7 +188,7 @@ body {
   align-items: flex-start;
   z-index: 2;
 }
-  
+ 
 .shop-btn {
   font-family: 'geologica';
   font-size: 16px;
@@ -364,9 +368,7 @@ body {
   height: 50px;
   border-radius: 50%;
 }
-.nav-menu a.active {
 
-}
 .home-icon {
   z-index: 1000;
 }
@@ -387,7 +389,7 @@ body {
 
 .page {
   min-height: calc(100vh - 70px); 
-  padding: 20px 20px 20px;  /* ← горизонтальные паддинги теперь тут */
+  padding: 20px 20px 20px;
   box-sizing: border-box;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -564,15 +566,6 @@ body {
   box-sizing: border-box;
 }
 
-
-.overlay-inner {
-  width: 100%;
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 0 20px;
-  box-sizing: border-box;
-}
-
 .overlay.show {
   opacity: 1;
   pointer-events: all;
@@ -659,8 +652,8 @@ body.light .card-footer {
   background: #D9D9D9;
 }
 
-body.light .balance-nick, {
-  color: #048876
+body.light .balance-nick {
+  color: #048876;
 }
 
 .drop-timer {
@@ -684,5 +677,3 @@ body.light .balance-nick, {
   pointer-events: none;
   user-select: none;
 }
-
-
