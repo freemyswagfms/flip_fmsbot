@@ -713,12 +713,11 @@ body.light .balance-nick {
   background: #D9D9D9;
   border-radius: 20px;
   padding: 25px 20px;
-  width: 100%;
-  max-width: 320px;
+  width: calc(100% - 40px); /* 100% минус по 20px с каждой стороны */
   text-align: center;
   box-sizing: border-box;
-  margin: 0 0;
 }
+
 
 .subscribe-text {
   font-family: 'geologica';
