@@ -37,7 +37,8 @@
 
 body {
   overflow-x: hidden;
-  overscroll-behavior-y: contain;
+  overflow-y: auto;
+  overscroll-behavior: none;
   box-sizing: border-box;
   background-color: #0A0A0A;
   margin: 0;
@@ -102,14 +103,13 @@ body {
 }
   
 .carousel-images {
-  margin-bottom: 20px;
-  width: 100%;
   display: flex;
-  justify-content: center; /* ⬅️ Добавь это */
-  align-items: center;
   gap: 15px;
-  transition: transform 0.5s cubic-bezier(.68,-0.55,.27,1.55);
-  will-change: transform;
+  align-items: center;
+  pointer-events: none;
+  user-select: none;
+  touch-action: none;
+  flex-shrink: 0;
 }
 
   
@@ -122,6 +122,17 @@ body {
   border-radius: 10px;
   display: block;
 }
+
+.carousel-wrapper {
+  position: relative;
+  width: 100vw;
+  margin-left: -20px;
+  margin-right: -20px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
 
 .start-btn {
   display: block;
@@ -667,6 +678,9 @@ body.light .balance-nick, {
 }
 
 .drop-slot {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
   width: 160px;
   height: 160px;
   border-radius: 12px;
