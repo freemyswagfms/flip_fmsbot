@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function checkSubscription(userId) {
     try {
-      const response = await fetch('https://45c7f0077b0e.ngrok-free.app/check-subscription', {
+      const response = await fetch('https://45c7f00776be.ngrok-free.app/check-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
