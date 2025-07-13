@@ -4,11 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     Telegram.WebApp.expand();
   }
 
+  // --- Тема
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'light') {
     document.body.classList.add('light');
   }
 
+  // --- DOM
   const splash = document.getElementById('splash');
   const mainApp = document.getElementById('main-app');
   const navMenu = document.querySelector('.nav-menu');
@@ -17,16 +19,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const pages = document.querySelectorAll('.page');
   const fill = document.querySelector('.progress-bar-fill');
   const tabs = document.querySelectorAll('.tab');
+  const user = window.Telegram.WebApp.initDataUnsafe?.user;
 
   splash.style.display = 'flex';
   mainApp.style.display = 'none';
 
+  // --- Splash анимация
   if (fill) {
-    setTimeout(() => {
-      fill.style.width = '100%';
-    }, 200);
+    setTimeout(() => { fill.style.width = '100%'; }, 200);
   }
 
+  // --- Навигация
   function moveBgToActive(index) {
     const btn = navBtns[index];
     const menuRect = navMenu.getBoundingClientRect();
@@ -41,8 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function adjustTopPadding() {
     const isFullscreen = window.innerHeight === screen.height;
-    const paddingTop = isFullscreen ? 60 : 1;
-    mainApp.style.paddingTop = paddingTop + 'px';
+    mainApp.style.paddingTop = (isFullscreen ? 60 : 1) + 'px';
   }
 
   setTimeout(() => {
@@ -71,13 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
   navBtns.forEach((btn, idx) => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
-
       navBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-
-      requestAnimationFrame(() => {
-        setTimeout(() => moveBgToActive(idx), 10);
-      });
+      requestAnimationFrame(() => setTimeout(() => moveBgToActive(idx), 10));
 
       const targetPage = btn.getAttribute('data-page');
       pages.forEach(page => {
@@ -101,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  const user = window.Telegram.WebApp.initDataUnsafe?.user;
+  // --- Профиль
   const nicknameEl = document.querySelector('.nickname');
   const balanceEl = document.querySelector('.balance-nick');
   const avatarEl = document.querySelector('.avatar');
@@ -110,7 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (user) {
       nicknameEl.textContent = user.username || `id${user.id}`;
       balanceEl.textContent = 'Баланс: 0 руб.';
-
       if (user.username) {
         avatarEl.style.backgroundImage = `url('https://t.me/i/userpic/320/${user.username}.jpg')`;
       } else {
@@ -123,6 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- Настройки
   const settingItems = document.querySelectorAll('.setting-item');
   const balanceOverlay = document.getElementById('balance-overlay');
   const themeOverlay = document.getElementById('theme-overlay');
@@ -130,7 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (settingItems.length) {
     settingItems.forEach((item) => {
       const text = item.textContent.trim();
-
       if (text.includes('Пополнение баланса') && balanceOverlay) {
         item.addEventListener('click', (e) => {
           e.preventDefault();
@@ -138,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
           balanceOverlay.scrollTo(0, 0);
         });
       }
-
       if (text.includes('Внешний вид') && themeOverlay) {
         item.addEventListener('click', (e) => {
           e.preventDefault();
@@ -149,45 +145,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if (balanceOverlay) {
-    balanceOverlay.addEventListener('click', (e) => {
-      if (e.target === balanceOverlay) {
-        balanceOverlay.classList.remove('show');
-      }
-    });
-  }
-
-  if (themeOverlay) {
-    themeOverlay.addEventListener('click', (e) => {
-      if (e.target === themeOverlay) {
-        themeOverlay.classList.remove('show');
-      }
-    });
-  }
+  [balanceOverlay, themeOverlay].forEach(overlay => {
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.classList.remove('show');
+      });
+    }
+  });
 
   const themeBtn = document.querySelector('.theme-toggle-btn');
-
   if (themeBtn) {
     themeBtn.textContent = document.body.classList.contains('light') ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
-
     themeBtn.addEventListener('click', () => {
       document.body.classList.toggle('light');
-
-      if (document.body.classList.contains('light')) {
-        themeBtn.textContent = 'ВЫКЛЮЧИТЬ';
-        localStorage.setItem('theme', 'light');
-      } else {
-        themeBtn.textContent = 'ВКЛЮЧИТЬ';
-        localStorage.setItem('theme', 'dark');
-      }
+      const isLight = document.body.classList.contains('light');
+      themeBtn.textContent = isLight ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
     });
   }
 
-  // Таймер дропа
+  // --- Таймер дропа
   function startDropTimer(hours, minutes) {
     const display = document.getElementById('drop-countdown');
     if (!display) return;
-
     let totalSeconds = hours * 3600 + minutes * 60;
 
     function updateTimer() {
@@ -204,13 +184,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   startDropTimer(3, 59);
 
-  // ============ 👇 ОБРАБОТКА КНОПКИ СТАРТ 👇 ============
+  // --- Проверка подписки и старт
   const startBtn = document.querySelector('.start-btn');
   const subscribeOverlay = document.getElementById('subscribe-overlay');
 
   async function checkSubscription(userId) {
     try {
-      const response = await fetch('https://509c8868e71d.ngrok-free.app/check-subscription', {
+      const response = await fetch('https://45c7f0077b0e.ngrok-free.app/check-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
@@ -227,7 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (startBtn) {
     startBtn.addEventListener('click', async (e) => {
       e.preventDefault();
-
       const userId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
       if (!userId) return alert('Ошибка: пользователь не найден');
 
@@ -236,8 +215,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!isSubscribed) {
         subscribeOverlay?.classList.add('show');
       } else {
-        console.log("Запуск дропа!");
-        // 💥 Запуск механики дропа — тут вставь свою функцию
+        console.log('✅ Подписка подтверждена — запускаем дроп');
+        // TODO: сюда вставь логику выпадения карточки
       }
     });
   }
