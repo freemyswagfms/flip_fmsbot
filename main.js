@@ -229,3 +229,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+const overlay = document.getElementById('task-overlay');
+const channelName = document.getElementById('channel-name');
+const goSubscribe = document.getElementById('go-subscribe');
+
+const tasks = [
+  {
+    name: 'Free My Leaks',
+    url: 'https://t.me/freemyleaks'
+  },
+  {
+    name: 'Free My Memes',
+    url: 'https://t.me/freemyswagmemes'
+  },
+  {
+    name: 'PBC',
+    url: 'https://t.me/pbccarter'
+  }
+];
+
+// Добавь этим кнопкам классы .task-btn и data-index от 0 до 2
+
+document.querySelectorAll('.task-btn').forEach((btn, index) => {
+  btn.addEventListener('click', () => {
+    const task = tasks[index];
+    channelName.textContent = task.name;
+    goSubscribe.href = task.url;
+    overlay.classList.add('show');
+  });
+});
+
+overlay.addEventListener('click', (e) => {
+  if (e.target === overlay) overlay.classList.remove('show');
+});

@@ -740,3 +740,52 @@ body.light .balance-nick {
   border-radius: 100px;
   text-decoration: none;
 }
+
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay.show {
+  display: flex;
+}
+
+.task-popup {
+  background: #0f0f0f;
+  color: white;
+  padding: 20px 20px 28px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 350px;
+  font-family: 'geologica';
+  text-align: center;
+}
+
+.task-label {
+  font-weight: 800;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.task-text {
+  font-size: 14px;
+  font-weight: 400;
+  margin-bottom: 18px;
+  line-height: 1.4;
+}
+
+.task-action {
+  padding: 10px 24px;
+  background: #317BFF;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+}
