@@ -137,21 +137,16 @@ body {
 
 .start-btn {
   display: block;
-  margin: 15px auto 0 auto;
-  margin-bottom: 50px;
+  margin: 15px auto 50px auto;
   font-family: 'geologica';
   justify-content: center;
-  margin-top: 15px;
   font-size: 16px;
   font-weight: 400;
   background-color: #9EFF44;
   border-radius: 100px;
   border: none;
   color: black;
-  padding-left: 25px;
-  padding-right: 25px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding: 10px 25px;
 }
 
 .card-wrapper {
@@ -171,7 +166,7 @@ body {
   flex-direction: column;
   justify-content: flex-end;
   overflow: hidden;
-  margin-bottom: 50px;
+  margin-bottom: 20px;
 }
 
 .card-footer {
@@ -208,42 +203,64 @@ body {
 
 .task {
   box-sizing: border-box;
-  width: 100%;         
+  width: 100%;
   display: flex;
   justify-content: space-between;
-  border-radius: 10px;
+  align-items: center;
+  border-radius: 20px;
   background-color: #ffffff;
   color: black;
   font-size: 13px;
   font-weight: 200;
-  padding-left: 15px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  padding-right: 15px;
+  padding: 16px 16px;
   margin-bottom: 10px;
-  }
+  position: relative;
+  min-height: 78px;
+}
+
+.subs {
+  display: flex;
+  flex-direction: column;
+}
 
 .sub-1 {
   font-family: 'geologica';
   color: black;
+  font-weight: 500;
+  font-size: 16px;
+  margin-bottom: 0px;
 }
   
 .sub-2 {
   font-family: 'geologica';
   color: black;
-  opacity: 0.5;
-  font-weight: 200;
+  opacity: 0.7;
+  font-weight: 400;
+  font-size: 16px;
+  margin-top: auto;
 }
 
 .task-btn {
-  font-family: 'geologica';
-  font-size: 12px;
-  font-weight: 500;
-  color: #ffffff;
-  background: linear-gradient(90deg, #FF216E 0%, #991442 100%);
+  width: 70px;
+  height: 50px;
+  border-radius: 16px;
   border: none;
-  border-radius: 8px;
-  padding: 10px 25px;
+  background: #317BFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  right: 10px;
+  margin: auto 0; /* это центрирует по вертикали */
+  flex-shrink: 0;
+}
+
+.task-btn img {
+  width: 30.33px;
+  height: 30.3px;
 }
 
 .tasks {
