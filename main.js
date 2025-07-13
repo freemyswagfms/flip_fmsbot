@@ -197,4 +197,35 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // --- Переход в магазин и скролл к новой коллекции
+  const shopBtn = document.getElementById('go-to-shop');
+  if (shopBtn) {
+    shopBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      // 1. Переключаем страницу
+      navBtns.forEach(b => b.classList.remove('active'));
+      document.querySelector('.shop-icon')?.classList.add('active');
+
+      pages.forEach(p => {
+        if (p.id === 'shop') {
+          p.style.display = '';
+          p.classList.add('active');
+        } else {
+          p.style.display = 'none';
+          p.classList.remove('active');
+        }
+      });
+
+      // 2. Скроллим к нужному заголовку
+      setTimeout(() => {
+        const collectionTitle = document.getElementById('new-collection');
+        collectionTitle?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+
+      // 3. Обновляем фон меню
+      moveBgToActive(navBtns.findIndex(b => b.classList.contains('shop-icon')));
+    });
+  }
 });

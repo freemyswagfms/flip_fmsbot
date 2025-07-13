@@ -711,10 +711,9 @@ body.light .balance-nick {
 
 .subscribe-inner {
   margin: 0;
-  opacity: 0.7;
   background: #FFFFFF;
   border-radius: 24px;
-  padding: 15px 10px 20px; /* top, left/right, bottom */
+  padding: 15px 10px 20px;
   width: calc(100% - 40px);
   text-align: center;
   box-sizing: border-box;
