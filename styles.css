@@ -412,8 +412,15 @@ body {
 
 .collection-tabs {
   display: flex;
-  justify-content: space-evenly;
-  width: 100%;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.page .collection-tabs {
+  padding: 0 20px;
+  box-sizing: border-box;
 }
 
 .tab {
