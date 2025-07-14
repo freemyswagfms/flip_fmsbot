@@ -411,15 +411,9 @@ body {
 }
 
 .collection-tabs {
+  margin-bottom: 30px;
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 0 20px;
-  box-sizing: border-box;
-}
-
-.page .collection-tabs {
-  padding: 0 20px;
+  justify-content: space-evenly;
   box-sizing: border-box;
 }
 
@@ -849,7 +843,6 @@ body.light .balance-nick {
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
   box-sizing: border-box;
-  padding: 20px 0px; /* добавим боковые паддинги */
   overflow-x: hidden;
   max-width: 100%;
 }
