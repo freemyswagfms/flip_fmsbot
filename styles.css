@@ -930,7 +930,7 @@ body.light .balance-nick {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 7px;
   margin-top: 12px;
 }
 
@@ -941,16 +941,46 @@ body.light .balance-nick {
   font-size: 16px;
   font-weight: 400;
   border-radius: 18px;
-  padding: 12px 20px;
-  min-width: 70px;
+  width: 112px;
+  height: 89px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  padding: 0 10px; /* небольшой внутренний отступ по бокам */
 }
 
-.star-icon {
-  width: 40px;
-  height: 40px;
-  vertical-align: middle;
+.balance-card.star {
+  padding: 12px;
+  width: 112px;
+  height: 89px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* Контейнер Lottie-звезды */
+#star-in-balance {
+  width: 24px; /* компактнее, без гигантских невидимых отступов */
+  height: 24px;
+  transform: scale(4); /* визуально увеличиваем звезду */
+  transform-origin: center;
   pointer-events: none;
-  will-change: transform;
+}
+
+.star-count {
+  font-size: 16px;
+  font-weight: 500;
+  font-family: 'geologica';
+  color: black;
+}
+
+.star-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px; /* расстояние между цифрой и звездой */
 }
