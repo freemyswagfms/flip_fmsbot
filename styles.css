@@ -411,10 +411,12 @@ body {
 }
 
 .collection-tabs {
-  margin-bottom: 30px;
   display: flex;
   justify-content: space-evenly;
   box-sizing: border-box;
+  width: 100%;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
 }
 
 .tab {
