@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderer: 'svg',
       loop: true,
       autoplay: true,
-      path: 'assets/animations/star.json' // путь к твоему Lottie JSON
+      path: 'assets/icons/star.json' // обновлённый путь
     });
   }
 

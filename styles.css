@@ -948,8 +948,8 @@ body.light .balance-nick {
 }
 
 .star-icon {
-  width: 24px;
-  height: 24px;
+  width: 40px;
+  height: 40px;
   vertical-align: middle;
   pointer-events: none;
   will-change: transform;
