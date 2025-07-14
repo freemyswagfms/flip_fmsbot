@@ -446,15 +446,6 @@ body {
   margin: 0;
 }
 
-.balance-nick {
-  font-family: 'geologica';
-  font-size: 12px;
-  font-weight: 300;
-  color: #42EAD4;
-  margin: 0;
-  margin-top: 4px;
-}
-
 .inf-profile {
   display: flex;
   flex-direction: column;
@@ -832,4 +823,134 @@ body.light .balance-nick {
   width: 20px;
   height: 20px;
   opacity: 0.6;
+}
+
+.card-placeholder {
+  aspect-ratio: 1;
+  background: #f1f1f1;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'geologica';
+  font-size: 0;
+  color: black;
+}
+
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 20px 0;
+}
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.avatar.big {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: white;
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 15px;
+}
+
+.nickname.centered {
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 400;
+  color: white;
+  margin: 0;
+  text-align: center;
+}
+
+.level-text {
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 300;
+  color: white;
+  text-align: center;
+  margin: 0;
+}
+
+.balance-nick {
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 300;
+  color: white;
+  margin: 0;
+  margin-top: 15px;
+  text-align: center;
+}
+
+.profile-info {
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 300;
+  color: white;
+  text-align: center;
+  margin: 0;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-info .level-text {
+  color: white;
+  font-weight: 300;
+  opacity: 0.5;
+}
+
+.profile-info .dot {
+  font-family: 'geologica';
+  font-weight: 300;
+  font-size: 9px;
+  color: white;
+  line-height: 1;
+  user-select: none;
+  transform: translateY(1px);
+  display: inline-block;
+}
+
+.nickname.guest {
+  font-size: 16px;
+  color: white;
+  font-family: 'geologica';
+  font-weight: 300;
+}
+
+.balance-cards {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.balance-card {
+  background-color: white;
+  color: black;
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 400;
+  border-radius: 18px;
+  padding: 12px 20px;
+  min-width: 70px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.star-icon {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+  pointer-events: none;
+  will-change: transform;
 }

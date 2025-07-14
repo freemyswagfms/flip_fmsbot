@@ -90,13 +90,36 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // --- Фильтрация карточек по табам
+  const tabMap = {
+    'все': 'all',
+    'альбомы': 'album',
+    'синглы': 'single',
+    'артисты': 'artist'
+  };
+
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
+
+      const selected = tab.textContent.trim().toLowerCase();
+      const filterType = tabMap[selected];
+
+      document.querySelectorAll('.card-placeholder').forEach(card => {
+        const cat = card.dataset.category;
+        if (filterType === 'all' || filterType === undefined) {
+          card.style.display = '';
+        } else if (cat === filterType) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
     });
   });
 
+  // --- Профиль
   const nicknameEl = document.querySelector('.nickname');
   const balanceEl = document.querySelector('.balance-nick');
   const avatarEl = document.querySelector('.avatar');
@@ -104,19 +127,32 @@ document.addEventListener('DOMContentLoaded', () => {
   if (nicknameEl && balanceEl && avatarEl) {
     if (user) {
       nicknameEl.textContent = user.username || `id${user.id}`;
-      balanceEl.textContent = 'Баланс: 0 руб.';
+      balanceEl.textContent = 'баланс';
       if (user.username) {
         avatarEl.style.backgroundImage = `url('https://t.me/i/userpic/320/${user.username}.jpg')`;
       } else {
         avatarEl.style.backgroundColor = '#ccc';
       }
     } else {
-      nicknameEl.textContent = 'Гость';
-      balanceEl.textContent = 'Баланс: 0 руб.';
+      nicknameEl.textContent = 'гость';
+      balanceEl.textContent = 'баланс';
       avatarEl.style.backgroundColor = '#ccc';
     }
   }
 
+  // --- Инициализация Lottie-звезды в балансе
+  const starBalance = document.getElementById('star-in-balance');
+  if (starBalance && window.lottie) {
+    lottie.loadAnimation({
+      container: starBalance,
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: 'assets/animations/star.json' // путь к твоему Lottie JSON
+    });
+  }
+
+  // --- Оверлеи: Настройки
   const settingItems = document.querySelectorAll('.setting-item');
   const balanceOverlay = document.getElementById('balance-overlay');
   const themeOverlay = document.getElementById('theme-overlay');
@@ -149,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // --- Переключение темы
   const themeBtn = document.querySelector('.theme-toggle-btn');
   if (themeBtn) {
     themeBtn.textContent = document.body.classList.contains('light') ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
@@ -160,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // --- Таймер дропа
   function startDropTimer(hours, minutes) {
     const display = document.getElementById('drop-countdown');
     if (!display) return;
@@ -179,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   startDropTimer(3, 59);
 
-  // --- Упрощённый режим (оверлей без проверки подписки)
+  // --- Кнопка старта дропа (оверлей подписки)
   const startBtn = document.querySelector('.start-btn');
   const subscribeOverlay = document.getElementById('subscribe-overlay');
 
@@ -204,7 +242,6 @@ document.addEventListener('DOMContentLoaded', () => {
     shopBtn.addEventListener('click', (e) => {
       e.preventDefault();
 
-      // 1. Переключаем страницу
       navBtns.forEach(b => b.classList.remove('active'));
       document.querySelector('.shop-icon')?.classList.add('active');
 
@@ -218,48 +255,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      // 2. Скроллим к нужному заголовку
       setTimeout(() => {
         const collectionTitle = document.getElementById('new-collection');
         collectionTitle?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
 
-      // 3. Обновляем фон меню
       moveBgToActive(navBtns.findIndex(b => b.classList.contains('shop-icon')));
     });
   }
-});
 
-const overlay = document.getElementById('task-overlay');
-const channelName = document.getElementById('channel-name');
-const goSubscribe = document.getElementById('go-subscribe');
+  // --- Задания (task overlay)
+  const overlay = document.getElementById('task-overlay');
+  const channelName = document.getElementById('channel-name');
+  const goSubscribe = document.getElementById('go-subscribe');
 
-const tasks = [
-  {
-    name: 'Free My Leaks',
-    url: 'https://t.me/freemyleaks'
-  },
-  {
-    name: 'Free My Memes',
-    url: 'https://t.me/freemyswagmemes'
-  },
-  {
-    name: 'PBC',
-    url: 'https://t.me/pbccarter'
-  }
-];
+  const tasks = [
+    {
+      name: 'Free My Leaks',
+      url: 'https://t.me/freemyleaks'
+    },
+    {
+      name: 'Free My Memes',
+      url: 'https://t.me/freemyswagmemes'
+    },
+    {
+      name: 'PBC',
+      url: 'https://t.me/pbccarter'
+    }
+  ];
 
-// Добавь этим кнопкам классы .task-btn и data-index от 0 до 2
-
-document.querySelectorAll('.task-btn').forEach((btn, index) => {
-  btn.addEventListener('click', () => {
-    const task = tasks[index];
-    channelName.textContent = task.name;
-    goSubscribe.href = task.url;
-    overlay.classList.add('show');
+  document.querySelectorAll('.task-btn').forEach((btn, index) => {
+    btn.addEventListener('click', () => {
+      const task = tasks[index];
+      channelName.textContent = task.name;
+      goSubscribe.href = task.url;
+      overlay.classList.add('show');
+    });
   });
-});
 
-overlay.addEventListener('click', (e) => {
-  if (e.target === overlay) overlay.classList.remove('show');
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
 });
