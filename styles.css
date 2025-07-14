@@ -412,8 +412,8 @@ body {
 
 .collection-tabs {
   display: flex;
-  justify-content: center;
-  gap: 26px; 
+  justify-content: space-evenly;
+  width: 100%;
 }
 
 .tab {
