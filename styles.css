@@ -36,8 +36,7 @@
 body {
   max-width: 100%;
   overflow-x: hidden;
-  overscroll-behavior-x: none;
-  touch-action: pan-y; /* Запрещаем горизонтальный свайп, разрешаем вертикальный */
+  touch-action: pan-y;
   overflow-y: auto;
   overscroll-behavior: none;
   box-sizing: border-box;
@@ -129,7 +128,7 @@ body {
 
 .carousel-wrapper {
   position: relative;
-  width: calc(100% + 40px); /* компенсирует padding .page */
+  width: calc(100% + 40px);
   margin-left: -20px;
   margin-right: -20px;
   overflow: hidden;
@@ -269,7 +268,6 @@ body {
   justify-content: center;
   max-width: 300px;
   align-items: center;
-  justify-content: center;
 }
   
 .cards {
@@ -507,8 +505,6 @@ body {
 }
 
 .settings-title {
-  object-fit: contain;
-  flex-shrink: 0;
   font-family: 'saar';
   font-size: 32px;
   font-weight: 400;
@@ -536,7 +532,8 @@ body {
 }
 
 /*ОВЕРЛЕЙ СЕТТИНГС*/
-.overlay {
+
+.overlay-settings {
   transition: opacity 0.3s ease;
   opacity: 0;
   pointer-events: none;
@@ -552,13 +549,17 @@ body {
   -webkit-backdrop-filter: blur(5px);
   z-index: 9999;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
   align-items: center;
-  padding: 80px 0;
+  justify-content: center;
   box-sizing: border-box;
-  overflow-y: auto;
 }
+
+
+.overlay-settings.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
 
 .overlay .tasks {
   width: 100%;
@@ -746,46 +747,74 @@ body.light .balance-nick {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
   z-index: 1000;
   align-items: center;
   justify-content: center;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .overlay.show {
   display: flex;
+  opacity: 1;
+  pointer-events: all;
 }
 
+
 .task-popup {
-  background: #0f0f0f;
+  background: #111111;
   color: white;
-  padding: 20px 20px 28px;
-  border-radius: 20px;
-  width: 90%;
+  padding: 20px 22.5px 28px;
+  border-radius: 24px;
+  width: 100%;
   max-width: 350px;
   font-family: 'geologica';
   text-align: center;
 }
 
 .task-label {
+  font-family: 'cygre';
   font-weight: 800;
-  font-size: 16px;
-  margin-bottom: 12px;
+  font-size: 24px;
+  margin-bottom: 20px;
 }
 
 .task-text {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   line-height: 1.4;
 }
 
 .task-action {
-  padding: 10px 24px;
+  font-family: 'geologica';
+  font-weight: 500;
+  padding: 13px 26px;
   background: #317BFF;
   color: white;
   border: none;
-  border-radius: 12px;
-  font-weight: 500;
+  border-radius: 100px;
   font-size: 14px;
   cursor: pointer;
+}
+
+.quests-btn {
+  display: block;
+  margin: 20px auto 0 auto;
+  padding: 17px 28px;
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 500;
+  color: black;
+  background-color: #9EFF44;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.quests-btn:hover {
+  background-color: #85db37; 
 }
