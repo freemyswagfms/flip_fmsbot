@@ -20,6 +20,7 @@
   </div>
 
   <div id="main-app">
+    
     <!-- Нижнее меню -->
     <nav class="nav-menu">
       <div class="nav-bg"></div>
@@ -93,48 +94,57 @@
     <!-- Страница: Магазин -->
     <div class="page" id="shop">
       <div class="title-shop">
-        <p class="title" id="title-shop">Магазин</p>
+        <p class="title" id="title-shop">магазин</p>
       </div>
 
       <div class="cards">
         <div class="card">
           <div class="square"></div>
-          <button class="buy-btn">Купить</button>
+          <button class="buy-btn">купить</button>
         </div>
         <div class="card">
           <div class="square"></div>
-          <button class="buy-btn">Купить</button>
+          <button class="buy-btn">купить</button>
         </div>
       </div>
 
-      <p class="title" id="new-collection">Новая коллекция</p>
+      <p class="title" id="new-collection">новая коллекция</p>
       <div class="clc">
         <div class="clc-card"></div>
-        <button class="more-btn">Подробнее</button>
+        <button class="more-btn">подробнее</button>
       </div>
 
-      <p class="title">Пополнение баланса</p>
+      <p class="title">пополнение баланса</p>
       <div class="tasks">
         <div class="task">
           <div class="subs">
             <div class="sub-1">100 рублей</div>
-            <div class="sub-2">Оплата картой или СБП</div>
+            <div class="sub-2">оплата картой или СБП</div>
           </div>
-          <button class="task-btn">Пополнить</button>
+          <button class="task-btn">
+  <img src="/assets/icons/arrow-down.svg" alt="иконка" />
+</button>
+
         </div>
         <div class="task">
           <div class="subs">
-            <div class="sub-1">100 рублей</div>
-            <div class="sub-2">Оплата картой или СБП</div>
+            <div class="sub-1">200 рублей</div>
+            <div class="sub-2">оплата картой или СБП</div>
           </div>
-          <button class="task-btn">Пополнить</button>
+          <button class="task-btn">
+  <img src="/assets/icons/arrow-down.svg" alt="иконка" />
+</button>
+
         </div>
         <div class="task">
           <div class="subs">
-            <div class="sub-1">100 рублей</div>
-            <div class="sub-2">Оплата картой или СБП</div>
+            <div class="sub-1">300 рублей</div>
+            <div class="sub-2">оплата картой или СБП</div>
           </div>
-          <button class="task-btn">Пополнить</button>
+          <button class="task-btn">
+  <img src="/assets/icons/arrow-down.svg" alt="иконка" />
+</button>
+
         </div>
       </div>
     </div>
@@ -149,6 +159,11 @@
         <button class="tab">СИНГЛЫ</button>
         <button class="tab">АРТИСТЫ</button>
       </div>
+      <!-- Поисковик (только на странице коллекции) -->
+<div class="search-bar">
+  <img src="/assets/icons/search-icon.svg" alt="Поиск" class="search-icon" />
+  <input type="text" placeholder="поиск по коллекции" disabled />
+</div>
     </div>
 
     <!-- Страница: Профиль -->
@@ -173,6 +188,7 @@
       </div>
     </div>
 
+    
     <!-- Оверлей: пополнение баланса -->
     <div class="overlay" id="balance-overlay">
       <div class="overlay-inner">

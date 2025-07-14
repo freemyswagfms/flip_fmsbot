@@ -223,7 +223,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .sub-1 {
@@ -240,7 +240,6 @@ body {
   opacity: 0.7;
   font-weight: 400;
   font-size: 16px;
-  margin-top: auto;
 }
 
 .task-btn {
@@ -297,7 +296,7 @@ body {
 .square {
   width: 100%;
   background-color: white;
-  border-radius: 10px;
+  border-radius: 24px;
   aspect-ratio: 1/1;
   max-width: 300px;
   flex-direction: column;
@@ -309,6 +308,7 @@ body {
   justify-content: center;
   flex-direction: column;
   align-items: center;
+  margin-bottom: 50px;
 }
 
 .more-btn {
@@ -320,14 +320,14 @@ body {
   border: none;
   border-radius: 100px;
   padding: 10px 25px;
-  margin-top: 15px;
+  margin-top: 20px;
 }
 
 .clc-card {
   width: 100%;
   display: flex;
   background-color: white;
-  border-radius: 10px;
+  border-radius: 24px;
   height: 230px;
   max-width: 620px;
   justify-content: center;
@@ -382,7 +382,7 @@ body {
 .nav-bg {
   top: 8px;
   position: absolute;
-  background: #42EAD4;
+  background: #317BFF;
   border-radius: 50%;
   z-index: 1;
   opacity: 0.5;
@@ -402,21 +402,19 @@ body {
 }
 
 .title-collection {
-  font-family: 'saar';
-  font-size: 32px;
+  margin-bottom: 25px;
+  font-family: 'cygre';
+  font-size: 24px;
+  text-transform: uppercase;
   color: white;
-  margin-bottom:50px;
+  margin-bottom: 25px;
   position: relative;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .collection-tabs {
-  position: relative;
   display: flex;
-  justify-content:space-between;
-  margin-top: 20px;
-  padding-bottom: 10px;
+  justify-content: center;
+  gap: 26px; 
 }
 
 .tab {
@@ -425,26 +423,14 @@ body {
   border: none;
   color: white;
   opacity: 0.5;
-  font-family: 'saar';
-  font-size: 24px;
-  font-weight: 400;
+  font-family: 'cygre';
+  font-size: 16px;
   position: relative;
-  padding: 5px 10px;
   cursor: pointer;
 }
 
 .tab.active {
   opacity: 1;
-}
-
-.tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-color: white;
 }
 
 .title-profile {
@@ -815,4 +801,36 @@ body.light .balance-nick {
 
 .quests-btn:hover {
   background-color: #85db37; 
+}
+
+.search-bar {
+  position: fixed;
+  bottom: 80px;
+  left: 20px;
+  right: 20px;
+  height: 50px;
+  background: #1A1A1A;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+
+.search-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-family: 'geologica';
+  font-size: 14px;
+  outline: none;
+}
+
+.search-icon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
 }
