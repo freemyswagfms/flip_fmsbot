@@ -772,6 +772,8 @@ body.light .balance-nick {
   max-width: 350px;
   font-family: 'geologica';
   text-align: center;
+  margin-left: 20px;
+  margin-right: 20px;
 }
 
 .task-label {
