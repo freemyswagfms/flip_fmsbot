@@ -841,7 +841,10 @@ body.light .balance-nick {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
-  padding: 20px 0;
+  box-sizing: border-box;
+  padding: 20px 0px; /* добавим боковые паддинги */
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 .profile-header {
@@ -949,7 +952,7 @@ body.light .balance-nick {
   text-align: center;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
-  padding: 0 10px; /* небольшой внутренний отступ по бокам */
+  padding: 0 10px;
 }
 
 .balance-card.star {
@@ -964,9 +967,9 @@ body.light .balance-nick {
 
 /* Контейнер Lottie-звезды */
 #star-in-balance {
-  width: 24px; /* компактнее, без гигантских невидимых отступов */
+  width: 24px;
   height: 24px;
-  transform: scale(4); /* визуально увеличиваем звезду */
+  transform: scale(4);
   transform-origin: center;
   pointer-events: none;
 }
