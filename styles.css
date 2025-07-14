@@ -90,7 +90,7 @@ body {
   font-family: 'cygre';
   color: white;
   font-size: 24px;
-  font-weight: 400;
+  font-weight: 800;
   letter-spacing: 1px;
   text-align: center;
   text-transform: uppercase;
@@ -135,10 +135,14 @@ body {
 }
 
 .start-btn {
-  display: block;
-  margin: 15px auto 50px auto;
-  font-family: 'geologica';
+  display: flex;
   justify-content: center;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 15px;
+  margin-bottom: 50px;
+  font-family: 'geologica';
   font-size: 16px;
   font-weight: 400;
   background-color: #9EFF44;
@@ -271,6 +275,7 @@ body {
 }
   
 .cards {
+  margin-bottom: 50px;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -278,7 +283,7 @@ body {
 }
 
 .buy-btn {
-  background-color: #FBFF12;
+  background-color: #9EFF44;
   color: black;
   font-family: 'geologica';
   font-size: 16px;
@@ -286,7 +291,7 @@ body {
   border: none;
   border-radius: 100px;
   padding: 10px 25px;
-  margin-top: 15px;
+  margin-top: 20px;
 }
 
 .square {
@@ -307,7 +312,7 @@ body {
 }
 
 .more-btn {
-  background-color: #FBFF12;
+  background-color: #9EFF44;
   color: black;
   font-family: 'geologica';
   font-size: 16px;
@@ -338,16 +343,7 @@ body {
 .title-shop {
   width: 100%;
   display: flex;
-  justify-content: space-between;
-}
-
-#title-shop {
-  text-underline-offset: 10%;
-  text-decoration: underline;
-}
-
-#title-top {
-  opacity: 0.3;
+  justify-content: center;
 }
 
 .nav-menu {
@@ -409,7 +405,7 @@ body {
   font-family: 'saar';
   font-size: 32px;
   color: white;
-  margin-bottom: 0px;
+  margin-bottom:50px;
   position: relative;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
