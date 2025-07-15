@@ -412,14 +412,18 @@ body {
 
 .collection-tabs {
   display: flex;
-  padding: 0 20px; /* УСТАНАВЛИВАЕМ 20px ОТСТУП СЛЕВА И СПРАВА */
-  margin: 0 0 30px;
-  box-sizing: border-box;
   justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 30px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .collection-tabs .tab {
-  flex: 1;
+  flex-shrink: 1;
+  white-space: nowrap;
+  padding: 0 4px;
   text-align: center;
 }
 
