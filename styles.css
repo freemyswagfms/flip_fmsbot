@@ -403,7 +403,7 @@ body {
 
 .collection-tabs {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   margin-bottom: 30px;
   padding-left: 20px;
   padding-right: 20px;
