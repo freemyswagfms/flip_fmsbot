@@ -412,11 +412,15 @@ body {
 
 .collection-tabs {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-between;
+  padding: 0 0;
+  margin: 0;
   box-sizing: border-box;
-  width: 100%;
-  flex-wrap: wrap;
-  margin-bottom: 24px;
+  margin-bottom: 30px;
+}
+
+.collection-tabs .tab {
+  text-align: center;
 }
 
 .tab {
