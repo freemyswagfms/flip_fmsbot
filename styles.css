@@ -404,8 +404,7 @@ body {
 .collection-tabs {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  column-gap: 10px;
-  padding: 0 20px;
+  gap: 10px;
   margin-bottom: 30px;
   box-sizing: border-box;
 }
