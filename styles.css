@@ -402,11 +402,13 @@ body {
 }
 
 .collection-tabs {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 30px;
+  padding: 0 20px;
   box-sizing: border-box;
+  gap: 0; /* убираем gap, flex сам распределит */
+  flex-wrap: nowrap;
 }
 
 .collection-tabs,
@@ -416,17 +418,15 @@ body {
 }
 
 .tab {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: none;
-  border: none;
-  color: white;
-  opacity: 0.5;
   font-family: 'cygre';
   font-size: 16px;
+  color: white;
+  background: none;
+  border: none;
+  opacity: 0.5;
   cursor: pointer;
-  width: 100%;
+  flex: 1;
+  text-align: center;
 }
 
 .tab.active {
