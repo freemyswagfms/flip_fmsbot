@@ -401,13 +401,13 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
-.title-collection {
-  margin-bottom: 26px;
-  font-family: 'cygre';
-  font-size: 24px;
-  text-transform: uppercase;
-  color: white;
-  position: relative;
+.collection-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: 10px;
+  padding: 0 20px;
+  margin-bottom: 30px;
+  box-sizing: border-box;
 }
 
 .collection-tabs {
@@ -420,17 +420,6 @@ body {
   overflow-x: hidden;
 }
 
-.collection-tabs .tab {
-  flex-shrink: 1;
-  white-space: nowrap;
-  padding: 0 4px;
-  text-align: center;
-}
-
-.collection-tabs .tab:first-child {
-  text-align: left;
-}
-
 .collection-tabs,
 .collection-grid {
   max-width: 100%;
@@ -439,14 +428,16 @@ body {
 
 .tab {
   display: flex;
+  justify-content: center;
+  align-items: center;
   background: none;
   border: none;
   color: white;
   opacity: 0.5;
   font-family: 'cygre';
   font-size: 16px;
-  position: relative;
   cursor: pointer;
+  width: 100%;
 }
 
 .tab.active {
