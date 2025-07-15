@@ -407,8 +407,8 @@ body {
   margin-bottom: 30px;
   padding-left: 20px;
   padding-right: 20px;
-  box-sizing: border-box;
   flex-wrap: nowrap;
+  width: 100%;
 }
 
 .collection-grid {
