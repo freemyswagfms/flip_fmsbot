@@ -403,15 +403,12 @@ body {
 
 .collection-tabs {
   display: flex;
-  justify-content: center;
-  gap: 26px;
+  justify-content: space-evenly;
   margin-bottom: 30px;
   padding: 0 20px;
   box-sizing: border-box;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap;
 }
-
 
 .collection-tabs,
 .collection-grid {
@@ -420,8 +417,6 @@ body {
 }
 
 .tab {
-  flex: 0 0 auto;
-  padding: 0 4px;
   font-family: 'cygre';
   font-size: 16px;
   color: white;
@@ -430,7 +425,9 @@ body {
   opacity: 0.5;
   cursor: pointer;
   text-align: center;
+  white-space: nowrap;
 }
+
 
 .tab.active {
   opacity: 1;
