@@ -427,6 +427,10 @@ body {
   text-align: center;
 }
 
+.collection-tabs .tab:first-child {
+  text-align: left;
+}
+
 .collection-tabs,
 .collection-grid {
   max-width: 100%;
