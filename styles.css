@@ -1142,3 +1142,7 @@ background: #eaeaea;
 .profile-card:active {
   background-color: #888888;
 }
+
+.profile-card {
+  transition: background-color 120ms ease;
+}
