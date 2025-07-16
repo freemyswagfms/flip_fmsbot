@@ -425,10 +425,10 @@ body {
 }
 
 .collection-tabs-wrapper {
-  width: 100%;
-  box-sizing: border-box;
+  width: calc(100% + 40px); /* расширим чтобы выйти за паддинг */
+  margin: 0 -20px;
   overflow-x: hidden;
-  padding: 0; /* убрать, если ещё осталось */
+  box-sizing: border-box;
 }
 
 .tab.active {
