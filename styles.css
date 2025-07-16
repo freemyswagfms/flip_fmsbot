@@ -406,16 +406,18 @@ body {
   width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
-  /* ничего не трогаем — используем отступ от .page */
+  margin-left: -20px;
+  margin-right: -20px; /* компенсирует двойной отступ */
 }
 
 .collection-tabs {
   display: flex;
   justify-content: space-between;
+  padding-inline: 20px; /* ровно по краям */
   width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
-  margin: 0 -1px 30px; /* только слегка вытягиваем */
+  margin-bottom: 30px;
 }
 
 .tab {
