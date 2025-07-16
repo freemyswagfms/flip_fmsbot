@@ -638,7 +638,6 @@ body {
 .profile-info .level-text {
   color: white;
   font-weight: 300;
-  opacity: 0.5;
 }
 
 .profile-info .dot {
@@ -650,6 +649,7 @@ body {
   user-select: none;
   transform: translateY(1px);
   display: inline-block;
+  opacity: 0.5;
 }
 
 .balance-cards {
