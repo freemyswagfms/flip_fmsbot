@@ -166,7 +166,7 @@ body {
   align-items: center;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 15px;
+  margin-top: 20px;
   margin-bottom: 50px;
   font-family: 'geologica';
   font-size: 16px;
@@ -439,6 +439,10 @@ body {
 
 /* === КОЛЛЕКЦИЯ === */
 
+#title-collection.title {
+  margin-bottom: 15px;
+}
+
 .page {
   min-height: calc(100vh - 70px);
   padding: 20px;
@@ -449,7 +453,7 @@ body {
 }
 
 .collection-tabs-wrapper {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .collection-tabs-scroll {
@@ -544,8 +548,7 @@ body {
 /* === ПРОФИЛЬ === */
 
 .title-profile {
-  font-family: 'saar';
-  font-size: 32px;
+  font-size: 24px;
   color: white;
 }
 
@@ -617,7 +620,6 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 20px;
 }
 
 .profile-info {
@@ -652,61 +654,34 @@ body {
 
 .balance-cards {
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   justify-content: center;
-  align-items: center;
-  gap: 7px;
-  margin-top: 12px;
+  margin: 20px auto;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .balance-card {
-  background-color: white;
+  background: white;
   color: black;
   font-family: 'geologica';
   font-size: 16px;
-  font-weight: 400;
-  border-radius: 18px;
-  width: 112px;
-  height: 89px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 24px;
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  padding: 0 10px;
-}
-
-.balance-card.star {
-  padding: 12px;
-  width: 112px;
-  height: 89px;
+  padding: 39px 74px;
+  flex: 1 1 0;
+  max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  min-width: 120px;
 }
 
-/* Контейнер Lottie-звезды */
-#star-in-balance {
-  width: 24px;
-  height: 24px;
-  transform: scale(4);
-  transform-origin: center;
-  pointer-events: none;
-}
-
-.star-count {
-  font-size: 16px;
-  font-weight: 500;
-  font-family: 'geologica';
-  color: black;
-}
-
-.star-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+.balance-card.secondary {
+  padding: 39px 62px;
 }
 
 .profile-cards {
@@ -871,9 +846,11 @@ body {
 .settings {
   width: 100%;
   box-sizing: border-box;
+  margin-top: 30px;
 }
 
 .settings-title {
+  margin-bottom: 30px;
   font-family: 'cygre';
   font-size: 24px;
   font-weight: 800;

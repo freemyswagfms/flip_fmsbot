@@ -140,18 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- Инициализация Lottie-звезды в балансе
-  const starBalance = document.getElementById('star-in-balance');
-  if (starBalance && window.lottie) {
-    lottie.loadAnimation({
-      container: starBalance,
-      renderer: 'svg',
-      loop: true,
-      autoplay: true,
-      path: 'assets/icons/star.json' // обновлённый путь
-    });
-  }
-
  // --- Оверлеи: Настройки
 const settingItems = document.querySelectorAll('.setting-item');
 const balanceOverlay = document.getElementById('balance-overlay');
