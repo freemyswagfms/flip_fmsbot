@@ -1120,6 +1120,19 @@ background: #eaeaea;
   background: #B2B2B2;
   color: black;
   line-height: 1.1;
+  opacity: 0.6;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.profile-card.is-disabled:hover {
+  transform: scale(1.02);
+  background: #c6c6c6;
+  opacity: 0.8;
+}
+
+.profile-card.is-disabled:active {
+  transform: scale(0.96);
+  background: #e0e0e0;
 }
 
 .profile-card.has-badge {
@@ -1138,8 +1151,17 @@ background: #eaeaea;
   right: 10px;
   bottom: 10px;
   line-height: 1;
+  pointer-events: none;
 }
 
-.profile-card.is-disabled:active {
-background: #eaeaea;
+.profile-card {
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.profile-card:hover {
+  transform: scale(1.02);
+}
+
+.profile-card:active {
+  transform: scale(0.96);
 }
