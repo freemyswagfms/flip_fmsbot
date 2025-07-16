@@ -1168,3 +1168,8 @@ background: #eaeaea;
 .profile-card.animate-press {
   animation: clickPress 0.25s ease;
 }
+
+.animate-press {
+  transform: scale(0.96);
+  transition: transform 0.2s ease;
+}
