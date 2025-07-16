@@ -4,11 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     Telegram.WebApp.expand();
   }
 
+  // --- Тема
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'light') {
     document.body.classList.add('light');
   }
 
+  // --- DOM
   const splash = document.getElementById('splash');
   const mainApp = document.getElementById('main-app');
   const navMenu = document.querySelector('.nav-menu');
@@ -22,11 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
   splash.style.display = 'flex';
   mainApp.style.display = 'none';
 
-  if (fill) setTimeout(() => { fill.style.width = '100%'; }, 200);
+  if (fill) {
+    setTimeout(() => { fill.style.width = '100%'; }, 200);
+  }
 
   function moveBgToActive(index) {
     const btn = navBtns[index];
     const menuRect = navMenu.getBoundingClientRect();
+
     requestAnimationFrame(() => {
       const btnRect = btn.getBoundingClientRect();
       const bgWidth = parseFloat(getComputedStyle(navBg).width);
@@ -51,8 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 1400);
 
   pages.forEach(page => {
-    page.style.display = page.id === "home" ? '' : 'none';
-    page.classList.toggle('active', page.id === "home");
+    if (page.id === "home") {
+      page.style.display = '';
+      page.classList.add('active');
+    } else {
+      page.style.display = 'none';
+      page.classList.remove('active');
+    }
   });
 
   let activeIndex = navBtns.findIndex(btn => btn.classList.contains('active'));
@@ -67,24 +77,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const targetPage = btn.getAttribute('data-page');
       pages.forEach(page => {
-        page.style.display = (page.id === targetPage) ? '' : 'none';
-        page.classList.toggle('active', page.id === targetPage);
+        if (page.id === targetPage) {
+          page.style.display = '';
+          page.classList.add('active');
+        } else {
+          page.style.display = 'none';
+          page.classList.remove('active');
+        }
       });
 
       adjustTopPadding();
     });
   });
 
-  document.querySelectorAll('.profile-card').forEach((card) => {
-    card.addEventListener('click', () => {
-      if (card.classList.contains('is-disabled')) return;
-      card.classList.remove('animate-press');
-      void card.offsetWidth;
-      card.classList.add('animate-press');
-      setTimeout(() => card.classList.remove('animate-press'), 200);
-    });
-  });
-
+  // --- Фильтрация карточек по табам
   const tabMap = {
     'все': 'all',
     'альбомы': 'album',
@@ -96,15 +102,24 @@ document.addEventListener('DOMContentLoaded', () => {
     tab.addEventListener('click', () => {
       tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
+
       const selected = tab.textContent.trim().toLowerCase();
       const filterType = tabMap[selected];
+
       document.querySelectorAll('.card-placeholder').forEach(card => {
         const cat = card.dataset.category;
-        card.style.display = (!filterType || filterType === 'all' || cat === filterType) ? '' : 'none';
+        if (filterType === 'all' || filterType === undefined) {
+          card.style.display = '';
+        } else if (cat === filterType) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
       });
     });
   });
 
+  // --- Профиль
   const nicknameEl = document.querySelector('.nickname');
   const balanceEl = document.querySelector('.balance-nick');
   const avatarEl = document.querySelector('.avatar');
@@ -125,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- Инициализация Lottie-звезды в балансе
   const starBalance = document.getElementById('star-in-balance');
   if (starBalance && window.lottie) {
     lottie.loadAnimation({
@@ -132,45 +148,44 @@ document.addEventListener('DOMContentLoaded', () => {
       renderer: 'svg',
       loop: true,
       autoplay: true,
-      path: 'assets/icons/star.json'
+      path: 'assets/icons/star.json' // обновлённый путь
     });
   }
 
+  // --- Оверлеи: Настройки
   const settingItems = document.querySelectorAll('.setting-item');
   const balanceOverlay = document.getElementById('balance-overlay');
   const themeOverlay = document.getElementById('theme-overlay');
 
-  settingItems.forEach(item => {
-    const text = item.textContent.trim();
-    if (text.includes('Пополнение баланса') && balanceOverlay) {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        balanceOverlay.classList.add('show');
-        balanceOverlay.style.display = 'flex';
-        balanceOverlay.scrollTo(0, 0);
-      });
-    }
-    if (text.includes('Внешний вид') && themeOverlay) {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        themeOverlay.classList.add('show');
-        themeOverlay.style.display = 'flex';
-        themeOverlay.scrollTo(0, 0);
-      });
-    }
-  });
+  if (settingItems.length) {
+    settingItems.forEach((item) => {
+      const text = item.textContent.trim();
+      if (text.includes('Пополнение баланса') && balanceOverlay) {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          balanceOverlay.classList.add('show');
+          balanceOverlay.scrollTo(0, 0);
+        });
+      }
+      if (text.includes('Внешний вид') && themeOverlay) {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          themeOverlay.classList.add('show');
+          themeOverlay.scrollTo(0, 0);
+        });
+      }
+    });
+  }
 
   [balanceOverlay, themeOverlay].forEach(overlay => {
     if (overlay) {
       overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-          overlay.classList.remove('show');
-          overlay.style.display = 'none';
-        }
+        if (e.target === overlay) overlay.classList.remove('show');
       });
     }
   });
 
+  // --- Переключение темы
   const themeBtn = document.querySelector('.theme-toggle-btn');
   if (themeBtn) {
     themeBtn.textContent = document.body.classList.contains('light') ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
@@ -182,10 +197,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // --- Таймер дропа
   function startDropTimer(hours, minutes) {
     const display = document.getElementById('drop-countdown');
     if (!display) return;
     let totalSeconds = hours * 3600 + minutes * 60;
+
     function updateTimer() {
       const h = Math.floor(totalSeconds / 3600);
       const m = Math.floor((totalSeconds % 3600) / 60);
@@ -193,12 +210,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (totalSeconds > 0) totalSeconds--;
       else clearInterval(timer);
     }
+
     updateTimer();
     const timer = setInterval(updateTimer, 60000);
   }
 
   startDropTimer(3, 59);
 
+  // --- Кнопка старта дропа (оверлей подписки)
   const startBtn = document.querySelector('.start-btn');
   const subscribeOverlay = document.getElementById('subscribe-overlay');
 
@@ -206,7 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
     startBtn.addEventListener('click', (e) => {
       e.preventDefault();
       subscribeOverlay?.classList.add('show');
-      subscribeOverlay.style.display = 'flex';
     });
   }
 
@@ -214,55 +232,68 @@ document.addEventListener('DOMContentLoaded', () => {
     subscribeOverlay.addEventListener('click', (e) => {
       if (e.target === subscribeOverlay) {
         subscribeOverlay.classList.remove('show');
-        subscribeOverlay.style.display = 'none';
       }
     });
   }
 
+  // --- Переход в магазин и скролл к новой коллекции
   const shopBtn = document.getElementById('go-to-shop');
   if (shopBtn) {
     shopBtn.addEventListener('click', (e) => {
       e.preventDefault();
+
       navBtns.forEach(b => b.classList.remove('active'));
       document.querySelector('.shop-icon')?.classList.add('active');
+
       pages.forEach(p => {
-        p.style.display = (p.id === 'shop') ? '' : 'none';
-        p.classList.toggle('active', p.id === 'shop');
+        if (p.id === 'shop') {
+          p.style.display = '';
+          p.classList.add('active');
+        } else {
+          p.style.display = 'none';
+          p.classList.remove('active');
+        }
       });
+
       setTimeout(() => {
-        document.getElementById('new-collection')?.scrollIntoView({ behavior: 'smooth' });
+        const collectionTitle = document.getElementById('new-collection');
+        collectionTitle?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
+
       moveBgToActive(navBtns.findIndex(b => b.classList.contains('shop-icon')));
     });
   }
 
+  // --- Задания (task overlay)
   const overlay = document.getElementById('task-overlay');
   const channelName = document.getElementById('channel-name');
   const goSubscribe = document.getElementById('go-subscribe');
+
   const tasks = [
-    { name: 'Free My Leaks', url: 'https://t.me/freemyleaks' },
-    { name: 'Free My Memes', url: 'https://t.me/freemyswagmemes' },
-    { name: 'PBC', url: 'https://t.me/pbccarter' }
+    {
+      name: 'Free My Leaks',
+      url: 'https://t.me/freemyleaks'
+    },
+    {
+      name: 'Free My Memes',
+      url: 'https://t.me/freemyswagmemes'
+    },
+    {
+      name: 'PBC',
+      url: 'https://t.me/pbccarter'
+    }
   ];
 
-  document.querySelectorAll('.task-btn').forEach((btn, idx) => {
+  document.querySelectorAll('.task-btn').forEach((btn, index) => {
     btn.addEventListener('click', () => {
-      if (overlay && channelName && goSubscribe) {
-        const task = tasks[idx % tasks.length];
-        channelName.textContent = task.name;
-        goSubscribe.href = task.url;
-        overlay.classList.add('show');
-        overlay.style.display = 'flex';
-      }
+      const task = tasks[index];
+      channelName.textContent = task.name;
+      goSubscribe.href = task.url;
+      overlay.classList.add('show');
     });
   });
 
-  if (overlay) {
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) {
-        overlay.classList.remove('show');
-        overlay.style.display = 'none';
-      }
-    });
-  }
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
 });
