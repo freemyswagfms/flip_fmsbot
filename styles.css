@@ -1088,15 +1088,54 @@ background: #eaeaea;
   height: 100%;
   top: 0;
   left: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: fillGrow 0.8s ease-out forwards;
 }
 
 .level-fill.blue {
-  width: 50%;
   background: #317BFF;
+  width: 50%;
+  z-index: 1;
 }
 
 .level-fill.green {
+  background: #9EFF44;
   width: 50%;
   left: 50%;
-  background: #9EFF44;
+  z-index: 2;
+  animation-delay: 0.8s;
 }
+
+@keyframes fillGrow {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.profile-card.is-disabled {
+  background: #B2B2B2;
+  color: black;
+  line-height: 1.1;
+}
+
+.profile-card.has-badge {
+  position: relative;
+}
+
+.profile-card .badge-dev {
+  font-family: 'geologica';
+  font-size: 12px;
+  font-weight: 300;
+  color: black;
+  background: #9EFF44;
+  border-radius: 100px;
+  padding: 10px 10px;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  pointer-events: none;
+  line-height: 1;
+}
+
+
