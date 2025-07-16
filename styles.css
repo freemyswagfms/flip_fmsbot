@@ -403,38 +403,42 @@ body {
 }
 
 .collection-tabs-wrapper {
-  width: 100%;
-  box-sizing: border-box;
-  overflow-x: hidden;
-  margin-left: -20px;
-  margin-right: -20px; /* компенсирует двойной отступ */
+  margin-bottom: 20px;
 }
 
-.collection-tabs {
+.collection-tabs-scroll {
   display: flex;
-  justify-content: space-between;
-  padding-inline: 20px; /* ровно по краям */
-  width: 100%;
-  box-sizing: border-box;
-  overflow-x: hidden;
-  margin-bottom: 30px;
+  overflow-x: auto;
+  padding: 0 20px;
+  gap: 12px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.collection-tabs-scroll::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 .tab {
-  flex-shrink: 1;
-  min-width: 0;
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  padding: 10px 18px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.1);
+  color: white;
   font-family: 'cygre';
   font-size: 16px;
-  color: white;
-  background: none;
   border: none;
   opacity: 0.5;
-  cursor: pointer;
   white-space: nowrap;
-  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
 }
 
 .tab.active {
+  background: white;
+  color: black;
   opacity: 1;
 }
 
