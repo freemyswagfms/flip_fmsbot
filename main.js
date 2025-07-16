@@ -4,13 +4,11 @@ document.addEventListener('DOMContentLoaded', () => {
     Telegram.WebApp.expand();
   }
 
-  // --- Тема
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'light') {
     document.body.classList.add('light');
   }
 
-  // --- DOM
   const splash = document.getElementById('splash');
   const mainApp = document.getElementById('main-app');
   const navMenu = document.querySelector('.nav-menu');
@@ -24,14 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
   splash.style.display = 'flex';
   mainApp.style.display = 'none';
 
-  if (fill) {
-    setTimeout(() => { fill.style.width = '100%'; }, 200);
-  }
+  if (fill) setTimeout(() => { fill.style.width = '100%'; }, 200);
 
   function moveBgToActive(index) {
     const btn = navBtns[index];
     const menuRect = navMenu.getBoundingClientRect();
-
     requestAnimationFrame(() => {
       const btnRect = btn.getBoundingClientRect();
       const bgWidth = parseFloat(getComputedStyle(navBg).width);
@@ -80,20 +75,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- Анимация нажатия на .profile-card
   document.querySelectorAll('.profile-card').forEach((card) => {
     card.addEventListener('click', () => {
       if (card.classList.contains('is-disabled')) return;
       card.classList.remove('animate-press');
       void card.offsetWidth;
       card.classList.add('animate-press');
-      setTimeout(() => {
-        card.classList.remove('animate-press');
-      }, 200);
+      setTimeout(() => card.classList.remove('animate-press'), 200);
     });
   });
 
-  // --- Фильтрация карточек по табам
   const tabMap = {
     'все': 'all',
     'альбомы': 'album',
@@ -114,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- Профиль
   const nicknameEl = document.querySelector('.nickname');
   const balanceEl = document.querySelector('.balance-nick');
   const avatarEl = document.querySelector('.avatar');
@@ -135,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- Lottie-анимация
   const starBalance = document.getElementById('star-in-balance');
   if (starBalance && window.lottie) {
     lottie.loadAnimation({
@@ -147,7 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Оверлеи: настройки
   const settingItems = document.querySelectorAll('.setting-item');
   const balanceOverlay = document.getElementById('balance-overlay');
   const themeOverlay = document.getElementById('theme-overlay');
@@ -158,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
       item.addEventListener('click', (e) => {
         e.preventDefault();
         balanceOverlay.classList.add('show');
+        balanceOverlay.style.display = 'flex';
         balanceOverlay.scrollTo(0, 0);
       });
     }
@@ -165,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
       item.addEventListener('click', (e) => {
         e.preventDefault();
         themeOverlay.classList.add('show');
+        themeOverlay.style.display = 'flex';
         themeOverlay.scrollTo(0, 0);
       });
     }
@@ -173,12 +163,14 @@ document.addEventListener('DOMContentLoaded', () => {
   [balanceOverlay, themeOverlay].forEach(overlay => {
     if (overlay) {
       overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.classList.remove('show');
+        if (e.target === overlay) {
+          overlay.classList.remove('show');
+          overlay.style.display = 'none';
+        }
       });
     }
   });
 
-  // --- Переключение темы
   const themeBtn = document.querySelector('.theme-toggle-btn');
   if (themeBtn) {
     themeBtn.textContent = document.body.classList.contains('light') ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
@@ -190,7 +182,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Таймер дропа
   function startDropTimer(hours, minutes) {
     const display = document.getElementById('drop-countdown');
     if (!display) return;
@@ -208,7 +199,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   startDropTimer(3, 59);
 
-  // --- Старт дропа
   const startBtn = document.querySelector('.start-btn');
   const subscribeOverlay = document.getElementById('subscribe-overlay');
 
@@ -216,6 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startBtn.addEventListener('click', (e) => {
       e.preventDefault();
       subscribeOverlay?.classList.add('show');
+      subscribeOverlay.style.display = 'flex';
     });
   }
 
@@ -223,11 +214,11 @@ document.addEventListener('DOMContentLoaded', () => {
     subscribeOverlay.addEventListener('click', (e) => {
       if (e.target === subscribeOverlay) {
         subscribeOverlay.classList.remove('show');
+        subscribeOverlay.style.display = 'none';
       }
     });
   }
 
-  // --- Магазин
   const shopBtn = document.getElementById('go-to-shop');
   if (shopBtn) {
     shopBtn.addEventListener('click', (e) => {
@@ -245,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Задания
   const overlay = document.getElementById('task-overlay');
   const channelName = document.getElementById('channel-name');
   const goSubscribe = document.getElementById('go-subscribe');
@@ -262,6 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
         channelName.textContent = task.name;
         goSubscribe.href = task.url;
         overlay.classList.add('show');
+        overlay.style.display = 'flex';
       }
     });
   });
@@ -270,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) {
         overlay.classList.remove('show');
+        overlay.style.display = 'none';
       }
     });
   }
