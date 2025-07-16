@@ -1139,19 +1139,6 @@ background: #eaeaea;
   pointer-events: none;
 }
 
-.profile-card {
-  transition: transform 120ms ease, background-color 120ms ease;
-  background-color: white;
-  user-select: none;
-}
-
-.animate-press {
-  transform: scale(0.96);
-  transition: transform 0.2s ease;
-}
-
-.profile-card.animate-press {
-  transform: scale(0.96);
-  transition: transform 120ms ease, background-color 120ms ease;
+.profile-card:active {
   background-color: #888888;
 }

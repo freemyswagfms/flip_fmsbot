@@ -254,19 +254,4 @@ document.addEventListener('DOMContentLoaded', () => {
     { name: 'Free My Memes', url: 'https://t.me/freemyswagmemes' },
     { name: 'PBC', url: 'https://t.me/pbccarter' }
   ];
-
-  document.querySelectorAll('.profile-card').forEach((button) => {
-  button.addEventListener('mousedown', () => {
-    button.classList.add('animate-press');
-  });
-
-  const removeScale = () => button.classList.remove('animate-press');
-
-  button.addEventListener('mouseup', removeScale);
-  button.addEventListener('mouseleave', removeScale);
-  button.addEventListener('touchend', removeScale);
-  button.addEventListener('touchcancel', removeScale);
-});
-
-
 });
