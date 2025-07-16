@@ -415,7 +415,7 @@ body {
   width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
-  margin-bottom: 30px;
+  margin: 0 -1px 30px; /* только слегка вытягиваем */
 }
 
 .tab {
