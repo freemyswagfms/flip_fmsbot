@@ -1,16 +1,16 @@
+// flip_app_main.js
+
 document.addEventListener('DOMContentLoaded', () => {
   if (window.Telegram.WebApp) {
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
   }
 
-  // --- Тема
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'light') {
     document.body.classList.add('light');
   }
 
-  // --- DOM
   const splash = document.getElementById('splash');
   const mainApp = document.getElementById('main-app');
   const navMenu = document.querySelector('.nav-menu');
@@ -23,15 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   splash.style.display = 'flex';
   mainApp.style.display = 'none';
-
-  if (fill) {
-    setTimeout(() => { fill.style.width = '100%'; }, 200);
-  }
+  if (fill) setTimeout(() => { fill.style.width = '100%'; }, 200);
 
   function moveBgToActive(index) {
     const btn = navBtns[index];
     const menuRect = navMenu.getBoundingClientRect();
-
     requestAnimationFrame(() => {
       const btnRect = btn.getBoundingClientRect();
       const bgWidth = parseFloat(getComputedStyle(navBg).width);
@@ -85,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
           page.classList.remove('active');
         }
       });
-
       adjustTopPadding();
     });
   });
@@ -97,15 +92,13 @@ document.addEventListener('DOMContentLoaded', () => {
     'синглы': 'single',
     'артисты': 'artist'
   };
- // --- Поисковик
+
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-
       const selected = tab.textContent.trim().toLowerCase();
       const filterType = tabMap[selected];
-
       document.querySelectorAll('.card-placeholder').forEach(card => {
         const cat = card.dataset.category;
         if (filterType === 'all' || filterType === undefined) {
@@ -119,19 +112,43 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  const searchInput = document.querySelector('.search-bar input');
+  // --- FAB-поисковик с разворачиванием и фильтрацией
+  const searchFab = document.getElementById('searchFab');
+  const searchInput = searchFab?.querySelector('.search-input');
+  let isSearchOpen = false;
 
-if (searchInput) {
-  searchInput.disabled = false;
-
-  searchInput.addEventListener('input', () => {
-    const query = searchInput.value.trim().toLowerCase();
-    document.querySelectorAll('.card-placeholder').forEach(card => {
-      const text = card.textContent.toLowerCase();
-      card.style.display = text.includes(query) ? '' : 'none';
+  if (searchFab && searchInput) {
+    searchFab.addEventListener('click', (e) => {
+      if (isSearchOpen && e.target.closest('.search-icon')) {
+        searchFab.classList.remove('open');
+        searchInput.value = '';
+        isSearchOpen = false;
+        document.querySelectorAll('.card-placeholder').forEach(card => card.style.display = '');
+      } else if (!isSearchOpen) {
+        searchFab.classList.add('open');
+        isSearchOpen = true;
+        setTimeout(() => searchInput.focus(), 100);
+      }
+      e.stopPropagation();
     });
-  });
-}
+
+    document.addEventListener('click', (e) => {
+      if (isSearchOpen && !searchFab.contains(e.target)) {
+        searchFab.classList.remove('open');
+        searchInput.value = '';
+        isSearchOpen = false;
+        document.querySelectorAll('.card-placeholder').forEach(card => card.style.display = '');
+      }
+    });
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll('.card-placeholder').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(query) ? '' : 'none';
+      });
+    });
+  }
 
   // --- Профиль
   const nicknameEl = document.querySelector('.nickname');
@@ -154,50 +171,39 @@ if (searchInput) {
     }
   }
 
- // --- Оверлеи: Настройки
-const settingItems = document.querySelectorAll('.setting-item');
-const balanceOverlay = document.getElementById('balance-overlay');
-const themeOverlay = document.getElementById('theme-overlay');
+  // --- Оверлеи: Настройки
+  const settingItems = document.querySelectorAll('.setting-item');
+  const balanceOverlay = document.getElementById('balance-overlay');
+  const themeOverlay = document.getElementById('theme-overlay');
 
-if (settingItems.length) {
-  settingItems.forEach((item) => {
-    // Заменяем <br> на пробел и приводим к нижнему регистру
-    const text = item.innerHTML
-      .replace(/<br\s*\/?>/gi, ' ')     // заменяем <br> на пробел
-      .replace(/\s+/g, ' ')             // убираем лишние пробелы
-      .trim()
-      .toLowerCase();
+  if (settingItems.length) {
+    settingItems.forEach((item) => {
+      const text = item.innerHTML.replace(/<br\s*\/?>(\s*)?/gi, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+      if (text.includes('пополнение баланса') && balanceOverlay) {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          balanceOverlay.classList.add('show');
+          balanceOverlay.scrollTo(0, 0);
+        });
+      }
+      if (text.includes('внешний вид') && themeOverlay) {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          themeOverlay.classList.add('show');
+          themeOverlay.scrollTo(0, 0);
+        });
+      }
+    });
+  }
 
-    console.log('[настройка]', text); // для проверки в консоли
-
-    if (text.includes('пополнение баланса') && balanceOverlay) {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        balanceOverlay.classList.add('show');
-        balanceOverlay.scrollTo(0, 0);
-      });
-    }
-
-    if (text.includes('внешний вид') && themeOverlay) {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        themeOverlay.classList.add('show');
-        themeOverlay.scrollTo(0, 0);
+  [balanceOverlay, themeOverlay].forEach(overlay => {
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.classList.remove('show');
       });
     }
   });
-}
 
-// --- Закрытие оверлеев по клику снаружи
-[balanceOverlay, themeOverlay].forEach(overlay => {
-  if (overlay) {
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) overlay.classList.remove('show');
-    });
-  }
-});
-
-  // --- Переключение темы
   const themeBtn = document.querySelector('.theme-toggle-btn');
   if (themeBtn) {
     themeBtn.textContent = document.body.classList.contains('light') ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
@@ -209,12 +215,10 @@ if (settingItems.length) {
     });
   }
 
-  // --- Таймер дропа
   function startDropTimer(hours, minutes) {
     const display = document.getElementById('drop-countdown');
     if (!display) return;
     let totalSeconds = hours * 3600 + minutes * 60;
-
     function updateTimer() {
       const h = Math.floor(totalSeconds / 3600);
       const m = Math.floor((totalSeconds % 3600) / 60);
@@ -222,24 +226,20 @@ if (settingItems.length) {
       if (totalSeconds > 0) totalSeconds--;
       else clearInterval(timer);
     }
-
     updateTimer();
     const timer = setInterval(updateTimer, 60000);
   }
-
   startDropTimer(3, 59);
 
   // --- Кнопка старта дропа (оверлей подписки)
   const startBtn = document.querySelector('.start-btn');
   const subscribeOverlay = document.getElementById('subscribe-overlay');
-
   if (startBtn) {
     startBtn.addEventListener('click', (e) => {
       e.preventDefault();
       subscribeOverlay?.classList.add('show');
     });
   }
-
   if (subscribeOverlay) {
     subscribeOverlay.addEventListener('click', (e) => {
       if (e.target === subscribeOverlay) {
@@ -253,10 +253,8 @@ if (settingItems.length) {
   if (shopBtn) {
     shopBtn.addEventListener('click', (e) => {
       e.preventDefault();
-
       navBtns.forEach(b => b.classList.remove('active'));
       document.querySelector('.shop-icon')?.classList.add('active');
-
       pages.forEach(p => {
         if (p.id === 'shop') {
           p.style.display = '';
@@ -266,12 +264,10 @@ if (settingItems.length) {
           p.classList.remove('active');
         }
       });
-
       setTimeout(() => {
         const collectionTitle = document.getElementById('new-collection');
         collectionTitle?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
-
       moveBgToActive(navBtns.findIndex(b => b.classList.contains('shop-icon')));
     });
   }
@@ -280,22 +276,11 @@ if (settingItems.length) {
   const overlay = document.getElementById('task-overlay');
   const channelName = document.getElementById('channel-name');
   const goSubscribe = document.getElementById('go-subscribe');
-
   const tasks = [
-    {
-      name: 'Free My Leaks',
-      url: 'https://t.me/freemyleaks'
-    },
-    {
-      name: 'Free My Memes',
-      url: 'https://t.me/freemyswagmemes'
-    },
-    {
-      name: 'PBC',
-      url: 'https://t.me/pbccarter'
-    }
+    { name: 'Free My Leaks', url: 'https://t.me/freemyleaks' },
+    { name: 'Free My Memes', url: 'https://t.me/freemyswagmemes' },
+    { name: 'PBC', url: 'https://t.me/pbccarter' }
   ];
-
   document.querySelectorAll('.task-btn').forEach((btn, index) => {
     btn.addEventListener('click', () => {
       const task = tasks[index];
@@ -304,7 +289,6 @@ if (settingItems.length) {
       overlay.classList.add('show');
     });
   });
-
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) overlay.classList.remove('show');
   });

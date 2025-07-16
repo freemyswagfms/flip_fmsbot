@@ -545,6 +545,55 @@ body {
   height: 20px;
   opacity: 0.6;
 }
+/* === ПОИСК В КОЛЛЕКЦИИ (АВТОРАСКРЫТИЕ) === */
+
+.search-fab {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  left: 20px;
+  height: 50px;
+  width: 50px;
+  background: #888888;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+  z-index: 1001;
+  box-sizing: border-box;
+  transition: width 0.3s ease, border-radius 0.3s ease, background 0.3s ease;
+  overflow: hidden;
+}
+
+.search-fab.open {
+  width: calc(100% - 40px);
+  border-radius: 100px;
+}
+
+.search-fab img.search-icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.search-fab .search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-family: 'geologica';
+  font-size: 14px;
+  outline: none;
+  display: none;
+  transition: opacity 0.3s ease;
+}
+
+.search-fab.open .search-input {
+  display: block;
+}
+
 
 /* === ПРОФИЛЬ === */
 
