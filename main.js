@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderer: 'svg',
       loop: true,
       autoplay: true,
-      path: 'assets/icons/star.json' // обновлённый путь
+      path: 'assets/icons/star.json'
     });
   }
 
@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   startDropTimer(3, 59);
 
-  // --- Кнопка старта дропа (оверлей подписки)
+  // --- Кнопка старта дропа
   const startBtn = document.querySelector('.start-btn');
   const subscribeOverlay = document.getElementById('subscribe-overlay');
 
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Переход в магазин и скролл к новой коллекции
+  // --- Магазин
   const shopBtn = document.getElementById('go-to-shop');
   if (shopBtn) {
     shopBtn.addEventListener('click', (e) => {
@@ -264,24 +264,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Задания (task overlay)
+  // --- Задания
   const overlay = document.getElementById('task-overlay');
   const channelName = document.getElementById('channel-name');
   const goSubscribe = document.getElementById('go-subscribe');
 
   const tasks = [
-    {
-      name: 'Free My Leaks',
-      url: 'https://t.me/freemyleaks'
-    },
-    {
-      name: 'Free My Memes',
-      url: 'https://t.me/freemyswagmemes'
-    },
-    {
-      name: 'PBC',
-      url: 'https://t.me/pbccarter'
-    }
+    { name: 'Free My Leaks', url: 'https://t.me/freemyleaks' },
+    { name: 'Free My Memes', url: 'https://t.me/freemyswagmemes' },
+    { name: 'PBC', url: 'https://t.me/pbccarter' }
   ];
 
   document.querySelectorAll('.task-btn').forEach((btn, index) => {
@@ -295,5 +286,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) overlay.classList.remove('show');
+  });
+
+  // --- Анимация нажатия для profile-card
+  document.querySelectorAll('.profile-card').forEach(card => {
+    card.addEventListener('click', () => {
+      card.classList.remove('animate-press');
+      void card.offsetWidth; // перезапуск анимации
+      card.classList.add('animate-press');
+    });
   });
 });
