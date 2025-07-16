@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'синглы': 'single',
     'артисты': 'artist'
   };
-
+ // --- Поисковик
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       tabs.forEach(t => t.classList.remove('active'));
@@ -118,6 +118,20 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   });
+
+  const searchInput = document.querySelector('.search-bar input');
+
+if (searchInput) {
+  searchInput.disabled = false;
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.trim().toLowerCase();
+    document.querySelectorAll('.card-placeholder').forEach(card => {
+      const text = card.textContent.toLowerCase();
+      card.style.display = text.includes(query) ? '' : 'none';
+    });
+  });
+}
 
   // --- Профиль
   const nicknameEl = document.querySelector('.nickname');

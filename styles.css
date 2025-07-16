@@ -514,6 +514,7 @@ body {
 }
 
 .search-bar {
+ z-index: 99999;
   position: fixed;
   bottom: 80px;
   left: 20px;
