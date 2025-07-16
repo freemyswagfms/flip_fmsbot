@@ -1026,10 +1026,6 @@ body.light .balance-nick {
   line-height: 1;
 }
 
-.profile-card:active {
-  background: #eaeaea;
-}
-
 .level-card {
   all: unset; /* Сброс всех стандартных button-стилей */
   display: flex;
@@ -1124,12 +1120,6 @@ background: #eaeaea;
   transition: transform 0.2s ease, background 0.2s ease;
 }
 
-.profile-card.is-disabled:hover {
-  transform: scale(1.02);
-  background: #c6c6c6;
-  opacity: 0.8;
-}
-
 .profile-card.has-badge {
   position: relative;
 }
@@ -1150,26 +1140,18 @@ background: #eaeaea;
 }
 
 .profile-card {
-  transition: transform 0.2s ease, background 0.2s ease;
-}
-
-.profile-card:hover {
-}
-
-.profile-card:active {
-}
-
-@keyframes clickPress {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(0.96); }
-  100% { transform: scale(1); }
-}
-
-.profile-card.animate-press {
-  animation: clickPress 0.25s ease;
+  transition: transform 120ms ease, background-color 120ms ease;
+  background-color: white;
+  user-select: none;
 }
 
 .animate-press {
   transform: scale(0.96);
   transition: transform 0.2s ease;
+}
+
+.profile-card.animate-press {
+  transform: scale(0.96);
+  transition: transform 120ms ease, background-color 120ms ease;
+  background-color: #888888;
 }

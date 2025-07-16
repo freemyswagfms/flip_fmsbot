@@ -56,13 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 1400);
 
   pages.forEach(page => {
-    if (page.id === "home") {
-      page.style.display = '';
-      page.classList.add('active');
-    } else {
-      page.style.display = 'none';
-      page.classList.remove('active');
-    }
+    page.style.display = page.id === "home" ? '' : 'none';
+    page.classList.toggle('active', page.id === "home");
   });
 
   let activeIndex = navBtns.findIndex(btn => btn.classList.contains('active'));
@@ -77,16 +72,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const targetPage = btn.getAttribute('data-page');
       pages.forEach(page => {
-        if (page.id === targetPage) {
-          page.style.display = '';
-          page.classList.add('active');
-        } else {
-          page.style.display = 'none';
-          page.classList.remove('active');
-        }
+        page.style.display = (page.id === targetPage) ? '' : 'none';
+        page.classList.toggle('active', page.id === targetPage);
       });
 
       adjustTopPadding();
+    });
+  });
+
+  // --- Анимация нажатия на .profile-card
+  document.querySelectorAll('.profile-card').forEach((card) => {
+    card.addEventListener('click', () => {
+      if (card.classList.contains('is-disabled')) return;
+      card.classList.remove('animate-press');
+      void card.offsetWidth;
+      card.classList.add('animate-press');
+      setTimeout(() => {
+        card.classList.remove('animate-press');
+      }, 200);
     });
   });
 
@@ -102,19 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
     tab.addEventListener('click', () => {
       tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-
       const selected = tab.textContent.trim().toLowerCase();
       const filterType = tabMap[selected];
-
       document.querySelectorAll('.card-placeholder').forEach(card => {
         const cat = card.dataset.category;
-        if (filterType === 'all' || filterType === undefined) {
-          card.style.display = '';
-        } else if (cat === filterType) {
-          card.style.display = '';
-        } else {
-          card.style.display = 'none';
-        }
+        card.style.display = (!filterType || filterType === 'all' || cat === filterType) ? '' : 'none';
       });
     });
   });
@@ -140,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- Инициализация Lottie-звезды в балансе
+  // --- Lottie-анимация
   const starBalance = document.getElementById('star-in-balance');
   if (starBalance && window.lottie) {
     lottie.loadAnimation({
@@ -152,30 +147,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Оверлеи: Настройки
+  // --- Оверлеи: настройки
   const settingItems = document.querySelectorAll('.setting-item');
   const balanceOverlay = document.getElementById('balance-overlay');
   const themeOverlay = document.getElementById('theme-overlay');
 
-  if (settingItems.length) {
-    settingItems.forEach((item) => {
-      const text = item.textContent.trim();
-      if (text.includes('Пополнение баланса') && balanceOverlay) {
-        item.addEventListener('click', (e) => {
-          e.preventDefault();
-          balanceOverlay.classList.add('show');
-          balanceOverlay.scrollTo(0, 0);
-        });
-      }
-      if (text.includes('Внешний вид') && themeOverlay) {
-        item.addEventListener('click', (e) => {
-          e.preventDefault();
-          themeOverlay.classList.add('show');
-          themeOverlay.scrollTo(0, 0);
-        });
-      }
-    });
-  }
+  settingItems.forEach(item => {
+    const text = item.textContent.trim();
+    if (text.includes('Пополнение баланса') && balanceOverlay) {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        balanceOverlay.classList.add('show');
+        balanceOverlay.scrollTo(0, 0);
+      });
+    }
+    if (text.includes('Внешний вид') && themeOverlay) {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        themeOverlay.classList.add('show');
+        themeOverlay.scrollTo(0, 0);
+      });
+    }
+  });
 
   [balanceOverlay, themeOverlay].forEach(overlay => {
     if (overlay) {
@@ -202,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const display = document.getElementById('drop-countdown');
     if (!display) return;
     let totalSeconds = hours * 3600 + minutes * 60;
-
     function updateTimer() {
       const h = Math.floor(totalSeconds / 3600);
       const m = Math.floor((totalSeconds % 3600) / 60);
@@ -210,14 +202,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (totalSeconds > 0) totalSeconds--;
       else clearInterval(timer);
     }
-
     updateTimer();
     const timer = setInterval(updateTimer, 60000);
   }
 
   startDropTimer(3, 59);
 
-  // --- Кнопка старта дропа
+  // --- Старт дропа
   const startBtn = document.querySelector('.start-btn');
   const subscribeOverlay = document.getElementById('subscribe-overlay');
 
@@ -241,25 +232,15 @@ document.addEventListener('DOMContentLoaded', () => {
   if (shopBtn) {
     shopBtn.addEventListener('click', (e) => {
       e.preventDefault();
-
       navBtns.forEach(b => b.classList.remove('active'));
       document.querySelector('.shop-icon')?.classList.add('active');
-
       pages.forEach(p => {
-        if (p.id === 'shop') {
-          p.style.display = '';
-          p.classList.add('active');
-        } else {
-          p.style.display = 'none';
-          p.classList.remove('active');
-        }
+        p.style.display = (p.id === 'shop') ? '' : 'none';
+        p.classList.toggle('active', p.id === 'shop');
       });
-
       setTimeout(() => {
-        const collectionTitle = document.getElementById('new-collection');
-        collectionTitle?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('new-collection')?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
-
       moveBgToActive(navBtns.findIndex(b => b.classList.contains('shop-icon')));
     });
   }
@@ -268,45 +249,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const overlay = document.getElementById('task-overlay');
   const channelName = document.getElementById('channel-name');
   const goSubscribe = document.getElementById('go-subscribe');
-
   const tasks = [
     { name: 'Free My Leaks', url: 'https://t.me/freemyleaks' },
     { name: 'Free My Memes', url: 'https://t.me/freemyswagmemes' },
     { name: 'PBC', url: 'https://t.me/pbccarter' }
   ];
 
-  document.querySelectorAll('.task-btn').forEach((btn, index) => {
-    btn.addEventListener('click', () => {
-      const task = tasks[index];
-      channelName.textContent = task.name;
-      goSubscribe.href = task.url;
-      overlay.classList.add('show');
-    });
+  document.querySelectorAll('.profile-card').forEach((button) => {
+  button.addEventListener('mousedown', () => {
+    button.classList.add('animate-press');
   });
 
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) overlay.classList.remove('show');
-  });
+  const removeScale = () => button.classList.remove('animate-press');
 
-   // --- Анимация нажатия для profile-card (с авто-возвратом)
-  document.querySelectorAll('.profile-card').forEach((card) => {
-    card.addEventListener('click', () => {
-      // Сброс и повтор анимации
-      card.classList.remove('animate-press');
-      void card.offsetWidth;
-      card.classList.add('animate-press');
+  button.addEventListener('mouseup', removeScale);
+  button.addEventListener('mouseleave', removeScale);
+  button.addEventListener('touchend', removeScale);
+  button.addEventListener('touchcancel', removeScale);
+});
 
-      // Для .is-disabled — временно убираем класс, чтобы сбросить эффект
-      if (card.classList.contains('is-disabled')) {
-        setTimeout(() => {
-          card.classList.remove('animate-press');
-          card.classList.add('reset-temp');
 
-          setTimeout(() => {
-            card.classList.remove('reset-temp');
-          }, 10); // минимальная задержка
-        }, 200); // столько же, сколько длится анимация
-      }
-    });
-  });
 });
