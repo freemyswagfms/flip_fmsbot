@@ -152,38 +152,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Оверлеи: Настройки
-  const settingItems = document.querySelectorAll('.setting-item');
-  const balanceOverlay = document.getElementById('balance-overlay');
-  const themeOverlay = document.getElementById('theme-overlay');
+ // --- Оверлеи: Настройки
+const settingItems = document.querySelectorAll('.setting-item');
+const balanceOverlay = document.getElementById('balance-overlay');
+const themeOverlay = document.getElementById('theme-overlay');
 
-  if (settingItems.length) {
-    settingItems.forEach((item) => {
-      const text = item.textContent.trim();
-      if (text.includes('Пополнение баланса') && balanceOverlay) {
-        item.addEventListener('click', (e) => {
-          e.preventDefault();
-          balanceOverlay.classList.add('show');
-          balanceOverlay.scrollTo(0, 0);
-        });
-      }
-      if (text.includes('Внешний вид') && themeOverlay) {
-        item.addEventListener('click', (e) => {
-          e.preventDefault();
-          themeOverlay.classList.add('show');
-          themeOverlay.scrollTo(0, 0);
-        });
-      }
-    });
-  }
+if (settingItems.length) {
+  settingItems.forEach((item) => {
+    // Заменяем <br> на пробел и приводим к нижнему регистру
+    const text = item.innerHTML
+      .replace(/<br\s*\/?>/gi, ' ')     // заменяем <br> на пробел
+      .replace(/\s+/g, ' ')             // убираем лишние пробелы
+      .trim()
+      .toLowerCase();
 
-  [balanceOverlay, themeOverlay].forEach(overlay => {
-    if (overlay) {
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.classList.remove('show');
+    console.log('[настройка]', text); // для проверки в консоли
+
+    if (text.includes('пополнение баланса') && balanceOverlay) {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        balanceOverlay.classList.add('show');
+        balanceOverlay.scrollTo(0, 0);
+      });
+    }
+
+    if (text.includes('внешний вид') && themeOverlay) {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        themeOverlay.classList.add('show');
+        themeOverlay.scrollTo(0, 0);
       });
     }
   });
+}
+
+// --- Закрытие оверлеев по клику снаружи
+[balanceOverlay, themeOverlay].forEach(overlay => {
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('show');
+    });
+  }
+});
 
   // --- Переключение темы
   const themeBtn = document.querySelector('.theme-toggle-btn');
