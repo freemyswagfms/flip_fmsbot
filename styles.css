@@ -395,7 +395,7 @@ body {
 
 .page {
   min-height: calc(100vh - 70px); 
-  padding: 20px 20px 20px;
+  padding: 20px;
   box-sizing: border-box;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -404,11 +404,12 @@ body {
 .collection-tabs {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 30px;
   width: 100%;
+  margin-bottom: 30px;
 }
 
 .tab {
+  flex: none;
   font-family: 'cygre';
   font-size: 16px;
   color: white;
@@ -417,24 +418,12 @@ body {
   opacity: 0.5;
   cursor: pointer;
   white-space: nowrap;
-  flex: 1;
-  padding: 0;
-}
-
-.tab:first-child {
-  text-align: left;
-}
-.tab:last-child {
-  text-align: right;
-}
-.tab:nth-child(2),
-.tab:nth-child(3) {
-  text-align: center;
 }
 
 .tab.active {
   opacity: 1;
 }
+
 
 .title-profile {
   font-family: 'saar';
