@@ -254,4 +254,23 @@ document.addEventListener('DOMContentLoaded', () => {
     { name: 'Free My Memes', url: 'https://t.me/freemyswagmemes' },
     { name: 'PBC', url: 'https://t.me/pbccarter' }
   ];
+
+  document.querySelectorAll('.task-btn').forEach((btn, idx) => {
+    btn.addEventListener('click', () => {
+      if (overlay && channelName && goSubscribe) {
+        const task = tasks[idx % tasks.length];
+        channelName.textContent = task.name;
+        goSubscribe.href = task.url;
+        overlay.classList.add('show');
+      }
+    });
+  });
+
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        overlay.classList.remove('show');
+      }
+    });
+  }
 });

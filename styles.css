@@ -488,9 +488,9 @@ body {
 }
 
 .settings-title {
-  font-family: 'saar';
-  font-size: 32px;
-  font-weight: 400;
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
   color: white;
   text-align: center;
 }
@@ -1017,7 +1017,7 @@ body.light .balance-nick {
   padding: 20px 20px;
   border: none;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 120ms ease;
 }
 
 .level-main,
@@ -1141,8 +1141,4 @@ background: #eaeaea;
 
 .profile-card:active {
   background-color: #888888;
-}
-
-.profile-card {
-  transition: background-color 120ms ease;
 }
