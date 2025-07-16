@@ -1141,4 +1141,8 @@ background: #eaeaea;
   line-height: 1;
 }
 
-
+.tab.soon:hover {
+  opacity: 0.15;
+  transform: scale(0.98);
+  transition: all 0.3s ease;
+}
