@@ -1043,7 +1043,7 @@ body.light .balance-nick {
 }
 
 .level-card:active {
-background: #eaeaea;
+  background: #eaeaea;
 }
 
 .level-header {
