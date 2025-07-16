@@ -680,10 +680,6 @@ body {
   min-width: 120px;
 }
 
-.balance-card.secondary {
-  padding: 39px 62px;
-}
-
 .profile-cards {
   display: flex;
   flex-direction: column;
