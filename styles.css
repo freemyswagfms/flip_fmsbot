@@ -394,12 +394,19 @@ body {
 }
 
 .page {
-  min-height: calc(100vh - 70px); 
+  min-height: calc(100vh - 70px);
   padding: 20px;
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+}
+
+.collection-tabs-wrapper {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  /* ничего не трогаем — используем отступ от .page */
 }
 
 .collection-tabs {
@@ -422,13 +429,7 @@ body {
   opacity: 0.5;
   cursor: pointer;
   white-space: nowrap;
-}
-
-.collection-tabs-wrapper {
-  width: calc(100% + 40px); /* расширим чтобы выйти за паддинг */
-  margin: 0 -20px;
-  overflow-x: hidden;
-  box-sizing: border-box;
+  text-align: center;
 }
 
 .tab.active {
