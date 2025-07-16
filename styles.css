@@ -1120,15 +1120,6 @@ background: #eaeaea;
   background: #B2B2B2;
   color: black;
   line-height: 1.1;
-  opacity: 0.3;
-  pointer-events: none;
-  transition: all 0.3s ease;
-  transform: none;
-}
-
-.profile-card.is-disabled:hover {
-  opacity: 0.15;
-  transform: scale(0.97);
 }
 
 .profile-card.has-badge {
@@ -1148,10 +1139,8 @@ background: #eaeaea;
   bottom: 10px;
   pointer-events: none;
   line-height: 1;
-  animation: blink 1.6s infinite;
 }
 
-@keyframes blink {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; }
+.profile-card.is-disabled:active {
+background: #eaeaea;
 }
