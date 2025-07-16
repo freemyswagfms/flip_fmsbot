@@ -1006,6 +1006,7 @@ body.light .balance-nick {
 }
 
 .profile-card {
+  line-height: 1;
   text-align: left;
   background: white;
   color: black;
@@ -1019,6 +1020,12 @@ body.light .balance-nick {
   transition: background 0.2s;
 }
 
+.level-main,
+.level-percent,
+.level-label {
+  line-height: 1;
+}
+
 .profile-card:active {
   background: #eaeaea;
 }
@@ -1026,7 +1033,7 @@ body.light .balance-nick {
 .level-card {
   background: white;
   border-radius: 24px;
-  padding: 20px 20px 20px;
+  padding: 20px;
   font-weight: 300;
   display: flex;
   flex-direction: column;
