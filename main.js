@@ -288,20 +288,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === overlay) overlay.classList.remove('show');
   });
 
-  // --- Анимация нажатия для profile-card (с авто-возвратом)
-  document.querySelectorAll('.profile-card').forEach(card => {
+   // --- Анимация нажатия для profile-card (с авто-возвратом)
+  document.querySelectorAll('.profile-card').forEach((card) => {
     card.addEventListener('click', () => {
+      // Сброс и повтор анимации
       card.classList.remove('animate-press');
       void card.offsetWidth;
       card.classList.add('animate-press');
 
+      // Для .is-disabled — временно убираем класс, чтобы сбросить эффект
       if (card.classList.contains('is-disabled')) {
         setTimeout(() => {
-          card.blur();
           card.classList.remove('animate-press');
-        }, 200);
+          card.classList.add('reset-temp');
+
+          setTimeout(() => {
+            card.classList.remove('reset-temp');
+          }, 10); // минимальная задержка
+        }, 200); // столько же, сколько длится анимация
       }
     });
-  }); // ← Закрываем forEach корректно
-
-}); // ← Закрываем document.addEventListener('DOMContentLoaded', ...)
+  });
+});
