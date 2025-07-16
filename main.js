@@ -288,12 +288,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === overlay) overlay.classList.remove('show');
   });
 
-  // --- Анимация нажатия для profile-card
+  // --- Анимация нажатия для profile-card (с авто-возвратом)
   document.querySelectorAll('.profile-card').forEach(card => {
     card.addEventListener('click', () => {
       card.classList.remove('animate-press');
-      void card.offsetWidth; // перезапуск анимации
+      void card.offsetWidth;
       card.classList.add('animate-press');
+
+      if (card.classList.contains('is-disabled')) {
+        setTimeout(() => {
+          card.blur();
+          card.classList.remove('animate-press');
+        }, 200);
+      }
     });
-  });
-});
+  }); // ← Закрываем forEach корректно
+
+}); // ← Закрываем document.addEventListener('DOMContentLoaded', ...)
