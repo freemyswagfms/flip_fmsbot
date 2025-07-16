@@ -936,11 +936,34 @@ body {
 .overlay .tasks {
   width: 100%;
   box-sizing: border-box;
+   z-index: 99999;
 }
 
 .overlay .task {
+  z-index: 99999;
   width: 100%;
   box-sizing: border-box;
+}
+
+#task-overlay {
+  z-index: 99999;
+  position: fixed;
+  inset: 0;
+  min-height: 100vh;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  transition: opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#task-overlay.show {
+  display: flex;
+  opacity: 1;
+  pointer-events: all;
 }
 
 /* overlay с id */
