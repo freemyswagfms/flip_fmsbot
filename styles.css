@@ -1137,7 +1137,6 @@ background: #eaeaea;
   position: absolute;
   right: 10px;
   bottom: 10px;
-  pointer-events: none;
   line-height: 1;
 }
 
