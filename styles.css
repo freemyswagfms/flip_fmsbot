@@ -825,23 +825,21 @@ body {
   height: 100%;
   top: 0;
   left: 0;
-  transform: scaleX(0);
   transform-origin: left;
-  animation: fillGrow 0.8s ease-out forwards;
+}
+
+.level-fill.green {
+  background: #9EFF44;
+  width: 100%;
+  z-index: 1;
 }
 
 .level-fill.blue {
   background: #317BFF;
   width: 50%;
-  z-index: 1;
-}
-
-.level-fill.green {
-  background: #9EFF44;
-  width: 50%;
-  left: 50%;
   z-index: 2;
-  animation-delay: 0.8s;
+  transform: scaleX(0);
+  animation: fillGrow 0.8s ease-out forwards;
 }
 
 @keyframes fillGrow {
@@ -849,6 +847,7 @@ body {
     transform: scaleX(1);
   }
 }
+
 
 /* === ПРОФИЛЬ: БЭЙДЖИ === */
 

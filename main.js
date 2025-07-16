@@ -1,16 +1,19 @@
 // flip_app_main.js
 
 document.addEventListener('DOMContentLoaded', () => {
+  // === Telegram WebApp Init ===
   if (window.Telegram.WebApp) {
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
   }
 
+  // === Тема (светлая/тёмная) ===
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'light') {
     document.body.classList.add('light');
   }
 
+  // === DOM Элементы ===
   const splash = document.getElementById('splash');
   const mainApp = document.getElementById('main-app');
   const navMenu = document.querySelector('.nav-menu');
@@ -21,10 +24,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabs = document.querySelectorAll('.tab');
   const user = window.Telegram.WebApp.initDataUnsafe?.user;
 
+  // === Анимация загрузки ===
   splash.style.display = 'flex';
   mainApp.style.display = 'none';
   if (fill) setTimeout(() => { fill.style.width = '100%'; }, 200);
 
+  // === Анимация заднего фона под активной иконкой ===
   function moveBgToActive(index) {
     const btn = navBtns[index];
     const menuRect = navMenu.getBoundingClientRect();
@@ -36,11 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // === Коррекция отступа сверху (для fullscreen) ===
   function adjustTopPadding() {
     const isFullscreen = window.innerHeight === screen.height;
     mainApp.style.paddingTop = (isFullscreen ? 60 : 1) + 'px';
   }
 
+  // === Переход от splash к main ===
   setTimeout(() => {
     splash.style.opacity = '0';
     setTimeout(() => {
@@ -51,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
   }, 1400);
 
+  // === Навигация между страницами ===
   pages.forEach(page => {
     if (page.id === "home") {
       page.style.display = '';
@@ -76,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (page.id === targetPage) {
           page.style.display = '';
           page.classList.add('active');
+          if (targetPage === 'profile') animateLevelPercent();
         } else {
           page.style.display = 'none';
           page.classList.remove('active');
@@ -85,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- Фильтрация карточек по табам
+  // === Фильтрация карточек по табам ===
   const tabMap = {
     'все': 'all',
     'альбомы': 'album',
@@ -112,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- FAB-поисковик с разворачиванием и фильтрацией
+  // === FAB-поисковик с разворачиванием ===
   const searchFab = document.getElementById('searchFab');
   const searchInput = searchFab?.querySelector('.search-input');
   let isSearchOpen = false;
@@ -150,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Профиль
+  // === Отображение профиля ===
   const nicknameEl = document.querySelector('.nickname');
   const balanceEl = document.querySelector('.balance-nick');
   const avatarEl = document.querySelector('.avatar');
@@ -171,7 +180,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- Оверлеи: Настройки
+  // === Анимация процентов уровня ===
+  function animateLevelPercent() {
+    const percentEl = document.querySelector('.level-percent');
+    if (percentEl) {
+      const raw = percentEl.dataset.percent || percentEl.textContent;
+      const finalValue = parseInt(raw);
+      if (isNaN(finalValue)) return;
+
+      let current = 0;
+      const step = () => {
+        current++;
+        percentEl.textContent = `${current}%`;
+        if (current < finalValue) {
+          requestAnimationFrame(step);
+        }
+      };
+      percentEl.textContent = `0%`;
+      requestAnimationFrame(step);
+    }
+  }
+
+  // === Оверлеи: настройки и внешний вид ===
   const settingItems = document.querySelectorAll('.setting-item');
   const balanceOverlay = document.getElementById('balance-overlay');
   const themeOverlay = document.getElementById('theme-overlay');
@@ -204,6 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // === Переключение темы ===
   const themeBtn = document.querySelector('.theme-toggle-btn');
   if (themeBtn) {
     themeBtn.textContent = document.body.classList.contains('light') ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
@@ -215,6 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // === Таймер дропа ===
   function startDropTimer(hours, minutes) {
     const display = document.getElementById('drop-countdown');
     if (!display) return;
@@ -231,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   startDropTimer(3, 59);
 
-  // --- Кнопка старта дропа (оверлей подписки)
+  // === Оверлей подписки по кнопке старта ===
   const startBtn = document.querySelector('.start-btn');
   const subscribeOverlay = document.getElementById('subscribe-overlay');
   if (startBtn) {
@@ -248,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Переход в магазин и скролл к новой коллекции
+  // === Переход в магазин и скролл к новой коллекции ===
   const shopBtn = document.getElementById('go-to-shop');
   if (shopBtn) {
     shopBtn.addEventListener('click', (e) => {
@@ -272,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Задания (task overlay)
+  // === Оверлей заданий ===
   const overlay = document.getElementById('task-overlay');
   const channelName = document.getElementById('channel-name');
   const goSubscribe = document.getElementById('go-subscribe');
