@@ -1041,6 +1041,9 @@ body.light .balance-nick {
   overflow: hidden;
   box-sizing: border-box;
 }
+.level-card:active {
+background: #eaeaea;
+}
 
 .level-header {
   display: flex;
