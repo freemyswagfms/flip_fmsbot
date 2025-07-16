@@ -1130,11 +1130,6 @@ background: #eaeaea;
   opacity: 0.8;
 }
 
-.profile-card.is-disabled:active {
-  transform: scale(0.96);
-  background: #e0e0e0;
-}
-
 .profile-card.has-badge {
   position: relative;
 }
