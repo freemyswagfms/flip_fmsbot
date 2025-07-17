@@ -1308,8 +1308,8 @@ body.light .balance-nick {
 }
 
 .ring-bg {
-  stroke: #E4EFFF;
-  stroke-width: 3.5;
+  stroke: white;
+  stroke-width: 3;
 }
 
 .ring-green {
