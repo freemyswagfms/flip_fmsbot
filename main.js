@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // === DOM Элементы ===
   const splash = document.getElementById('splash');
+  // === Страница достижений ===
+  const achievementsBtn = document.getElementById('achievements');
+  const achievementsPage = document.getElementById('achievements-page');
+  const backBtn = achievementsPage?.querySelector('.back-btn');
   const mainApp = document.getElementById('main-app');
   const navMenu = document.querySelector('.nav-menu');
   const navBtns = Array.from(document.querySelectorAll('.nav-btn'));
@@ -57,6 +61,43 @@ document.addEventListener('DOMContentLoaded', () => {
       moveBgToActive(activeIndex);
     }, 500);
   }, 1400);
+
+  if (achievementsBtn && achievementsPage && backBtn) {
+  achievementsBtn.addEventListener('click', () => {
+    // Скрываем все обычные страницы
+    pages.forEach(p => {
+      p.style.display = 'none';
+      p.classList.remove('active');
+    });
+
+    // Скрываем нижнее меню
+    navMenu.style.display = 'none';
+
+    // Показываем страницу достижений
+    achievementsPage.style.display = 'block';
+    achievementsPage.classList.add('active');
+  });
+
+  backBtn.addEventListener('click', () => {
+    // Скрываем страницу достижений
+    achievementsPage.style.display = 'none';
+    achievementsPage.classList.remove('active');
+
+    // Возвращаем профиль
+    const profilePage = document.getElementById('profile');
+    if (profilePage) {
+      profilePage.style.display = '';
+      profilePage.classList.add('active');
+    }
+
+    // Показываем нижнее меню обратно
+    navMenu.style.display = '';
+
+    // Перемещаем фоновый кружок под иконку профиля
+    const profileIdx = navBtns.findIndex(b => b.classList.contains('profile-icon'));
+    moveBgToActive(profileIdx);
+  });
+}
 
   // === Навигация между страницами ===
   pages.forEach(page => {

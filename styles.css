@@ -1175,3 +1175,35 @@ body.light .card-footer {
 body.light .balance-nick {
   color: #048876;
 }
+
+/* === СТРАНИЦА ДОСТИЖЕНИЙ === */
+
+.achievements-page {
+  position: fixed;
+  inset: 0;
+  background-color: #0A0A0A;
+  z-index: 99999;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.achievements-content {
+  max-width: 600px;
+  margin: 0 auto;
+  padding-top: 60px;
+}
+
+.back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: #9EFF44;
+  color: black;
+  font-family: 'geologica';
+  font-size: 16px;
+  padding: 10px 18px;
+  border-radius: 100px;
+  border: none;
+  z-index: 100000;
+  cursor: pointer;
+}
