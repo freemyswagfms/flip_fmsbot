@@ -320,13 +320,79 @@
 
 
 <!-- Страница достижений -->
-<div id="achievements-page" class="achievements-page" style="display: none;">
+<div id="achievements-page" class="page">
   <button class="back-btn">← назад</button>
-  <div class="achievements-content">
-    <p class="title">МОИ ДОСТИЖЕНИЯ</p>
-    <p style="color:white; text-align:center;">(сюда добавим карточки позже)</p>
+  <h2 class="achievements-title">МОИ ДОСТИЖЕНИЯ</h2>
+  <div class="achievements-subcount">5/37</div>
+
+  <div class="achievements-list">
+    <!-- === ПЕРВЫЙ ШАГ (готово, можно забрать) === -->
+    <div class="achievement-card done">
+      <div class="achievement-content">
+        <div class="achievement-title">ПЕРВЫЙ ШАГ</div>
+        <div class="achievement-subtitle">получи свою первую карточку</div>
+        <button class="achievement-btn green">забрать</button>
+      </div>
+      <div class="achievement-icon">
+        <img src="/assets/icons/checkmark.svg" alt="✓" />
+      </div>
+    </div>
+
+    <!-- === УДАЧНЫЙ ОБМЕН (не выполнено) === -->
+    <div class="achievement-card in-progress">
+      <div class="achievement-content">
+        <div class="achievement-title">УДАЧНЫЙ ОБМЕН</div>
+        <div class="achievement-subtitle">обменивай карточку с другим пользователем</div>
+        <button class="achievement-btn ghost">награда</button>
+      </div>
+   <div class="achievement-icon progress">
+  <div class="progress-ring">
+    <svg class="progress-svg" viewBox="0 0 36 36">
+      <circle class="ring-bg" cx="18" cy="18" r="16"/>
+      <circle class="ring-green" cx="18" cy="18" r="16" stroke-dasharray="100" stroke-dashoffset="0"/>
+      <circle class="ring-blue" cx="18" cy="18" r="16" stroke-dasharray="0" stroke-dashoffset="0"/>
+    </svg>
+    <div class="progress-text">0/1</div>
   </div>
 </div>
+    </div>
+
+    <!-- === ПРОКАЧКА (в процессе) === -->
+    <div class="achievement-card in-progress">
+      <div class="achievement-content">
+        <div class="achievement-title">ПРОКАЧКА</div>
+        <div class="achievement-subtitle">достигни 5-го уровня</div>
+        <button class="achievement-btn ghost">награда</button>
+      </div>
+      <div class="achievement-icon progress">
+  <div class="progress-ring">
+    <svg class="progress-svg" viewBox="0 0 36 36">
+      <circle class="ring-bg" cx="18" cy="18" r="16"/>
+      <circle class="ring-green" cx="18" cy="18" r="16" stroke-dasharray="100" stroke-dashoffset="0"/>
+      <circle class="ring-blue" cx="18" cy="18" r="16" stroke-dasharray="40" stroke-dashoffset="0"/>
+    </svg>
+    <div class="progress-text">2/5</div>
+  </div>
+</div>
+    </div>
+
+    <!-- === ПОВТОРКА! (выполнено, награда собрана) === -->
+    <div class="achievement-card static">
+      <div class="achievement-content">
+        <div class="achievement-title">ПОВТОРКА!</div>
+        <div class="achievement-subtitle">поймай дубликат</div>
+        <button class="achievement-btn blue" disabled>выполнено</button>
+      </div>
+      <div class="achievement-icon">
+        <img src="/assets/icons/checkmark.svg" alt="✓" />
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
 
 </body>
 </html>

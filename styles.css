@@ -1176,34 +1176,161 @@ body.light .balance-nick {
   color: #048876;
 }
 
-/* === СТРАНИЦА ДОСТИЖЕНИЙ === */
+/* === ДОСТИЖЕНИЯ: КАРТОЧКИ === */
 
-.achievements-page {
-  position: fixed;
-  inset: 0;
-  background-color: #0A0A0A;
-  z-index: 99999;
-  padding: 20px;
-  overflow-y: auto;
+.achievements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.achievements-content {
-  max-width: 600px;
-  margin: 0 auto;
-  padding-top: 60px;
+.achievement-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-.back-btn {
-  position: fixed;
-  top: 20px;
-  left: 20px;
+.achievement-content .achievement-title {
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
+  color: black;
+  margin-bottom: 1px;
+}
+
+.achievement-content .achievement-subtitle {
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 300;
+  color: black;
+  opacity: 0.8;
+  margin-bottom: 15px;
+}
+
+.achievements-title {
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  text-align: center;
+  margin-top: 16px;
+  margin-bottom: 15px;
+}
+
+.achievements-subcount {
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
+  color: white;
+  opacity: 0.8;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.achievement-card {
+  background: white;
+  border-radius: 20px;
+  padding:20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.achievement-btn {
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 300;
+  border-radius: 50px;
+  padding: 12px 25px;
+  border: none;
+  cursor: pointer;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.achievement-btn.green {
   background: #9EFF44;
   color: black;
+}
+
+.achievement-btn.ghost {
+  background: #f2f2f2;
+  color: black;
+  border: 1px solid #333333;
+}
+
+.achievement-btn.blue {
+  background: #317BFF;
+  color: white;
+  cursor: default;
+  pointer-events: none;
+}
+
+.achievement-icon {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #3F8CFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.achievement-icon img {
+  width: 32px;
+  height: 24px;
+}
+
+.achievement-icon.progress {
+  background: none;
+  color: #3F8CFF;
   font-family: 'geologica';
-  font-size: 16px;
-  padding: 10px 18px;
-  border-radius: 100px;
-  border: none;
-  z-index: 100000;
-  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.progress-ring {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+
+.progress-svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.progress-svg circle {
+  fill: white;
+}
+
+.ring-bg {
+  stroke: #E4EFFF;
+  stroke-width: 3.5;
+}
+
+.ring-green {
+  stroke: #9EFF44;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+}
+
+.ring-blue {
+  stroke: #3F8CFF;
+  stroke-dasharray: 40; /* для 2/5 */
+  stroke-dashoffset: 0;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 500;
+  color: #3F8CFF;
 }

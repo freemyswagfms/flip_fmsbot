@@ -28,6 +28,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabs = document.querySelectorAll('.tab');
   const user = window.Telegram.WebApp.initDataUnsafe?.user;
 
+  // === Достижения: кнопка "забрать" ===
+document.querySelectorAll('.achievement-card[data-status="ready-to-claim"] .claim').forEach(button => {
+  button.addEventListener('click', (e) => {
+    const card = e.target.closest('.achievement-card');
+    if (!card) return;
+
+    // Меняем статус
+    card.setAttribute('data-status', 'completed');
+
+    // Заменяем кнопку
+    const btn = document.createElement('div');
+    btn.className = 'achievement-btn collected';
+    btn.textContent = 'выполнено';
+    button.replaceWith(btn);
+
+    // Добавляем чекмарку
+    if (!card.querySelector('.status-icon')) {
+      const icon = document.createElement('div');
+      icon.className = 'status-icon checkmark';
+      card.appendChild(icon);
+    }
+  });
+});
+
   // === Анимация загрузки ===
   splash.style.display = 'flex';
   mainApp.style.display = 'none';
