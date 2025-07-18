@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // === Переход на страницу "Мой счёт" по кнопке уровня ===
     // === Анимация потягивания плашки уровня ===
 const statusBar = document.querySelector('.level-status-bar');
-const statusInner = document.querySelector('.status-inner');
+const statusInner = document.querySelector('.level-status-bar');
 let startY = 0;
 let dragging = false;
 
