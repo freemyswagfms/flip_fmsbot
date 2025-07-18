@@ -1305,7 +1305,7 @@ body.light .balance-nick {
 
 .progress-svg circle {
   fill: none;
-  stroke-width: 2;
+  stroke-width: 1;
 }
 
 .ring-green {
@@ -1317,6 +1317,11 @@ body.light .balance-nick {
   stroke: #00AFFF;
   stroke-linecap: round;
   transition: stroke-dashoffset 1s ease;
+}
+
+.ring-green,
+.ring-blue {
+  stroke-width: 1;
 }
 
 
