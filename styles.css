@@ -1478,4 +1478,44 @@ body.light .balance-nick {
   font-weight: 800;
 }
 
+.dotted-line.current-link {
+  height: 50px;
+  width: 2px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.2) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
 
+.dotted-line.half-next {
+  height: 25px;
+  width: 2px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.2) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+.dotted-line.invisible {
+  height: 25px;
+  width: 2px;
+  visibility: hidden;
+}
+
+.dotted-line.half-up {
+  height: 25px;
+  width: 2px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.2) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
