@@ -1304,25 +1304,21 @@ body.light .balance-nick {
 }
 
 .progress-svg circle {
-  fill: white;
-}
-
-.ring-bg {
-  stroke: white;
-  stroke-width: 3;
+  fill: none;
+  stroke-width: 2;
 }
 
 .ring-green {
-  stroke: #9EFF44;
-  stroke-dasharray: 100;
-  stroke-dashoffset: 0;
+  stroke: #B4FF5B;
+  stroke-linecap: round;
 }
 
 .ring-blue {
-  stroke: #3F8CFF;
-  stroke-dasharray: 40; /* для 2/5 */
-  stroke-dashoffset: 0;
+  stroke: #00AFFF;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease;
 }
+
 
 .progress-text {
   position: absolute;

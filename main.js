@@ -67,6 +67,35 @@ document.querySelectorAll('.achievement-card[data-status="ready-to-claim"] .clai
       const centerX = btnRect.left + btnRect.width / 2 - menuRect.left;
       navBg.style.left = `${centerX - bgWidth / 2}px`;
     });
+
+    function animateAchievementProgress() {
+  const cards = document.querySelectorAll('.achievement-card.in-progress');
+
+  cards.forEach(card => {
+    const valueText = card.querySelector('.progress-text')?.textContent.trim();
+    if (!valueText) return;
+
+    const [current, total] = valueText.split('/').map(Number);
+    if (isNaN(current) || isNaN(total) || total === 0) return;
+
+    const progress = current / total;
+    const circle = card.querySelector('.ring-blue');
+    if (!circle) return;
+
+    const radius = parseFloat(circle.getAttribute('r'));
+    const circumference = 2 * Math.PI * radius;
+
+    circle.style.strokeDasharray = `${circumference}`;
+    circle.style.strokeDashoffset = `${circumference}`;
+
+    setTimeout(() => {
+      circle.style.transition = 'stroke-dashoffset 1s ease';
+      circle.style.strokeDashoffset = `${circumference * (1 - progress)}`;
+    }, 100);
+  });
+}
+
+
   }
 
   // === Коррекция отступа сверху (для fullscreen) ===
@@ -98,9 +127,15 @@ document.querySelectorAll('.achievement-card[data-status="ready-to-claim"] .clai
     navMenu.style.display = 'none';
 
     // Показываем страницу достижений
-    achievementsPage.style.display = 'block';
+        achievementsPage.style.display = 'block';
     achievementsPage.classList.add('active');
+
+    // ⬇️ ДОБАВЬ вот эту строку
+    animateAchievementProgress();
+
   });
+
+  
 
   backBtn.addEventListener('click', () => {
     // Скрываем страницу достижений
@@ -390,3 +425,31 @@ document.querySelectorAll('.achievement-card[data-status="ready-to-claim"] .clai
     if (e.target === overlay) overlay.classList.remove('show');
   });
 });
+
+function animateAchievementProgress() {
+  const cards = document.querySelectorAll('.achievement-card.in-progress');
+
+  cards.forEach(card => {
+    const valueText = card.querySelector('.progress-text')?.textContent.trim();
+    if (!valueText) return;
+
+    const [current, total] = valueText.split('/').map(Number);
+    if (isNaN(current) || isNaN(total) || total === 0) return;
+
+    const progress = current / total;
+    const circle = card.querySelector('.ring-blue');
+    if (!circle) return;
+
+    const radius = parseFloat(circle.getAttribute('r'));
+    const circumference = 2 * Math.PI * radius;
+
+    // Устанавливаем полную длину круга
+    circle.style.strokeDasharray = `${circumference}`;
+    circle.style.strokeDashoffset = `${circumference}`;
+
+    // Триггерим анимацию
+    setTimeout(() => {
+      circle.style.strokeDashoffset = `${circumference * (1 - progress)}`;
+    }, 100);
+  });
+}
