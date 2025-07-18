@@ -1467,6 +1467,15 @@ body.light .balance-nick {
   will-change: transform;
 }
 
+.status-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: height 0.25s ease;
+}
+
 .status-text {
   font-family: 'cygre';
   font-size: 24px;

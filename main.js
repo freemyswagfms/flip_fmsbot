@@ -30,33 +30,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // === Переход на страницу "Мой счёт" по кнопке уровня ===
     // === Анимация потягивания плашки уровня ===
- const statusBar = document.querySelector('.level-status-bar');;
-  let startY = 0;
-  let currentY = 0;
-  let dragging = false;
+const statusBar = document.querySelector('.level-status-bar');
+const statusInner = document.querySelector('.status-inner');
+let startY = 0;
+let dragging = false;
 
-  if (statusBar) {
-    statusBar.addEventListener('touchstart', (e) => {
-      startY = e.touches[0].clientY;
-      dragging = true;
-    });
+if (statusBar && statusInner) {
+  statusBar.addEventListener('touchstart', (e) => {
+    dragging = true;
+    startY = e.touches[0].clientY;
+  });
 
-    statusBar.addEventListener('touchmove', (e) => {
-      if (!dragging) return;
-      currentY = e.touches[0].clientY;
-      const diff = startY - currentY;
+  statusBar.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    const currentY = e.touches[0].clientY;
+    const diff = startY - currentY;
 
-      const maxLift = 60;
-      const translateY = Math.max(Math.min(diff, maxLift), 0);
+    const maxStretch = 100;
+    const stretch = Math.max(Math.min(diff, maxStretch), 0);
 
-      statusBar.style.transform = `translateY(-${translateY}px)`;
-    });
+    statusInner.style.height = `${100 + stretch}px`;
+  });
 
-    statusBar.addEventListener('touchend', () => {
-      dragging = false;
-      statusBar.style.transform = `translateY(0)`;
-    });
-  }
+  statusBar.addEventListener('touchend', () => {
+    dragging = false;
+    statusInner.style.height = `100px`;
+  });
+}
+
 
 const levelBtn = document.getElementById('level');
 const balancePage = document.getElementById('balance-page');
