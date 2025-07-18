@@ -1255,7 +1255,7 @@ body.light .balance-nick {
 }
 
 .achievement-btn.ghost {
-  background: #f2f2f2;
+  background: white;
   color: black;
   border: 1px solid #333333;
 }
@@ -1333,5 +1333,5 @@ body.light .balance-nick {
   font-family: 'geologica';
   font-size: 14px;
   font-weight: 500;
-  color: #3F8CFF;
+  color: #333333;
 }
