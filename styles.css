@@ -1177,7 +1177,6 @@ body.light .balance-nick {
 }
 
 /* === ДОСТИЖЕНИЯ: КАРТОЧКИ === */
-
 .achievements-list {
   display: flex;
   flex-direction: column;
@@ -1335,3 +1334,148 @@ body.light .balance-nick {
   font-weight: 500;
   color: #333333;
 }
+
+/* === МОЙ СЧЁТ === */
+.balance-page {
+  padding: 20px;
+  display: none;
+}
+
+.balance-page .page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.balance-page .page-title {
+  font-family: 'geologica';
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.balance-title {
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  text-align: center;
+  margin-top: 16px;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* === МОЙ СЧЁТ: УРОВНИ === */
+
+.level-track {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
+  margin-bottom: 50px;
+  position: relative;
+}
+
+.dotted-line {
+  height: 50px;
+  width: 3px;
+  margin: 0 auto;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.3),
+    rgba(255, 255, 255, 0.3) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+
+.level {
+  line-height: 1;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  font-family: 'geologica';
+  font-size: 72px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+
+.level.passed {
+  background-color: #317BFF;
+  color: white;
+}
+
+.level.current {
+  background-color: transparent;
+  border: 2px solid #9EFF44;
+  color: #9EFF44;
+}
+
+.level.upcoming {
+  background-color: transparent;
+  border: 2px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.4);
+}
+
+.dotted-line {
+  width: 2px;
+  height: 50px;;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.2) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+.dotted-line.passed {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #9EFF44,
+    #9EFF44 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+/* === МОЙ СЧЁТ: ПЛАШКА ВНИЗУ === */
+.level-status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background-color: #317BFF;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  text-align: center;
+  color: white;
+}
+
+.status-text {
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.4;
+  margin: 0;
+  padding: 0;
+}
+
+.status-text .xp-left {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+

@@ -28,6 +28,39 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabs = document.querySelectorAll('.tab');
   const user = window.Telegram.WebApp.initDataUnsafe?.user;
 
+  // === Переход на страницу "Мой счёт" по кнопке уровня ===
+const levelBtn = document.getElementById('level');
+const balancePage = document.getElementById('balance-page');
+
+if (levelBtn && balancePage) {
+  levelBtn.addEventListener('click', () => {
+    pages.forEach(p => {
+      p.style.display = 'none';
+      p.classList.remove('active');
+    });
+    navMenu.style.display = 'none';
+    balancePage.style.display = 'block';
+    balancePage.classList.add('active');
+  });
+
+  const balanceBackBtn = balancePage.querySelector('.back-btn');
+  if (balanceBackBtn) {
+    balanceBackBtn.addEventListener('click', () => {
+      balancePage.style.display = 'none';
+      balancePage.classList.remove('active');
+
+      const profilePage = document.getElementById('profile');
+      profilePage.style.display = '';
+      profilePage.classList.add('active');
+
+      navMenu.style.display = '';
+      const profileIdx = navBtns.findIndex(b => b.classList.contains('profile-icon'));
+      moveBgToActive(profileIdx);
+    });
+  }
+}
+
+
   // === Достижения: кнопка "забрать" ===
 document.querySelectorAll('.achievement-card[data-status="ready-to-claim"] .claim').forEach(button => {
   button.addEventListener('click', (e) => {
@@ -68,33 +101,7 @@ document.querySelectorAll('.achievement-card[data-status="ready-to-claim"] .clai
       navBg.style.left = `${centerX - bgWidth / 2}px`;
     });
 
-    function animateAchievementProgress() {
-  const cards = document.querySelectorAll('.achievement-card.in-progress');
-
-  cards.forEach(card => {
-    const valueText = card.querySelector('.progress-text')?.textContent.trim();
-    if (!valueText) return;
-
-    const [current, total] = valueText.split('/').map(Number);
-    if (isNaN(current) || isNaN(total) || total === 0) return;
-
-    const progress = current / total;
-    const circle = card.querySelector('.ring-blue');
-    if (!circle) return;
-
-    const radius = parseFloat(circle.getAttribute('r'));
-    const circumference = 2 * Math.PI * radius;
-
-    circle.style.strokeDasharray = `${circumference}`;
-    circle.style.strokeDashoffset = `${circumference}`;
-
-    setTimeout(() => {
-      circle.style.transition = 'stroke-dashoffset 1s ease';
-      circle.style.strokeDashoffset = `${circumference * (1 - progress)}`;
-    }, 100);
-  });
-}
-
+    
 
   }
 
@@ -117,6 +124,8 @@ document.querySelectorAll('.achievement-card[data-status="ready-to-claim"] .clai
 
   if (achievementsBtn && achievementsPage && backBtn) {
   achievementsBtn.addEventListener('click', () => {
+
+
     // Скрываем все обычные страницы
     pages.forEach(p => {
       p.style.display = 'none';
@@ -130,12 +139,10 @@ document.querySelectorAll('.achievement-card[data-status="ready-to-claim"] .clai
         achievementsPage.style.display = 'block';
     achievementsPage.classList.add('active');
 
-    // ⬇️ ДОБАВЬ вот эту строку
     animateAchievementProgress();
 
   });
 
-  
 
   backBtn.addEventListener('click', () => {
     // Скрываем страницу достижений
@@ -453,3 +460,4 @@ function animateAchievementProgress() {
     }, 100);
   });
 }
+
