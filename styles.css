@@ -1361,7 +1361,7 @@ body.light .balance-nick {
   color: white;
   text-align: center;
   margin-top: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
@@ -1372,8 +1372,8 @@ body.light .balance-nick {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 40px;
-  margin-bottom: 50px;
+  margin-top: 25px;
+  margin-bottom: 20px;
   position: relative;
 }
 
@@ -1462,6 +1462,8 @@ body.light .balance-nick {
   z-index: 10;
   text-align: center;
   color: white;
+  transition: transform 0.3s ease; /* плавность возврата */
+  touch-action: none; /* отключим свайпы */
 }
 
 .status-text {

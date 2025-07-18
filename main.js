@@ -29,6 +29,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const user = window.Telegram.WebApp.initDataUnsafe?.user;
 
   // === Переход на страницу "Мой счёт" по кнопке уровня ===
+    // === Анимация потягивания плашки уровня ===
+  const statusBar = document.getElementById('statusBar');
+  let startY = 0;
+  let currentY = 0;
+  let dragging = false;
+
+  if (statusBar) {
+    statusBar.addEventListener('touchstart', (e) => {
+      startY = e.touches[0].clientY;
+      dragging = true;
+    });
+
+    statusBar.addEventListener('touchmove', (e) => {
+      if (!dragging) return;
+      currentY = e.touches[0].clientY;
+      const diff = startY - currentY;
+
+      const maxLift = 60;
+      const translateY = Math.max(Math.min(diff, maxLift), 0);
+
+      statusBar.style.transform = `translateY(-${translateY}px)`;
+    });
+
+    statusBar.addEventListener('touchend', () => {
+      dragging = false;
+      statusBar.style.transform = `translateY(0)`;
+    });
+  }
+
 const levelBtn = document.getElementById('level');
 const balancePage = document.getElementById('balance-page');
 
