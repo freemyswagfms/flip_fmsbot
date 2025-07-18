@@ -1463,7 +1463,8 @@ body.light .balance-nick {
   text-align: center;
   color: white;
   transition: transform 0.3s ease; /* плавность возврата */
-  touch-action: none; /* отключим свайпы */
+  touch-action: none;
+  will-change: transform;
 }
 
 .status-text {
