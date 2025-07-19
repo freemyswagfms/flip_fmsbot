@@ -1339,6 +1339,8 @@ body.light .balance-nick {
 .balance-page {
   padding: 20px;
   display: none;
+  overflow-y: auto; /* ✅ */
+  position: relative; /* ✅ */
 }
 
 .balance-page .page-header {
