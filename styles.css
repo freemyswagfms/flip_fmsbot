@@ -1465,7 +1465,6 @@ body.light .balance-nick {
   transition: height 0.3s ease;
   touch-action: pan-y; /* ✅ */
   will-change: height;
-  pointer-events: auto; /* ✅ вдруг нужно */
 }
 
 .status-inner {
