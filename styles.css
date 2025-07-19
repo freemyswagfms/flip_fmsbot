@@ -1462,9 +1462,10 @@ body.light .balance-nick {
   z-index: 10;
   text-align: center;
   color: white;
-  transition: transform 0.3s ease; /* плавность возврата */
-  touch-action: none;
-  will-change: transform;
+  transition: height 0.3s ease;
+  touch-action: pan-y; /* ✅ */
+  will-change: height;
+  pointer-events: auto; /* ✅ вдруг нужно */
 }
 
 .status-inner {

@@ -37,25 +37,32 @@ let dragging = false;
 
 if (statusBar && statusInner) {
   statusBar.addEventListener('touchstart', (e) => {
-    dragging = true;
-    startY = e.touches[0].clientY;
-  });
+  dragging = true;
+  startY = e.touches[0].clientY;
 
-  statusBar.addEventListener('touchmove', (e) => {
-    if (!dragging) return;
-    const currentY = e.touches[0].clientY;
-    const diff = startY - currentY;
+  // Отключаем скролл страницы
+  document.body.style.overflow = 'hidden';
+});
 
-    const maxStretch = 100;
-    const stretch = Math.max(Math.min(diff, maxStretch), 0);
+statusBar.addEventListener('touchmove', (e) => {
+  if (!dragging) return;
+  const currentY = e.touches[0].clientY;
+  const diff = startY - currentY;
 
-    statusInner.style.height = `${100 + stretch}px`;
-  });
+  const maxStretch = 100;
+  const stretch = Math.max(Math.min(diff, maxStretch), 0);
 
-  statusBar.addEventListener('touchend', () => {
-    dragging = false;
-    statusInner.style.height = `100px`;
-  });
+  statusBar.style.height = `${100 + stretch}px`;
+});
+
+statusBar.addEventListener('touchend', () => {
+  dragging = false;
+
+  // Возвращаем скролл страницы
+  document.body.style.overflow = '';
+  statusBar.style.height = `100px`;
+});
+
 }
 
 
