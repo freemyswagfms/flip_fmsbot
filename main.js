@@ -69,34 +69,31 @@ if (statusBar && balancePage) {
     e.preventDefault(); // Обязательно: запрещаем прокрутку страницы
   }, { passive: false });
 
-  statusBar.addEventListener('touchend', () => {
-    dragging = false;
+statusBar.addEventListener('touchend', () => {
+  dragging = false;
 
-    // Плавно возвращаем высоту
-    statusBar.style.transition = 'height 0.3s ease';
-    statusBar.style.height = `100px`;
+  const currentHeight = statusBar.style.height || '100px';
 
-    setTimeout(() => {
-      statusBar.style.transition = '';
-    }, 300);
-// Анимация отскока с keyframes
-const bounceBack = statusBar.animate([
-  { height: statusBar.style.height },
-  { height: '90px', offset: 0.5 },
-  { height: '100px' }
-], {
-  duration: 400,
-  easing: 'ease-out'
+  // Плавный и выразительный отскок: вверх -> вниз -> обратно
+  const bounceBack = statusBar.animate([
+    { height: currentHeight },
+    { height: '85px', offset: 0.3 },
+    { height: '105px', offset: 0.6 },
+    { height: '100px', offset: 1 }
+  ], {
+    duration: 500,
+    easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+  });
+
+  bounceBack.onfinish = () => {
+    statusBar.style.height = '100px';
+    statusBar.style.transition = '';
+  };
+
+  // Возвращаем прокрутку
+  balancePage.style.overflowY = 'auto';
 });
 
-bounceBack.onfinish = () => {
-  statusBar.style.height = '100px';
-  statusBar.style.transition = '';
-};
-
-    // Возвращаем прокрутку
-    balancePage.style.overflowY = 'auto';
-  });
 }
 
 }
