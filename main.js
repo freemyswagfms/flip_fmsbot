@@ -29,45 +29,54 @@ document.addEventListener('DOMContentLoaded', () => {
   const user = window.Telegram.WebApp.initDataUnsafe?.user;
 
   // === Переход на страницу "Мой счёт" по кнопке уровня ===
-    // === Анимация потягивания плашки уровня ===
-const statusBar = document.querySelector('.level-status-bar');
-const statusInner = document.querySelector('.level-status-bar');
-let startY = 0;
-let dragging = false;
-
-if (statusBar && statusInner) {
-  statusBar.addEventListener('touchstart', (e) => {
-  dragging = true;
-  startY = e.touches[0].clientY;
-
-  // Отключаем скролл страницы
-  document.body.style.overflow = 'hidden';
-});
-
-statusBar.addEventListener('touchmove', (e) => {
-  if (!dragging) return;
-  const currentY = e.touches[0].clientY;
-  const diff = startY - currentY;
-
-  const maxStretch = 100;
-  const stretch = Math.max(Math.min(diff, maxStretch), 0);
-
-  statusBar.style.height = `${100 + stretch}px`;
-});
-
-statusBar.addEventListener('touchend', () => {
-  dragging = false;
-
-  // Возвращаем скролл страницы
-  document.body.style.overflow = '';
-  statusBar.style.height = `100px`;
-});
-
-}
-
 
 const levelBtn = document.getElementById('level');
 const balancePage = document.getElementById('balance-page');
+
+const statusBar = document.querySelector('.level-status-bar');
+
+let startY = 0;
+let dragging = false;
+
+if (statusBar && balancePage) {
+  statusBar.addEventListener('touchstart', (e) => {
+    dragging = true;
+    startY = e.touches[0].clientY;
+
+    // временно отключаем скролл страницы, чтобы свайп не конфликтовал
+    balancePage.style.overflowY = 'hidden';
+  });
+
+  statusBar.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+
+    const currentY = e.touches[0].clientY;
+    const diff = startY - currentY;
+
+    const maxStretch = 100;
+    const stretch = Math.max(Math.min(diff, maxStretch), 0);
+    statusBar.style.height = `${100 + stretch}px`;
+
+    // предотвращаем прокрутку
+    e.preventDefault();
+  }, { passive: false });
+
+  statusBar.addEventListener('touchend', () => {
+    dragging = false;
+
+    // плавный возврат плашки
+    statusBar.style.transition = 'height 0.3s ease';
+    statusBar.style.height = `100px`;
+
+    setTimeout(() => {
+      statusBar.style.transition = '';
+    }, 300);
+
+    // возвращаем прокрутку
+    balancePage.style.overflowY = 'auto';
+  });
+}
+
 
 if (levelBtn && balancePage) {
   levelBtn.addEventListener('click', () => {
