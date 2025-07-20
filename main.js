@@ -108,7 +108,20 @@ if (levelBtn && balancePage) {
     navMenu.style.display = 'none';
     balancePage.style.display = 'block';
     balancePage.classList.add('active');
+
+        // Прокрутка до текущего уровня (якорь)
+    const currentLevelEl = balancePage.querySelector('.level.current');
+    if (currentLevelEl) {
+      setTimeout(() => {
+        currentLevelEl.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 100); // задержка, чтобы страница успела отрисоваться
+    }
   });
+
+  
 
   const balanceBackBtn = balancePage.querySelector('.back-btn');
   if (balanceBackBtn) {
