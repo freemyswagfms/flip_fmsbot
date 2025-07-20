@@ -1343,19 +1343,6 @@ body.light .balance-nick {
   position: relative; /* ✅ */
 }
 
-.balance-page .page-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.balance-page .page-title {
-  font-family: 'geologica';
-  font-size: 20px;
-  font-weight: 500;
-}
-
 .balance-title {
   font-family: 'cygre';
   font-size: 24px;
