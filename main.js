@@ -79,6 +79,20 @@ if (statusBar && balancePage) {
     setTimeout(() => {
       statusBar.style.transition = '';
     }, 300);
+// Анимация отскока с keyframes
+const bounceBack = statusBar.animate([
+  { height: statusBar.style.height },
+  { height: '90px', offset: 0.5 },
+  { height: '100px' }
+], {
+  duration: 400,
+  easing: 'ease-out'
+});
+
+bounceBack.onfinish = () => {
+  statusBar.style.height = '100px';
+  statusBar.style.transition = '';
+};
 
     // Возвращаем прокрутку
     balancePage.style.overflowY = 'auto';
