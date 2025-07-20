@@ -1025,7 +1025,7 @@ body.light .setting-card {
 
 .subscribe-inner {
   margin: 0;
-  background: #FFFFFF;
+  background: black;
   border-radius: 24px;
   padding: 15px 10px 20px;
   width: calc(100% - 40px);
@@ -1039,14 +1039,14 @@ body.light .setting-card {
   font-family: 'geologica';
   font-size: 18px;
   font-weight: 400;
-  color: black;
+  color: white;
   line-height: 1.4;
 }
 
 .subscribe-btn {
   display: inline-block;
   background: #317BFF;
-  color: white;
+  color: black;
   font-family: 'geologica';
   font-size: 14px;
   font-weight: 400;
@@ -1511,3 +1511,120 @@ body.light .balance-nick {
   font-size: 24px;
   font-weight: 800;
 }
+
+/* === СТРАНИЦА ЗАДАНИЯ И КВЕСТЫ === */
+
+.quests-page {
+  padding: 20px;
+  display: none;
+  overflow-y: auto;
+  position: relative;
+}
+
+.quests-title {
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  text-align: center;
+  margin-top: 16px;
+  margin-bottom: 30px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.daily-reward {
+  background: white;
+  border-radius: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 20px 0;
+  padding-left: 20px; 
+}
+
+.reward-info {
+  font-family: 'cygre';
+  font-size: 18px;
+  font-weight: 800;
+  color: black;
+}
+
+.reward-btn {
+  background: #9EFF44;
+  color: black;
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 300;
+  padding: 20px 27px;
+  border: none;
+  border-radius: 16px;
+  min-width: 140px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin: 10px;
+}
+
+.reward-btn:disabled {
+  cursor: default;
+  background: #9EFF44;
+  opacity: 1;
+}
+
+.quests-tasks {
+  margin-top: 20px;
+}
+
+
+
+
+/* === МОЯ СТАТИСТИКА === */
+
+.stat-page {
+  padding: 20px;
+  display: none;
+  overflow-y: auto;
+  position: relative;
+}
+
+.stat-title {
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  text-align: center;
+  margin-top: 16px;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+
+
+
+/* === СТРАНИЦА ТАБЛИЦА ЛИДЕРОВ === */
+
+.leaderboard-page{
+padding: 20px;
+  display: none;
+  overflow-y: auto;
+  position: relative;
+}
+
+.leaderboard-title{
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  text-align: center;
+  margin-top: 16px;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+
+
