@@ -39,16 +39,25 @@ let startY = 0;
 let dragging = false;
 
 if (statusBar && balancePage) {
+  const statusBar = document.querySelector('.level-status-bar');
+
+let startY = 0;
+let dragging = false;
+
+if (statusBar && balancePage) {
   statusBar.addEventListener('touchstart', (e) => {
     dragging = true;
     startY = e.touches[0].clientY;
 
-    // временно отключаем скролл страницы, чтобы свайп не конфликтовал
+    // Блокируем скролл в области плашки
     balancePage.style.overflowY = 'hidden';
   });
 
   statusBar.addEventListener('touchmove', (e) => {
-    if (!dragging) return;
+    if (!dragging) {
+      e.preventDefault(); // Запрещаем скролл даже при простом свайпе
+      return;
+    }
 
     const currentY = e.touches[0].clientY;
     const diff = startY - currentY;
@@ -57,14 +66,13 @@ if (statusBar && balancePage) {
     const stretch = Math.max(Math.min(diff, maxStretch), 0);
     statusBar.style.height = `${100 + stretch}px`;
 
-    // предотвращаем прокрутку
-    e.preventDefault();
+    e.preventDefault(); // Обязательно: запрещаем прокрутку страницы
   }, { passive: false });
 
   statusBar.addEventListener('touchend', () => {
     dragging = false;
 
-    // плавный возврат плашки
+    // Плавно возвращаем высоту
     statusBar.style.transition = 'height 0.3s ease';
     statusBar.style.height = `100px`;
 
@@ -72,9 +80,11 @@ if (statusBar && balancePage) {
       statusBar.style.transition = '';
     }, 300);
 
-    // возвращаем прокрутку
+    // Возвращаем прокрутку
     balancePage.style.overflowY = 'auto';
   });
+}
+
 }
 
 
