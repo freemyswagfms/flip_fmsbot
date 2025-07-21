@@ -1049,6 +1049,19 @@ function initTaskButtons() {
     });
   }
 
+  // === КВЕСТ: приглашение 10 друзей ===
+const inviteBtn = document.getElementById('invite-btn');
+const inviteProgress = document.getElementById('invite-progress');
+
+if (inviteBtn && inviteProgress) {
+  inviteBtn.addEventListener('click', () => {
+    // Псевдологика: считаем квест выполненным
+    inviteProgress.textContent = 'приглашено: 10/10';
+    inviteBtn.textContent = 'выполнено';
+    inviteBtn.classList.add('completed');
+  });
+}
+
   // === Оверлей заданий ===
   const overlay = document.getElementById('task-overlay');
   const channelName = document.getElementById('channel-name');
@@ -1394,6 +1407,21 @@ function animateAchievementProgress() {
     setTimeout(() => {
       circle.style.strokeDashoffset = `${circumference * (1 - progress)}`;
     }, 100);
+
+    // === ФУНКЦИЯ: установка обработчика для квеста "пригласить друзей" ===
+function setupInviteQuest() {
+  const inviteBtn = document.getElementById('invite-btn');
+  const inviteProgress = document.getElementById('invite-progress');
+
+  if (inviteBtn && inviteProgress && !inviteBtn.classList.contains('completed')) {
+    inviteBtn.addEventListener('click', () => {
+      inviteProgress.textContent = 'приглашено: 10/10';
+      inviteBtn.textContent = 'выполнено';
+      inviteBtn.classList.add('completed');
+    });
+  }
+}
+
   });
 }
 

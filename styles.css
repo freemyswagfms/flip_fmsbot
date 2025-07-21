@@ -1578,7 +1578,68 @@ body.light .balance-nick {
   margin-top: 20px;
 }
 
+.quests-subtitle {
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  text-align: center;
+  margin-top: 50px;
+  margin-bottom: 23px;
+  text-transform: uppercase;
+}
 
+.quest-card {
+  background: white;
+  border-radius: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px;
+  font-family: 'geologica';
+  color: black;
+  margin-top: 20px;
+}
+
+.quest-info {
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.quest-title {
+  font-family: 'cygre';
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.quest-sub {
+  font-size: 14px;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+.quest-btn {
+  background: #317BFF;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 14px 20px;
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.quest-btn.completed {
+  background: #9EFF44;
+  color: black;
+  cursor: default;
+  pointer-events: none;
+}
 
 
 /* === МОЯ СТАТИСТИКА === */
