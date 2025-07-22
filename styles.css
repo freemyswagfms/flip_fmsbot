@@ -1689,3 +1689,10 @@ padding: 20px;
 
 
 
+/* === ОТКЛЮЧЕНИЕ ВЫДЕЛЕНИЙ КНОПОК === */
+button, .nav-btn, .profile-card, .task-btn, .buy-btn, .quest-btn, .theme-toggle-btn {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+
