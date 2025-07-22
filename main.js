@@ -2,1417 +2,372 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   // === Telegram WebApp Init ===
-  if (window.Telegram.WebApp) {
+  if (window.Telegram && window.Telegram.WebApp) {
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
   }
-  // === Кнопки заданий на всех страницах
-initTaskButtons();
-
 
   // === Тема (светлая/тёмная) ===
   const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'light') {
-    document.body.classList.add('light');
-  }
+  if (savedTheme === 'light') document.body.classList.add('light');
 
   // === DOM Элементы ===
   const splash = document.getElementById('splash');
-  // === Страница достижений ===
-  const achievementsBtn = document.getElementById('achievements');
-  const achievementsPage = document.getElementById('achievements-page');
-  const backBtn = achievementsPage?.querySelector('.back-btn');
   const mainApp = document.getElementById('main-app');
+  const fill = document.querySelector('.progress-bar-fill');
   const navMenu = document.querySelector('.nav-menu');
   const navBtns = Array.from(document.querySelectorAll('.nav-btn'));
   const navBg = document.querySelector('.nav-bg');
   const pages = document.querySelectorAll('.page');
-  const fill = document.querySelector('.progress-bar-fill');
   const tabs = document.querySelectorAll('.tab');
-  const user = window.Telegram.WebApp.initDataUnsafe?.user;
+  const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+  // === Переход между основными страницами через нижнее меню ===
+  let activeIndex = navBtns.findIndex(btn => btn.classList.contains('active'));
+  if (activeIndex === -1) activeIndex = 0;
+
+  function moveBgToActive(index) {
+    const btn = navBtns[index];
+    const menuRect = navMenu.getBoundingClientRect();
+    requestAnimationFrame(() => {
+      const btnRect = btn.getBoundingClientRect();
+      const bgWidth = parseFloat(getComputedStyle(navBg).width);
+      const centerX = btnRect.left + btnRect.width / 2 - menuRect.left;
+      navBg.style.left = `${centerX - bgWidth / 2}px`;
+    });
+  }
+
+  navBtns.forEach((btn, idx) => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      navBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      moveBgToActive(idx);
+
+      const targetPage = btn.getAttribute('data-page');
+      pages.forEach(page => {
+        if (page.id === targetPage) {
+          page.style.display = '';
+          page.classList.add('active');
+          if (targetPage === 'profile') animateLevelPercent();
+        } else {
+          page.style.display = 'none';
+          page.classList.remove('active');
+        }
+      });
+      adjustTopPadding();
+    });
+  });
+
+  // === Splash Screen (загрузка) ===
+  splash.style.display = 'flex';
+  mainApp.style.display = 'none';
+  if (fill) setTimeout(() => { fill.style.width = '100%'; }, 200);
+
+  setTimeout(() => {
+    splash.style.opacity = '0';
+    setTimeout(() => {
+      splash.style.display = 'none';
+      mainApp.style.display = 'block';
+      adjustTopPadding();
+      moveBgToActive(activeIndex);
+    }, 500);
+  }, 1400);
+
+  // === Коррекция отступа сверху (для fullscreen) ===
+  function adjustTopPadding() {
+    const isFullscreen = window.innerHeight === screen.height;
+    mainApp.style.paddingTop = (isFullscreen ? 60 : 1) + 'px';
+  }
+
+  // === Переходы по профилю: достижения, статистика, лидеры, мой счёт, квесты ===
+  setupPageNavigation('achievements', 'achievements-page');
+  setupPageNavigation('stat', 'stat-page');
+  setupPageNavigation('leaderboard', 'leaderboard-page');
+  setupPageNavigation('quests', 'quests-page');
+  setupPageNavigation('level', 'balance-page', true);
+
+  function setupPageNavigation(btnId, pageId, scrollToLevel = false) {
+    const btn = document.getElementById(btnId);
+    const page = document.getElementById(pageId);
+    if (!btn || !page) return;
+    btn.addEventListener('click', () => {
+      pages.forEach(p => { p.style.display = 'none'; p.classList.remove('active'); });
+      navMenu.style.display = 'none';
+      page.style.display = 'block';
+      page.classList.add('active');
+      if (scrollToLevel) {
+        setTimeout(() => {
+          const currentLevelEl = page.querySelector('.level.current');
+          if (currentLevelEl) currentLevelEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }
+      if (pageId === 'achievements-page') animateAchievementProgress();
+    });
+
+    const backBtn = page.querySelector('.back-btn');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        page.style.display = 'none';
+        page.classList.remove('active');
+        const profilePage = document.getElementById('profile');
+        profilePage.style.display = '';
+        profilePage.classList.add('active');
+        navMenu.style.display = '';
+        moveBgToActive(navBtns.findIndex(b => b.classList.contains('profile-icon')));
+      });
+    }
+  }
+
+  // === Анимация полосы прогресса уровня ===
+  function animateLevelPercent() {
+    const percentEl = document.querySelector('.level-percent');
+    if (percentEl) {
+      const raw = percentEl.dataset.percent || percentEl.textContent;
+      const finalValue = parseInt(raw);
+      if (isNaN(finalValue)) return;
+      let current = 0;
+      const step = () => {
+        current++;
+        percentEl.textContent = `${current}%`;
+        if (current < finalValue) requestAnimationFrame(step);
+      };
+      percentEl.textContent = `0%`;
+      requestAnimationFrame(step);
+    }
+  }
+
+  // === Персонализация профиля ===
+  const nicknameEl = document.querySelector('.nickname');
+  const balanceEl = document.querySelector('.balance-nick');
+  const avatarEl = document.querySelector('.avatar');
+  if (nicknameEl && balanceEl && avatarEl) {
+    if (user) {
+      nicknameEl.textContent = user.username || `id${user.id}`;
+      balanceEl.textContent = 'баланс';
+      if (user.username) avatarEl.style.backgroundImage = `url('https://t.me/i/userpic/320/${user.username}.jpg')`;
+      else avatarEl.style.backgroundColor = '#ccc';
+    } else {
+      nicknameEl.textContent = 'гость';
+      balanceEl.textContent = 'баланс';
+      avatarEl.style.backgroundColor = '#ccc';
+    }
+  }
+
+  // === Фильтрация коллекции по табам ===
+  const tabMap = {
+    'все': 'all',
+    'альбомы': 'album',
+    'синглы': 'single',
+    'артисты': 'artist'
+  };
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const selected = tab.textContent.trim().toLowerCase();
+      const filterType = tabMap[selected];
+      document.querySelectorAll('.card-placeholder').forEach(card => {
+        const cat = card.dataset.category;
+        if (filterType === 'all' || filterType === undefined) card.style.display = '';
+        else card.style.display = cat === filterType ? '' : 'none';
+      });
+    });
+  });
+
+  // === FAB-поиск в коллекции ===
+  const searchFab = document.getElementById('searchFab');
+  const searchInput = searchFab?.querySelector('.search-input');
+  let isSearchOpen = false;
+  if (searchFab && searchInput) {
+    searchFab.addEventListener('click', (e) => {
+      if (isSearchOpen && e.target.closest('.search-icon')) {
+        searchFab.classList.remove('open');
+        searchInput.value = '';
+        isSearchOpen = false;
+        document.querySelectorAll('.card-placeholder').forEach(card => card.style.display = '');
+      } else if (!isSearchOpen) {
+        searchFab.classList.add('open');
+        isSearchOpen = true;
+        setTimeout(() => searchInput.focus(), 100);
+      }
+      e.stopPropagation();
+    });
+    document.addEventListener('click', (e) => {
+      if (isSearchOpen && !searchFab.contains(e.target)) {
+        searchFab.classList.remove('open');
+        searchInput.value = '';
+        isSearchOpen = false;
+        document.querySelectorAll('.card-placeholder').forEach(card => card.style.display = '');
+      }
+    });
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll('.card-placeholder').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(query) ? '' : 'none';
+      });
+    });
+  }
+
+  // === Кнопки настроек: пополнение и тема ===
+  const settingItems = document.querySelectorAll('.setting-item');
+  const balanceOverlay = document.getElementById('balance-overlay');
+  const themeOverlay = document.getElementById('theme-overlay');
+  if (settingItems.length) {
+    settingItems.forEach(item => {
+      const text = item.innerText.toLowerCase();
+      if (text.includes('пополнение') && balanceOverlay) {
+        item.addEventListener('click', e => {
+          e.preventDefault();
+          balanceOverlay.classList.add('show');
+        });
+      }
+      if (text.includes('внешний вид') && themeOverlay) {
+        item.addEventListener('click', e => {
+          e.preventDefault();
+          themeOverlay.classList.add('show');
+        });
+      }
+    });
+  }
+  [balanceOverlay, themeOverlay].forEach(overlay => {
+    if (overlay) overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('show');
+    });
+  });
+
+  // === Переключение темы ===
+  const themeBtn = document.querySelector('.theme-toggle-btn');
+  if (themeBtn) {
+    themeBtn.textContent = document.body.classList.contains('light') ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
+    themeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      const isLight = document.body.classList.contains('light');
+      themeBtn.textContent = isLight ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    });
+  }
+
+  // === Таймер дропа ===
+  function startDropTimer(hours, minutes) {
+    const display = document.querySelector('.drop-timer');
+    if (!display) return;
+    let totalSeconds = hours * 3600 + minutes * 60;
+    function updateTimer() {
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      display.textContent = `следующий дроп через: ${h}ч ${m}м`;
+      if (totalSeconds > 0) totalSeconds--;
+      else clearInterval(timer);
+    }
+    updateTimer();
+    const timer = setInterval(updateTimer, 60000);
+  }
+  startDropTimer(3, 59);
+
+  // === Оверлей подписки по кнопке старта ===
+  const startBtn = document.querySelector('.start-btn');
+  const subscribeOverlay = document.getElementById('subscribe-overlay');
+  if (startBtn && subscribeOverlay) {
+    startBtn.addEventListener('click', e => {
+      e.preventDefault();
+      subscribeOverlay.classList.add('show');
+    });
+    subscribeOverlay.addEventListener('click', e => {
+      if (e.target === subscribeOverlay) subscribeOverlay.classList.remove('show');
+    });
+  }
+
+  // === Переход в магазин по кнопке "в магазин" ===
+  const shopBtn = document.getElementById('go-to-shop');
+  if (shopBtn) {
+    shopBtn.addEventListener('click', e => {
+      e.preventDefault();
+      navBtns.forEach(b => b.classList.remove('active'));
+      document.querySelector('.shop-icon')?.classList.add('active');
+      pages.forEach(p => {
+        if (p.id === 'shop') {
+          p.style.display = '';
+          p.classList.add('active');
+        } else {
+          p.style.display = 'none';
+          p.classList.remove('active');
+        }
+      });
+      setTimeout(() => {
+        document.getElementById('new-collection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      moveBgToActive(navBtns.findIndex(b => b.classList.contains('shop-icon')));
+    });
+  }
+
+  // === Оверлей заданий (каналы) ===
+  function initTaskButtons() {
+    const overlay = document.getElementById('task-overlay');
+    const channelName = document.getElementById('channel-name');
+    const goSubscribe = document.getElementById('go-subscribe');
+    const tasks = [
+      { name: 'Free My Leaks', url: 'https://t.me/freemyleaks' },
+      { name: 'Free My Memes', url: 'https://t.me/freemyswagmemes' },
+      { name: 'PBC', url: 'https://t.me/pbccarter' }
+    ];
+    document.querySelectorAll('.task-btn').forEach((btn, index) => {
+      btn.addEventListener('click', () => {
+        const task = tasks[index];
+        if (!task) return;
+        channelName.textContent = task.name;
+        goSubscribe.href = task.url;
+        overlay.classList.add('show');
+      });
+    });
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('show');
+    });
+  }
   initTaskButtons();
 
-
-
-  // === Страница задания и квесты ===
-  const questsBtn = document.getElementById('quests');
-const questsPage = document.getElementById('quests-page');
-
-if (questsBtn && questsPage) {
-  questsBtn.addEventListener('click', () => {
-    pages.forEach(p => {
-      p.style.display = 'none';
-      p.classList.remove('active');
-    });
-    navMenu.style.display = 'none';
-    questsPage.style.display = 'block';
-    questsPage.classList.add('active');
-  });
-
-  const questsBackBtn = questsPage.querySelector('.back-btn');
-  if (questsBackBtn) {
-    questsBackBtn.addEventListener('click', () => {
-      questsPage.style.display = 'none';
-      questsPage.classList.remove('active');
-
-      const profilePage = document.getElementById('profile');
-      profilePage.style.display = '';
-      profilePage.classList.add('active');
-
-      navMenu.style.display = '';
-      const profileIdx = navBtns.findIndex(b => b.classList.contains('profile-icon'));
-      moveBgToActive(profileIdx);
-    });
-  }
-}
-
-const rewardBtn = document.getElementById('claimReward');
-
-if (rewardBtn) {
-  rewardBtn.addEventListener('click', () => {
-    // После нажатия — меняем текст и блокируем кнопку
-    const nextTime = 24 * 60 * 60; // 24ч в секундах
-    let timeLeft = nextTime;
-
-    const formatTime = (s) => {
-      const h = Math.floor(s / 3600);
-      const m = Math.floor((s % 3600) / 60);
-      return `${h}ч ${m}м`;
-    };
-
-    rewardBtn.disabled = true;
-    rewardBtn.textContent = formatTime(timeLeft);
-
-    const interval = setInterval(() => {
-      timeLeft -= 60;
-      if (timeLeft <= 0) {
-        clearInterval(interval);
-        rewardBtn.disabled = false;
-        rewardBtn.textContent = 'получить 5f';
-      } else {
-        rewardBtn.textContent = formatTime(timeLeft);
-      }
-    }, 60000); // обновляем каждую минуту
-
-    // Можно добавить: начисление валюты, эффект и т.д.
-  });
-
-  
-}
-
-
-
-
-// === ТАБЛИЦА ЛИДЕРОВ ===
-const leaderboardBtn = document.getElementById('leaderboard');
-const leaderboardPage = document.getElementById('leaderboard-page');
-
-if (leaderboardBtn && leaderboardPage) {
-  leaderboardBtn.addEventListener('click', () => {
-    pages.forEach(p => {
-      p.style.display = 'none';
-      p.classList.remove('active');
-    });
-    navMenu.style.display = 'none';
-    leaderboardPage.style.display = 'block';
-    leaderboardPage.classList.add('active');
-  });
-
-  const leaderboardBack = leaderboardPage.querySelector('.back-btn');
-  leaderboardBack?.addEventListener('click', () => {
-    leaderboardPage.style.display = 'none';
-    leaderboardPage.classList.remove('active');
-
-    const profilePage = document.getElementById('profile');
-    profilePage.style.display = '';
-    profilePage.classList.add('active');
-
-    navMenu.style.display = '';
-    const profileIdx = navBtns.findIndex(b => b.classList.contains('profile-icon'));
-    moveBgToActive(profileIdx);
-  });
-}
-
-// === МОЯ СТАТИСТИКА ===
-const statBtn = document.getElementById('stat');
-const statPage = document.getElementById('stat-page');
-
-if (statBtn && statPage) {
-  statBtn.addEventListener('click', () => {
-    pages.forEach(p => {
-      p.style.display = 'none';
-      p.classList.remove('active');
-    });
-    navMenu.style.display = 'none';
-    statPage.style.display = 'block';
-    statPage.classList.add('active');
-  });
-
-  const statBack = statPage.querySelector('.back-btn');
-  statBack?.addEventListener('click', () => {
-    statPage.style.display = 'none';
-    statPage.classList.remove('active');
-
-    const profilePage = document.getElementById('profile');
-    profilePage.style.display = '';
-    profilePage.classList.add('active');
-
-    navMenu.style.display = '';
-    const profileIdx = navBtns.findIndex(b => b.classList.contains('profile-icon'));
-    moveBgToActive(profileIdx);
-  });
-}
-
-
-  // === Переход на страницу "Мой счёт" по кнопке уровня ===
-
-const levelBtn = document.getElementById('level');
-const balancePage = document.getElementById('balance-page');
-
-const statusBar = document.querySelector('.level-status-bar');
-
-let startY = 0;
-let dragging = false;
-
-if (statusBar && balancePage) {
-  const statusBar = document.querySelector('.level-status-bar');
-
-let startY = 0;
-let dragging = false;
-
-if (statusBar && balancePage) {
-  statusBar.addEventListener('touchstart', (e) => {
-    dragging = true;
-    startY = e.touches[0].clientY;
-
-    // Блокируем скролл в области плашки
-    balancePage.style.overflowY = 'hidden';
-  });
-
-  statusBar.addEventListener('touchmove', (e) => {
-    if (!dragging) {
-      e.preventDefault(); // Запрещаем скролл даже при простом свайпе
-      return;
-    }
-
-    const currentY = e.touches[0].clientY;
-    const diff = startY - currentY;
-
-    const maxStretch = 100;
-    const stretch = Math.max(Math.min(diff, maxStretch), 0);
-    statusBar.style.height = `${100 + stretch}px`;
-
-    e.preventDefault(); // Обязательно: запрещаем прокрутку страницы
-  }, { passive: false });
-
-statusBar.addEventListener('touchend', () => {
-  dragging = false;
-
-  const currentHeight = statusBar.style.height || '100px';
-
-  // Плавный и выразительный отскок: вверх -> вниз -> обратно
-  const bounceBack = statusBar.animate([
-    { height: currentHeight },
-    { height: '85px', offset: 0.3 },
-    { height: '105px', offset: 0.6 },
-    { height: '100px', offset: 1 }
-  ], {
-    duration: 500,
-    easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
-  });
-
-  bounceBack.onfinish = () => {
-    statusBar.style.height = '100px';
-    statusBar.style.transition = '';
-  };
-
-  // Возвращаем прокрутку
-  balancePage.style.overflowY = 'auto';
-});
-
-}
-
-}
-
-
-if (levelBtn && balancePage) {
-  levelBtn.addEventListener('click', () => {
-    pages.forEach(p => {
-      p.style.display = 'none';
-      p.classList.remove('active');
-    });
-    navMenu.style.display = 'none';
-    balancePage.style.display = 'block';
-    balancePage.classList.add('active');
-
-        // Прокрутка до текущего уровня (якорь)
-    const currentLevelEl = balancePage.querySelector('.level.current');
-    if (currentLevelEl) {
+  // === Достижения: анимация прогресса кольца ===
+  function animateAchievementProgress() {
+    document.querySelectorAll('.achievement-card.in-progress').forEach(card => {
+      const valueText = card.querySelector('.progress-text')?.textContent.trim();
+      if (!valueText) return;
+      const [current, total] = valueText.split('/').map(Number);
+      if (isNaN(current) || isNaN(total) || total === 0) return;
+      const progress = current / total;
+      const circle = card.querySelector('.ring-blue');
+      if (!circle) return;
+      const radius = parseFloat(circle.getAttribute('r'));
+      const circumference = 2 * Math.PI * radius;
+      circle.style.strokeDasharray = `${circumference}`;
+      circle.style.strokeDashoffset = `${circumference}`;
       setTimeout(() => {
-        currentLevelEl.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }, 100); // задержка, чтобы страница успела отрисоваться
-    }
-  });
-
-  
-
-  const balanceBackBtn = balancePage.querySelector('.back-btn');
-  if (balanceBackBtn) {
-    balanceBackBtn.addEventListener('click', () => {
-      balancePage.style.display = 'none';
-      balancePage.classList.remove('active');
-
-      const profilePage = document.getElementById('profile');
-      profilePage.style.display = '';
-      profilePage.classList.add('active');
-
-      navMenu.style.display = '';
-      const profileIdx = navBtns.findIndex(b => b.classList.contains('profile-icon'));
-      moveBgToActive(profileIdx);
-    });
-  }
-}
-
-
-  // === Достижения: кнопка "забрать" ===
-document.querySelectorAll('.achievement-card[data-status="ready-to-claim"] .claim').forEach(button => {
-  button.addEventListener('click', (e) => {
-    const card = e.target.closest('.achievement-card');
-    if (!card) return;
-
-    // Меняем статус
-    card.setAttribute('data-status', 'completed');
-
-    // Заменяем кнопку
-    const btn = document.createElement('div');
-    btn.className = 'achievement-btn collected';
-    btn.textContent = 'выполнено';
-    button.replaceWith(btn);
-
-    // Добавляем чекмарку
-    if (!card.querySelector('.status-icon')) {
-      const icon = document.createElement('div');
-      icon.className = 'status-icon checkmark';
-      card.appendChild(icon);
-    }
-  });
-});
-
-  // === Анимация загрузки ===
-  splash.style.display = 'flex';
-  mainApp.style.display = 'none';
-  if (fill) setTimeout(() => { fill.style.width = '100%'; }, 200);
-
-  // === Анимация заднего фона под активной иконкой ===
-  function moveBgToActive(index) {
-    const btn = navBtns[index];
-    const menuRect = navMenu.getBoundingClientRect();
-    requestAnimationFrame(() => {
-      const btnRect = btn.getBoundingClientRect();
-      const bgWidth = parseFloat(getComputedStyle(navBg).width);
-      const centerX = btnRect.left + btnRect.width / 2 - menuRect.left;
-      navBg.style.left = `${centerX - bgWidth / 2}px`;
-    });
-
-    
-
-  }
-
-  // === Коррекция отступа сверху (для fullscreen) ===
-  function adjustTopPadding() {
-    const isFullscreen = window.innerHeight === screen.height;
-    mainApp.style.paddingTop = (isFullscreen ? 60 : 1) + 'px';
-  }
-
-  // === Переход от splash к main ===
-  setTimeout(() => {
-    splash.style.opacity = '0';
-    setTimeout(() => {
-      splash.style.display = 'none';
-      mainApp.style.display = 'block';
-      adjustTopPadding();
-      moveBgToActive(activeIndex);
-    }, 500);
-  }, 1400);
-
-  if (achievementsBtn && achievementsPage && backBtn) {
-  achievementsBtn.addEventListener('click', () => {
-
-
-    // Скрываем все обычные страницы
-    pages.forEach(p => {
-      p.style.display = 'none';
-      p.classList.remove('active');
-    });
-
-    // Скрываем нижнее меню
-    navMenu.style.display = 'none';
-
-    // Показываем страницу достижений
-        achievementsPage.style.display = 'block';
-    achievementsPage.classList.add('active');
-
-    animateAchievementProgress();
-
-  });
-
-
-  backBtn.addEventListener('click', () => {
-    // Скрываем страницу достижений
-    achievementsPage.style.display = 'none';
-    achievementsPage.classList.remove('active');
-
-    // Возвращаем профиль
-    const profilePage = document.getElementById('profile');
-    if (profilePage) {
-      profilePage.style.display = '';
-      profilePage.classList.add('active');
-    }
-
-    // Показываем нижнее меню обратно
-    navMenu.style.display = '';
-
-    // Перемещаем фоновый кружок под иконку профиля
-    const profileIdx = navBtns.findIndex(b => b.classList.contains('profile-icon'));
-    moveBgToActive(profileIdx);
-  });
-}
-
-function initTaskButtons() {
-  const overlay = document.getElementById('task-overlay');
-  const channelName = document.getElementById('channel-name');
-  const goSubscribe = document.getElementById('go-subscribe');
-
-  const tasks = [
-    { name: 'Free My Leaks', url: 'https://t.me/freemyleaks' },
-    { name: 'Free My Memes', url: 'https://t.me/freemyswagmemes' },
-    { name: 'PBC', url: 'https://t.me/pbccarter' }
-  ];
-
-  document.querySelectorAll('.task-btn').forEach((btn, index) => {
-    btn.onclick = () => {
-      const task = tasks[index];
-      if (!task) return;
-      channelName.textContent = task.name;
-      goSubscribe.href = task.url;
-      overlay.classList.add('show');
-    };
-  });
-}
-
-// flip_app_main.js
-
-document.addEventListener('DOMContentLoaded', () => {
-  // === Telegram WebApp Init ===
-  if (window.Telegram.WebApp) {
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
-  }
-
-  // === Тема (светлая/тёмная) ===
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'light') {
-    document.body.classList.add('light');
-  }
-
-  // === DOM Элементы ===
-  const splash = document.getElementById('splash');
-  // === Страница достижений ===
-  const achievementsBtn = document.getElementById('achievements');
-  const achievementsPage = document.getElementById('achievements-page');
-  const backBtn = achievementsPage?.querySelector('.back-btn');
-  const mainApp = document.getElementById('main-app');
-  const navMenu = document.querySelector('.nav-menu');
-  const navBtns = Array.from(document.querySelectorAll('.nav-btn'));
-  const navBg = document.querySelector('.nav-bg');
-  const pages = document.querySelectorAll('.page');
-  const fill = document.querySelector('.progress-bar-fill');
-  const tabs = document.querySelectorAll('.tab');
-  const user = window.Telegram.WebApp.initDataUnsafe?.user;
-
-
-  // === Страница задания и квесты ===
-  const questsBtn = document.getElementById('quests');
-const questsPage = document.getElementById('quests-page');
-
-if (questsBtn && questsPage) {
-  questsBtn.addEventListener('click', () => {
-    pages.forEach(p => {
-      p.style.display = 'none';
-      p.classList.remove('active');
-    });
-    navMenu.style.display = 'none';
-    questsPage.style.display = 'block';
-    questsPage.classList.add('active');
-  });
-
-  const questsBackBtn = questsPage.querySelector('.back-btn');
-  if (questsBackBtn) {
-    questsBackBtn.addEventListener('click', () => {
-      questsPage.style.display = 'none';
-      questsPage.classList.remove('active');
-
-      const profilePage = document.getElementById('profile');
-      profilePage.style.display = '';
-      profilePage.classList.add('active');
-
-      navMenu.style.display = '';
-      const profileIdx = navBtns.findIndex(b => b.classList.contains('profile-icon'));
-      moveBgToActive(profileIdx);
-    });
-  }
-}
-
-const rewardBtn = document.getElementById('claimReward');
-
-if (rewardBtn) {
-  rewardBtn.addEventListener('click', () => {
-    // После нажатия — меняем текст и блокируем кнопку
-    const nextTime = 24 * 60 * 60; // 24ч в секундах
-    let timeLeft = nextTime;
-
-    const formatTime = (s) => {
-      const h = Math.floor(s / 3600);
-      const m = Math.floor((s % 3600) / 60);
-      return `${h}ч ${m}м`;
-    };
-
-    rewardBtn.disabled = true;
-    rewardBtn.textContent = formatTime(timeLeft);
-
-    const interval = setInterval(() => {
-      timeLeft -= 60;
-      if (timeLeft <= 0) {
-        clearInterval(interval);
-        rewardBtn.disabled = false;
-        rewardBtn.textContent = 'получить 5f';
-      } else {
-        rewardBtn.textContent = formatTime(timeLeft);
-      }
-    }, 60000); // обновляем каждую минуту
-
-    // Можно добавить: начисление валюты, эффект и т.д.
-  });
-
-  
-}
-
-
-
-
-// === ТАБЛИЦА ЛИДЕРОВ ===
-const leaderboardBtn = document.getElementById('leaderboard');
-const leaderboardPage = document.getElementById('leaderboard-page');
-
-if (leaderboardBtn && leaderboardPage) {
-  leaderboardBtn.addEventListener('click', () => {
-    pages.forEach(p => {
-      p.style.display = 'none';
-      p.classList.remove('active');
-    });
-    navMenu.style.display = 'none';
-    leaderboardPage.style.display = 'block';
-    leaderboardPage.classList.add('active');
-  });
-
-  const leaderboardBack = leaderboardPage.querySelector('.back-btn');
-  leaderboardBack?.addEventListener('click', () => {
-    leaderboardPage.style.display = 'none';
-    leaderboardPage.classList.remove('active');
-
-    const profilePage = document.getElementById('profile');
-    profilePage.style.display = '';
-    profilePage.classList.add('active');
-
-    navMenu.style.display = '';
-    const profileIdx = navBtns.findIndex(b => b.classList.contains('profile-icon'));
-    moveBgToActive(profileIdx);
-  });
-}
-
-// === МОЯ СТАТИСТИКА ===
-const statBtn = document.getElementById('stat');
-const statPage = document.getElementById('stat-page');
-
-if (statBtn && statPage) {
-  statBtn.addEventListener('click', () => {
-    pages.forEach(p => {
-      p.style.display = 'none';
-      p.classList.remove('active');
-    });
-    navMenu.style.display = 'none';
-    statPage.style.display = 'block';
-    statPage.classList.add('active');
-  });
-
-  const statBack = statPage.querySelector('.back-btn');
-  statBack?.addEventListener('click', () => {
-    statPage.style.display = 'none';
-    statPage.classList.remove('active');
-
-    const profilePage = document.getElementById('profile');
-    profilePage.style.display = '';
-    profilePage.classList.add('active');
-
-    navMenu.style.display = '';
-    const profileIdx = navBtns.findIndex(b => b.classList.contains('profile-icon'));
-    moveBgToActive(profileIdx);
-  });
-}
-
-
-  // === Переход на страницу "Мой счёт" по кнопке уровня ===
-
-const levelBtn = document.getElementById('level');
-const balancePage = document.getElementById('balance-page');
-
-const statusBar = document.querySelector('.level-status-bar');
-
-let startY = 0;
-let dragging = false;
-
-if (statusBar && balancePage) {
-  const statusBar = document.querySelector('.level-status-bar');
-
-let startY = 0;
-let dragging = false;
-
-if (statusBar && balancePage) {
-  statusBar.addEventListener('touchstart', (e) => {
-    dragging = true;
-    startY = e.touches[0].clientY;
-
-    // Блокируем скролл в области плашки
-    balancePage.style.overflowY = 'hidden';
-  });
-
-  statusBar.addEventListener('touchmove', (e) => {
-    if (!dragging) {
-      e.preventDefault(); // Запрещаем скролл даже при простом свайпе
-      return;
-    }
-
-    const currentY = e.touches[0].clientY;
-    const diff = startY - currentY;
-
-    const maxStretch = 100;
-    const stretch = Math.max(Math.min(diff, maxStretch), 0);
-    statusBar.style.height = `${100 + stretch}px`;
-
-    e.preventDefault(); // Обязательно: запрещаем прокрутку страницы
-  }, { passive: false });
-
-statusBar.addEventListener('touchend', () => {
-  dragging = false;
-
-  const currentHeight = statusBar.style.height || '100px';
-
-  // Плавный и выразительный отскок: вверх -> вниз -> обратно
-  const bounceBack = statusBar.animate([
-    { height: currentHeight },
-    { height: '85px', offset: 0.3 },
-    { height: '105px', offset: 0.6 },
-    { height: '100px', offset: 1 }
-  ], {
-    duration: 500,
-    easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
-  });
-
-  bounceBack.onfinish = () => {
-    statusBar.style.height = '100px';
-    statusBar.style.transition = '';
-  };
-
-  // Возвращаем прокрутку
-  balancePage.style.overflowY = 'auto';
-});
-
-}
-
-}
-
-
-if (levelBtn && balancePage) {
-  levelBtn.addEventListener('click', () => {
-    pages.forEach(p => {
-      p.style.display = 'none';
-      p.classList.remove('active');
-    });
-    navMenu.style.display = 'none';
-    balancePage.style.display = 'block';
-    balancePage.classList.add('active');
-
-        // Прокрутка до текущего уровня (якорь)
-    const currentLevelEl = balancePage.querySelector('.level.current');
-    if (currentLevelEl) {
-      setTimeout(() => {
-        currentLevelEl.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }, 100); // задержка, чтобы страница успела отрисоваться
-    }
-  });
-
-  
-
-  const balanceBackBtn = balancePage.querySelector('.back-btn');
-  if (balanceBackBtn) {
-    balanceBackBtn.addEventListener('click', () => {
-      balancePage.style.display = 'none';
-      balancePage.classList.remove('active');
-
-      const profilePage = document.getElementById('profile');
-      profilePage.style.display = '';
-      profilePage.classList.add('active');
-
-      navMenu.style.display = '';
-      const profileIdx = navBtns.findIndex(b => b.classList.contains('profile-icon'));
-      moveBgToActive(profileIdx);
-    });
-  }
-}
-
-
-  // === Достижения: кнопка "забрать" ===
-document.querySelectorAll('.achievement-card[data-status="ready-to-claim"] .claim').forEach(button => {
-  button.addEventListener('click', (e) => {
-    const card = e.target.closest('.achievement-card');
-    if (!card) return;
-
-    // Меняем статус
-    card.setAttribute('data-status', 'completed');
-
-    // Заменяем кнопку
-    const btn = document.createElement('div');
-    btn.className = 'achievement-btn collected';
-    btn.textContent = 'выполнено';
-    button.replaceWith(btn);
-
-    // Добавляем чекмарку
-    if (!card.querySelector('.status-icon')) {
-      const icon = document.createElement('div');
-      icon.className = 'status-icon checkmark';
-      card.appendChild(icon);
-    }
-  });
-});
-
-  // === Анимация загрузки ===
-  splash.style.display = 'flex';
-  mainApp.style.display = 'none';
-  if (fill) setTimeout(() => { fill.style.width = '100%'; }, 200);
-
-  // === Анимация заднего фона под активной иконкой ===
-  function moveBgToActive(index) {
-    const btn = navBtns[index];
-    const menuRect = navMenu.getBoundingClientRect();
-    requestAnimationFrame(() => {
-      const btnRect = btn.getBoundingClientRect();
-      const bgWidth = parseFloat(getComputedStyle(navBg).width);
-      const centerX = btnRect.left + btnRect.width / 2 - menuRect.left;
-      navBg.style.left = `${centerX - bgWidth / 2}px`;
-    });
-
-    
-
-  }
-
-  // === Коррекция отступа сверху (для fullscreen) ===
-  function adjustTopPadding() {
-    const isFullscreen = window.innerHeight === screen.height;
-    mainApp.style.paddingTop = (isFullscreen ? 60 : 1) + 'px';
-  }
-
-  // === Переход от splash к main ===
-  setTimeout(() => {
-    splash.style.opacity = '0';
-    setTimeout(() => {
-      splash.style.display = 'none';
-      mainApp.style.display = 'block';
-      adjustTopPadding();
-      moveBgToActive(activeIndex);
-    }, 500);
-  }, 1400);
-
-  if (achievementsBtn && achievementsPage && backBtn) {
-  achievementsBtn.addEventListener('click', () => {
-
-
-    // Скрываем все обычные страницы
-    pages.forEach(p => {
-      p.style.display = 'none';
-      p.classList.remove('active');
-    });
-
-    // Скрываем нижнее меню
-    navMenu.style.display = 'none';
-
-    // Показываем страницу достижений
-        achievementsPage.style.display = 'block';
-    achievementsPage.classList.add('active');
-
-    animateAchievementProgress();
-
-  });
-
-
-  backBtn.addEventListener('click', () => {
-    // Скрываем страницу достижений
-    achievementsPage.style.display = 'none';
-    achievementsPage.classList.remove('active');
-
-    // Возвращаем профиль
-    const profilePage = document.getElementById('profile');
-    if (profilePage) {
-      profilePage.style.display = '';
-      profilePage.classList.add('active');
-    }
-
-    // Показываем нижнее меню обратно
-    navMenu.style.display = '';
-
-    // Перемещаем фоновый кружок под иконку профиля
-    const profileIdx = navBtns.findIndex(b => b.classList.contains('profile-icon'));
-    moveBgToActive(profileIdx);
-  });
-}
-
-function initTaskButtons() {
-  const overlay = document.getElementById('task-overlay');
-  const channelName = document.getElementById('channel-name');
-  const goSubscribe = document.getElementById('go-subscribe');
-
-  const tasks = [
-    { name: 'Free My Leaks', url: 'https://t.me/freemyleaks' },
-    { name: 'Free My Memes', url: 'https://t.me/freemyswagmemes' },
-    { name: 'PBC', url: 'https://t.me/pbccarter' }
-  ];
-
-  document.querySelectorAll('.task-btn').forEach((btn, index) => {
-    btn.onclick = () => {
-      const task = tasks[index];
-      if (!task) return;
-      channelName.textContent = task.name;
-      goSubscribe.href = task.url;
-      overlay.classList.add('show');
-    };
-  });
-}
-
-  // === Навигация между страницами ===
-  pages.forEach(page => {
-    if (page.id === "home") {
-      page.style.display = '';
-      page.classList.add('active');
-    } else {
-      page.style.display = 'none';
-      page.classList.remove('active');
-    }
-  });
-
-  let activeIndex = navBtns.findIndex(btn => btn.classList.contains('active'));
-  if (activeIndex === -1) activeIndex = 0;
-
-  navBtns.forEach((btn, idx) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      navBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      requestAnimationFrame(() => setTimeout(() => moveBgToActive(idx), 10));
-
-      const targetPage = btn.getAttribute('data-page');
-      pages.forEach(page => {
-        if (page.id === targetPage) {
-          page.style.display = '';
-          page.classList.add('active');
-          if (targetPage === 'profile') animateLevelPercent();
-        } else {
-          page.style.display = 'none';
-          page.classList.remove('active');
-        }
-      });
-      adjustTopPadding();
-    });
-  });
-
-  // === Фильтрация карточек по табам ===
-  const tabMap = {
-    'все': 'all',
-    'альбомы': 'album',
-    'синглы': 'single',
-    'артисты': 'artist'
-  };
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const selected = tab.textContent.trim().toLowerCase();
-      const filterType = tabMap[selected];
-      document.querySelectorAll('.card-placeholder').forEach(card => {
-        const cat = card.dataset.category;
-        if (filterType === 'all' || filterType === undefined) {
-          card.style.display = '';
-        } else if (cat === filterType) {
-          card.style.display = '';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-    });
-  });
-
-  // === FAB-поисковик с разворачиванием ===
-  const searchFab = document.getElementById('searchFab');
-  const searchInput = searchFab?.querySelector('.search-input');
-  let isSearchOpen = false;
-
-  if (searchFab && searchInput) {
-    searchFab.addEventListener('click', (e) => {
-      if (isSearchOpen && e.target.closest('.search-icon')) {
-        searchFab.classList.remove('open');
-        searchInput.value = '';
-        isSearchOpen = false;
-        document.querySelectorAll('.card-placeholder').forEach(card => card.style.display = '');
-      } else if (!isSearchOpen) {
-        searchFab.classList.add('open');
-        isSearchOpen = true;
-        setTimeout(() => searchInput.focus(), 100);
-      }
-      e.stopPropagation();
-    });
-
-    document.addEventListener('click', (e) => {
-      if (isSearchOpen && !searchFab.contains(e.target)) {
-        searchFab.classList.remove('open');
-        searchInput.value = '';
-        isSearchOpen = false;
-        document.querySelectorAll('.card-placeholder').forEach(card => card.style.display = '');
-      }
-    });
-
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.trim().toLowerCase();
-      document.querySelectorAll('.card-placeholder').forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(query) ? '' : 'none';
-      });
-    });
-  }
-
-  // === Отображение профиля ===
-  const nicknameEl = document.querySelector('.nickname');
-  const balanceEl = document.querySelector('.balance-nick');
-  const avatarEl = document.querySelector('.avatar');
-
-  if (nicknameEl && balanceEl && avatarEl) {
-    if (user) {
-      nicknameEl.textContent = user.username || `id${user.id}`;
-      balanceEl.textContent = 'баланс';
-      if (user.username) {
-        avatarEl.style.backgroundImage = `url('https://t.me/i/userpic/320/${user.username}.jpg')`;
-      } else {
-        avatarEl.style.backgroundColor = '#ccc';
-      }
-    } else {
-      nicknameEl.textContent = 'гость';
-      balanceEl.textContent = 'баланс';
-      avatarEl.style.backgroundColor = '#ccc';
-    }
-  }
-
-  // === Анимация процентов уровня ===
-  function animateLevelPercent() {
-    const percentEl = document.querySelector('.level-percent');
-    if (percentEl) {
-      const raw = percentEl.dataset.percent || percentEl.textContent;
-      const finalValue = parseInt(raw);
-      if (isNaN(finalValue)) return;
-
-      let current = 0;
-      const step = () => {
-        current++;
-        percentEl.textContent = `${current}%`;
-        if (current < finalValue) {
-          requestAnimationFrame(step);
-        }
-      };
-      percentEl.textContent = `0%`;
-      requestAnimationFrame(step);
-    }
-  }
-
-  // === Оверлеи: настройки и внешний вид ===
-  const settingItems = document.querySelectorAll('.setting-item');
-  const balanceOverlay = document.getElementById('balance-overlay');
-  const themeOverlay = document.getElementById('theme-overlay');
-
-  if (settingItems.length) {
-    settingItems.forEach((item) => {
-      const text = item.innerHTML.replace(/<br\s*\/?>(\s*)?/gi, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
-      if (text.includes('пополнение баланса') && balanceOverlay) {
-        item.addEventListener('click', (e) => {
-          e.preventDefault();
-          balanceOverlay.classList.add('show');
-          balanceOverlay.scrollTo(0, 0);
-        });
-      }
-      if (text.includes('внешний вид') && themeOverlay) {
-        item.addEventListener('click', (e) => {
-          e.preventDefault();
-          themeOverlay.classList.add('show');
-          themeOverlay.scrollTo(0, 0);
-        });
-      }
-    });
-  }
-
-  [balanceOverlay, themeOverlay].forEach(overlay => {
-    if (overlay) {
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.classList.remove('show');
-      });
-    }
-  });
-
-  // === Переключение темы ===
-  const themeBtn = document.querySelector('.theme-toggle-btn');
-  if (themeBtn) {
-    themeBtn.textContent = document.body.classList.contains('light') ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
-    themeBtn.addEventListener('click', () => {
-      document.body.classList.toggle('light');
-      const isLight = document.body.classList.contains('light');
-      themeBtn.textContent = isLight ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
-      localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    });
-  }
-
-  // === Таймер дропа ===
-  function startDropTimer(hours, minutes) {
-    const display = document.getElementById('drop-countdown');
-    if (!display) return;
-    let totalSeconds = hours * 3600 + minutes * 60;
-    function updateTimer() {
-      const h = Math.floor(totalSeconds / 3600);
-      const m = Math.floor((totalSeconds % 3600) / 60);
-      display.textContent = `${h}ч ${m}м`;
-      if (totalSeconds > 0) totalSeconds--;
-      else clearInterval(timer);
-    }
-    updateTimer();
-    const timer = setInterval(updateTimer, 60000);
-  }
-  startDropTimer(3, 59);
-
-  // === Оверлей подписки по кнопке старта ===
-  const startBtn = document.querySelector('.start-btn');
-  const subscribeOverlay = document.getElementById('subscribe-overlay');
-  if (startBtn) {
-    startBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      subscribeOverlay?.classList.add('show');
-    });
-  }
-  if (subscribeOverlay) {
-    subscribeOverlay.addEventListener('click', (e) => {
-      if (e.target === subscribeOverlay) {
-        subscribeOverlay.classList.remove('show');
-      }
-    });
-  }
-
-  // === Переход в магазин и скролл к новой коллекции ===
-  const shopBtn = document.getElementById('go-to-shop');
-  if (shopBtn) {
-    shopBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      navBtns.forEach(b => b.classList.remove('active'));
-      document.querySelector('.shop-icon')?.classList.add('active');
-      pages.forEach(p => {
-        if (p.id === 'shop') {
-          p.style.display = '';
-          p.classList.add('active');
-        } else {
-          p.style.display = 'none';
-          p.classList.remove('active');
-        }
-      });
-      setTimeout(() => {
-        const collectionTitle = document.getElementById('new-collection');
-        collectionTitle?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        circle.style.strokeDashoffset = `${circumference * (1 - progress)}`;
       }, 100);
-      moveBgToActive(navBtns.findIndex(b => b.classList.contains('shop-icon')));
     });
   }
 
-  // === КВЕСТ: приглашение 10 друзей ===
-const inviteBtn = document.getElementById('invite-btn');
-const inviteProgress = document.getElementById('invite-progress');
-
-if (inviteBtn && inviteProgress) {
-  inviteBtn.addEventListener('click', () => {
-    // Псевдологика: считаем квест выполненным
-    inviteProgress.textContent = 'приглашено: 10/10';
-    inviteBtn.textContent = 'выполнено';
-    inviteBtn.classList.add('completed');
-  });
-}
-
-  // === Оверлей заданий ===
-  const overlay = document.getElementById('task-overlay');
-  const channelName = document.getElementById('channel-name');
-  const goSubscribe = document.getElementById('go-subscribe');
-  const tasks = [
-    { name: 'Free My Leaks', url: 'https://t.me/freemyleaks' },
-    { name: 'Free My Memes', url: 'https://t.me/freemyswagmemes' },
-    { name: 'PBC', url: 'https://t.me/pbccarter' }
-  ];
-  document.querySelectorAll('.task-btn').forEach((btn, index) => {
-    btn.addEventListener('click', () => {
-      const task = tasks[index];
-      channelName.textContent = task.name;
-      goSubscribe.href = task.url;
-      overlay.classList.add('show');
-    });
-  });
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) overlay.classList.remove('show');
-  });
-});
-
-function animateAchievementProgress() {
-  const cards = document.querySelectorAll('.achievement-card.in-progress');
-
-  cards.forEach(card => {
-    const valueText = card.querySelector('.progress-text')?.textContent.trim();
-    if (!valueText) return;
-
-    const [current, total] = valueText.split('/').map(Number);
-    if (isNaN(current) || isNaN(total) || total === 0) return;
-
-    const progress = current / total;
-    const circle = card.querySelector('.ring-blue');
-    if (!circle) return;
-
-    const radius = parseFloat(circle.getAttribute('r'));
-    const circumference = 2 * Math.PI * radius;
-
-    // Устанавливаем полную длину круга
-    circle.style.strokeDasharray = `${circumference}`;
-    circle.style.strokeDashoffset = `${circumference}`;
-
-    // Триггерим анимацию
-    setTimeout(() => {
-      circle.style.strokeDashoffset = `${circumference * (1 - progress)}`;
-    }, 100);
-  });
-}
-
-
-  // === Навигация между страницами ===
-  pages.forEach(page => {
-    if (page.id === "home") {
-      page.style.display = '';
-      page.classList.add('active');
-    } else {
-      page.style.display = 'none';
-      page.classList.remove('active');
-    }
-  });
-
-  
-  let activeIndex = navBtns.findIndex(btn => btn.classList.contains('active'));
-  if (activeIndex === -1) activeIndex = 0;
-
-  navBtns.forEach((btn, idx) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      navBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      requestAnimationFrame(() => setTimeout(() => moveBgToActive(idx), 10));
-
-      const targetPage = btn.getAttribute('data-page');
-      pages.forEach(page => {
-        if (page.id === targetPage) {
-          page.style.display = '';
-          page.classList.add('active');
-          if (targetPage === 'profile') animateLevelPercent();
-        } else {
-          page.style.display = 'none';
-          page.classList.remove('active');
-        }
-      });
-      adjustTopPadding();
-    });
-  });
-
-  // === Фильтрация карточек по табам ===
-  const tabMap = {
-    'все': 'all',
-    'альбомы': 'album',
-    'синглы': 'single',
-    'артисты': 'artist'
-  };
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const selected = tab.textContent.trim().toLowerCase();
-      const filterType = tabMap[selected];
-      document.querySelectorAll('.card-placeholder').forEach(card => {
-        const cat = card.dataset.category;
-        if (filterType === 'all' || filterType === undefined) {
-          card.style.display = '';
-        } else if (cat === filterType) {
-          card.style.display = '';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-    });
-  });
-
-  // === FAB-поисковик с разворачиванием ===
-  const searchFab = document.getElementById('searchFab');
-  const searchInput = searchFab?.querySelector('.search-input');
-  let isSearchOpen = false;
-
-  if (searchFab && searchInput) {
-    searchFab.addEventListener('click', (e) => {
-      if (isSearchOpen && e.target.closest('.search-icon')) {
-        searchFab.classList.remove('open');
-        searchInput.value = '';
-        isSearchOpen = false;
-        document.querySelectorAll('.card-placeholder').forEach(card => card.style.display = '');
-      } else if (!isSearchOpen) {
-        searchFab.classList.add('open');
-        isSearchOpen = true;
-        setTimeout(() => searchInput.focus(), 100);
-      }
-      e.stopPropagation();
-    });
-
-    document.addEventListener('click', (e) => {
-      if (isSearchOpen && !searchFab.contains(e.target)) {
-        searchFab.classList.remove('open');
-        searchInput.value = '';
-        isSearchOpen = false;
-        document.querySelectorAll('.card-placeholder').forEach(card => card.style.display = '');
+  // === Кнопка "забрать" достижения ===
+  document.querySelectorAll('.achievement-card[data-status="ready-to-claim"] .claim').forEach(button => {
+    button.addEventListener('click', e => {
+      const card = e.target.closest('.achievement-card');
+      if (!card) return;
+      card.setAttribute('data-status', 'completed');
+      const btn = document.createElement('div');
+      btn.className = 'achievement-btn collected';
+      btn.textContent = 'выполнено';
+      button.replaceWith(btn);
+      if (!card.querySelector('.status-icon')) {
+        const icon = document.createElement('div');
+        icon.className = 'status-icon checkmark';
+        card.appendChild(icon);
       }
     });
-
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.trim().toLowerCase();
-      document.querySelectorAll('.card-placeholder').forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(query) ? '' : 'none';
-      });
-    });
-  }
-
-  // === Отображение профиля ===
-  const nicknameEl = document.querySelector('.nickname');
-  const balanceEl = document.querySelector('.balance-nick');
-  const avatarEl = document.querySelector('.avatar');
-
-  if (nicknameEl && balanceEl && avatarEl) {
-    if (user) {
-      nicknameEl.textContent = user.username || `id${user.id}`;
-      balanceEl.textContent = 'баланс';
-      if (user.username) {
-        avatarEl.style.backgroundImage = `url('https://t.me/i/userpic/320/${user.username}.jpg')`;
-      } else {
-        avatarEl.style.backgroundColor = '#ccc';
-      }
-    } else {
-      nicknameEl.textContent = 'гость';
-      balanceEl.textContent = 'баланс';
-      avatarEl.style.backgroundColor = '#ccc';
-    }
-  }
-
-  // === Анимация процентов уровня ===
-  function animateLevelPercent() {
-    const percentEl = document.querySelector('.level-percent');
-    if (percentEl) {
-      const raw = percentEl.dataset.percent || percentEl.textContent;
-      const finalValue = parseInt(raw);
-      if (isNaN(finalValue)) return;
-
-      let current = 0;
-      const step = () => {
-        current++;
-        percentEl.textContent = `${current}%`;
-        if (current < finalValue) {
-          requestAnimationFrame(step);
-        }
-      };
-      percentEl.textContent = `0%`;
-      requestAnimationFrame(step);
-    }
-  }
-
-  // === Оверлеи: настройки и внешний вид ===
-  const settingItems = document.querySelectorAll('.setting-item');
-  const balanceOverlay = document.getElementById('balance-overlay');
-  const themeOverlay = document.getElementById('theme-overlay');
-
-  if (settingItems.length) {
-    settingItems.forEach((item) => {
-      const text = item.innerHTML.replace(/<br\s*\/?>(\s*)?/gi, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
-      if (text.includes('пополнение баланса') && balanceOverlay) {
-        item.addEventListener('click', (e) => {
-          e.preventDefault();
-          balanceOverlay.classList.add('show');
-          balanceOverlay.scrollTo(0, 0);
-        });
-      }
-      if (text.includes('внешний вид') && themeOverlay) {
-        item.addEventListener('click', (e) => {
-          e.preventDefault();
-          themeOverlay.classList.add('show');
-          themeOverlay.scrollTo(0, 0);
-        });
-      }
-    });
-  }
-
-  [balanceOverlay, themeOverlay].forEach(overlay => {
-    if (overlay) {
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.classList.remove('show');
-      });
-    }
   });
 
-  // === Переключение темы ===
-  const themeBtn = document.querySelector('.theme-toggle-btn');
-  if (themeBtn) {
-    themeBtn.textContent = document.body.classList.contains('light') ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
-    themeBtn.addEventListener('click', () => {
-      document.body.classList.toggle('light');
-      const isLight = document.body.classList.contains('light');
-      themeBtn.textContent = isLight ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
-      localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    });
-  }
-
-  // === Таймер дропа ===
-  function startDropTimer(hours, minutes) {
-    const display = document.getElementById('drop-countdown');
-    if (!display) return;
-    let totalSeconds = hours * 3600 + minutes * 60;
-    function updateTimer() {
-      const h = Math.floor(totalSeconds / 3600);
-      const m = Math.floor((totalSeconds % 3600) / 60);
-      display.textContent = `${h}ч ${m}м`;
-      if (totalSeconds > 0) totalSeconds--;
-      else clearInterval(timer);
-    }
-    updateTimer();
-    const timer = setInterval(updateTimer, 60000);
-  }
-  startDropTimer(3, 59);
-
-  // === Оверлей подписки по кнопке старта ===
-  const startBtn = document.querySelector('.start-btn');
-  const subscribeOverlay = document.getElementById('subscribe-overlay');
-  if (startBtn) {
-    startBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      subscribeOverlay?.classList.add('show');
-    });
-  }
-  if (subscribeOverlay) {
-    subscribeOverlay.addEventListener('click', (e) => {
-      if (e.target === subscribeOverlay) {
-        subscribeOverlay.classList.remove('show');
-      }
-    });
-  }
-
-  // === Переход в магазин и скролл к новой коллекции ===
-  const shopBtn = document.getElementById('go-to-shop');
-  if (shopBtn) {
-    shopBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      navBtns.forEach(b => b.classList.remove('active'));
-      document.querySelector('.shop-icon')?.classList.add('active');
-      pages.forEach(p => {
-        if (p.id === 'shop') {
-          p.style.display = '';
-          p.classList.add('active');
-        } else {
-          p.style.display = 'none';
-          p.classList.remove('active');
-        }
-      });
-      setTimeout(() => {
-        const collectionTitle = document.getElementById('new-collection');
-        collectionTitle?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-      moveBgToActive(navBtns.findIndex(b => b.classList.contains('shop-icon')));
-    });
-  }
-
-  // === Оверлей заданий ===
-  const overlay = document.getElementById('task-overlay');
-  const channelName = document.getElementById('channel-name');
-  const goSubscribe = document.getElementById('go-subscribe');
-  const tasks = [
-    { name: 'Free My Leaks', url: 'https://t.me/freemyleaks' },
-    { name: 'Free My Memes', url: 'https://t.me/freemyswagmemes' },
-    { name: 'PBC', url: 'https://t.me/pbccarter' }
-  ];
-  document.querySelectorAll('.task-btn').forEach((btn, index) => {
-    btn.addEventListener('click', () => {
-      const task = tasks[index];
-      channelName.textContent = task.name;
-      goSubscribe.href = task.url;
-      overlay.classList.add('show');
-    });
-  });
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) overlay.classList.remove('show');
-  });
-});
-
-function animateAchievementProgress() {
-  const cards = document.querySelectorAll('.achievement-card.in-progress');
-
-  cards.forEach(card => {
-    const valueText = card.querySelector('.progress-text')?.textContent.trim();
-    if (!valueText) return;
-
-    const [current, total] = valueText.split('/').map(Number);
-    if (isNaN(current) || isNaN(total) || total === 0) return;
-
-    const progress = current / total;
-    const circle = card.querySelector('.ring-blue');
-    if (!circle) return;
-
-    const radius = parseFloat(circle.getAttribute('r'));
-    const circumference = 2 * Math.PI * radius;
-
-    // Устанавливаем полную длину круга
-    circle.style.strokeDasharray = `${circumference}`;
-    circle.style.strokeDashoffset = `${circumference}`;
-
-    // Триггерим анимацию
-    setTimeout(() => {
-      circle.style.strokeDashoffset = `${circumference * (1 - progress)}`;
-    }, 100);
-
-    // === ФУНКЦИЯ: установка обработчика для квеста "пригласить друзей" ===
-function setupInviteQuest() {
+  // === Квест: пригласи 10 друзей ===
   const inviteBtn = document.getElementById('invite-btn');
   const inviteProgress = document.getElementById('invite-progress');
-
   if (inviteBtn && inviteProgress && !inviteBtn.classList.contains('completed')) {
     inviteBtn.addEventListener('click', () => {
       inviteProgress.textContent = 'приглашено: 10/10';
@@ -1420,8 +375,41 @@ function setupInviteQuest() {
       inviteBtn.classList.add('completed');
     });
   }
-}
 
+  // === Ежедневная награда ===
+  const rewardBtn = document.getElementById('claimReward');
+  if (rewardBtn) {
+    rewardBtn.addEventListener('click', () => {
+      let timeLeft = 24 * 60 * 60;
+      const formatTime = (s) => {
+        const h = Math.floor(s / 3600);
+        const m = Math.floor((s % 3600) / 60);
+        return `${h}ч ${m}м`;
+      };
+      rewardBtn.disabled = true;
+      rewardBtn.textContent = formatTime(timeLeft);
+      const interval = setInterval(() => {
+        timeLeft -= 60;
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          rewardBtn.disabled = false;
+          rewardBtn.textContent = 'получить 5f';
+        } else {
+          rewardBtn.textContent = formatTime(timeLeft);
+        }
+      }, 60000);
+      // Тут можешь добавить начисление валюты
+    });
+  }
+
+  // === Сделать домашнюю страницу всегда видимой при запуске ===
+  pages.forEach(page => {
+    if (page.id === 'home') {
+      page.style.display = '';
+      page.classList.add('active');
+    } else {
+      page.style.display = 'none';
+      page.classList.remove('active');
+    }
   });
-}
-
+});
