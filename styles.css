@@ -1714,6 +1714,9 @@ body.light .balance-nick {
   background: lightgray;
   border-radius: 50%;
   margin: 0 10px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .leader-name {

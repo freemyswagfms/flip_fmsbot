@@ -21,6 +21,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const pages = document.querySelectorAll('.page');
   const tabs = document.querySelectorAll('.tab');
   const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  // === Отображение "МОЕЙ ПОЗИЦИИ" в таблице лидеров ===
+const myLeaderboardCard = document.querySelector('.leader-card.my-position');
+
+if (user && myLeaderboardCard) {
+  const nameEl = myLeaderboardCard.querySelector('.leader-name');
+  const avatarEl = myLeaderboardCard.querySelector('.leader-avatar');
+
+  if (nameEl) {
+    nameEl.textContent = user.username || user.first_name || `Вы`;
+  }
+
+  if (avatarEl) {
+    avatarEl.style.backgroundImage = `url("https://t.me/i/userpic/320/${user.id}.jpg")`;
+  }
+}
+
 
   // === Переход между основными страницами через нижнее меню ===
   let activeIndex = navBtns.findIndex(btn => btn.classList.contains('active'));
