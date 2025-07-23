@@ -1218,7 +1218,7 @@ body.light .balance-nick {
   color: white;
   text-align: center;
   margin-top: 16px;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 
 .achievements-subcount {
@@ -1228,7 +1228,7 @@ body.light .balance-nick {
   color: white;
   opacity: 0.8;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .achievement-card {
