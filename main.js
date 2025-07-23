@@ -98,12 +98,14 @@ document.addEventListener('DOMContentLoaded', () => {
     mainApp.style.paddingTop = (isFullscreen ? 60 : 1) + 'px';
   }
 
-  // === Переходы по профилю: достижения, статистика, лидеры, мой счёт, квесты ===
-  setupPageNavigation('achievements', 'achievements-page');
-  setupPageNavigation('stat', 'stat-page');
-  setupPageNavigation('leaderboard', 'leaderboard-page');
-  setupPageNavigation('quests', 'quests-page');
-  setupPageNavigation('level', 'balance-page', true);
+  // === Переходы по профилю ===
+setupPageNavigation('achievements', 'achievements-page');
+setupPageNavigation('stat', 'stat-page');
+setupPageNavigation('leaderboard', 'leaderboard-page');
+setupPageNavigation('level', 'balance-page', true);
+// === Переходы на страницу квестов ===
+setupPageNavigation('quests', 'quests-page');         // из профиля
+setupPageNavigation('go-to-quests', 'quests-page');   // с главной
 
   function setupPageNavigation(btnId, pageId, scrollToLevel = false) {
     const btn = document.getElementById(btnId);
