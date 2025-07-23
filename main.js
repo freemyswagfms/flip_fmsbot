@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
       navMenu.style.display = 'none';
       page.style.display = 'block';
       page.classList.add('active');
-      targetPage.scrollTop = 0;
+      document.scrollingElement.scrollTop = 0;
       if (scrollToLevel) {
         setTimeout(() => {
           const currentLevelEl = page.querySelector('.level.current');
