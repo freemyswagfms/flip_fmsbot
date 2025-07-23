@@ -397,7 +397,6 @@ body {
   height: 70px;
   display: flex;
   justify-content: space-around;
-  align-items: cen;
   padding-top: 8px;
   z-index: 999;
   background: rgba(0, 0, 0, 0.75);
@@ -1599,7 +1598,10 @@ body.light .balance-nick {
   font-family: 'geologica';
   color: black;
   margin-top: 20px;
+  flex-direction: row;
+  align-items: center;
 }
+
 
 .quest-info {
   display: flex;
@@ -1610,13 +1612,15 @@ body.light .balance-nick {
 
 .quest-title {
   font-family: 'cygre';
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
-  margin-bottom: 8px;
+  margin-bottom: 23px;
 }
 
 .quest-sub {
-  font-size: 14px;
+  font-family: 'geologica';
+  font-weight: 300;
+  font-size: 16px;
   opacity: 0.8;
   line-height: 1.4;
 }
@@ -1625,13 +1629,12 @@ body.light .balance-nick {
   background: #317BFF;
   color: white;
   border: none;
-  border-radius: 20px;
-  padding: 14px 20px;
+  border-radius: 16px;
+  padding: 18px 33px;
   font-family: 'geologica';
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 300;
   cursor: pointer;
-  min-width: 120px;
 }
 
 .quest-btn.completed {
