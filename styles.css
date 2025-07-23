@@ -1614,7 +1614,7 @@ body.light .balance-nick {
   font-family: 'cygre';
   font-size: 16px;
   font-weight: 800;
-  margin-bottom: 8px;
+  margin-bottom: 24px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1626,7 +1626,7 @@ body.light .balance-nick {
   font-weight: 300;
   font-size: 16px;
   opacity: 0.8;
-  line-height: 1.4;
+  line-height: 1.25;
 }
 
 .quest-btn {
@@ -1658,29 +1658,6 @@ body.light .balance-nick {
   gap: 10px;
 }
 
-/* === МОЯ СТАТИСТИКА === */
-
-.stat-page {
-  padding: 20px;
-  display: none;
-  overflow-y: auto;
-  position: relative;
-}
-
-.stat-title {
-  font-family: 'cygre';
-  font-size: 24px;
-  font-weight: 800;
-  color: white;
-  text-align: center;
-  margin-top: 16px;
-  margin-bottom: 10px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-
-
 
 /* === СТРАНИЦА ТАБЛИЦА ЛИДЕРОВ === */
 
@@ -1703,6 +1680,69 @@ padding: 20px;
   text-transform: uppercase;
 }
 
+/* === МОЯ СТАТИСТИКА === */
+
+.stat-page {
+  padding: 20px;
+  display: none;
+  overflow-y: auto;
+  position: relative;
+}
+
+.stat-title {
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  text-align: center;
+  margin-top: 16px;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.stat-subtitle {
+  font-family: 'geologica';
+  font-size: 18px;
+  font-weight: 300;
+  color: white;
+  text-align: center;
+  opacity: 0.8;
+  margin-top: -10px;
+  margin-bottom: 30px;
+}
+
+.stat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 24px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'geologica';
+  color: black;
+}
+
+.stat-label {
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 300;
+  margin-top: 15px;
+}
 
 
 /* === ОТКЛЮЧЕНИЕ ВЫДЕЛЕНИЙ КНОПОК === */
