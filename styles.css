@@ -1659,25 +1659,74 @@ body.light .balance-nick {
 }
 
 
-/* === СТРАНИЦА ТАБЛИЦА ЛИДЕРОВ === */
+/* === ТАБЛИЦА ЛИДЕРОВ === */
 
-.leaderboard-page{
-padding: 20px;
+.leaderboard-page {
+  padding: 20px;
   display: none;
   overflow-y: auto;
   position: relative;
 }
 
-.leaderboard-title{
+.leaderboard-title {
   font-family: 'cygre';
   font-size: 24px;
   font-weight: 800;
   color: white;
   text-align: center;
   margin-top: 16px;
-  margin-bottom: 10px;
+  margin-bottom: 30px;
   letter-spacing: 1px;
   text-transform: uppercase;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.leader-card {
+  background: white;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  font-family: 'geologica';
+  color: black;
+  margin-bottom: 10px;
+}
+
+.leader-card.my-position {
+  border: 3px solid #317BFF;
+  margin-bottom: 10px;
+}
+
+.leader-rank {
+  font-weight: 300;
+  font-size: 14px;
+  opacity: 0.5;
+}
+
+.leader-avatar {
+  width: 50px;
+  height: 50px;
+  background: lightgray;
+  border-radius: 50%;
+  margin: 0 10px;
+}
+
+.leader-name {
+  font-family: 'geologica';
+  flex: 1;
+  font-weight: 300;
+  font-size: 14px;
+}
+
+.leader-xp {
+  font-family: 'cygre';
+  font-weight: 800;
+  font-size: 20px;
 }
 
 /* === МОЯ СТАТИСТИКА === */
