@@ -1573,6 +1573,8 @@ body.light .balance-nick {
   opacity: 1;
 }
 
+/* === ЗАГОЛОВОК КВЕСТЫ И КОНТЕНТ === */
+
 .quests-tasks {
   margin-top: 20px;
 }
@@ -1592,14 +1594,12 @@ body.light .balance-nick {
   background: white;
   border-radius: 24px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   padding: 20px 20px;
   font-family: 'geologica';
   color: black;
   margin-top: 20px;
-  flex-direction: row;
-  align-items: center;
+  gap: 12px;
 }
 
 
@@ -1614,7 +1614,11 @@ body.light .balance-nick {
   font-family: 'cygre';
   font-size: 16px;
   font-weight: 800;
-  margin-bottom: 23px;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .quest-sub {
@@ -1630,11 +1634,13 @@ body.light .balance-nick {
   color: white;
   border: none;
   border-radius: 16px;
-  padding: 18px 33px;
+  padding: 14px 32px;
   font-family: 'geologica';
   font-size: 14px;
   font-weight: 300;
   cursor: pointer;
+  align-self: flex-end;
+  margin: 0 0 0 10px;
 }
 
 .quest-btn.completed {
@@ -1644,6 +1650,13 @@ body.light .balance-nick {
   pointer-events: none;
 }
 
+.quest-bottom {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
 
 /* === МОЯ СТАТИСТИКА === */
 
