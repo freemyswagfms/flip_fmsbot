@@ -82,12 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setTimeout(() => {
     splash.style.opacity = '0';
-    setTimeout(() => {
-      splash.style.display = 'none';
-      mainApp.style.display = 'block';
-      adjustTopPadding();
-      moveBgToActive(activeIndex);
-    }, 500);
+      setTimeout(() => {
+        splash.style.display = 'none';
+        mainApp.style.display = 'block';
+        adjustTopPadding();
+        moveBgToActive(activeIndex);
+      }, 500);
   }, 1400);
 
   // === Коррекция отступа сверху (для fullscreen) ===
@@ -112,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
       navMenu.style.display = 'none';
       page.style.display = 'block';
       page.classList.add('active');
+      targetPage.scrollTop = 0;
       if (scrollToLevel) {
         setTimeout(() => {
           const currentLevelEl = page.querySelector('.level.current');
