@@ -65,7 +65,17 @@ body {
   align-items: center;
   transition: opacity .5s;
 }
-  
+
+.page {
+  min-height: calc(100vh - 70px);
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
 .splash-logo {
   width: 230px;
   margin-bottom: 20px;
@@ -440,15 +450,6 @@ body {
 
 #title-collection.title {
   margin-bottom: 15px;
-}
-
-.page {
-  min-height: calc(100vh - 70px);
-  padding: 20px;
-  box-sizing: border-box;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
 }
 
 .collection-tabs-wrapper {
