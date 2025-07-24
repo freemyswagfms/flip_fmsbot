@@ -231,6 +231,33 @@ setupPageNavigation('go-to-quests', 'quests-page');   // с главной
     });
   }
 
+// === Оверлей соцсетей (НАШИ СОЦСЕТИ) ===
+  const socialOverlay = document.getElementById('social-overlay');
+  const socialBtn = document.getElementById('setting-social');
+
+  if (socialBtn && socialOverlay) {
+    socialBtn.addEventListener('click', e => {
+      e.preventDefault();
+      socialOverlay.classList.add('show');
+    });
+
+    socialOverlay.addEventListener('click', e => {
+      if (e.target === socialOverlay) {
+        socialOverlay.classList.remove('show');
+      }
+    });
+  }
+
+  const expandBtn = document.querySelector('.social-expand-btn');
+  const hiddenList = document.querySelector('.social-hidden-list');
+
+  if (expandBtn && hiddenList) {
+    expandBtn.addEventListener('click', () => {
+      const isVisible = hiddenList.style.display === 'block';
+      hiddenList.style.display = isVisible ? 'none' : 'block';
+    });
+  }
+
   // === Кнопки настроек: пополнение и тема ===
   const settingItems = document.querySelectorAll('.setting-item');
   const balanceOverlay = document.getElementById('balance-overlay');

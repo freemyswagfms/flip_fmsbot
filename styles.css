@@ -937,7 +937,9 @@ body.light .setting-card {
   color: black;
 }
 
-/* === ОВЕРЛЕИ === */
+/* ============= */
+/* ===ОВЕРЛЕИ=== */
+/* ============= */
 
 .overlay {
   display: none;
@@ -963,14 +965,14 @@ body.light .setting-card {
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
-  padding: 0 20px 40px;
+  padding: 20px 20px 40px;
   box-sizing: border-box;
 }
 
 .overlay .tasks {
   width: 100%;
   box-sizing: border-box;
-   z-index: 99999;
+  z-index: 99999;
 }
 
 .overlay .task {
@@ -995,8 +997,6 @@ body.light .setting-card {
   pointer-events: none;
   box-sizing: border-box;
 }
-
-
 
 #task-overlay.show {
   display: flex;
@@ -1095,7 +1095,9 @@ body.light .setting-card {
   cursor: pointer;
 }
 
-/* ===  ВНЕШНИЙ ВИД ОВЕРЛЕЙ === */
+/* ========================== */
+/* ===ОВЕРЛЕЙ: ВНЕШНИЙ ВИД=== */
+/* ========================== */
 
 .theme-inner {
   margin: 0 20px;
@@ -1131,7 +1133,7 @@ body.light .setting-card {
   color: black;
 }
 
-/* Переключатель темы (switch) */
+/* Переключатель темы */
 
 .switch {
   position: relative;
@@ -1323,7 +1325,7 @@ body.light .search-icon {
   filter: invert(1);
 }
 
-/* обновленный оверлей внешнего вида */
+/* стиль оверлей внешнего вида */
 body.light .theme-inner {
   background: #E0D6CE;
 }
@@ -1332,8 +1334,149 @@ body.light .theme-title {
   color: #000;
 }
 
+/* ============================ */
+/* ===ОВЕРЛЕЙ: НАШИ СОЦ СЕТИ=== */
+/* ============================ */
+
+#social-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+#social-overlay.show {
+  display: flex;
+}
+
+/* === Контейнер === */
+.social-content {
+  background: black;
+  border-radius: 16px;
+  padding: 20px 20px;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* === Заголовок === */
+.social-content h2 {
+  margin-top: 0px;
+  margin-bottom: 20px;
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* === Соц-кнопки === */
+.social-link {
+  background: white;
+  border-radius: 24px;
+  padding-left: 20px;
+  padding-right: 10px;
+  padding-bottom: 20px;
+  padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
+  color: black;
+  text-align: left;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* === Иконка стрелки (с IMG) === */
+.social-link .arrow-icon {
+  background: #3A83FF;
+  border-radius: 16px;
+  width: 80px;
+  height: 59px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.social-link .arrow-icon img {
+  width: 22px;
+  height: 22px;
+}
+
+/* === Instagram метка === */
+/* Блок-карточка */
+.social-link.instagram {
+  background: white;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+/* Верхняя строка: заголовок + кнопка */
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%; /* 🔥 ВАЖНО: кнопка уйдёт вправо */
+}
+
+
+/* Заголовок */
+.social-text {
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
+  color: black;
+  white-space: nowrap;
+}
+
+/* Кнопка */
+.arrow-icon {
+  background: #3A83FF;
+  border-radius: 16px;
+  width: 80px;
+  height: 59px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.arrow-icon img {
+  width: 22px;
+  height: 22px;
+}
+
+/* Подпись под карточкой */
+.insta-note {
+  text-align: left;
+  align-self: flex-start; 
+  font-family: 'geologica';
+  font-size: 10px;
+  font-weight: 300;
+  color: #888;
+  opacity: 0.5;
+  line-height: 1.1;
+  max-width: 100%;
+}
 
 /* === ДОСТИЖЕНИЯ: КАРТОЧКИ === */
+
 .achievements-list {
   display: flex;
   flex-direction: column;
