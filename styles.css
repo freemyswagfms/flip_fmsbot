@@ -1132,6 +1132,7 @@ body.light .setting-card {
   font-weight: 800;
   font-size: 20px;
   color: black;
+  white-space: nowrap;
 }
 
 /* Переключатель темы */
