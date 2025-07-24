@@ -258,17 +258,28 @@ setupPageNavigation('go-to-quests', 'quests-page');   // с главной
     });
   });
 
-  // === Переключение темы ===
-  const themeBtn = document.querySelector('.theme-toggle-btn');
-  if (themeBtn) {
-    themeBtn.textContent = document.body.classList.contains('light') ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
-    themeBtn.addEventListener('click', () => {
-      document.body.classList.toggle('light');
-      const isLight = document.body.classList.contains('light');
-      themeBtn.textContent = isLight ? 'ВЫКЛЮЧИТЬ' : 'ВКЛЮЧИТЬ';
-      localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    });
-  }
+ // === Переключение темы (исправленный вариант) ===
+const themeToggleCheckbox = document.getElementById('theme-toggle-checkbox');
+
+if (themeToggleCheckbox) {
+  const savedTheme = localStorage.getItem('theme');
+  const isLight = savedTheme === 'light';
+  document.body.classList.toggle('light', isLight);
+  themeToggleCheckbox.checked = isLight;
+
+  themeToggleCheckbox.addEventListener('change', () => {
+    if (themeToggleCheckbox.checked) {
+      document.body.classList.add('light');
+      localStorage.setItem('theme', 'light');
+    } else {
+      document.body.classList.remove('light');
+      localStorage.setItem('theme', 'dark');
+    }
+  });
+}
+
+
+
 
   // === Таймер дропа ===
   function startDropTimer(hours, minutes) {
