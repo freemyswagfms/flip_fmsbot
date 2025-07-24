@@ -1115,6 +1115,7 @@ body.light .setting-card {
   color: white;
   margin-bottom: 40px;
   text-align: center;
+  line-height: 1.1;
 }
 
 .theme-switcher {
