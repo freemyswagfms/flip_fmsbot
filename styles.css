@@ -1492,20 +1492,27 @@ body.light .theme-title {
   right: 16px;
 }
 
+/* Скрыто по умолчанию */
 .social-link.telegram .social-hidden-list {
-  display: none;
-  margin-top: 10px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
   font-family: 'geologica';
   font-size: 20px;
   font-weight: 800;
   color: black;
   padding-left: 4px;
   line-height: 1.4;
+  margin-top: 10px;
 }
 
+/* При раскрытии */
 .social-link.telegram.expanded .social-hidden-list {
-  display: block;
+  max-height: 500px; /* подстрой под контент */
+  opacity: 1;
 }
+
 
 .arrow-icon img {
   transition: transform 0.3s ease;
