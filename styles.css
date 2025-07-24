@@ -1337,7 +1337,7 @@ body.light .theme-title {
 }
 
 /* ============================ */
-/* ===ОВЕРЛЕЙ: НАШИ СОЦ СЕТИ=== */
+/* === ОВЕРЛЕЙ: НАШИ СОЦСЕТИ === */
 /* ============================ */
 
 #social-overlay {
@@ -1348,15 +1348,14 @@ body.light .theme-title {
   display: none;
   align-items: center;
   justify-content: center;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding: 0 20px;
 }
 
 #social-overlay.show {
   display: flex;
 }
 
-/* === Контейнер === */
+/* === Контейнер контента === */
 .social-content {
   background: black;
   border-radius: 16px;
@@ -1366,13 +1365,11 @@ body.light .theme-title {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  line-height: 1.1;
 }
 
-/* === Заголовок === */
+/* === Заголовок блока === */
 .social-content h2 {
-  margin-top: 0px;
-  margin-bottom: 20px;
+  margin: 0 0 20px;
   font-family: 'cygre';
   font-size: 24px;
   font-weight: 800;
@@ -1382,14 +1379,14 @@ body.light .theme-title {
   letter-spacing: 1px;
 }
 
-/* === Соц-кнопки === */
+/* =============================== */
+/* === ОБЩИЙ СТИЛЬ КАРТОЧЕК === */
+/* =============================== */
+
 .social-link {
   background: white;
   border-radius: 24px;
-  padding-left: 20px;
-  padding-right: 10px;
-  padding-bottom: 20px;
-  padding-top: 20px;
+  padding: 20px 10px 20px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1397,13 +1394,12 @@ body.light .theme-title {
   font-size: 20px;
   font-weight: 800;
   color: black;
-  text-align: left;
   box-sizing: border-box;
   position: relative;
 }
 
-/* === Иконка стрелки (с IMG) === */
-.social-link .arrow-icon {
+/* === Иконка стрелки (общая) === */
+.arrow-icon {
   background: #3A83FF;
   border-radius: 16px;
   width: 72px;
@@ -1414,107 +1410,9 @@ body.light .theme-title {
   flex-shrink: 0;
 }
 
-.social-link .arrow-icon img {
-  width: 22px;
-  height: 22px;
-}
-
-/* === Instagram метка === */
-/* Блок-карточка */
-.social-link.instagram {
-  background: white;
-  border-radius: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  box-sizing: border-box;
-}
-
-/* Верхняя строка: заголовок + кнопка */
-.top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%; /* 🔥 ВАЖНО: кнопка уйдёт вправо */
-}
-
-
-/* Заголовок */
-.social-text {
-  font-family: 'cygre';
-  font-size: 20px;
-  font-weight: 800;
-  color: black;
-  white-space: nowrap;
-}
-
-/* Кнопка */
-.arrow-icon {
-  background: #3A83FF;
-  border-radius: 16px;
-  width: 80px;
-  height: 59px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
-}
-
 .arrow-icon img {
   width: 22px;
   height: 22px;
-}
-
-/* Подпись под карточкой */
-.insta-note {
-  text-align: left;
-  align-self: flex-start; 
-  font-family: 'geologica';
-  font-size: 10px;
-  font-weight: 300;
-  color: #888;
-  opacity: 0.5;
-  line-height: 1.1;
-  max-width: 100%;
-}
-
-.social-link.telegram {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 15px;
-  position: relative;
-}
-
-
-.social-link.telegram .arrow-icon {
-  position: absolute;
-  top: 20px;
-  right: 16px;
-}
-
-/* Скрыто по умолчанию */
-.social-link.telegram .social-hidden-list {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: max-height 0.4s ease, opacity 0.3s ease;
-  font-family: 'geologica';
-  font-size: 20px;
-  font-weight: 800;
-  color: black;
-  padding-left: 4px;
-  line-height: 1.4;
-  margin-top: 10px;
-}
-
-/* При раскрытии */
-.social-link.telegram.expanded .social-hidden-list {
-  max-height: 500px; /* подстрой под контент */
-  opacity: 1;
-}
-
-
-.arrow-icon img {
   transition: transform 0.3s ease;
 }
 
@@ -1522,7 +1420,23 @@ body.light .theme-title {
   transform: rotate(180deg);
 }
 
-/* Изменение прозрачности только у надписи */
+/* =============================== */
+/* === КАРТОЧКА: TELEGRAM === */
+/* =============================== */
+
+.social-link.telegram {
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  padding-right: 90px;
+}
+
+.social-link.telegram .arrow-icon {
+  position: absolute;
+  top: 20px;
+  right: 16px;
+}
+
 .telegram-label {
   opacity: 1;
   transition: opacity 0.3s ease;
@@ -1532,6 +1446,76 @@ body.light .theme-title {
   opacity: 0.5;
 }
 
+/* === Раскрывающийся список каналов === */
+.social-hidden-list {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  font-family: 'geologica';
+  font-size: 20px;
+  font-weight: 800;
+  color: black;
+  margin-top: 10px;
+  line-height: 1.2;
+}
+
+.social-link.telegram.expanded .social-hidden-list {
+  max-height: 500px;
+  opacity: 1;
+}
+
+/* === Ссылки на каналы === */
+.channel-name {
+  display: block;
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
+  color: black;
+  text-decoration: none;
+  margin-bottom: 8px;
+  transition: opacity 0.3s ease;
+}
+
+.channel-name:hover {
+  opacity: 0.6;
+}
+
+/* =============================== */
+/* === КАРТОЧКА: INSTAGRAM === */
+/* =============================== */
+
+.social-link.instagram {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.social-text {
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
+  color: black;
+  white-space: nowrap;
+}
+
+.insta-note {
+  text-align: left;
+  font-family: 'geologica';
+  font-size: 10px;
+  font-weight: 300;
+  color: #888;
+  opacity: 0.5;
+  line-height: 1.2;
+  max-width: 100%;
+}
 
 /* === ДОСТИЖЕНИЯ: КАРТОЧКИ === */
 
