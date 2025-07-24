@@ -1396,6 +1396,7 @@ body.light .theme-title {
   color: black;
   box-sizing: border-box;
   position: relative;
+  line-height: 1.1;
 }
 
 /* === Иконка стрелки (общая) === */
