@@ -1358,7 +1358,7 @@ body.light .theme-title {
 .social-content {
   background: black;
   border-radius: 16px;
-  padding: 20px 20px;
+  padding: 10px 10px;
   width: 100%;
   box-sizing: border-box;
   display: flex;
@@ -1404,8 +1404,8 @@ body.light .theme-title {
 .social-link .arrow-icon {
   background: #3A83FF;
   border-radius: 16px;
-  width: 80px;
-  height: 59px;
+  width: 72px;
+  height: 53px;
   display: flex;
   justify-content: center;
   align-items: center;
