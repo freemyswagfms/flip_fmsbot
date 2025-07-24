@@ -1386,7 +1386,7 @@ body.light .theme-title {
 .social-link {
   background: white;
   border-radius: 24px;
-  padding: 20px 20px 20px 20px;
+  padding: 10px 10px 10px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1434,8 +1434,8 @@ body.light .theme-title {
 
 .social-link.telegram .arrow-icon {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 10px;
+  right: 10px;
 }
 
 .telegram-label {
