@@ -259,31 +259,39 @@ setupPageNavigation('go-to-quests', 'quests-page');   // с главной
   }
 
   // === Кнопки настроек: пополнение и тема ===
-  const settingItems = document.querySelectorAll('.setting-item');
-  const balanceOverlay = document.getElementById('balance-overlay');
   const themeOverlay = document.getElementById('theme-overlay');
-  if (settingItems.length) {
-    settingItems.forEach(item => {
-      const text = item.innerText.toLowerCase();
-      if (text.includes('пополнение') && balanceOverlay) {
-        item.addEventListener('click', e => {
-          e.preventDefault();
-          balanceOverlay.classList.add('show');
-        });
-      }
-      if (text.includes('внешний вид') && themeOverlay) {
-        item.addEventListener('click', e => {
-          e.preventDefault();
-          themeOverlay.classList.add('show');
-        });
-      }
-    });
-  }
-  [balanceOverlay, themeOverlay].forEach(overlay => {
-    if (overlay) overlay.addEventListener('click', e => {
-      if (e.target === overlay) overlay.classList.remove('show');
-    });
+const themeBtn = document.getElementById('setting-theme');
+
+if (themeBtn && themeOverlay) {
+  themeBtn.addEventListener('click', e => {
+    e.preventDefault();
+    themeOverlay.classList.add('show');
   });
+
+  themeOverlay.addEventListener('click', e => {
+    if (e.target === themeOverlay) {
+      themeOverlay.classList.remove('show');
+    }
+  });
+}
+
+// === ОВЕРЛЕЙ "Связь с нами" ===
+const contactOverlay = document.getElementById('contact-overlay');
+const contactBtn = document.getElementById('setting-contact');
+
+if (contactBtn && contactOverlay) {
+  contactBtn.addEventListener('click', e => {
+    e.preventDefault();
+    contactOverlay.classList.add('show');
+  });
+
+  contactOverlay.addEventListener('click', e => {
+    if (e.target === contactOverlay) {
+      contactOverlay.classList.remove('show');
+    }
+  });
+}
+
 
  // === Переключение темы (исправленный вариант) ===
 const themeToggleCheckbox = document.getElementById('theme-toggle-checkbox');

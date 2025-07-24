@@ -545,6 +545,7 @@ body {
   height: 20px;
   opacity: 0.6;
 }
+
 /* === ПОИСК В КОЛЛЕКЦИИ (АВТОРАСКРЫТИЕ) === */
 
 .search-fab {
@@ -593,7 +594,6 @@ body {
 .search-fab.open .search-input {
   display: block;
 }
-
 
 /* === ПРОФИЛЬ === */
 
@@ -849,7 +849,6 @@ body {
   }
 }
 
-
 /* === ПРОФИЛЬ: БЭЙДЖИ === */
 
 .profile-card.is-disabled {
@@ -963,7 +962,6 @@ body.light .setting-card {
 
 .overlay-inner {
   width: 100%;
-  max-width: 500px;
   margin: 0 auto;
   padding: 20px 20px 40px;
   box-sizing: border-box;
@@ -1349,6 +1347,8 @@ body.light .theme-title {
   align-items: center;
   justify-content: center;
   padding: 0 20px;
+  backdrop-filter: blur(5px);
+  transition: opacity 0.3s ease;
 }
 
 #social-overlay.show {
@@ -1466,7 +1466,6 @@ body.light .theme-title {
   opacity: 1;
 }
 
-/* === Ссылки на каналы === */
 .channel-name {
   display: block;
   font-family: 'cygre';
@@ -1517,6 +1516,49 @@ body.light .theme-title {
   line-height: 1.2;
   max-width: 100%;
 }
+
+/* ============================= */
+/* === ОВЕРЛЕЙ: СВЯЗЬ С НАМИ === */
+/* ============================= */
+
+.contact-popup {
+  background: black;
+  color: white;
+  padding: 50px 20px 50px;
+  border-radius: 16px;
+  width: 100%;
+  font-family: 'geologica';
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.contact-title {
+  font-family: 'cygre';
+  font-weight: 800;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.contact-text {
+  font-family: 'geologica';
+  font-size: 18px;
+  font-weight: 300;
+  margin-bottom: 30px;
+  line-height: 1.2;
+}
+
+.contact-btn {
+  display: inline-block;
+  background: #317BFF;
+  color: white;
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 300;
+  padding: 15px 35px;
+  border-radius: 100px;
+  text-decoration: none;
+}
+
 
 /* === ДОСТИЖЕНИЯ: КАРТОЧКИ === */
 
