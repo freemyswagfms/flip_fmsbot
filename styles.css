@@ -1532,6 +1532,10 @@ body.light .theme-title {
   box-sizing: border-box;
 }
 
+#contact-overlay {
+  padding: 0 20px;
+}
+
 .contact-title {
   font-family: 'cygre';
   font-weight: 800;
@@ -1545,6 +1549,7 @@ body.light .theme-title {
   font-weight: 300;
   margin-bottom: 30px;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .contact-btn {
@@ -1558,6 +1563,8 @@ body.light .theme-title {
   border-radius: 100px;
   text-decoration: none;
 }
+
+
 
 
 /* === ДОСТИЖЕНИЯ: КАРТОЧКИ === */
