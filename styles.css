@@ -1364,6 +1364,7 @@ body.light .theme-title {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  line-height: 1.1;
 }
 
 /* === Заголовок === */
