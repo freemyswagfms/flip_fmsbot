@@ -1478,6 +1478,54 @@ body.light .theme-title {
   max-width: 100%;
 }
 
+.social-link.telegram {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+  position: relative;
+}
+
+
+.social-link.telegram .arrow-icon {
+  position: absolute;
+  top: 20px;
+  right: 16px;
+}
+
+.social-link.telegram .social-hidden-list {
+  display: none;
+  margin-top: 10px;
+  font-family: 'geologica';
+  font-size: 20px;
+  font-weight: 800;
+  color: black;
+  padding-left: 4px;
+  line-height: 1.4;
+}
+
+.social-link.telegram.expanded .social-hidden-list {
+  display: block;
+}
+
+.arrow-icon img {
+  transition: transform 0.3s ease;
+}
+
+.arrow-icon.rotated img {
+  transform: rotate(180deg);
+}
+
+/* Изменение прозрачности только у надписи */
+.telegram-label {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.social-link.telegram.expanded .telegram-label {
+  opacity: 0.5;
+}
+
+
 /* === ДОСТИЖЕНИЯ: КАРТОЧКИ === */
 
 .achievements-list {

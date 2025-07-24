@@ -471,4 +471,17 @@ if (themeToggleCheckbox) {
       page.classList.remove('active');
     }
   });
+
+  // === Раскрытие Telegram-блока ===
+const telegramCard = document.querySelector('.social-link:not(.instagram):nth-of-type(1)');
+const telegramArrow = telegramCard?.querySelector('.arrow-icon');
+
+if (telegramCard && telegramArrow) {
+  telegramCard.addEventListener('click', () => {
+    telegramCard.classList.toggle('expanded');
+    telegramArrow.classList.toggle('rotated');
+    // тут можно вставить доп. поведение при раскрытии, если появится вложенный контент
+  });
+}
+
 });
