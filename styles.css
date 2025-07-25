@@ -1684,6 +1684,71 @@ body.light .theme-title {
   box-sizing: border-box;
 }
 
+/* === БЛОК: ПОПОЛНЕНИТЬ === */
+
+.amount-input {
+  width: 100%;
+  border: none;
+  border-radius: 16px;
+  padding: 23px 12px; /* ⬅ СТАЛО: верх/низ 16px, лево/право 12px */
+  font-size: 18px;
+  font-family: 'cygre';
+  font-weight: 800;
+  text-align: center;
+  background: white;
+  color: gray;
+  margin-bottom: 20px;
+  box-sizing: border-box; /* ⬅ важно, чтобы padding не раздувал ширину */
+  border: 2px solid transparent; /* ← добавлено */
+  box-sizing: border-box;        /* ← сохраняем размер */
+}
+
+.topup-pay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 100px;
+  background: white;
+  padding: 5px 6px;
+  border: none;
+  width: 100%;
+  font-family: 'cygre';
+  font-size: 18px;
+  font-weight: 800;
+  color: gray;
+  cursor: pointer;
+}
+
+.topup-pay-btn .right-icon {
+  width: 80px;
+  height: 60px;
+  border-radius: 100px;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.topup-pay-btn .left-icon {
+  width: 80px;
+  height: 60px;
+  border-radius: 100px;
+  background: #D9D9D9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.topup-pay-btn .right-icon {
+  background: #9EFF44;
+}
+
+.amount-input:focus {
+  outline: none;
+  border: 2px solid #9EFF44;
+  background-color: white;
+}
 
 
 /* === ДОСТИЖЕНИЯ: КАРТОЧКИ === */

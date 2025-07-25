@@ -524,6 +524,30 @@ if (telegramCard && telegramArrow) {
     page.addEventListener('hide', clearTopupSelection);
   });
 
+// === КНОПКА ПОПОЛНИТЬ: логика отправки на YooMoney ===
+  const payBtn = document.getElementById('pay-button');
+  const customAmountInput = document.getElementById('custom-amount');
 
+  if (payBtn && customAmountInput) {
+    payBtn.addEventListener('click', () => {
+      const selectedCard = document.querySelector('.topup-card.active');
+      let amount = selectedCard?.dataset.price;
+
+      const manualValue = parseInt(customAmountInput.value);
+      if (!isNaN(manualValue) && manualValue > 0) {
+        amount = manualValue;
+      }
+
+      if (!amount) {
+        alert('Пожалуйста, выберите сумму или введите её вручную.');
+        return;
+      }
+
+      // Замените 'ВАШ_YOOMONEY_ID' на ваш shop ID или номер счёта
+      const yooUrl = `https://yoomoney.ru/quickpay/shop-widget?writer=seller&targets=Пополнение+баланса&default-sum=${amount}&button-text=11&payment-type-choice=on&account=ВАШ_YOOMONEY_ID&successURL=https://ваш-сайт.рф/спасибо`;
+
+      window.open(yooUrl, '_blank');
+    });
+  }
   
 });
