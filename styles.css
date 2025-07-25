@@ -284,8 +284,8 @@ body {
 }
 
 .task-btn {
-  width: 70px;
-  height: 50px;
+  width: 72px;
+  height: 53px;
   border-radius: 16px;
   border: none;
   background: #317BFF;
@@ -297,8 +297,8 @@ body {
 }
 
 .task-btn img {
-  width: 30.33px;
-  height: 30.3px;
+  width: 22px;
+  height: 22px;
 }
 
 .quests-btn {
@@ -397,6 +397,14 @@ body {
   display: flex;
   justify-content: center;
 }
+
+.balance-amount {
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
+  color: black;
+}
+
 
 /* === НАВИГАЦИЯ === */
 
@@ -1563,9 +1571,6 @@ body.light .theme-title {
   text-decoration: none;
 }
 
-
-
-
 /* === ДОСТИЖЕНИЯ: КАРТОЧКИ === */
 
 .achievements-list {
@@ -1730,8 +1735,8 @@ body.light .theme-title {
 .balance-page {
   padding: 20px;
   display: none;
-  overflow-y: auto; /* ✅ */
-  position: relative; /* ✅ */
+  overflow-y: auto;
+  position: relative;
 }
 
 .balance-title {
