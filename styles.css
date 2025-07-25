@@ -1640,13 +1640,22 @@ body.light .theme-title {
 .topup-card {
   background: #242842;
   border-radius: 12px;
-  padding: 5px 8px; /* ⬅ чуть шире по бокам */
+  padding: 5px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid transparent;
 }
+
+.topup-card.active {
+  border: 2px solid #9EFF44;
+  box-shadow: 0 0 0 2px #0f0 inset; /* Можно убрать, если не нужно */
+  border-radius: 14px;
+}
+
 
 
 .topup-icon {

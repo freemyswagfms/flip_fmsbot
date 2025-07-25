@@ -494,4 +494,14 @@ if (telegramCard && telegramArrow) {
   });
 }
 
+  // === Выбор карточки пополнения (зелёная рамка) ===
+  const topupCards = document.querySelectorAll('.topup-card');
+  topupCards.forEach(card => {
+    card.addEventListener('click', () => {
+      topupCards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+    });
+  });
+
+  
 });
