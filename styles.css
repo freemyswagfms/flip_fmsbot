@@ -1627,7 +1627,6 @@ body.light .theme-title {
   margin-top: 70px;
   margin-bottom: 30px;
   text-transform: uppercase;
-  letter-spacing: 1px;
 }
 
 .topup-grid {
@@ -1640,7 +1639,7 @@ body.light .theme-title {
 .topup-card {
   background: #242842;
   border-radius: 12px;
-  padding: 5px 8px;
+  padding: 8px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1676,15 +1675,13 @@ body.light .theme-title {
   font-weight: 800;
   color: black;
   background: #9EFF44;
-  border-radius: 10px;
-  padding: 9px 0;        /* ⬅ только по вертикали */
+  border-radius: 8px;
+  padding: 8px 0;        /* ⬅ только по вертикали */
   margin-top: 13px;
   width: 100%;           /* ⬅ занимает всю ширину родителя */
   text-align: center;    /* ⬅ текст по центру */
   box-sizing: border-box;
 }
-
-
 
 .amount-input {
   width: 100%;
