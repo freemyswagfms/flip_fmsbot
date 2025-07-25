@@ -572,7 +572,7 @@ function startDrag(e) {
   const sliderRect = slider.getBoundingClientRect();
   const iconRect = icon.getBoundingClientRect();
 
-  maxDrag = buttonRect.width - sliderRect.width - iconRect.width - 20;
+  maxDrag = buttonRect.width - sliderRect.width - 6 /* слева */ - 6 /* справа */;
 
   document.addEventListener('mousemove', onDrag);
   document.addEventListener('touchmove', onDrag);
