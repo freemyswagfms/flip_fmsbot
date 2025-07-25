@@ -566,6 +566,7 @@ slider.addEventListener('touchstart', startDrag);
 
 function startDrag(e) {
   isDragging = true;
+  e.preventDefault();
   startX = e.touches ? e.touches[0].clientX : e.clientX;
 
   const buttonRect = button.getBoundingClientRect();
