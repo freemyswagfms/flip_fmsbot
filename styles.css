@@ -1652,11 +1652,9 @@ body.light .theme-title {
 
 .topup-card.active {
   border: 2px solid #9EFF44;
-  box-shadow: 0 0 0 2px #0f0 inset; /* Можно убрать, если не нужно */
+  box-shadow: 0 0 0 2px #0f0 inset;
   border-radius: 14px;
 }
-
-
 
 .topup-icon {
   height: 75px;
@@ -1665,10 +1663,9 @@ body.light .theme-title {
   display: block;
 }
 
-
 .topup-amount {
   font-family: 'cygre';
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 800;
   color: white;
 }
