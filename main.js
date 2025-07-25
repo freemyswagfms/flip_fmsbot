@@ -494,14 +494,36 @@ if (telegramCard && telegramArrow) {
   });
 }
 
-  // === Выбор карточки пополнения (зелёная рамка) ===
+    // === Выбор карточки пополнения (зелёная рамка) ===
   const topupCards = document.querySelectorAll('.topup-card');
+  let activeTopupCard = null;
+
+  function clearTopupSelection() {
+    if (activeTopupCard) {
+      activeTopupCard.classList.remove('active');
+      activeTopupCard = null;
+    }
+  }
+
   topupCards.forEach(card => {
-    card.addEventListener('click', () => {
-      topupCards.forEach(c => c.classList.remove('active'));
+    card.addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearTopupSelection();
       card.classList.add('active');
+      activeTopupCard = card;
     });
   });
+
+  document.addEventListener('click', (e) => {
+    if (![...topupCards].some(card => card.contains(e.target))) {
+      clearTopupSelection();
+    }
+  });
+
+  pages.forEach(page => {
+    page.addEventListener('hide', clearTopupSelection);
+  });
+
 
   
 });
