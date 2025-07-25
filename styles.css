@@ -406,6 +406,17 @@ body {
   color: black;
 }
 
+.balance-card-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-radius: 24px;
+  padding: 10px 10px 10px 20px;
+  color: black;
+  box-sizing: border-box;
+}
+
 
 /* === НАВИГАЦИЯ === */
 
