@@ -1684,7 +1684,7 @@ body.light .theme-title {
   box-sizing: border-box;
 }
 
-/* === БЛОК: ПОПОЛНЕНИТЬ === */
+
 
 .amount-input {
   width: 100%;
@@ -1703,33 +1703,36 @@ body.light .theme-title {
   box-sizing: border-box;        /* ← сохраняем размер */
 }
 
+/* ========================================= */
+/* === БЛОК: ПОПОЛНИТЬ (SWIPE-КНОПКА)    === */
+/* ========================================= */
+
 .topup-pay-btn {
+  position: relative;              /* ⬅️ Контейнер для абсолютного позиционирования */
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;     /* ⬅️ Важно: чтобы .slider-center не уезжал */
   border-radius: 100px;
   background: white;
-  padding: 5px 6px;
+  padding-left: 6px;               /* ⬅️ Возвращаем левый паддинг */
+  padding-right: 6px;
   border: none;
   width: 100%;
+  height: 70px;
   font-family: 'cygre';
   font-size: 18px;
   font-weight: 800;
   color: gray;
   cursor: pointer;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
-.topup-pay-btn .right-icon {
-  width: 80px;
-  height: 60px;
-  border-radius: 100px;
-  background: #eee;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.topup-pay-btn .left-icon {
+/* Круглая стрелка (левая), двигается вручную через JS */
+#slider-circle {
+  position: absolute;
+  left: 6px;
+  top: 5px;
   width: 80px;
   height: 60px;
   border-radius: 100px;
@@ -1737,18 +1740,47 @@ body.light .theme-title {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.2s ease;
+  z-index: 2;
+  cursor: grab;
+  touch-action: pan-y;
 }
 
+/* Центр: текст + корзина */
+.slider-center {
+  flex: 1;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
 
-.topup-pay-btn .right-icon {
+/* Текст */
+#slider-text {
+  font-family: 'cygre';
+  font-size: 18px;
+  font-weight: 800;
+  color: gray;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+/* Корзина (справа) */
+#confirm-icon {
+  position: absolute;
+  right: 0;
+  width: 80px;
+  height: 60px;
+  border-radius: 100px;
   background: #9EFF44;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
 }
 
-.amount-input:focus {
-  outline: none;
-  border: 2px solid #9EFF44;
-  background-color: white;
-}
 
 
 /* === ДОСТИЖЕНИЯ: КАРТОЧКИ === */

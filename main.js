@@ -549,5 +549,80 @@ if (telegramCard && telegramArrow) {
       window.open(yooUrl, '_blank');
     });
   }
+
+  // === SWIPE-АНИМАЦИЯ ДЛЯ КНОПКИ ПОПОЛНЕНИЯ ===
+const slider = document.getElementById('slider-circle');
+const button = document.getElementById('pay-button');
+const text = document.getElementById('slider-text');
+const icon = document.getElementById('confirm-icon');
+
+let isDragging = false;
+let startX = 0;
+let offsetX = 0;
+let maxDrag = 0;
+
+slider.addEventListener('mousedown', startDrag);
+slider.addEventListener('touchstart', startDrag);
+
+function startDrag(e) {
+  isDragging = true;
+  startX = e.touches ? e.touches[0].clientX : e.clientX;
+
+  const buttonRect = button.getBoundingClientRect();
+  const sliderRect = slider.getBoundingClientRect();
+  const iconRect = icon.getBoundingClientRect();
+
+  maxDrag = buttonRect.width - sliderRect.width - iconRect.width - 20;
+
+  document.addEventListener('mousemove', onDrag);
+  document.addEventListener('touchmove', onDrag);
+  document.addEventListener('mouseup', stopDrag);
+  document.addEventListener('touchend', stopDrag);
+}
+
+function onDrag(e) {
+  if (!isDragging) return;
+
+  const x = e.touches ? e.touches[0].clientX : e.clientX;
+  offsetX = Math.min(Math.max(0, x - startX), maxDrag);
+
+  slider.style.transform = `translateX(${offsetX}px)`;
+
+  const progress = offsetX / maxDrag;
+  const r = Math.round(217 + (158 - 217) * progress);
+  const g = Math.round(217 + (255 - 217) * progress);
+  const b = Math.round(217 + (68  - 217) * progress);
+  slider.style.background = `rgb(${r}, ${g}, ${b})`;
+
+}
+
+function stopDrag() {
+  if (!isDragging) return;
+  isDragging = false;
+
+  if (offsetX >= maxDrag) {
+    // === Успешный свайп ===
+    slider.style.transform = `translateX(${maxDrag}px)`;
+    slider.style.background = '#9EFF44';
+    icon.style.opacity = '0';
+    text.textContent = 'ГОТОВО';
+    text.style.color = '#9EFF44';
+
+    // TODO: Здесь можно вставить запуск оплаты, если нужно.
+  } else {
+    // === Сброс в начальное положение ===
+    slider.style.transform = 'translateX(0)';
+    slider.style.background = '#D9D9D9';
+    text.textContent = 'ПОПОЛНИТЬ';
+    text.style.color = 'gray';
+    icon.style.opacity = '1';
+  }
+
+  document.removeEventListener('mousemove', onDrag);
+  document.removeEventListener('touchmove', onDrag);
+  document.removeEventListener('mouseup', stopDrag);
+  document.removeEventListener('touchend', stopDrag);
+}
+
   
 });
