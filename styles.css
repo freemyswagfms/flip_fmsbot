@@ -1651,7 +1651,10 @@ body.light .theme-title {
 .topup-icon {
   height: 75px;
   width: auto;
+  image-rendering: auto;
+  display: block;
 }
+
 
 .topup-amount {
   font-family: 'cygre';
