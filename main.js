@@ -612,6 +612,10 @@ function stopDrag() {
     text.textContent = 'ГОТОВО';
     text.style.color = '#9EFF44';
     isLocked = true; // 🔒 Блокируем дальнейший свайп
+    if (window.navigator.vibrate) {
+      window.navigator.vibrate(100); // вибрация на 100 мс
+    }
+
   } else {
     // 🔄 Возврат назад
     slider.style.transform = 'translateX(0)';
