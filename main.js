@@ -560,13 +560,17 @@ let isDragging = false;
 let startX = 0;
 let offsetX = 0;
 let maxDrag = 0;
+let isLocked = false; // 🔒 Добавлено: блокировка после свайпа
 
 slider.addEventListener('mousedown', startDrag);
-slider.addEventListener('touchstart', startDrag);
+slider.addEventListener('touchstart', startDrag, { passive: false }); // ❗ отключаем scroll
 
 function startDrag(e) {
+  if (isLocked) return; // 🔒 блокируем повторный свайп
+
   isDragging = true;
-  e.preventDefault();
+  e.preventDefault(); // ⛔ отключаем скролл страницы
+
   startX = e.touches ? e.touches[0].clientX : e.clientX;
 
   const buttonRect = button.getBoundingClientRect();
@@ -576,13 +580,13 @@ function startDrag(e) {
   maxDrag = buttonRect.width - sliderRect.width - 6 /* слева */ - 6 /* справа */;
 
   document.addEventListener('mousemove', onDrag);
-  document.addEventListener('touchmove', onDrag);
+  document.addEventListener('touchmove', onDrag, { passive: false }); // ❗ отключаем scroll
   document.addEventListener('mouseup', stopDrag);
   document.addEventListener('touchend', stopDrag);
 }
 
 function onDrag(e) {
-  if (!isDragging) return;
+  if (!isDragging || isLocked) return;
 
   const x = e.touches ? e.touches[0].clientX : e.clientX;
   offsetX = Math.min(Math.max(0, x - startX), maxDrag);
@@ -594,7 +598,6 @@ function onDrag(e) {
   const g = Math.round(217 + (255 - 217) * progress);
   const b = Math.round(217 + (68  - 217) * progress);
   slider.style.background = `rgb(${r}, ${g}, ${b})`;
-
 }
 
 function stopDrag() {
@@ -602,16 +605,15 @@ function stopDrag() {
   isDragging = false;
 
   if (offsetX >= maxDrag) {
-    // === Успешный свайп ===
+    // ✅ Успешный свайп — фиксируем
     slider.style.transform = `translateX(${maxDrag}px)`;
     slider.style.background = '#9EFF44';
     icon.style.opacity = '0';
     text.textContent = 'ГОТОВО';
     text.style.color = '#9EFF44';
-
-    // TODO: Здесь можно вставить запуск оплаты, если нужно.
+    isLocked = true; // 🔒 Блокируем дальнейший свайп
   } else {
-    // === Сброс в начальное положение ===
+    // 🔄 Возврат назад
     slider.style.transform = 'translateX(0)';
     slider.style.background = '#D9D9D9';
     text.textContent = 'ПОПОЛНИТЬ';
