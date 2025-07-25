@@ -106,6 +106,8 @@ setupPageNavigation('level', 'balance-page', true);
 // === Переходы на страницу квестов ===
 setupPageNavigation('quests', 'quests-page');         // из профиля
 setupPageNavigation('go-to-quests', 'quests-page');   // с главной
+// === Переходы на страницу пополнение баланса ===
+setupPageNavigation('topup-btn', 'topup-page');       // с магазина
 
   function setupPageNavigation(btnId, pageId, scrollToLevel = false) {
     const btn = document.getElementById(btnId);
