@@ -656,12 +656,13 @@ function stopDrag() {
   if (offsetX >= maxDrag) {
   const selectedAmount = getSelectedAmount();
   if (!selectedAmount) {
+    // ⛔ Ошибка — сразу сброс, без "ГОТОВО"
     alert('Пожалуйста, выберите сумму или введите её вручную.');
-    resetSwipe();
+    resetSwipe(true); // передаём флаг ошибки
     return;
   }
 
-  // ✅ Успешный свайп — фиксируем
+  // ✅ Успешный свайп
   slider.style.transform = `translateX(${maxDrag}px)`;
   slider.style.background = '#9EFF44';
   icon.style.opacity = '0';
@@ -670,23 +671,34 @@ function stopDrag() {
   isLocked = true;
   if (window.navigator.vibrate) window.navigator.vibrate(100);
 
-  // 💳 Переход на YooMoney
   const yooUrl = `https://yoomoney.ru/quickpay/shop-widget?writer=seller&targets=Пополнение+баланса&default-sum=${selectedAmount}&button-text=11&payment-type-choice=on&account=ВАШ_YOOMONEY_ID&successURL=https://ваш-сайт.рф/спасибо`;
   window.open(yooUrl, '_blank');
 
-  // ⏱️ Сброс через 2 сек
   setTimeout(() => resetSwipe(), 2000);
-  
+
 } else {
   resetSwipe();
 }
-
 
   document.removeEventListener('mousemove', onDrag);
   document.removeEventListener('touchmove', onDrag);
   document.removeEventListener('mouseup', stopDrag);
   document.removeEventListener('touchend', stopDrag);
 }
+
+function resetSwipe(error = false) {
+  slider.style.transform = 'translateX(0)';
+  slider.style.background = '#D9D9D9';
+  text.textContent = 'ПОПОЛНИТЬ';
+  text.style.color = 'gray';
+  icon.style.opacity = '1';
+  isLocked = false;
+
+  if (error && window.navigator.vibrate) {
+    window.navigator.vibrate([30, 30]); // короткая вибрация на ошибку
+  }
+}
+
 
   
 });
