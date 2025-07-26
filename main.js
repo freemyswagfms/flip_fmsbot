@@ -588,6 +588,8 @@ let offsetX = 0;
 let maxDrag = 0;
 let isLocked = false; // 🔒 Добавлено: блокировка после свайпа
 
+const customAmountInput = document.getElementById('custom-amount');
+
 function getSelectedAmount() {
   const selectedCard = document.querySelector('.topup-card.active');
   const manualValue = parseInt(customAmountInput.value);
