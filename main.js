@@ -673,8 +673,10 @@ function stopDrag() {
   isLocked = true;
   if (window.navigator.vibrate) window.navigator.vibrate(100);
 
-  const yooUrl = `https://yoomoney.ru/quickpay/shop-widget?writer=seller&targets=Пополнение+баланса&default-sum=${selectedAmount}&button-text=11&payment-type-choice=on&account=ВАШ_YOOMONEY_ID&successURL=https://ваш-сайт.рф/спасибо`;
-  window.open(yooUrl, '_blank');
+  const yooUrl = `https://yoomoney.ru/quickpay/shop-widget?writer=seller&targets=Пополнение+баланса&default-sum=${selectedAmount}&button-text=11&payment-type-choice=on&account=41001XXXXXXXX&successURL=https://ваш-сайт.рф/спасибо`;
+
+  window.location.href = yooUrl;
+
 
   setTimeout(() => resetSwipe(), 2000);
 
