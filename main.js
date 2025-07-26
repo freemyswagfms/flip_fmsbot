@@ -576,32 +576,6 @@ if (telegramCard && telegramArrow) {
     page.addEventListener('hide', clearTopupSelection);
   });
 
-// === КНОПКА ПОПОЛНИТЬ: логика отправки на YooMoney ===
-  const payBtn = document.getElementById('pay-button');
-  const customAmountInput = document.getElementById('custom-amount');
-
-  if (payBtn && customAmountInput) {
-    payBtn.addEventListener('click', () => {
-      const selectedCard = document.querySelector('.topup-card.active');
-      let amount = selectedCard?.dataset.price;
-
-      const manualValue = parseInt(customAmountInput.value);
-      if (!isNaN(manualValue) && manualValue > 0) {
-        amount = manualValue;
-      }
-
-      if (!amount) {
-        alert('Пожалуйста, выберите сумму или введите её вручную.');
-        return;
-      }
-
-      // Замените 'ВАШ_YOOMONEY_ID' на ваш shop ID или номер счёта
-      const yooUrl = `https://yoomoney.ru/quickpay/shop-widget?writer=seller&targets=Пополнение+баланса&default-sum=${amount}&button-text=11&payment-type-choice=on&account=ВАШ_YOOMONEY_ID&successURL=https://ваш-сайт.рф/спасибо`;
-
-      window.open(yooUrl, '_blank');
-    });
-  }
-
   // === SWIPE-АНИМАЦИЯ ДЛЯ КНОПКИ ПОПОЛНЕНИЯ ===
 const slider = document.getElementById('slider-circle');
 const button = document.getElementById('pay-button');
@@ -613,6 +587,29 @@ let startX = 0;
 let offsetX = 0;
 let maxDrag = 0;
 let isLocked = false; // 🔒 Добавлено: блокировка после свайпа
+
+function getSelectedAmount() {
+  const selectedCard = document.querySelector('.topup-card.active');
+  const manualValue = parseInt(customAmountInput.value);
+
+  if (!selectedCard && (isNaN(manualValue) || manualValue <= 0)) {
+    return null;
+  }
+
+  if (selectedCard && (!manualValue || manualValue <= 0)) {
+    // Выбрана карточка, но не введено вручную — берём её цену
+    const price = selectedCard.querySelector('.topup-price')?.textContent?.replace('₽', '')?.trim();
+    return parseInt(price);
+  }
+
+  if (manualValue > 0) {
+    // Введена ручная сумма — она в приоритете
+    return manualValue;
+  }
+
+  return null;
+}
+
 
 slider.addEventListener('mousedown', startDrag);
 slider.addEventListener('touchstart', startDrag, { passive: false }); // ❗ отключаем scroll
@@ -657,25 +654,33 @@ function stopDrag() {
   isDragging = false;
 
   if (offsetX >= maxDrag) {
-    // ✅ Успешный свайп — фиксируем
-    slider.style.transform = `translateX(${maxDrag}px)`;
-    slider.style.background = '#9EFF44';
-    icon.style.opacity = '0';
-    text.textContent = 'ГОТОВО';
-    text.style.color = '#9EFF44';
-    isLocked = true; // 🔒 Блокируем дальнейший свайп
-    if (window.navigator.vibrate) {
-      window.navigator.vibrate(100); // вибрация на 100 мс
-    }
-
-  } else {
-    // 🔄 Возврат назад
-    slider.style.transform = 'translateX(0)';
-    slider.style.background = '#D9D9D9';
-    text.textContent = 'ПОПОЛНИТЬ';
-    text.style.color = 'gray';
-    icon.style.opacity = '1';
+  const selectedAmount = getSelectedAmount();
+  if (!selectedAmount) {
+    alert('Пожалуйста, выберите сумму или введите её вручную.');
+    resetSwipe();
+    return;
   }
+
+  // ✅ Успешный свайп — фиксируем
+  slider.style.transform = `translateX(${maxDrag}px)`;
+  slider.style.background = '#9EFF44';
+  icon.style.opacity = '0';
+  text.textContent = 'ГОТОВО';
+  text.style.color = '#9EFF44';
+  isLocked = true;
+  if (window.navigator.vibrate) window.navigator.vibrate(100);
+
+  // 💳 Переход на YooMoney
+  const yooUrl = `https://yoomoney.ru/quickpay/shop-widget?writer=seller&targets=Пополнение+баланса&default-sum=${selectedAmount}&button-text=11&payment-type-choice=on&account=ВАШ_YOOMONEY_ID&successURL=https://ваш-сайт.рф/спасибо`;
+  window.open(yooUrl, '_blank');
+
+  // ⏱️ Сброс через 2 сек
+  setTimeout(() => resetSwipe(), 2000);
+  
+} else {
+  resetSwipe();
+}
+
 
   document.removeEventListener('mousemove', onDrag);
   document.removeEventListener('touchmove', onDrag);
