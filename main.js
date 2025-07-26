@@ -149,29 +149,40 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabs = document.querySelectorAll('.tab');
   const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
   // === Генерация карточек в коллекции из cardCollection ===
-const grid = document.querySelector('.collection-grid');
+function renderCards(filterValue = null) {
+  const grid = document.querySelector('.collection-grid');
+  grid.innerHTML = ''; // очищаем грид
 
-cardCollection.forEach(card => {
-  const el = document.createElement('div');
-  el.className = 'collection-card';
-  el.dataset.category = card.category;
+  cardCollection.forEach(card => {
+    const category = card.category;
+    const rarity = card.rarity.toLowerCase();
 
-  el.innerHTML = `
-  <div class="card-inner">
-    <img src="${card.image}" alt="${card.title}" class="card-img" />
-    <div class="card-label">${card.title}</div>
-  </div>
-  `;
+    // Фильтрация по значению
+    if (filterValue && category !== filterValue && rarity !== filterValue) return;
 
-  el.addEventListener('click', () => {
-    openCardInfo(card); // Эта функция будет позже
+    const el = document.createElement('div');
+    el.className = 'card-placeholder';
+    el.dataset.category = category;
+    el.dataset.rarity = rarity;
+
+    el.innerHTML = `
+      <div class="card-inner">
+        <img src="${card.image}" alt="${card.title}" class="card-img" />
+        <div class="card-label">${card.title}</div>
+      </div>
+    `;
+
+    el.addEventListener('click', () => {
+      openCardInfo(card);
+    });
+
+    grid.appendChild(el);
   });
+}
 
-  grid.appendChild(el);
-});
+// При загрузке страницы отображаем все карточки
+renderCards();
 
-  
-  
   // === Отображение "МОЕЙ ПОЗИЦИИ" в таблице лидеров ===
   const myLeaderboardCard = document.querySelector('.leader-card.my-position');
 
@@ -444,9 +455,6 @@ if (themeToggleCheckbox) {
     }
   });
 }
-
-
-
 
   // === Таймер дропа ===
   function startDropTimer(hours, minutes) {
@@ -907,7 +915,7 @@ document.addEventListener('click', (e) => {
 const sortToggle = document.getElementById('sortToggle');
 const sortMenu = document.getElementById('sortMenu');
 const sortOptions = document.querySelectorAll('.sort-option');
-const cardPlaceholders = document.querySelectorAll('.card-placeholder');
+
 
 // Открытие / закрытие меню
 sortToggle.addEventListener('click', () => {
@@ -921,37 +929,27 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Сортировка карточек
+// Обработка выбора сортировки
 sortOptions.forEach(option => {
   option.addEventListener('click', () => {
-    // Обновить активный пункт
+    // Убираем старую активность
     sortOptions.forEach(o => o.classList.remove('active'));
     option.classList.add('active');
 
-    // Получить значение сортировки
+    // Значение фильтра
     const selected = option.dataset.value;
 
-    // Обновить заголовок
+    // Обновляем текст сортировки
     const sortText = option.textContent.toLowerCase();
     sortToggle.innerHTML = `Сначала ${sortText} <img src="/assets/icons/sort-arrow.svg" alt="↓" class="sort-icon" />`;
 
-    // Скрыть меню
+    // Скрываем меню
     sortMenu.style.display = 'none';
 
-    // Фильтрация карточек
-    cardPlaceholders.forEach(card => {
-      const cat = card.dataset.category;
-      const rare = card.dataset.rarity;
-      if (cat === selected || rare === selected) {
-        card.style.display = '';
-      } else {
-        card.style.display = 'none';
-      }
-    });
+    // 🔥 Вместо фильтрации — просто перерисовываем
+    renderCards(selected); // ← вот ключевая строка
   });
 });
-
-
 
 
 });
