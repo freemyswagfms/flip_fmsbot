@@ -7,6 +7,133 @@ document.addEventListener('DOMContentLoaded', () => {
     Telegram.WebApp.expand();
   }
 
+
+  // === Карточки коллекции ===
+  
+  const cardCollection = [
+  {
+    id: 'pinktape',
+    title: 'Pink Tape',
+    artist: 'Lil Uzi Vert',
+    category: 'album',
+    rarity: 'Mythic',
+    artistRarity: 'Legendary',
+    skin: 'Cyberpunk',
+    skinRarity: 'Legendary',
+    image: '/assets/nft albums/uzi-pinktape-cyberpunk.png',
+    xp: 45,
+    drop: 'Дроп',
+    date: '23.07.2025',
+    duplicates: 0
+  },
+  {
+    id: 'jeans',
+    title: 'jeans',
+    artist: '2hollis',
+    category: 'single',
+    rarity: 'Epic',
+    artistRarity: 'Rare',
+    skin: 'GTA',
+    skinRarity: 'Mythic',
+    image: '/assets/nft albums/2hollis-jeans-gta.png',
+    xp: 30,
+    drop: 'Дроп',
+    date: '22.07.2025',
+    duplicates: 1
+  },
+  {
+    id: 'brokeboi',
+    title: 'Broke Boi',
+    artist: 'Playboi Carti',
+    category: 'single',
+    rarity: 'Legendary',
+    artistRarity: 'Legendary',
+    skin: 'Pixel',
+    skinRarity: 'Common',
+    image: '/assets/nft albums/carti-brokeboi-pixel.png',
+    xp: 80,
+    drop: 'Квест',
+    date: '21.07.2025',
+    duplicates: 2
+  },
+  {
+    id: 'graduation',
+    title: 'Graduation',
+    artist: 'Kanye West',
+    category: 'album',
+    rarity: 'Legendary',
+    artistRarity: 'Legendary',
+    skin: 'Minecraft',
+    skinRarity: 'Chromatic',
+    image: '/assets/nft albums/kanye-graduation-minecraft.png',
+    xp: 100,
+    drop: 'Дроп',
+    date: '20.07.2025',
+    duplicates: 0
+  },
+  {
+    id: 'somuchfun',
+    title: 'So Much Fun',
+    artist: 'Young Thug',
+    category: 'album',
+    rarity: 'Legendary',
+    artistRarity: 'Legendary',
+    skin: 'Spider-Verse',
+    skinRarity: 'Epic',
+    image: '/assets/nft albums/thug-somuchfun-spiderverse.png',
+    xp: 70,
+    drop: 'Дроп',
+    date: '19.07.2025',
+    duplicates: 1
+  },
+  {
+    id: 'astroworld',
+    title: 'Astroworld',
+    artist: 'Travis Scott',
+    category: 'album',
+    rarity: 'Legendary',
+    artistRarity: 'Legendary',
+    skin: 'Simpsons',
+    skinRarity: 'Rare',
+    image: '/assets/nft albums/travis-astroworld-simpsons.png',
+    xp: 120,
+    drop: 'Квест',
+    date: '18.07.2025',
+    duplicates: 0
+  },
+  {
+    id: 'wlr',
+    title: 'Whole Lotta Red',
+    artist: 'Playboi Carti',
+    category: 'album',
+    rarity: 'Legendary',
+    artistRarity: 'Legendary',
+    skin: 'Cyberpunk',
+    skinRarity: 'Legendary',
+    image: '/assets/nft albums/carti-wlr-cyberpunk.png',
+    xp: 110,
+    drop: 'Дроп',
+    date: '17.07.2025',
+    duplicates: 3
+  },
+  {
+    id: 'projectx',
+    title: 'Project X',
+    artist: 'Ken Carson',
+    category: 'album',
+    rarity: 'Epic',
+    artistRarity: 'Epic',
+    skin: 'Pixel',
+    skinRarity: 'Common',
+    image: '/assets/nft albums/ken-projectx-pixel.png',
+    xp: 55,
+    drop: 'Дроп',
+    date: '16.07.2025',
+    duplicates: 0
+  }
+];
+
+
   // === Тема (светлая/тёмная) ===
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'light') document.body.classList.add('light');
@@ -21,6 +148,29 @@ document.addEventListener('DOMContentLoaded', () => {
   const pages = document.querySelectorAll('.page');
   const tabs = document.querySelectorAll('.tab');
   const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  // === Генерация карточек в коллекции из cardCollection ===
+const grid = document.querySelector('.collection-grid');
+
+cardCollection.forEach(card => {
+  const el = document.createElement('div');
+  el.className = 'collection-card';
+  el.dataset.category = card.category;
+
+  el.innerHTML = `
+  <div class="card-inner">
+    <img src="${card.image}" alt="${card.title}" class="card-img" />
+    <div class="card-label">${card.title}</div>
+  </div>
+  `;
+
+  el.addEventListener('click', () => {
+    openCardInfo(card); // Эта функция будет позже
+  });
+
+  grid.appendChild(el);
+});
+
+  
   
   // === Отображение "МОЕЙ ПОЗИЦИИ" в таблице лидеров ===
   const myLeaderboardCard = document.querySelector('.leader-card.my-position');
@@ -263,20 +413,20 @@ setupPageNavigation('go-topup', 'topup-page'); // с профиля
 
   // === Кнопки настроек: пополнение и тема ===
   const themeOverlay = document.getElementById('theme-overlay');
-const themeBtn = document.getElementById('setting-theme');
+  const themeBtn = document.getElementById('setting-theme');
 
-if (themeBtn && themeOverlay) {
-  themeBtn.addEventListener('click', e => {
-    e.preventDefault();
-    themeOverlay.classList.add('show');
-  });
+  if (themeBtn && themeOverlay) {
+    themeBtn.addEventListener('click', e => {
+      e.preventDefault();
+      themeOverlay.classList.add('show');
+    });
 
-  themeOverlay.addEventListener('click', e => {
-    if (e.target === themeOverlay) {
-      themeOverlay.classList.remove('show');
-    }
-  });
-}
+    themeOverlay.addEventListener('click', e => {
+      if (e.target === themeOverlay) {
+        themeOverlay.classList.remove('show');
+      }
+    });
+  }
 
 // === ОВЕРЛЕЙ "Связь с нами" ===
 const contactOverlay = document.getElementById('contact-overlay');
@@ -773,5 +923,23 @@ document.addEventListener('click', (e) => {
     updateTotalInfo(null);
   }
 });
+
+// === Раскрытие сортировки по коллекции ===
+
+const sortToggle = document.getElementById('sortToggle');
+const sortMenu = document.getElementById('sortMenu');
+
+sortToggle.addEventListener('click', () => {
+  const isOpen = sortMenu.style.display === 'block';
+  sortMenu.style.display = isOpen ? 'none' : 'block';
+});
+
+// Закрытие при клике вне
+document.addEventListener('click', (e) => {
+  if (!sortToggle.contains(e.target) && !sortMenu.contains(e.target)) {
+    sortMenu.style.display = 'none';
+  }
+});
+
 
 });

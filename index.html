@@ -131,35 +131,51 @@
       
     </div>
 
-    <!-- Страница: Коллекция -->
-    <div class="page" id="collection">
-      <p class="title title-collection" id="title-collection">МОЯ КОЛЛЕКЦИЯ</p>
-          <div class="collection-tabs-wrapper">
-  <div class="collection-tabs-scroll">
-  <button class="tab active">ВСЕ</button>
-  <button class="tab">АЛЬБОМЫ</button>
-  <button class="tab">СИНГЛЫ</button>
-  <button class="tab">АРТИСТЫ</button>
-</div>
-</div>
+<!-- =============================== -->
+<!-- === СТРАНИЦА: МОЯ КОЛЛЕКЦИЯ === -->
+<!-- =============================== -->
 
-      <div class="collection-grid">
-  <div class="card-placeholder" data-category="album">Альбом</div>
-  <div class="card-placeholder" data-category="single">Сингл</div>
-  <div class="card-placeholder" data-category="artist">Артист</div>
-  <div class="card-placeholder" data-category="album">Альбом</div>
-  <div class="card-placeholder" data-category="artist">Артист</div>
-  <div class="card-placeholder" data-category="single">Сингл</div>
-</div>
-      <!-- Поисковик (только на странице коллекции) -->
-<div class="search-fab" id="searchFab">
-  <img src="/assets/icons/search-icon.svg" alt="Поиск" class="search-icon" />
-  <input type="text" placeholder="поиск по коллекции" class="search-input" />
-</div>
+<div class="page" id="collection">
+  <!-- Заголовок и кнопка ОБМЕН на одном уровне -->
+  <div class="collection-header">
+    <div class="collection-title">МОЯ КОЛЛЕКЦИЯ</div>
+    <button class="exchange-btn">ОБМЕН</button>
+  </div>
 
 
+  <!-- Сортировка -->
+  <div class="collection-sort-wrapper">
+  <div class="collection-sort" id="sortToggle">
+    Сначала альбомы
+    <img src="/assets/icons/sort-arrow.svg" alt="↓" class="sort-icon" />
+  </div>
 
-    </div>
+  <div class="collection-sort-menu" id="sortMenu">
+    <div class="sort-option">Синглы</div>
+    <div class="sort-option">Common</div>
+    <div class="sort-option">Rare</div>
+    <div class="sort-option">Epic</div>
+    <div class="sort-option">Mythic</div>
+    <div class="sort-option">Legendary</div>
+    <div class="sort-option">Exclusive</div>
+  </div>
+</div>
+
+
+
+  <!-- Сетка карточек -->
+  <div class="collection-grid" id="collectionGrid">
+    <!-- карточки генерируются динамически -->
+  </div>
+
+  <!-- FAB-поисковик -->
+  <div class="search-fab" id="searchFab">
+    <img src="/assets/icons/search-icon.svg" alt="Поиск" class="search-icon" />
+    <input type="text" placeholder="поиск по коллекции" class="search-input" />
+  </div>
+</div>
+
+
 
     <!-- Страница: Профиль -->
 <div class="page" id="profile">

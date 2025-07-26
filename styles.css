@@ -466,72 +466,139 @@ body {
   pointer-events: none;
 }
 
-/* === КОЛЛЕКЦИЯ === */
+/* =============================== */
+/* === СТРАНИЦА: МОЯ КОЛЛЕКЦИЯ === */
+/* =============================== */
 
-#title-collection.title {
-  margin-bottom: 15px;
-}
-
-.collection-tabs-wrapper {
-  margin-bottom: 30px;
-}
-
-.collection-tabs-scroll {
+.collection-header {
   display: flex;
-  overflow-x: auto;
-  padding: 0 20px;
-  gap: 12px;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
-.collection-tabs-scroll::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
-}
-
-.tab {
-  scroll-snap-align: start;
-  flex-shrink: 0;
-  padding: 10px 18px;
-  border-radius: 100px;
-  background: rgba(255,255,255,0.1);
-  color: white;
+.collection-title {
   font-family: 'cygre';
-  font-size: 16px;
-  border: none;
+  font-size: 20px;
+  color: white;
+  font-weight: 800;
+  padding: 0; /* сбросим отступ */
+  margin: 0; /* на всякий */
+  text-align: left; /* ✨ ключевая строка */
+}
+
+.exchange-btn {
+  font-family: 'cygre';
+  font-size: 20px;
+  color: white;
   opacity: 0.5;
-  white-space: nowrap;
+  background: transparent;
+  border: none;
   cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
+  padding: 0 20px;
 }
 
-.tab.active {
-  background: white;
-  color: black;
-  opacity: 1;
+/* === 🔄 Новый хедер: сортировка и кнопка ОБМЕН === */
+
+.collection-sort {
+  font-family: 'geologica';
+  font-weight: 300;
+  font-size: 14px;
+  color: white;
+  margin-bottom: 20px;
 }
 
+.sort-icon {
+  width: 12px;
+  height: 12px;
+  margin-left: 5px;
+  vertical-align: middle;
+  transform: translateY(-1px);
+}
+
+.collection-sort-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.collection-sort-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: -10px;
+  padding: 12px;
+  background: #222;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  display: none;
+  min-width: 160px;
+}
+
+.sort-option {
+  font-family: 'geologica';
+  font-size: 14px;
+  color: white;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.sort-option:hover {
+  opacity: 0.8;
+}
+
+/* === 🧱 Сетка карточек коллекции === */
 .collection-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 10px;
   box-sizing: border-box;
   overflow-x: hidden;
   max-width: 100%;
 }
 
+/* === 🧩 Карточка (внешний контейнер) === */
 .card-placeholder {
   aspect-ratio: 1;
-  background: #f1f1f1;
-  border-radius: 16px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: none;
+  padding: 0;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
+}
+
+/* === 📦 Внутреннее содержимое карточки === */
+.card-inner {
+  background: white;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+/* === 🎴 Обложка карточки === */
+.card-img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+/* === 🏷️ Подпись под карточкой === */
+.card-label {
+  padding: 10px 8px 14px;
   font-family: 'geologica';
-  font-size: 0;
+  font-size: 14px;
+  font-weight: 300;
+  text-align: center;
   color: black;
 }
+
+/* === ПОИСК В КОЛЛЕКЦИИ (АВТОРАСКРЫТИЕ) === */
 
 .search-bar {
  z-index: 99999;
@@ -565,8 +632,6 @@ body {
   height: 20px;
   opacity: 0.6;
 }
-
-/* === ПОИСК В КОЛЛЕКЦИИ (АВТОРАСКРЫТИЕ) === */
 
 .search-fab {
   position: fixed;
@@ -775,6 +840,8 @@ body {
 .profile-card:active {
   background-color: #888888;
 }
+
+
 
 /* ============================ */
 /* === УРОВЕНЬ: КАРТОЧКА    === */
@@ -1636,7 +1703,6 @@ body.light .theme-title {
   gap: 1px; /* небольшой отступ между числом и иконкой */
 }
 
-
 .flip-icon-small {
   width: 40px;
   height: 40px;
@@ -1848,8 +1914,6 @@ body.light .theme-title {
   justify-content: center;
   transition: opacity 0.2s ease;
 }
-
-
 
 /* === ДОСТИЖЕНИЯ: КАРТОЧКИ === */
 
