@@ -710,7 +710,7 @@ body {
 .balance-info {
   display: flex;
   flex-direction: column;
-  line-height: 1;
+  line-height: 1.1;
   color: black;
 }
 
@@ -742,49 +742,6 @@ body {
 .balance-add-btn img {
   width: 40px;
   height: 40px;
-}
-
-/* ============================== */
-/* === БАЛАНС (СТАРЫЙ ВАРИАНТ) === */
-/* ============================== */
-
-.balance-nick {
-  font-family: 'geologica';
-  font-size: 16px;
-  font-weight: 300;
-  color: white;
-  margin: 0;
-  margin-top: 15px;
-  text-align: center;
-}
-
-.balance-cards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 20px;
-  margin-bottom: 0px;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-.balance-card {
-  background: white;
-  color: black;
-  font-family: 'geologica';
-  font-size: 16px;
-  border-radius: 24px;
-  text-align: center;
-  padding: 39px 74px;
-  flex: 1 1 0;
-  max-width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  min-width: 120px;
 }
 
 /* ======================== */
