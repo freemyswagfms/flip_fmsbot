@@ -537,14 +537,20 @@ body {
 
 .sort-option {
   font-family: 'geologica';
-  font-size: 14px;
+  font-size: 16px;
   color: white;
-  padding: 6px 0;
+  padding: 6px 0px;
   cursor: pointer;
+  transition: opacity 0.2s;
+  text-align: left;
 }
 
 .sort-option:hover {
   opacity: 0.8;
+}
+
+.sort-option.active {
+  opacity: 0.5;
 }
 
 /* === 🧱 Сетка карточек коллекции === */

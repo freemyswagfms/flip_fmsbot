@@ -328,27 +328,6 @@ setupPageNavigation('go-topup', 'topup-page'); // с профиля
     }
   }
 
-  // === Фильтрация коллекции по табам ===
-  const tabMap = {
-    'все': 'all',
-    'альбомы': 'album',
-    'синглы': 'single',
-    'артисты': 'artist'
-  };
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const selected = tab.textContent.trim().toLowerCase();
-      const filterType = tabMap[selected];
-      document.querySelectorAll('.card-placeholder').forEach(card => {
-        const cat = card.dataset.category;
-        if (filterType === 'all' || filterType === undefined) card.style.display = '';
-        else card.style.display = cat === filterType ? '' : 'none';
-      });
-    });
-  });
-
   // === FAB-поиск в коллекции ===
   const searchFab = document.getElementById('searchFab');
   const searchInput = searchFab?.querySelector('.search-input');
@@ -925,21 +904,54 @@ document.addEventListener('click', (e) => {
 });
 
 // === Раскрытие сортировки по коллекции ===
-
 const sortToggle = document.getElementById('sortToggle');
 const sortMenu = document.getElementById('sortMenu');
+const sortOptions = document.querySelectorAll('.sort-option');
+const cardPlaceholders = document.querySelectorAll('.card-placeholder');
 
+// Открытие / закрытие меню
 sortToggle.addEventListener('click', () => {
-  const isOpen = sortMenu.style.display === 'block';
-  sortMenu.style.display = isOpen ? 'none' : 'block';
+  sortMenu.style.display = (sortMenu.style.display === 'block') ? 'none' : 'block';
 });
 
-// Закрытие при клике вне
+// Закрытие при клике вне меню
 document.addEventListener('click', (e) => {
   if (!sortToggle.contains(e.target) && !sortMenu.contains(e.target)) {
     sortMenu.style.display = 'none';
   }
 });
+
+// Сортировка карточек
+sortOptions.forEach(option => {
+  option.addEventListener('click', () => {
+    // Обновить активный пункт
+    sortOptions.forEach(o => o.classList.remove('active'));
+    option.classList.add('active');
+
+    // Получить значение сортировки
+    const selected = option.dataset.value;
+
+    // Обновить заголовок
+    const sortText = option.textContent.toLowerCase();
+    sortToggle.innerHTML = `Сначала ${sortText} <img src="/assets/icons/sort-arrow.svg" alt="↓" class="sort-icon" />`;
+
+    // Скрыть меню
+    sortMenu.style.display = 'none';
+
+    // Фильтрация карточек
+    cardPlaceholders.forEach(card => {
+      const cat = card.dataset.category;
+      const rare = card.dataset.rarity;
+      if (cat === selected || rare === selected) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+});
+
+
 
 
 });
