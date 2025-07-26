@@ -710,7 +710,8 @@ body {
   display: flex;
   flex-direction: column;
   color: black;
-  gap: 2px;
+  line-height: 1;
+  gap: 0px;
 }
 
 .balance-info .balance-label {
