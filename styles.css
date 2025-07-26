@@ -711,13 +711,14 @@ body {
   display: flex;
   flex-direction: column;
   color: black;
+  gap: 2px;
+  line-height: 1;
 }
 
 .balance-info .balance-label {
   font-family: 'geologica';
   font-size: 16px;
   font-weight: 300;
-  margin-bottom: 3px;
 }
 
 .balance-info .balance-value {
