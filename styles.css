@@ -615,54 +615,19 @@ body {
   display: block;
 }
 
-/* === ПРОФИЛЬ === */
+/* ========================= */
+/* === ПРОФИЛЬ: ОСНОВА  === */
+/* ========================= */
 
 .title-profile {
   font-size: 24px;
   color: white;
 }
 
-.nickname {
-  font-family: 'geologica';
-  font-size: 12px;
-  font-weight: 300;
-  color: white;
-  margin: 0;
-}
-
-.nickname.guest {
-  font-size: 16px;
-  color: white;
-  font-family: 'geologica';
-  font-weight: 300;
-}
-
-.nickname.centered {
-  font-family: 'geologica';
-  font-size: 16px;
-  font-weight: 400;
-  color: white;
-  margin: 0;
-  text-align: center;
-}
-
-.level-text {
-  font-family: 'geologica';
-  font-size: 16px;
-  font-weight: 300;
-  color: white;
-  text-align: center;
-  margin: 0;
-}
-
-.balance-nick {
-  font-family: 'geologica';
-  font-size: 16px;
-  font-weight: 300;
-  color: white;
-  margin: 0;
-  margin-top: 15px;
-  text-align: center;
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .avatar {
@@ -679,17 +644,11 @@ body {
 .avatar.big {
   width: 80px;
   height: 80px;
-  border-radius: 50%;
   background-color: white;
+  border-radius: 50%;
   background-size: cover;
   background-position: center;
   margin-bottom: 15px;
-}
-
-.profile-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 .profile-info {
@@ -706,8 +665,8 @@ body {
 }
 
 .profile-info .level-text {
-  color: white;
   font-weight: 300;
+  color: white;
 }
 
 .profile-info .dot {
@@ -720,6 +679,83 @@ body {
   transform: translateY(1px);
   display: inline-block;
   opacity: 0.5;
+}
+
+/* ID пользователя под ником */
+.user-id {
+  font-family: 'geologica';
+  font-size: 12px;
+  font-weight: 300;
+  color: white;
+  opacity: 0.5;
+  margin-top: 2px;
+}
+
+/* ========================= */
+/* === БАЛАНС (НОВЫЙ)    === */
+/* ========================= */
+
+.balance-card-new {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-radius: 24px;
+  padding: 10px 10px 10px 20px;
+  margin-top: 30px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.balance-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  color: black;
+}
+
+.balance-info .balance-label {
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 300;
+}
+
+.balance-info .balance-value {
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
+}
+
+/* Кнопка "+" рядом с балансом */
+.balance-add-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  background: #317BFF;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.balance-add-btn img {
+  width: 40px;
+  height: 40px;
+}
+
+/* ============================== */
+/* === БАЛАНС (СТАРЫЙ ВАРИАНТ) === */
+/* ============================== */
+
+.balance-nick {
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 300;
+  color: white;
+  margin: 0;
+  margin-top: 15px;
+  text-align: center;
 }
 
 .balance-cards {
@@ -751,6 +787,10 @@ body {
   min-width: 120px;
 }
 
+/* ======================== */
+/* === КАРТОЧКИ ПРОФИЛЯ === */
+/* ======================== */
+
 .profile-cards {
   display: flex;
   flex-direction: column;
@@ -777,7 +817,9 @@ body {
   background-color: #888888;
 }
 
-/* === ПРОФИЛЬ: УРОВЕНЬ === */
+/* ============================ */
+/* === УРОВЕНЬ: КАРТОЧКА    === */
+/* ============================ */
 
 .level-main,
 .level-percent,
@@ -869,7 +911,9 @@ body {
   }
 }
 
-/* === ПРОФИЛЬ: БЭЙДЖИ === */
+/* ============================= */
+/* === БЭЙДЖИ / СТАТУСЫ DEV  === */
+/* ============================= */
 
 .profile-card.is-disabled {
   background: #B2B2B2;
@@ -897,7 +941,9 @@ body {
   pointer-events: none;
 }
 
-/* АНИМАЦИЯ НАЖАТИЯ НА КНОПКИ ПРОФИЛЯ */
+/* ===================================== */
+/* === АНИМАЦИЯ НАЖАТИЯ НА КАРТОЧКИ === */
+/* ===================================== */
 
 #exchange:active,
 #mini-games:active,
@@ -905,6 +951,7 @@ body {
   background-color: #888888;
   transition: background-color 120ms ease;
 }
+
 
 /* === НАСТРОЙКИ === */
 
