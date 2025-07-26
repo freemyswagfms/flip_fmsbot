@@ -684,11 +684,10 @@ body {
 /* ID пользователя под ником */
 .user-id {
   font-family: 'geologica';
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 300;
-  color: white;
-  opacity: 0.5;
-  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 15px;
 }
 
 /* ========================= */
@@ -702,7 +701,7 @@ body {
   background: white;
   border-radius: 24px;
   padding: 10px 10px 10px 20px;
-  margin-top: 30px;
+  margin-top: 20px;
   width: 100%;
   box-sizing: border-box;
 }
