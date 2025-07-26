@@ -1627,6 +1627,14 @@ body.light .theme-title {
   color: black;
 }
 
+.flip-icon-small {
+  width: 30px;
+  height: 30px;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+
+
 /* === БЛОК: ПОПОЛНЕНИЕ === */
 
 .topup-title {
