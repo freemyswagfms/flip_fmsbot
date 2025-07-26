@@ -711,19 +711,20 @@ body {
   flex-direction: column;
   color: black;
   gap: 2px;
-  line-height: 1;
 }
 
 .balance-info .balance-label {
   font-family: 'geologica';
   font-size: 16px;
   font-weight: 300;
+  line-height: 1;
 }
 
 .balance-info .balance-value {
   font-family: 'cygre';
   font-size: 24px;
   font-weight: 800;
+  line-height: 1;
 }
 
 /* Кнопка "+" рядом с балансом */
