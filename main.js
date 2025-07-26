@@ -576,20 +576,20 @@ if (telegramCard && telegramArrow) {
     page.addEventListener('hide', clearTopupSelection);
   });
 
-  // === SWIPE-АНИМАЦИЯ ДЛЯ КНОПКИ ПОПОЛНЕНИЯ ===
+ // === SWIPE-АНИМАЦИЯ ДЛЯ КНОПКИ ПОПОЛНЕНИЯ ===
 const slider = document.getElementById('slider-circle');
 const button = document.getElementById('pay-button');
 const text = document.getElementById('slider-text');
 const icon = document.getElementById('confirm-icon');
+const customAmountInput = document.getElementById('custom-amount');
 
 let isDragging = false;
 let startX = 0;
 let offsetX = 0;
 let maxDrag = 0;
-let isLocked = false; // 🔒 Добавлено: блокировка после свайпа
+let isLocked = false;
 
-const customAmountInput = document.getElementById('custom-amount');
-
+// === Получение суммы пополнения ===
 function getSelectedAmount() {
   const selectedCard = document.querySelector('.topup-card.active');
   const manualValue = parseInt(customAmountInput.value);
@@ -599,39 +599,49 @@ function getSelectedAmount() {
   }
 
   if (selectedCard && (!manualValue || manualValue <= 0)) {
-    // Выбрана карточка, но не введено вручную — берём её цену
     const price = selectedCard.querySelector('.topup-price')?.textContent?.replace('₽', '')?.trim();
     return parseInt(price);
   }
 
   if (manualValue > 0) {
-    // Введена ручная сумма — она в приоритете
     return manualValue;
   }
 
   return null;
 }
 
+// === Обновление суммы и количества флипов ===
+function updateTotalInfo(price) {
+  const flipsEl = document.getElementById('f-receive');
+  const rublesEl = document.getElementById('f-pay');
 
+
+  if (price && !isNaN(price)) {
+    rublesEl.textContent = `${price}₽`;
+    flipsEl.textContent = `${Math.floor(price / 2)}F`; // 🧠 Модифицируй под нужную формулу
+  } else {
+    rublesEl.textContent = '—';
+    flipsEl.textContent = '—';
+  }
+}
+
+// === Swipe: Start Drag ===
 slider.addEventListener('mousedown', startDrag);
-slider.addEventListener('touchstart', startDrag, { passive: false }); // ❗ отключаем scroll
+slider.addEventListener('touchstart', startDrag, { passive: false });
 
 function startDrag(e) {
-  if (isLocked) return; // 🔒 блокируем повторный свайп
-
+  if (isLocked) return;
   isDragging = true;
-  e.preventDefault(); // ⛔ отключаем скролл страницы
+  e.preventDefault();
 
   startX = e.touches ? e.touches[0].clientX : e.clientX;
 
   const buttonRect = button.getBoundingClientRect();
   const sliderRect = slider.getBoundingClientRect();
-  const iconRect = icon.getBoundingClientRect();
-
-  maxDrag = buttonRect.width - sliderRect.width - 6 /* слева */ - 6 /* справа */;
+  maxDrag = buttonRect.width - sliderRect.width - 6 - 6;
 
   document.addEventListener('mousemove', onDrag);
-  document.addEventListener('touchmove', onDrag, { passive: false }); // ❗ отключаем scroll
+  document.addEventListener('touchmove', onDrag, { passive: false });
   document.addEventListener('mouseup', stopDrag);
   document.addEventListener('touchend', stopDrag);
 }
@@ -655,41 +665,44 @@ function stopDrag() {
   if (!isDragging) return;
   isDragging = false;
 
-  if (offsetX >= maxDrag) {
-  const selectedAmount = getSelectedAmount();
-  if (!selectedAmount) {
-    // ⛔ Ошибка — сразу сброс, без "ГОТОВО"
-    alert('Пожалуйста, выберите сумму или введите её вручную.');
-    resetSwipe(true); // передаём флаг ошибки
-    return;
-  }
-
-  // ✅ Успешный свайп
-  slider.style.transform = `translateX(${maxDrag}px)`;
-  slider.style.background = '#9EFF44';
-  icon.style.opacity = '0';
-  text.textContent = 'ГОТОВО';
-  text.style.color = '#9EFF44';
-  isLocked = true;
-  if (window.navigator.vibrate) window.navigator.vibrate(100);
-
-  const yooUrl = `https://yoomoney.ru/quickpay/shop-widget?writer=seller&targets=Пополнение+баланса&default-sum=${selectedAmount}&button-text=11&payment-type-choice=on&account=41001XXXXXXXX&successURL=https://ваш-сайт.рф/спасибо`;
-
-  window.location.href = yooUrl;
-
-
-  setTimeout(() => resetSwipe(), 2000);
-
-} else {
-  resetSwipe();
-}
-
   document.removeEventListener('mousemove', onDrag);
   document.removeEventListener('touchmove', onDrag);
   document.removeEventListener('mouseup', stopDrag);
   document.removeEventListener('touchend', stopDrag);
+
+  if (offsetX >= maxDrag) {
+    const selectedAmount = getSelectedAmount();
+    if (!selectedAmount) {
+      alert('Пожалуйста, выберите сумму или введите её вручную.');
+      resetSwipe(true);
+      return;
+    }
+
+    slider.style.transform = `translateX(${maxDrag}px)`;
+    slider.style.background = '#9EFF44';
+    icon.style.opacity = '0';
+    text.textContent = 'ГОТОВО';
+    text.style.color = '#9EFF44';
+    isLocked = true;
+
+  if (window.navigator.vibrate) {
+    window.navigator.vibrate(100); // Вибрация при подтверждении
+  }
+
+
+    if (window.navigator.vibrate) window.navigator.vibrate(100);
+
+    const yooUrl = `https://yoomoney.ru/quickpay/shop-widget?writer=seller&targets=Пополнение+баланса&default-sum=${selectedAmount}&button-text=11&payment-type-choice=on&account=41001XXXXXXXX&successURL=https://ваш-сайт.рф/спасибо`;
+
+    window.location.href = yooUrl;
+
+    setTimeout(() => resetSwipe(), 2000);
+  } else {
+    resetSwipe();
+  }
 }
 
+// === Сброс свайпа (включая при ошибке) ===
 function resetSwipe(error = false) {
   slider.style.transform = 'translateX(0)';
   slider.style.background = '#D9D9D9';
@@ -698,11 +711,66 @@ function resetSwipe(error = false) {
   icon.style.opacity = '1';
   isLocked = false;
 
-  if (error && window.navigator.vibrate) {
-    window.navigator.vibrate([30, 30]); // короткая вибрация на ошибку
+  if (error) {
+    if (window.navigator.vibrate) {
+      window.navigator.vibrate([30, 30]); // Вибрация при ошибке
+    }
+
+    // ⛔ Красная обводка на карточках и поле
+    document.querySelectorAll('.topup-card').forEach(card => {
+      card.style.border = '2px solid red';
+    });
+    customAmountInput.style.border = '2px solid red';
+
+    // 🔄 Через 1.5 секунды сбросить обводку
+    setTimeout(() => {
+      document.querySelectorAll('.topup-card').forEach(card => {
+        card.style.border = '';
+      });
+      customAmountInput.style.border = '';
+    }, 700);
   }
 }
 
 
-  
+// === СБРОС ВЫБОРА, ЕСЛИ КЛИКНУТЬ ВНЕ КАРТОЧКИ И ПОЛЯ ВВОДА ===
+document.addEventListener('click', (e) => {
+  const isCard = e.target.closest('.topup-card');
+  const isInput = e.target.closest('#custom-amount');
+
+  if (!isCard && !isInput) {
+    // Удаляем активную карточку
+    const activeCard = document.querySelector('.topup-card.active');
+    if (activeCard) activeCard.classList.remove('active');
+
+    // Сбрасываем счётчики
+    const flipsEl = document.querySelector('.summary-flips') || document.getElementById('f-receive');
+    const rublesEl = document.querySelector('.summary-rubles') || document.getElementById('f-pay');
+    if (flipsEl) flipsEl.textContent = '0F';
+    if (rublesEl) rublesEl.textContent = '0₽';
+  }
+});
+
+
+// === Обработка кликов по карточкам и вне ===
+document.addEventListener('click', (e) => {
+  const clickedCard = e.target.closest('.topup-card');
+  const activeCard = document.querySelector('.topup-card.active');
+
+  if (clickedCard) {
+    if (clickedCard === activeCard) {
+      clickedCard.classList.remove('active');
+      updateTotalInfo(null);
+    } else {
+      document.querySelectorAll('.topup-card').forEach(card => card.classList.remove('active'));
+      clickedCard.classList.add('active');
+      const price = clickedCard.querySelector('.topup-price')?.textContent?.replace('₽', '')?.trim();
+      updateTotalInfo(parseInt(price));
+    }
+  } else if (activeCard && !e.target.closest('#custom-amount')) {
+    activeCard.classList.remove('active');
+    updateTotalInfo(null);
+  }
+});
+
 });

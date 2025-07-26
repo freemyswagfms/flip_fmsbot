@@ -1724,6 +1724,18 @@ body.light .theme-title {
   color: #ffffff;
 }
 
+/* === Ошибка: красная обводка === */
+.topup-card.error {
+  border: 2px solid red !important;
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
+}
+
+#custom-amount.error {
+  border: 2px solid red !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
+}
+
 
 /* ========================================= */
 /* === БЛОК: ПОПОЛНИТЬ (SWIPE-КНОПКА)    === */
