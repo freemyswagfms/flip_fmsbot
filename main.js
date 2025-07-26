@@ -416,6 +416,58 @@ if (themeToggleCheckbox) {
     });
   }
 
+ // === СЧЁТЧИК: Автоподсчёт флипов и ₽ с учётом курса карточек ===
+const fReceive = document.getElementById('f-receive');
+const fPay = document.getElementById('f-pay');
+const manualInput = document.getElementById('custom-amount');
+const topupCardsAll = document.querySelectorAll('.topup-card');
+
+if (fReceive && fPay && manualInput && topupCardsAll.length) {
+  // === Автоматически определяем базовый курс по самой дешёвой карточке ===
+  let baseRate = 2; // fallback по умолчанию
+
+  topupCardsAll.forEach(card => {
+    const f = parseInt(card.querySelector('.topup-amount')?.textContent?.replace('F', '').trim());
+    const r = parseInt(card.querySelector('.topup-price')?.textContent?.replace('₽', '').trim());
+    if (!isNaN(f) && !isNaN(r)) {
+      const rate = r / f;
+      if (rate > baseRate) baseRate = rate; // использовать самый невыгодный (дорогой) курс
+    }
+  });
+
+  // === При вводе вручную ===
+  manualInput.addEventListener('input', () => {
+    const value = parseInt(manualInput.value.trim(), 10);
+    if (!isNaN(value) && value > 0) {
+      const price = Math.ceil(value * baseRate);
+      fReceive.textContent = `${value}F`;
+      fPay.textContent = `${price}₽`;
+    } else {
+      fReceive.textContent = `0F`;
+      fPay.textContent = `0₽`;
+    }
+  });
+
+  // === При клике по готовой карточке ===
+  topupCardsAll.forEach(card => {
+    card.addEventListener('click', () => {
+      const fAmount = card.querySelector('.topup-amount')?.textContent?.replace('F', '')?.trim();
+      const priceText = card.querySelector('.topup-price')?.textContent?.replace('₽', '')?.trim();
+
+      const flips = parseInt(fAmount);
+      const rubles = parseInt(priceText);
+
+      if (!isNaN(flips) && !isNaN(rubles)) {
+        fReceive.textContent = `${flips}F`;
+        fPay.textContent = `${rubles}₽`;
+        manualInput.value = ''; // сброс ввода
+      }
+    });
+  });
+}
+
+
+
   // === Кнопка "забрать" достижения ===
   document.querySelectorAll('.achievement-card[data-status="ready-to-claim"] .claim').forEach(button => {
     button.addEventListener('click', e => {

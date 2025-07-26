@@ -1700,6 +1700,31 @@ body.light .theme-title {
   box-sizing: border-box;        /* ← сохраняем размер */
 }
 
+/* === СЧЁТЧИК: сколько пользователь получит и заплатит === */
+.custom-amount-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 15px 0 20px;
+  padding: 0 12px;
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  gap: 10px;
+}
+
+.custom-amount-counter div {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.custom-amount-counter span {
+  color: #ffffff;
+}
+
+
 /* ========================================= */
 /* === БЛОК: ПОПОЛНИТЬ (SWIPE-КНОПКА)    === */
 /* ========================================= */
