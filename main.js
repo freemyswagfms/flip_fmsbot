@@ -161,7 +161,7 @@ function renderCards(filterValue = null) {
     if (filterValue && category !== filterValue && rarity !== filterValue) return;
 
     const el = document.createElement('div');
-    el.className = 'card-placeholder';
+    el.className = 'collection-card'; // как раньше
     el.dataset.category = category;
     el.dataset.rarity = rarity;
 
