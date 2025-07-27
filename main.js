@@ -151,19 +151,33 @@ document.addEventListener('DOMContentLoaded', () => {
   // === Генерация карточек в коллекции из cardCollection ===
 function renderCards(filterValue = null) {
   const grid = document.querySelector('.collection-grid');
-  grid.innerHTML = ''; // очищаем грид
+  grid.innerHTML = '';
+
+  // 1. Разделяем карточки
+  const filteredFirst = [];
+  const rest = [];
 
   cardCollection.forEach(card => {
-    const category = card.category;
+    const category = card.category.toLowerCase();
     const rarity = card.rarity.toLowerCase();
+    const value = filterValue?.toLowerCase();
 
-    // Фильтрация по значению
-    if (filterValue && category !== filterValue && rarity !== filterValue) return;
+    if (value && (category === value || rarity === value)) {
+      filteredFirst.push(card);
+    } else {
+      rest.push(card);
+    }
+  });
 
+  // 2. Объединяем: сначала совпадающие, потом остальные
+  const orderedCards = [...filteredFirst, ...rest];
+
+  // 3. Рендерим
+  orderedCards.forEach(card => {
     const el = document.createElement('div');
-    el.className = 'collection-card'; // как раньше
-    el.dataset.category = category;
-    el.dataset.rarity = rarity;
+    el.className = 'collection-card';
+    el.dataset.category = card.category;
+    el.dataset.rarity = card.rarity.toLowerCase();
 
     el.innerHTML = `
       <div class="card-inner">
@@ -181,7 +195,8 @@ function renderCards(filterValue = null) {
 }
 
 // При загрузке страницы отображаем все карточки
-renderCards();
+renderCards('album');
+
 
   // === Отображение "МОЕЙ ПОЗИЦИИ" в таблице лидеров ===
   const myLeaderboardCard = document.querySelector('.leader-card.my-position');
