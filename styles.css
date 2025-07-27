@@ -687,6 +687,177 @@ body {
   display: block;
 }
 
+/* ========================================= */
+/* === СТРАНИЦА: ДЕТАЛИ КАРТОЧКИ (КОЛЛЕКЦИЯ) === */
+/* ========================================= */
+
+#card-detail-page {
+  display: none; /* По умолчанию скрыта, показывается через JS */
+  flex-direction: column;
+  background-color: black;
+  color: white;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Обёртка для всей карточки */
+.card-detail-wrapper {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* === ВЕРХНЯЯ ЧАСТЬ === */
+
+.card-top {
+  padding: 24px 16px 0;
+  text-align: center;
+  z-index: 2;
+}
+
+.card-title {
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.card-artist {
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.card-image {
+  width: 100%;
+  margin-bottom: 30px;
+  object-fit: cover;
+}
+
+/* Блок с двумя кнопками */
+.card-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.card-action-btn {
+  flex: 1;
+  background: white;
+  color: black;
+  border: none;
+  padding: 15px 0;
+  border-radius: 100px;
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: lowercase;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.card-action-btn:hover {
+  background: #e6e6e6;
+}
+
+/* Полоска-ползунок (индикатор, что блок снизу выдвигается) */
+.drawer-handle {
+  width: 120px;
+  height: 5px;
+  background: white;
+  opacity: 0.8;
+  border-radius: 100px;
+  margin: 0 auto;
+  margin-bottom: 6px;
+}
+
+/* === Нижний блок карточки (закрыт по умолчанию) === */
+.card-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #111;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  transform: translateY(75%);
+  transition: transform 0.3s ease;
+  padding: 20px;
+  z-index: 2;
+}
+
+/* === Открытое состояние === */
+.card-bottom.open {
+  transform: translateY(0);
+}
+
+
+/* Верхняя строка с редкостью карточки */
+.card-rarity {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #e2e2ff;
+  margin-bottom: 14px;
+}
+
+/* Блок с тремя строками: артист, альбом, стиль */
+.card-rarity-details {
+  font-size: 13px;
+  font-family: 'geologica';
+  text-align: center;
+  line-height: 1.4;
+  color: #ffffffb2;
+  margin-bottom: 20px;
+}
+
+.card-rarity-details .rarity-tag {
+  font-weight: bold;
+  margin-left: 6px;
+  color: #ffffff;
+}
+
+/* Заголовок "СТАТИСТИКА" */
+.stat-title {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #bbbbbb;
+  margin-bottom: 10px;
+}
+
+/* Остальные данные */
+.card-stats {
+  font-size: 13px;
+  line-height: 1.5;
+  font-family: 'geologica';
+  text-align: center;
+  color: #e0e0e0;
+}
+
+/* Кнопка "удалить" */
+.card-delete {
+  text-align: center;
+  font-size: 13px;
+  margin-top: 22px;
+  color: red;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+
+
 /* ========================= */
 /* === ПРОФИЛЬ: ОСНОВА  === */
 /* ========================= */

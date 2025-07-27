@@ -148,12 +148,66 @@ document.addEventListener('DOMContentLoaded', () => {
   const pages = document.querySelectorAll('.page');
   const tabs = document.querySelectorAll('.tab');
   const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
-  // === Генерация карточек в коллекции из cardCollection ===
+
+  // === Открывает страницу с информацией о карточке ===
+  function openCardInfo(card) {
+  const page = document.getElementById('card-detail-page');
+  const bottom = page.querySelector('.card-bottom');
+
+  // Подставляем текст: название, артист, картинку, редкость
+  page.querySelector('.card-title').textContent = card.title;
+  page.querySelector('.card-artist').textContent = card.artist;
+  page.querySelector('.card-image').src = card.image;
+  page.querySelector('.card-rarity').textContent = `${card.rarity.toUpperCase()} · ${card.skin.toUpperCase()}`;
+
+  // Подставляем строки с редкостями (временно жёстко задано — поправим позже)
+  page.querySelector('.card-rarity-details').innerHTML = `
+  <div>${card.artist} <span class="rarity-tag">${card.artistRarity}</span></div>
+  <div>${card.title} <span class="rarity-tag">${card.rarity}</span></div>
+  <div>${card.skin} <span class="rarity-tag">${card.skinRarity}</span></div>
+  `;
+
+
+  // Подставляем статистику
+  page.querySelector('.card-duplicate').textContent = card.duplicates;
+page.querySelector('.card-drop').textContent = card.drop;
+page.querySelector('.card-xp').textContent = `${card.xp}XP`;
+page.querySelector('.card-date').textContent = card.date;
+
+
+  // Скрываем нижний блок, если он был открыт
+  bottom.classList.remove('open');
+
+  // Снимаем active со всех .page (вне зависимости от их расположения)
+  document.querySelectorAll('.page').forEach(p => {
+  p.style.display = 'none';
+  p.classList.remove('active');
+});
+
+// даже если вне main-app — мы его явно показываем
+const cardPage = document.getElementById('card-detail-page');
+cardPage.style.display = 'block';
+cardPage.classList.add('active');
+
+
+}
+
+// === Поведение выдвижного блока карточки ===
+const drawerHandle = document.querySelector('.drawer-handle');
+const cardBottom = document.querySelector('.card-bottom');
+
+// При клике по ручке — переключаем .open
+drawerHandle.addEventListener('click', () => {
+  cardBottom.classList.toggle('open');
+});
+
+
+ // === Генерация карточек коллекции из массива cardCollection ===
 function renderCards(filterValue = null) {
   const grid = document.querySelector('.collection-grid');
   grid.innerHTML = '';
 
-  // 1. Разделяем карточки
+  // 1. Отфильтровываем: совпадающие по категории или редкости идут первыми
   const filteredFirst = [];
   const rest = [];
 
@@ -169,10 +223,10 @@ function renderCards(filterValue = null) {
     }
   });
 
-  // 2. Объединяем: сначала совпадающие, потом остальные
+  // 2. Собираем общий массив: сначала отфильтрованные, потом остальные
   const orderedCards = [...filteredFirst, ...rest];
 
-  // 3. Рендерим
+  // 3. Отрисовываем каждую карточку
   orderedCards.forEach(card => {
     const el = document.createElement('div');
     el.className = 'collection-card';
@@ -186,6 +240,7 @@ function renderCards(filterValue = null) {
       </div>
     `;
 
+    // Добавляем клик по карточке — открывает детальную страницу
     el.addEventListener('click', () => {
       openCardInfo(card);
     });
@@ -194,7 +249,7 @@ function renderCards(filterValue = null) {
   });
 }
 
-// При загрузке страницы отображаем все карточки
+// При загрузке — показываем карточки по умолчанию (альбомы)
 renderCards('album');
 
 
@@ -213,7 +268,6 @@ renderCards('album');
       avatarEl.style.backgroundImage = `url("https://t.me/i/userpic/320/${user.username}.jpg")`;
       }
   }
-
 
   // === Переход между основными страницами через нижнее меню ===
   let activeIndex = navBtns.findIndex(btn => btn.classList.contains('active'));
@@ -286,6 +340,8 @@ setupPageNavigation('go-to-quests', 'quests-page');   // с главной
 setupPageNavigation('topup-btn', 'topup-page');       // с магазина
 setupPageNavigation('go-topup', 'topup-page'); // с профиля
 
+
+
   function setupPageNavigation(btnId, pageId, scrollToLevel = false) {
     const btn = document.getElementById(btnId);
     const page = document.getElementById(pageId);
@@ -355,39 +411,45 @@ setupPageNavigation('go-topup', 'topup-page'); // с профиля
   }
 
   // === FAB-поиск в коллекции ===
-  const searchFab = document.getElementById('searchFab');
-  const searchInput = searchFab?.querySelector('.search-input');
-  let isSearchOpen = false;
-  if (searchFab && searchInput) {
-    searchFab.addEventListener('click', (e) => {
-      if (isSearchOpen && e.target.closest('.search-icon')) {
-        searchFab.classList.remove('open');
-        searchInput.value = '';
-        isSearchOpen = false;
-        document.querySelectorAll('.card-placeholder').forEach(card => card.style.display = '');
-      } else if (!isSearchOpen) {
-        searchFab.classList.add('open');
-        isSearchOpen = true;
-        setTimeout(() => searchInput.focus(), 100);
-      }
-      e.stopPropagation();
+const searchFab = document.getElementById('searchFab');
+const searchInput = searchFab?.querySelector('.search-input');
+let isSearchOpen = false;
+
+if (searchFab && searchInput) {
+  searchFab.addEventListener('click', (e) => {
+    if (isSearchOpen && e.target.closest('.search-icon')) {
+      searchFab.classList.remove('open');
+      searchInput.value = '';
+      isSearchOpen = false;
+      // ✅ показываем все карточки обратно
+      document.querySelectorAll('.collection-card').forEach(card => card.style.display = '');
+    } else if (!isSearchOpen) {
+      searchFab.classList.add('open');
+      isSearchOpen = true;
+      setTimeout(() => searchInput.focus(), 100);
+    }
+    e.stopPropagation();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (isSearchOpen && !searchFab.contains(e.target)) {
+      searchFab.classList.remove('open');
+      searchInput.value = '';
+      isSearchOpen = false;
+      // ✅ показываем все карточки обратно
+      document.querySelectorAll('.collection-card').forEach(card => card.style.display = '');
+    }
+  });
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.trim().toLowerCase();
+    // ✅ фильтруем по заголовку
+    document.querySelectorAll('.collection-card').forEach(card => {
+      const text = card.textContent.toLowerCase();
+      card.style.display = text.includes(query) ? '' : 'none';
     });
-    document.addEventListener('click', (e) => {
-      if (isSearchOpen && !searchFab.contains(e.target)) {
-        searchFab.classList.remove('open');
-        searchInput.value = '';
-        isSearchOpen = false;
-        document.querySelectorAll('.card-placeholder').forEach(card => card.style.display = '');
-      }
-    });
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.trim().toLowerCase();
-      document.querySelectorAll('.card-placeholder').forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(query) ? '' : 'none';
-      });
-    });
-  }
+  });
+}
 
 // === Оверлей соцсетей (НАШИ СОЦСЕТИ) ===
   const socialOverlay = document.getElementById('social-overlay');
