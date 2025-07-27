@@ -482,9 +482,9 @@ body {
   font-size: 20px;
   color: white;
   font-weight: 800;
-  padding: 0; /* сбросим отступ */
-  margin: 0; /* на всякий */
-  text-align: left; /* ✨ ключевая строка */
+  padding: 0;
+  margin: 30px 0 0 0;
+  text-align: left;
 }
 
 .exchange-btn {
@@ -496,6 +496,7 @@ body {
   border: none;
   cursor: pointer;
   padding: 0 20px;
+  margin-top: 30px;
 }
 
 /* === 🔄 Новый хедер: сортировка и кнопка ОБМЕН === */
