@@ -197,6 +197,12 @@ page.querySelector('.card-rarity-details').innerHTML = `
 
   // Показываем Telegram кнопку назад
   Telegram.WebApp.BackButton.show();
+
+  setTimeout(() => {
+  window.scrollTo({ top: 0, behavior: 'auto' });
+}, 0);
+
+
 }
 
 // === Обработчик Telegram Back Button ===
