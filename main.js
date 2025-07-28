@@ -190,21 +190,22 @@ function openCardInfo(card) {
 }
 
 // === Обработчик Telegram Back Button ===
-Telegram.WebApp.onEvent('backButtonClicked', () => {
-  // Скрыть текущую страницу карточки
-  const detailPage = document.getElementById('card-detail-page');
-  detailPage.style.display = 'none';
-  detailPage.classList.remove('active');
+Telegram.WebApp.BackButton.onClick(() => {
+  // Скрываем все страницы
+  document.querySelectorAll('.page').forEach(p => {
+    p.style.display = 'none';
+    p.classList.remove('active');
+  });
 
-  // Показать коллекцию
-  const collectionPage = document.getElementById('collection-page');
+  // Показываем коллекцию
+  const collectionPage = document.getElementById('collection');
   collectionPage.style.display = 'block';
   collectionPage.classList.add('active');
 
-  // Показать нижнее меню
+  // Показываем нижнее меню
   document.querySelector('.nav-menu').style.display = 'flex';
 
-  // Скрыть Telegram кнопку назад
+  // Скрываем кнопку Telegram Back
   Telegram.WebApp.BackButton.hide();
 });
 
