@@ -784,7 +784,7 @@ body {
 .card-rarity-details {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 5px;
   font-family: 'geologica';
   font-size: 18px;
   font-weight: 300;
@@ -839,7 +839,7 @@ body {
 .info-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .info-label {
