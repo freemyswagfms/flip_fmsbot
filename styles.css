@@ -699,15 +699,19 @@ body {
   position: fixed;
   inset: 0;
   z-index: 100;
-  /* Убери min-height/height */
-  overflow: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding-top: 20px;   /* <-- Добавляем сверху */
+  padding-bottom: 20px; /* <-- Добавляем снизу */
+}
+#card-detail-page::-webkit-scrollbar {
+  display: none;
 }
 
 .card-detail-wrapper {
-  overflow-y: auto;
   flex: 1 1 auto;
-  height: 100%;
-  padding-bottom: 50px;
+  padding-bottom: 50px; /* Чтобы не прижималось к низу */
+  /* Не нужен overflow и не нужен height! */
 }
 
 
