@@ -701,7 +701,7 @@ body {
   position: relative;
 }
 
-/* Обёртка */
+/* === ОБЁРТКА КАРТОЧКИ === */
 .card-detail-wrapper {
   display: flex;
   flex-direction: column;
@@ -719,7 +719,7 @@ body {
   font-size: 24px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  line-height: 1;
 }
 
 .card-artist {
@@ -728,20 +728,21 @@ body {
   font-weight: 900;
   text-transform: uppercase;
   margin-bottom: 20px;
+  line-height: 1;
 }
 
 .card-image {
   width: 100%;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   object-fit: cover;
 }
 
-/* Кнопки */
+/* === КНОПКИ ОБМЕНА И ПОДАРКА === */
 .card-buttons {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .card-action-btn {
@@ -763,67 +764,102 @@ body {
   background: #e6e6e6;
 }
 
-/* === БЛОК ИНФОРМАЦИИ === */
+/* === БЛОК ИНФОРМАЦИИ О КАРТОЧКЕ === */
 .card-bottom {
   background: transparent;
-  padding-top: 10px;
 }
 
-/* Верхняя строка с редкостью */
+/* === Верхняя строка с редкостью — остаётся по центру === */
 .card-rarity {
   text-align: center;
-  font-size: 14px;
-  font-weight: 600;
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
   letter-spacing: 1px;
-  color: #e2e2ff;
-  margin-bottom: 14px;
-}
-
-/* Три строки с тегами */
-.card-rarity-details {
-  font-size: 13px;
-  font-family: 'geologica';
-  text-align: center;
-  line-height: 1.4;
-  color: #ffffffb2;
+  color: white;
   margin-bottom: 20px;
 }
 
-.card-rarity-details .rarity-tag {
-  font-weight: bold;
-  margin-left: 6px;
-  color: #ffffff;
+/* === СТИЛИ ДЛЯ БЛОКА РЕДКОСТЕЙ (АРТИСТ / АЛЬБОМ / СКИН) === */
+.card-rarity-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: 'geologica';
+  font-size: 18px;
+  font-weight: 300;
+  color: white;
+  margin-bottom: 20px;
 }
 
-/* Статистика */
-.stat-title {
+/* Строка с артистом, треком или стилем */
+.card-rarity-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Левая часть — название (Young Thug, So Much Fun...) */
+.card-rarity-label {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Правая часть — редкость (Legendary, Epic...) */
+.card-rarity-value {
+  flex-shrink: 0;
+  text-align: right;
+  font-weight: 300;
+}
+
+
+/* === СТАТИСТИКА === */
+.stats-title {
   text-align: center;
-  font-size: 12px;
-  font-weight: 700;
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #bbbbbb;
-  margin-bottom: 10px;
+  color: white;
+  margin-bottom: 20px;
 }
 
 .card-stats {
-  font-size: 13px;
-  line-height: 1.5;
   font-family: 'geologica';
-  text-align: center;
-  color: #e0e0e0;
+  font-size: 18px;
+  font-weight: 300;
+  color: white;
 }
 
-/* Удалить */
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.info-label {
+  text-align: left;
+}
+
+.info-value {
+  text-align: right;
+}
+
+/* === КНОПКА "УДАЛИТЬ" === */
 .card-delete {
   text-align: center;
-  font-size: 13px;
+  font-family: 'geologica';
+  font-weight: 200;
+  font-size: 18px;
   margin-top: 22px;
-  color: red;
+  color: #FF7878;
   cursor: pointer;
-  font-weight: 600;
 }
-
 
 /* ========================= */
 /* === ПРОФИЛЬ: ОСНОВА  === */

@@ -150,21 +150,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
   // === Открывает страницу с информацией о карточке ===
-function openCardInfo(card) {
+  function openCardInfo(card) {
   const page = document.getElementById('card-detail-page');
 
   // Подставляем текст: название, артист, картинку, редкость
   page.querySelector('.card-title').textContent = card.title;
   page.querySelector('.card-artist').textContent = card.artist;
   page.querySelector('.card-image').src = card.image;
-  page.querySelector('.card-rarity').textContent = `${card.rarity.toUpperCase()} · ${card.skin.toUpperCase()}`;
+  page.querySelector('.card-rarity').textContent = `${card.skin.toUpperCase()} · ${card.skinRarity.toUpperCase()}`;
 
   // Подставляем строки с редкостями
-  page.querySelector('.card-rarity-details').innerHTML = `
-    <div>${card.artist} <span class="rarity-tag">${card.artistRarity}</span></div>
-    <div>${card.title} <span class="rarity-tag">${card.rarity}</span></div>
-    <div>${card.skin} <span class="rarity-tag">${card.skinRarity}</span></div>
-  `;
+page.querySelector('.card-rarity-details').innerHTML = `
+  <div class="card-rarity-row">
+    <div class="card-rarity-label">${card.artist}</div>
+    <div class="card-rarity-value">${card.artistRarity}</div>
+  </div>
+  <div class="card-rarity-row">
+    <div class="card-rarity-label">${card.title}</div>
+    <div class="card-rarity-value">${card.rarity}</div>
+  </div>
+  <div class="card-rarity-row">
+    <div class="card-rarity-label">${card.skin}</div>
+    <div class="card-rarity-value">${card.skinRarity}</div>
+  </div>
+`;
+
 
   // Подставляем статистику
   page.querySelector('.card-duplicate').textContent = card.duplicates;
