@@ -696,7 +696,6 @@ body {
   flex-direction: column;
   background-color: #111111;
   color: white;
-  min-height: 100vh;
   overflow-y: auto;
   position: relative;
 }
