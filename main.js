@@ -190,7 +190,7 @@ page.querySelector('.card-rarity-details').innerHTML = `
   });
 
   // Показываем страницу карточки
-  page.style.display = 'block';
+  page.style.display = 'flex';
   page.classList.add('active');
 
   // Скрываем нижнее меню

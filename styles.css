@@ -692,21 +692,24 @@ body {
 /* ========================================= */
 
 #card-detail-page {
-  display: none; /* По умолчанию скрыта, показывается через JS */
+  display: none;
   flex-direction: column;
   background: #0A0A0A;
   color: white;
-  overflow-y: auto;
-  position: relative;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  /* Убери min-height/height */
+  overflow: hidden;
 }
 
-/* === ОБЁРТКА КАРТОЧКИ === */
 .card-detail-wrapper {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding: 20px 0px 5px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  height: 100%;
+  padding-bottom: 50px;
 }
+
 
 /* === ВЕРХНЯЯ ЧАСТЬ === */
 .card-top {
