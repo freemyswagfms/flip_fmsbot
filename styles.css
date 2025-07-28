@@ -1375,72 +1375,68 @@ body.light .setting-card {
   cursor: pointer;
 }
 
-/* ===================================== */
-/* ===ОВЕРЛЕЙ: ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ=== */
-/* ===================================== */
-#delete-confirm-overlay {
+/* ====================================== */
+/* === ОВЕРЛЕЙ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ === */
+/* ====================================== */
+
+.overlay-delete {
   position: fixed;
   z-index: 9999;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
   display: none;
+  background: rgba(0,0,0,0.7);
   justify-content: center;
   align-items: center;
+  padding-left: 20px;
+  padding-right: 20px;
 }
+.overlay-delete.active { display: flex; }
 
-#delete-confirm-overlay.active {
-  display: flex;
-}
-
-.overlay-content {
-  background: #2e2e2e;
+.overlay-delete-content {
+  background: #393939;
   border-radius: 16px;
-  padding: 24px 20px;
-  max-width: 320px;
-  width: 90%;
+  padding: 20px 15px;
+  width: 100%;
   text-align: center;
   color: white;
   font-family: 'geologica';
 }
-
-.overlay-title {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 12px;
+.overlay-delete-title {
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 15px;
 }
-
-.overlay-text {
-  font-size: 15px;
+.overlay-delete-text {
+  font-family: 'geologica';
+  font-size: 14px;
   font-weight: 300;
-  margin-bottom: 20px;
-  line-height: 1.4;
+  margin-bottom: 25px;
+  line-height: 1.1;
 }
-
-.overlay-buttons {
+.overlay-delete-buttons {
   display: flex;
   justify-content: space-between;
   gap: 12px;
 }
-
 .btn.cancel {
   flex: 1;
-  background: #666;
+  background: #676767;
   color: white;
-  border-radius: 999px;
+  border-radius: 100px;
   padding: 10px 0;
-  font-weight: 600;
+  font-weight: 300;
+  border: none;
 }
-
 .btn.delete {
   flex: 1;
   background: none;
-  color: #f25555;
-  border: 2px solid #f25555;
+  color: #FF3D3D;
+  border: 1px solid #FF3D3D;
   border-radius: 999px;
   padding: 10px 0;
-  font-weight: 600;
+  font-weight: 300;
 }
-
 
 /* ========================== */
 /* ===ОВЕРЛЕЙ: ВНЕШНИЙ ВИД=== */

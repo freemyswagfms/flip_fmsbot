@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     Telegram.WebApp.expand();
   }
 
-initDeleteOverlay(); // ← обязательно
 
   // === Карточки коллекции ===
   
@@ -474,32 +473,6 @@ if (searchFab && searchInput) {
       card.style.display = text.includes(query) ? '' : 'none';
     });
   });
-}
-
-function initDeleteOverlay() {
-  const deleteOverlay = document.getElementById('delete-confirm-overlay');
-  const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-  const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-
-  // Делегируем клик на весь документ
-  document.addEventListener('click', (e) => {
-    if (e.target && e.target.classList.contains('card-delete')) {
-      deleteOverlay.classList.add('active');
-    }
-  });
-
-  if (cancelDeleteBtn) {
-    cancelDeleteBtn.addEventListener('click', () => {
-      deleteOverlay.classList.remove('active');
-    });
-  }
-
-  if (confirmDeleteBtn) {
-    confirmDeleteBtn.addEventListener('click', () => {
-      deleteOverlay.classList.remove('active');
-      // удалить карточку (в будущем)
-    });
-  }
 }
 
 
@@ -1080,5 +1053,39 @@ sortOptions.forEach(option => {
   });
 });
 
+
+// === ОВЕРЛЕЙ: ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ ===
+const deleteOverlay = document.getElementById('delete-confirm-overlay');
+const deleteCancelBtn = document.getElementById('delete-cancel-btn');
+const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
+
+// 1. Показывать оверлей при клике на .card-delete
+document.addEventListener('click', function(e) {
+  if (e.target && e.target.classList.contains('card-delete')) {
+    deleteOverlay.classList.add('active');
+  }
+});
+
+// 2. Скрывать оверлей по кнопке "Отмена"
+if (deleteCancelBtn) {
+  deleteCancelBtn.addEventListener('click', function() {
+    deleteOverlay.classList.remove('active');
+  });
+}
+
+// 3. Скрывать оверлей по кнопке "Удалить" (сюда вставишь свою логику удаления)
+if (deleteConfirmBtn) {
+  deleteConfirmBtn.addEventListener('click', function() {
+    deleteOverlay.classList.remove('active');
+    // TODO: логика удаления карточки, если нужно
+  });
+}
+
+// 4. Клик вне окна — тоже закрывает
+deleteOverlay.addEventListener('click', function(e) {
+  if (e.target === deleteOverlay) {
+    deleteOverlay.classList.remove('active');
+  }
+});
 
 });
