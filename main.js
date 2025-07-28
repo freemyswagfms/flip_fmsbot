@@ -191,11 +191,14 @@ function openCardInfo(card) {
 
 // === Обработчик Telegram Back Button ===
 Telegram.WebApp.BackButton.onClick(() => {
-  // Скрываем все страницы
+  // Скрываем все .page
   document.querySelectorAll('.page').forEach(p => {
     p.style.display = 'none';
     p.classList.remove('active');
   });
+
+  // Показываем main-app
+  document.getElementById('main-app').style.display = 'block';
 
   // Показываем коллекцию
   const collectionPage = document.getElementById('collection');
@@ -205,7 +208,7 @@ Telegram.WebApp.BackButton.onClick(() => {
   // Показываем нижнее меню
   document.querySelector('.nav-menu').style.display = 'flex';
 
-  // Скрываем кнопку Telegram Back
+  // Скрываем Telegram BackButton
   Telegram.WebApp.BackButton.hide();
 });
 
