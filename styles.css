@@ -701,7 +701,7 @@ body {
   z-index: 100;
   overflow-y: auto;
   scrollbar-width: none;
-  padding-top: 50px;   /* <-- Добавляем сверху */
+  padding-top: 100px;   /* <-- Добавляем сверху */
   padding-bottom: 20px; /* <-- Добавляем снизу */
 }
 #card-detail-page::-webkit-scrollbar {
