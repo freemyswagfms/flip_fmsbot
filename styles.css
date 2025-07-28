@@ -696,26 +696,22 @@ body {
   flex-direction: column;
   background-color: black;
   color: white;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow-y: auto;
   position: relative;
 }
 
-/* Обёртка для всей карточки */
+/* Обёртка */
 .card-detail-wrapper {
-  position: relative;
-  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  padding: 24px 16px 40px;
 }
 
 /* === ВЕРХНЯЯ ЧАСТЬ === */
-
 .card-top {
-  padding: 24px 16px 0;
   text-align: center;
-  z-index: 2;
 }
 
 .card-title {
@@ -724,7 +720,6 @@ body {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 2px;
 }
 
 .card-artist {
@@ -741,12 +736,12 @@ body {
   object-fit: cover;
 }
 
-/* Блок с двумя кнопками */
+/* Кнопки */
 .card-buttons {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .card-action-btn {
@@ -768,39 +763,13 @@ body {
   background: #e6e6e6;
 }
 
-/* Полоска-ползунок (индикатор, что блок снизу выдвигается) */
-.drawer-handle {
-  width: 120px;
-  height: 5px;
-  background: white;
-  opacity: 0.8;
-  border-radius: 100px;
-  margin: 0 auto;
-  margin-bottom: 6px;
-}
-
-/* === Нижний блок карточки (закрыт по умолчанию) === */
+/* === БЛОК ИНФОРМАЦИИ === */
 .card-bottom {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #111;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-  transform: translateY(75%);
-  transition: transform 0.3s ease;
-  padding: 20px;
-  z-index: 2;
+  background: transparent;
+  padding-top: 10px;
 }
 
-/* === Открытое состояние === */
-.card-bottom.open {
-  transform: translateY(0);
-}
-
-
-/* Верхняя строка с редкостью карточки */
+/* Верхняя строка с редкостью */
 .card-rarity {
   text-align: center;
   font-size: 14px;
@@ -810,7 +779,7 @@ body {
   margin-bottom: 14px;
 }
 
-/* Блок с тремя строками: артист, альбом, стиль */
+/* Три строки с тегами */
 .card-rarity-details {
   font-size: 13px;
   font-family: 'geologica';
@@ -826,7 +795,7 @@ body {
   color: #ffffff;
 }
 
-/* Заголовок "СТАТИСТИКА" */
+/* Статистика */
 .stat-title {
   text-align: center;
   font-size: 12px;
@@ -837,7 +806,6 @@ body {
   margin-bottom: 10px;
 }
 
-/* Остальные данные */
 .card-stats {
   font-size: 13px;
   line-height: 1.5;
@@ -846,7 +814,7 @@ body {
   color: #e0e0e0;
 }
 
-/* Кнопка "удалить" */
+/* Удалить */
 .card-delete {
   text-align: center;
   font-size: 13px;
@@ -855,7 +823,6 @@ body {
   cursor: pointer;
   font-weight: 600;
 }
-
 
 
 /* ========================= */

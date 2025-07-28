@@ -150,9 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
 
   // === Открывает страницу с информацией о карточке ===
-  function openCardInfo(card) {
+function openCardInfo(card) {
   const page = document.getElementById('card-detail-page');
-  const bottom = page.querySelector('.card-bottom');
 
   // Подставляем текст: название, артист, картинку, редкость
   page.querySelector('.card-title').textContent = card.title;
@@ -160,54 +159,61 @@ document.addEventListener('DOMContentLoaded', () => {
   page.querySelector('.card-image').src = card.image;
   page.querySelector('.card-rarity').textContent = `${card.rarity.toUpperCase()} · ${card.skin.toUpperCase()}`;
 
-  // Подставляем строки с редкостями (временно жёстко задано — поправим позже)
+  // Подставляем строки с редкостями
   page.querySelector('.card-rarity-details').innerHTML = `
-  <div>${card.artist} <span class="rarity-tag">${card.artistRarity}</span></div>
-  <div>${card.title} <span class="rarity-tag">${card.rarity}</span></div>
-  <div>${card.skin} <span class="rarity-tag">${card.skinRarity}</span></div>
+    <div>${card.artist} <span class="rarity-tag">${card.artistRarity}</span></div>
+    <div>${card.title} <span class="rarity-tag">${card.rarity}</span></div>
+    <div>${card.skin} <span class="rarity-tag">${card.skinRarity}</span></div>
   `;
-
 
   // Подставляем статистику
   page.querySelector('.card-duplicate').textContent = card.duplicates;
-page.querySelector('.card-drop').textContent = card.drop;
-page.querySelector('.card-xp').textContent = `${card.xp}XP`;
-page.querySelector('.card-date').textContent = card.date;
+  page.querySelector('.card-drop').textContent = card.drop;
+  page.querySelector('.card-xp').textContent = `${card.xp}XP`;
+  page.querySelector('.card-date').textContent = card.date;
 
-
-  // Скрываем нижний блок, если он был открыт
-  bottom.classList.remove('open');
-
-  // Снимаем active со всех .page (вне зависимости от их расположения)
+  // Скрываем все страницы
   document.querySelectorAll('.page').forEach(p => {
-  p.style.display = 'none';
-  p.classList.remove('active');
-});
+    p.style.display = 'none';
+    p.classList.remove('active');
+  });
 
-// даже если вне main-app — мы его явно показываем
-const cardPage = document.getElementById('card-detail-page');
-cardPage.style.display = 'block';
-cardPage.classList.add('active');
+  // Показываем страницу карточки
+  page.style.display = 'block';
+  page.classList.add('active');
 
+  // Скрываем нижнее меню
+  document.querySelector('.nav-menu').style.display = 'none';
 
+  // Показываем Telegram кнопку назад
+  Telegram.WebApp.BackButton.show();
 }
 
-// === Поведение выдвижного блока карточки ===
-const drawerHandle = document.querySelector('.drawer-handle');
-const cardBottom = document.querySelector('.card-bottom');
+// === Обработчик Telegram Back Button ===
+Telegram.WebApp.onEvent('backButtonClicked', () => {
+  // Скрыть текущую страницу карточки
+  const detailPage = document.getElementById('card-detail-page');
+  detailPage.style.display = 'none';
+  detailPage.classList.remove('active');
 
-// При клике по ручке — переключаем .open
-drawerHandle.addEventListener('click', () => {
-  cardBottom.classList.toggle('open');
+  // Показать коллекцию
+  const collectionPage = document.getElementById('collection-page');
+  collectionPage.style.display = 'block';
+  collectionPage.classList.add('active');
+
+  // Показать нижнее меню
+  document.querySelector('.nav-menu').style.display = 'flex';
+
+  // Скрыть Telegram кнопку назад
+  Telegram.WebApp.BackButton.hide();
 });
 
 
- // === Генерация карточек коллекции из массива cardCollection ===
+// === Генерация карточек коллекции из массива cardCollection ===
 function renderCards(filterValue = null) {
   const grid = document.querySelector('.collection-grid');
   grid.innerHTML = '';
 
-  // 1. Отфильтровываем: совпадающие по категории или редкости идут первыми
   const filteredFirst = [];
   const rest = [];
 
@@ -223,10 +229,8 @@ function renderCards(filterValue = null) {
     }
   });
 
-  // 2. Собираем общий массив: сначала отфильтрованные, потом остальные
   const orderedCards = [...filteredFirst, ...rest];
 
-  // 3. Отрисовываем каждую карточку
   orderedCards.forEach(card => {
     const el = document.createElement('div');
     el.className = 'collection-card';
@@ -240,7 +244,6 @@ function renderCards(filterValue = null) {
       </div>
     `;
 
-    // Добавляем клик по карточке — открывает детальную страницу
     el.addEventListener('click', () => {
       openCardInfo(card);
     });
