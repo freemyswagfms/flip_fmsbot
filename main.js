@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Telegram.WebApp.expand();
   }
 
+initDeleteOverlay(); // ← обязательно
 
   // === Карточки коллекции ===
   
@@ -148,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const pages = document.querySelectorAll('.page');
   const tabs = document.querySelectorAll('.tab');
   const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  
 
   // === Открывает страницу с информацией о карточке ===
   function openCardInfo(card) {
@@ -473,6 +475,33 @@ if (searchFab && searchInput) {
     });
   });
 }
+
+function initDeleteOverlay() {
+  const deleteOverlay = document.getElementById('delete-confirm-overlay');
+  const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+  const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+
+  // Делегируем клик на весь документ
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.classList.contains('card-delete')) {
+      deleteOverlay.classList.add('active');
+    }
+  });
+
+  if (cancelDeleteBtn) {
+    cancelDeleteBtn.addEventListener('click', () => {
+      deleteOverlay.classList.remove('active');
+    });
+  }
+
+  if (confirmDeleteBtn) {
+    confirmDeleteBtn.addEventListener('click', () => {
+      deleteOverlay.classList.remove('active');
+      // удалить карточку (в будущем)
+    });
+  }
+}
+
 
 // === Оверлей соцсетей (НАШИ СОЦСЕТИ) ===
   const socialOverlay = document.getElementById('social-overlay');

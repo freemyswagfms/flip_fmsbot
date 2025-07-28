@@ -705,7 +705,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding: 24px 16px 40px;
+  padding: 24px 0px 40px;
 }
 
 /* === ВЕРХНЯЯ ЧАСТЬ === */
@@ -1374,6 +1374,73 @@ body.light .setting-card {
   font-size: 14px;
   cursor: pointer;
 }
+
+/* ===================================== */
+/* ===ОВЕРЛЕЙ: ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ=== */
+/* ===================================== */
+#delete-confirm-overlay {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+#delete-confirm-overlay.active {
+  display: flex;
+}
+
+.overlay-content {
+  background: #2e2e2e;
+  border-radius: 16px;
+  padding: 24px 20px;
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+  color: white;
+  font-family: 'geologica';
+}
+
+.overlay-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.overlay-text {
+  font-size: 15px;
+  font-weight: 300;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.overlay-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.btn.cancel {
+  flex: 1;
+  background: #666;
+  color: white;
+  border-radius: 999px;
+  padding: 10px 0;
+  font-weight: 600;
+}
+
+.btn.delete {
+  flex: 1;
+  background: none;
+  color: #f25555;
+  border: 2px solid #f25555;
+  border-radius: 999px;
+  padding: 10px 0;
+  font-weight: 600;
+}
+
 
 /* ========================== */
 /* ===ОВЕРЛЕЙ: ВНЕШНИЙ ВИД=== */
