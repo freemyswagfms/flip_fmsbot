@@ -694,7 +694,7 @@ body {
 #card-detail-page {
   display: none; /* По умолчанию скрыта, показывается через JS */
   flex-direction: column;
-  background-color: #121212;
+  background: #0A0A0A;
   color: white;
   overflow-y: auto;
   position: relative;
