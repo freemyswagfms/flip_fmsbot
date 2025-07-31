@@ -419,20 +419,18 @@ setupPageNavigation('go-topup', 'topup-page'); // с профиля
 
   // === Персонализация профиля ===
   const nicknameEl = document.querySelector('.nickname');
-  const balanceEl = document.querySelector('.balance-nick');
-  const avatarEl = document.querySelector('.avatar');
-  if (nicknameEl && balanceEl && avatarEl) {
+  const avatarEl = document.querySelector('.avatar.big');
+  if (nicknameEl && avatarEl) {
     if (user) {
-      nicknameEl.textContent = user.username || `id${user.id}`;
-      balanceEl.textContent = 'баланс';
+      nicknameEl.textContent = user.username || user.first_name || `id${user.id}`;
       if (user.username) avatarEl.style.backgroundImage = `url('https://t.me/i/userpic/320/${user.username}.jpg')`;
       else avatarEl.style.backgroundColor = '#ccc';
     } else {
-      nicknameEl.textContent = 'гость';
-      balanceEl.textContent = 'баланс';
+      nicknameEl.textContent = 'Гость';
       avatarEl.style.backgroundColor = '#ccc';
     }
   }
+
 
   // === FAB-поиск в коллекции ===
 const searchFab = document.getElementById('searchFab');
