@@ -146,7 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const navBtns = Array.from(document.querySelectorAll('.nav-btn'));
   const navBg = document.querySelector('.nav-bg');
   const pages = document.querySelectorAll('.page');
-  const tabs = document.querySelectorAll('.tab');
   const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
   
 

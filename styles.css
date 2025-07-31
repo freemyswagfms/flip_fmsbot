@@ -1,33 +1,38 @@
-/* === ШРИФТЫ И БАЗА === */
+/* ========================================================= */
+/* === БАЗОВЫЕ СТИЛИ: ШРИФТЫ, BODY, ОБЩИЕ СБРОСЫ, БАЗА  === */
+/* ========================================================= */
 
+/* === КАСТОМНЫЕ ШРИФТЫ === */
 @font-face {
   font-family: 'geologica';
   src: url('/assets/fonts/geologica-extralight.woff') format('woff');
   font-weight: 200;
   font-style: normal;
 }
-
 @font-face {
   font-family: 'geologica';
   src: url('/assets/fonts/geologica-light.woff') format('woff');
   font-weight: 300;
   font-style: normal;
 }
-
 @font-face {
   font-family: 'geologica';
   src: url('/assets/fonts/geologica-regular.woff') format('woff');
   font-weight: 400;
   font-style: normal;
 }
-
 @font-face {
   font-family: 'geologica';
   src: url('/assets/fonts/geologica-medium.woff') format('woff');
   font-weight: 500;
   font-style: normal;
 }
-
+@font-face {
+  font-family: 'geologica';
+  src: url('/assets/fonts/Geologica_Auto-ExtraBold.woff') format('woff');
+  font-weight: 800;
+  font-style: normal;
+}
 @font-face {
   font-family: 'cygre';
   src: url('/assets/fonts/cygre-extrabold.woff') format('woff');
@@ -35,25 +40,44 @@
   font-style: normal;
 }
 
-body {
-  max-width: 100%;
-  overflow-x: hidden;
-  touch-action: pan-y;
-  overflow-y: auto;
-  overscroll-behavior: none;
-  box-sizing: border-box;
-  background-color: #0A0A0A;
-  margin: 0;
-  padding: 0;  
+/* === СБРОС ВЫДЕЛЕНИЯ ДЛЯ КНОПОК/СИСТЕМНЫХ КНОПОК === */
+button, .nav-btn, .profile-card, .task-btn, .buy-btn, .quest-btn, .theme-toggle-btn {
+  user-select: none;
+  -webkit-user-select: none;
+}
+button:focus,
+button:active,
+button:focus-visible {
+  outline: none;
 }
 
+/* === ГЛОБАЛЬНЫЕ НАСТРОЙКИ BODY === */
+body {
+  background-color: #0A0A0A;         /* Фоновый цвет приложения */
+  max-width: 100%;                   /* Защита от горизонтального скролла */
+  overflow-x: hidden;                /* Отключаем горизонтальный скролл */
+  overflow-y: auto;                  /* Всегда можно скроллить вниз */
+  touch-action: pan-y;               /* Мягкий скролл на тачах */
+  box-sizing: border-box;            /* Удобная модель бокса по умолчанию */
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: none;         /* Без bounce-эффекта */
+}
+
+/* === ГЛАВНЫЙ КОНТЕЙНЕР ПРИЛОЖЕНИЯ === */
 #main-app {
+  /* Отступы для safe-area (чтобы ничего не уезжало под статус-бар/меню) */
   padding-top: calc(40px + env(safe-area-inset-top));
   padding-bottom: calc(70px + env(safe-area-inset-bottom));
-  min-height: 100vh;
+  min-height: 100vh;                 /* Минимальная высота для фуллскрина */
   box-sizing: border-box;
 }
 
+/* ============================== */
+/* === СПЛЭШ-ЭКРАН (ЗАГРУЗКА) === */
+/* ============================== */
+
+/* ——— Обёртка сплэш-экрана, показывается при загрузке ——— */
 #splash {
   position: fixed;
   z-index: 9999;
@@ -63,42 +87,107 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  transition: opacity .5s;
+  transition: opacity 0.5s ease;
+  pointer-events: none; /* блокирует клики во время загрузки */
 }
+
+/* ——— Логотип в центре экрана ——— */
+.splash-logo {
+  width: 160px;
+  height: auto;
+  margin-bottom: 30px;
+}
+
+/* ——— Обёртка прогресс-бара ——— */
+.progress-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* ——— Заполнение прогресс-бара (анимируется через JS) ——— */
+.progress-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: #9EFF44;
+  transition: width 0.5s ease-in-out;
+}
+
+/* ================================ */
+/* === БАЗОВАЯ СТРУКТУРА СТРАНИЦ === */
+/* ================================ */
 
 .page {
-  min-height: calc(100vh - 70px);
-  padding: 20px;
-  box-sizing: border-box;
-  overflow-y: auto;
-  overflow-x: hidden;
-  height: 100%;
-  -webkit-overflow-scrolling: touch;
+  min-height: calc(100vh - 70px);     /* Полная высота за вычетом нижнего меню */
+  padding: 20px;                      /* Отступы внутри страницы */
+  box-sizing: border-box;            /* Учитываем padding в ширину/высоту */
+  overflow-y: auto;                  /* Вертикальный скролл при переполнении */
+  overflow-x: hidden;                /* Предотвращаем горизонтальный скролл */
+  height: 100%;                      /* Минимальное растяжение по высоте */
+  -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
 }
 
-.splash-logo {
-  width: 230px;
-  margin-bottom: 20px;
-}
-  
-.progress-bar-bg {
-  width: 230px;
-  height: 5px;
-  background: #282828;
-  border-radius: 1px;
-  overflow: hidden;
-  margin-top: 0px;
-}
-  
-.progress-bar-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #F25B02 0%, #B31414 100%);
-  transition: width 1s cubic-bezier(.68,-0.55,.27,1.55);
+/* =============================== */
+/* === НАВИГАЦИЯ (нижнее меню) === */
+/* =============================== */
+
+/* --- Контейнер нижнего меню --- */
+.nav-menu {
+  padding-bottom: env(safe-area-inset-bottom); /* учёт безопасной зоны на телефонах */
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 70px;
+  display: flex;
+  justify-content: space-around;
+  padding-top: 8px;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.75); /* полупрозрачный фон */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  overflow: visible;
 }
 
-/* === ГЛАВНАЯ === */
+/* --- Кнопка навигации (кружок) --- */
+.nav-btn {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
 
+/* --- Специально для иконки Home (если есть доп. эффекты) --- */
+.home-icon {
+  z-index: 1000;
+}
+
+/* --- Фон активной кнопки (синий круг, двигается под активной иконкой) --- */
+.nav-bg {
+  top: 8px;
+  position: absolute;
+  background: #317BFF;
+  border-radius: 50%;
+  z-index: 1;
+  opacity: 0.5;
+  transition: left 0.3s cubic-bezier(.68,-0.55,.27,1.55); /* плавное перемещение */
+  width: 50px;
+  height: 50px;
+  left: 0;
+  pointer-events: none;
+}
+
+/* ================================== */
+/* === ГЛАВНАЯ СТРАНИЦА (HOME)    === */
+/* ================================== */
+
+/* Заголовок на главной */
 .title {
   margin-bottom: 30px;
   font-family: 'cygre';
@@ -110,10 +199,12 @@ body {
   text-transform: uppercase;
 }
 
+/* Второй подзаголовок */
 .drop-title {
   margin-bottom: 15px;
 }
 
+/* Таймер до дропа */
 .drop-timer {
   font-family: 'geologica';
   font-size: 14px;
@@ -124,6 +215,7 @@ body {
   margin-bottom: 30px;
 }
 
+/* Слайдер карточек (обертка и изображения) */
 .carousel {
   position: relative;
   width: 100%;
@@ -131,7 +223,6 @@ body {
   align-items: center;
   flex-direction: column;  
 }
-  
 .carousel-images {
   display: flex;
   gap: 15px;
@@ -139,7 +230,6 @@ body {
   user-select: none;
   pointer-events: none;
 }
-
 .carousel-img {
   min-width: 140px;
   height: 140px;
@@ -149,7 +239,6 @@ body {
   border-radius: 10px;
   display: block;
 }
-
 .carousel-wrapper {
   position: relative;
   width: calc(100% + 40px);
@@ -158,6 +247,7 @@ body {
   overflow: hidden;
 }
 
+/* Слот для текущего дропа */
 .drop-slot {
   flex-shrink: 0;
   flex-grow: 0;
@@ -170,6 +260,7 @@ body {
   user-select: none;
 }
 
+/* Кнопка "Получить дроп" */
 .start-btn {
   display: flex;
   justify-content: center;
@@ -188,12 +279,12 @@ body {
   padding: 10px 25px;
 }
 
+/* Карточка на главной (большой блок) */
 .card-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-  
 .main-card {
   width: 100%;
   height: 200px;
@@ -207,7 +298,6 @@ body {
   overflow: hidden;
   margin-bottom: 20px;
 }
-
 .card-footer {
   position: absolute;
   left: 50%;
@@ -222,14 +312,15 @@ body {
   align-items: flex-start;
   z-index: 2;
 }
- 
+
+/* Кнопка "В магазин" */
 .shop-btn {
   font-family: 'geologica';
   font-size: 16px;
   margin-top: 10px;
   padding-left: 25px;
   padding-right: 25px;
-  padding-top:8px;
+  padding-top: 8px;
   padding-bottom: 10px;
   font-weight: 400;
   color: black;
@@ -240,8 +331,11 @@ body {
   z-index: 3;
 }
 
-/* === ЗАДАНИЯ === */
+/* -------------------- */
+/* === БЛОК ЗАДАНИЙ === */
+/* -------------------- */
 
+/* Контейнер одного задания */
 .task {
   display: flex;
   justify-content: space-between;
@@ -256,10 +350,12 @@ body {
   box-sizing: border-box;
 }
 
+/* Контейнер всех заданий */
 .tasks {
   font-family: 'geologica';
 }
 
+/* Блок для подписки */
 .subs {
   display: flex;
   flex-direction: column;
@@ -267,6 +363,7 @@ body {
   gap: 4px;
 }
 
+/* Название канала (первая строка) */
 .sub-1 {
   font-family: 'geologica';
   color: black;
@@ -274,7 +371,7 @@ body {
   font-size: 16px;
   margin-bottom: 0px;
 }
-  
+/* Описание задания (вторая строка) */
 .sub-2 {
   font-family: 'geologica';
   color: black;
@@ -283,6 +380,7 @@ body {
   font-size: 16px;
 }
 
+/* Кнопка задания */
 .task-btn {
   width: 72px;
   height: 53px;
@@ -295,12 +393,12 @@ body {
   flex-shrink: 0;
   padding: 0;
 }
-
 .task-btn img {
   width: 22px;
   height: 22px;
 }
 
+/* Кнопка "Все квесты" */
 .quests-btn {
   display: block;
   margin: 20px auto 0 auto;
@@ -315,22 +413,25 @@ body {
   cursor: pointer;
   transition: background 0.2s ease;
 }
-
 .quests-btn:hover {
   background-color: #85db37; 
 }
 
-/* === МАГАЗИН === */
+/* ================================================= */
+/* === СТРАНИЦА: МАГАЗИН / SHOP ==================== */
+/* ================================================= */
 
+/* Обёртка отдельной карточки товара */
 .card {
   display: flex;
   flex-direction: column;
   width: 100%;
-  justify-content: center;
   max-width: 300px;
+  justify-content: center;
   align-items: center;
 }
-  
+
+/* Сетка карточек магазина (несколько карточек в ряд) */
 .cards {
   margin-bottom: 50px;
   width: 100%;
@@ -339,6 +440,7 @@ body {
   gap: 20px;
 }
 
+/* Кнопка "Купить" */
 .buy-btn {
   background-color: #9EFF44;
   color: black;
@@ -349,26 +451,31 @@ body {
   border-radius: 100px;
   padding: 10px 25px;
   margin-top: 20px;
+  cursor: pointer;
 }
 
+/* Квадратная обложка карточки (товар) */
 .square {
   width: 100%;
+  max-width: 300px;
+  aspect-ratio: 1/1;
   background-color: white;
   border-radius: 24px;
-  aspect-ratio: 1/1;
-  max-width: 300px;
+  display: flex;
   flex-direction: column;
 }
 
+/* Обёртка для блока коллекции в магазине (может быть дроп/выборка) */
 .clc {
   display: flex;
   width: 100%;
-  justify-content: center;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   margin-bottom: 50px;
 }
 
+/* Кнопка "Ещё" (например, для подгрузки товаров) */
 .more-btn {
   background-color: #9EFF44;
   color: black;
@@ -379,33 +486,38 @@ body {
   border-radius: 100px;
   padding: 10px 25px;
   margin-top: 20px;
+  cursor: pointer;
 }
 
+/* Широкая карточка/баннер (например, спецпредложение или баланс) */
 .clc-card {
   width: 100%;
+  max-width: 620px;
+  height: 230px;
   display: flex;
   background-color: white;
   border-radius: 24px;
-  height: 230px;
-  max-width: 620px;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
 
+/* Заголовок раздела магазина */
 .title-shop {
   width: 100%;
   display: flex;
   justify-content: center;
 }
 
+/* Стиль суммы баланса/цены (выделение цифр) */
 .balance-amount {
   font-family: 'cygre';
-  line-height: 1.1;
   font-size: 20px;
   font-weight: 800;
   color: black;
+  line-height: 1.1;
 }
 
+/* Вариант опции пополнения баланса (например, 500F за 100₽) */
 .balance-card-option {
   display: flex;
   justify-content: space-between;
@@ -417,59 +529,11 @@ body {
   box-sizing: border-box;
 }
 
+/* ===================================================== */
+/* === СТРАНИЦА: МОЯ КОЛЛЕКЦИЯ / COLLECTION ============ */
+/* ===================================================== */
 
-/* === НАВИГАЦИЯ === */
-
-.nav-menu {
-  padding-bottom: env(safe-area-inset-bottom);
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  height: 70px;
-  display: flex;
-  justify-content: space-around;
-  padding-top: 8px;
-  z-index: 999;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-top-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  overflow: visible;
-}
-
-.nav-btn {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-}
-
-.home-icon {
-  z-index: 1000;
-}
-
-.nav-bg {
-  top: 8px;
-  position: absolute;
-  background: #317BFF;
-  border-radius: 50%;
-  z-index: 1;
-  opacity: 0.5;
-  transition: left 0.3s cubic-bezier(.68,-0.55,.27,1.55);
-  width: 50px;
-  height: 50px;
-  left: 0;
-  pointer-events: none;
-}
-
-/* =============================== */
-/* === СТРАНИЦА: МОЯ КОЛЛЕКЦИЯ === */
-/* =============================== */
-
+/* --- Верхний хедер коллекции: заголовок и кнопка "обмен" --- */
 .collection-header {
   display: flex;
   justify-content: space-between;
@@ -499,8 +563,7 @@ body {
   margin-top: 30px;
 }
 
-/* === 🔄 Новый хедер: сортировка и кнопка ОБМЕН === */
-
+/* --- Блок сортировки коллекции и меню сортировки --- */
 .collection-sort {
   font-family: 'geologica';
   font-weight: 300;
@@ -545,16 +608,10 @@ body {
   transition: opacity 0.2s;
   text-align: left;
 }
+.sort-option:hover { opacity: 0.8; }
+.sort-option.active { opacity: 0.5; }
 
-.sort-option:hover {
-  opacity: 0.8;
-}
-
-.sort-option.active {
-  opacity: 0.5;
-}
-
-/* === 🧱 Сетка карточек коллекции === */
+/* --- Сетка карточек коллекции (2 в ряд) --- */
 .collection-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -564,7 +621,7 @@ body {
   max-width: 100%;
 }
 
-/* === 🧩 Карточка (внешний контейнер) === */
+/* --- Внешний контейнер карточки --- */
 .card-placeholder {
   aspect-ratio: 1;
   border-radius: 24px;
@@ -576,7 +633,7 @@ body {
   justify-content: center;
 }
 
-/* === 📦 Внутреннее содержимое карточки === */
+/* --- Внутреннее содержимое карточки (фон и содержимое) --- */
 .card-inner {
   background: white;
   border-radius: 24px;
@@ -587,7 +644,7 @@ body {
   width: 100%;
 }
 
-/* === 🎴 Обложка карточки === */
+/* --- Картинка/обложка карточки --- */
 .card-img {
   width: 100%;
   height: auto;
@@ -595,7 +652,7 @@ body {
   object-fit: cover;
 }
 
-/* === 🏷️ Подпись под карточкой === */
+/* --- Подпись под карточкой (название/артист) --- */
 .card-label {
   padding: 10px 8px 14px;
   font-family: 'geologica';
@@ -605,10 +662,9 @@ body {
   color: black;
 }
 
-/* === ПОИСК В КОЛЛЕКЦИИ (АВТОРАСКРЫТИЕ) === */
-
+/* --- Поиск: строка и fab-кнопка --- */
 .search-bar {
- z-index: 99999;
+  z-index: 99999;
   position: fixed;
   bottom: 80px;
   left: 20px;
@@ -640,6 +696,7 @@ body {
   opacity: 0.6;
 }
 
+/* --- FAB-кнопка поиска --- */
 .search-fab {
   position: fixed;
   bottom: calc(80px + env(safe-area-inset-bottom));
@@ -657,12 +714,10 @@ body {
   transition: width 0.3s ease, border-radius 0.3s ease, background 0.3s ease;
   overflow: hidden;
 }
-
 .search-fab.open {
   width: calc(100% - 40px);
   border-radius: 100px;
 }
-
 .search-fab img.search-icon {
   flex-shrink: 0;
   width: 20px;
@@ -670,7 +725,6 @@ body {
   opacity: 0.8;
   cursor: pointer;
 }
-
 .search-fab .search-input {
   flex: 1;
   background: transparent;
@@ -682,7 +736,6 @@ body {
   display: none;
   transition: opacity 0.3s ease;
 }
-
 .search-fab.open .search-input {
   display: block;
 }
@@ -691,29 +744,29 @@ body {
 /* === СТРАНИЦА: ДЕТАЛИ КАРТОЧКИ (КОЛЛЕКЦИЯ) === */
 /* ========================================= */
 
+/* --- Основной контейнер страницы деталей карточки --- */
 #card-detail-page {
-  display: none;
+  display: none;                      /* Скрыто по умолчанию */
   flex-direction: column;
   background: #0A0A0A;
   color: white;
-  position: fixed;
+  position: fixed;                    /* Страница на весь экран */
   inset: 0;
   z-index: 100;
   overflow-y: auto;
   scrollbar-width: none;
-  padding-top: 100px;   /* <-- Добавляем сверху */
-  padding-bottom: 20px; /* <-- Добавляем снизу */
+  padding-top: 100px;                 /* Отступ сверху под заголовок/меню */
+  padding-bottom: 20px;
 }
 #card-detail-page::-webkit-scrollbar {
-  display: none;
+  display: none;                      /* Прячем скроллбар */
 }
 
+/* --- Обёртка всего содержимого (снизу отступ под меню) --- */
 .card-detail-wrapper {
   flex: 1 1 auto;
-  padding-bottom: 50px; /* Чтобы не прижималось к низу */
-  /* Не нужен overflow и не нужен height! */
+  padding-bottom: 50px;
 }
-
 
 /* === ВЕРХНЯЯ ЧАСТЬ === */
 .card-top {
@@ -750,7 +803,6 @@ body {
   gap: 10px;
   margin-bottom: 32px;
 }
-
 .card-action-btn {
   flex: 1;
   background: white;
@@ -765,7 +817,6 @@ body {
   cursor: pointer;
   transition: background 0.2s ease;
 }
-
 .card-action-btn:hover {
   background: #e6e6e6;
 }
@@ -775,7 +826,7 @@ body {
   background: transparent;
 }
 
-/* === Верхняя строка с редкостью — остаётся по центру === */
+/* Верхняя строка с редкостью (по центру) */
 .card-rarity {
   text-align: center;
   font-family: 'cygre';
@@ -786,7 +837,7 @@ body {
   margin-bottom: 20px;
 }
 
-/* === СТИЛИ ДЛЯ БЛОКА РЕДКОСТЕЙ (АРТИСТ / АЛЬБОМ / СКИН) === */
+/* --- Детали редкости: артист, альбом, скин --- */
 .card-rarity-details {
   display: flex;
   flex-direction: column;
@@ -797,16 +848,12 @@ body {
   color: white;
   margin-bottom: 20px;
 }
-
-/* Строка с артистом, треком или стилем */
 .card-rarity-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
 }
-
-/* Левая часть — название (Young Thug, So Much Fun...) */
 .card-rarity-label {
   flex: 1;
   text-align: left;
@@ -814,16 +861,13 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-/* Правая часть — редкость (Legendary, Epic...) */
 .card-rarity-value {
   flex-shrink: 0;
   text-align: right;
   font-weight: 300;
 }
 
-
-/* === СТАТИСТИКА === */
+/* === СТАТИСТИКА КАРТОЧКИ === */
 .stats-title {
   text-align: center;
   font-family: 'cygre';
@@ -834,29 +878,25 @@ body {
   color: white;
   margin-bottom: 20px;
 }
-
 .card-stats {
   font-family: 'geologica';
   font-size: 18px;
   font-weight: 300;
   color: white;
 }
-
 .info-row {
   display: flex;
   justify-content: space-between;
   margin-bottom: 5px;
 }
-
 .info-label {
   text-align: left;
 }
-
 .info-value {
   text-align: right;
 }
 
-/* === РАЗДЕЛИТЕЛЬНАЯ ЛИНИЯ === */
+/* --- Разделительная линия --- */
 .card-divider {
   width: 100%;
   height: 0.5px;
@@ -865,7 +905,7 @@ body {
   border: none;
 }
 
-/* === КНОПКА "УДАЛИТЬ" === */
+/* --- Кнопка "Удалить" --- */
 .card-delete {
   text-align: center;
   font-family: 'geologica';
@@ -877,20 +917,23 @@ body {
 }
 
 /* ========================= */
-/* === ПРОФИЛЬ: ОСНОВА  === */
+/* === СТРАНИЦА ПРОФИЛЯ  === */
 /* ========================= */
 
+/* --- Заголовок профиля --- */
 .title-profile {
   font-size: 24px;
   color: white;
 }
 
+/* --- Блок аватара и заголовка --- */
 .profile-header {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+/* --- Аватар пользователя --- */
 .avatar {
   width: 60px;
   height: 60px;
@@ -905,13 +948,10 @@ body {
 .avatar.big {
   width: 80px;
   height: 80px;
-  background-color: white;
-  border-radius: 50%;
-  background-size: cover;
-  background-position: center;
   margin-bottom: 15px;
 }
 
+/* --- Информация о пользователе (ник, уровень, разделитель) --- */
 .profile-info {
   font-family: 'geologica';
   font-size: 16px;
@@ -924,12 +964,10 @@ body {
   align-items: center;
   justify-content: center;
 }
-
 .profile-info .level-text {
   font-weight: 300;
   color: white;
 }
-
 .profile-info .dot {
   font-family: 'geologica';
   font-weight: 300;
@@ -942,7 +980,7 @@ body {
   opacity: 0.5;
 }
 
-/* ID пользователя под ником */
+/* --- ID пользователя под ником --- */
 .user-id {
   font-family: 'geologica';
   font-size: 16px;
@@ -951,10 +989,7 @@ body {
   margin-top: 5px;
 }
 
-/* ========================= */
-/* === БАЛАНС (НОВЫЙ)    === */
-/* ========================= */
-
+/* --- Карточка баланса --- */
 .balance-card-new {
   display: flex;
   justify-content: space-between;
@@ -974,14 +1009,12 @@ body {
   line-height: 1;
   gap: 0px;
 }
-
 .balance-info .balance-label {
   font-family: 'geologica';
   font-size: 16px;
   font-weight: 300;
   line-height: 1;
 }
-
 .balance-info .balance-value {
   font-family: 'cygre';
   font-size: 24px;
@@ -989,7 +1022,7 @@ body {
   line-height: 1;
 }
 
-/* Кнопка "+" рядом с балансом */
+/* --- Кнопка "+" для пополнения --- */
 .balance-add-btn {
   width: 70px;
   height: 70px;
@@ -1001,23 +1034,18 @@ body {
   justify-content: center;
   cursor: pointer;
 }
-
 .balance-add-btn img {
   width: 40px;
   height: 40px;
 }
 
-/* ======================== */
-/* === КАРТОЧКИ ПРОФИЛЯ === */
-/* ======================== */
-
+/* --- Карточки профиля (навигация) --- */
 .profile-cards {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin: 20px 0;
 }
-
 .profile-card {
   line-height: 1.1;
   text-align: left;
@@ -1032,122 +1060,20 @@ body {
   cursor: pointer;
   transition: background-color 120ms ease;
 }
-
 .profile-card:active {
   background-color: #888888;
 }
 
-
-
-/* ============================ */
-/* === УРОВЕНЬ: КАРТОЧКА    === */
-/* ============================ */
-
-.level-main,
-.level-percent,
-.level-label {
-  line-height: 1;
-}
-
-.level-card {
-  all: unset;
-  display: flex;
-  flex-direction: column;
-  background: white;
-  border-radius: 24px;
-  padding: 20px;
-  font-weight: 300;
-  position: relative;
-  overflow: hidden;
-  box-sizing: border-box;
-  cursor: pointer;
-}
-
-.level-card:active {
-  background: #eaeaea;
-}
-
-.level-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.level-label {
-  font-family: 'geologica';
-  font-size: 16px;
-  font-weight: 300;
-  opacity: 0.5;
-  margin-bottom: 5px;
-}
-
-.level-percent {
-  font-family: 'geologica';
-  font-size: 16px;
-  font-weight: 300;
-  opacity: 0.5;
-}
-
-.level-main {
-  font-family: 'cygre';
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.level-bar {
-  width: 100%;
-  height: 7px;
-  background: white;
-  border-radius: 10px;
-  position: relative;
-  overflow: hidden;
-  margin-top: 6px;
-}
-
-.level-fill {
-  position: absolute;
-  height: 100%;
-  top: 0;
-  left: 0;
-  transform-origin: left;
-}
-
-.level-fill.green {
-  background: #9EFF44;
-  width: 100%;
-  z-index: 1;
-}
-
-.level-fill.blue {
-  background: #317BFF;
-  width: 50%;
-  z-index: 2;
-  transform: scaleX(0);
-  animation: fillGrow 0.8s ease-out forwards;
-}
-
-@keyframes fillGrow {
-  to {
-    transform: scaleX(1);
-  }
-}
-
-/* ============================= */
-/* === БЭЙДЖИ / СТАТУСЫ DEV  === */
-/* ============================= */
-
+/* --- Спец-стили для статусов карточек профиля --- */
 .profile-card.is-disabled {
   background: #B2B2B2;
   color: black;
   line-height: 1.1;
   transition: transform 0.2s ease, background 0.2s ease;
 }
-
 .profile-card.has-badge {
   position: relative;
 }
-
 .profile-card .badge-dev {
   font-family: 'geologica';
   font-size: 12px;
@@ -1163,10 +1089,7 @@ body {
   pointer-events: none;
 }
 
-/* ===================================== */
-/* === АНИМАЦИЯ НАЖАТИЯ НА КАРТОЧКИ === */
-/* ===================================== */
-
+/* --- Анимация нажатия для быстрых действий профиля --- */
 #exchange:active,
 #mini-games:active,
 #level:active {
@@ -1174,15 +1097,92 @@ body {
   transition: background-color 120ms ease;
 }
 
+/* --- Блоки уровня пользователя (мини-карточки) --- */
+.level-main,
+.level-percent,
+.level-label {
+  line-height: 1;
+}
+.level-card {
+  all: unset;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 24px;
+  padding: 20px;
+  font-weight: 300;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.level-card:active {
+  background: #eaeaea;
+}
+.level-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.level-label {
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 300;
+  opacity: 0.5;
+  margin-bottom: 5px;
+}
+.level-percent {
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 300;
+  opacity: 0.5;
+}
+.level-main {
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
+}
+.level-bar {
+  width: 100%;
+  height: 7px;
+  background: white;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.level-fill {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  left: 0;
+  transform-origin: left;
+}
+.level-fill.green {
+  background: #9EFF44;
+  width: 100%;
+  z-index: 1;
+}
+.level-fill.blue {
+  background: #317BFF;
+  width: 50%;
+  z-index: 2;
+  transform: scaleX(0);
+  animation: fillGrow 0.8s ease-out forwards;
+}
+@keyframes fillGrow {
+  to {
+    transform: scaleX(1);
+  }
+}
 
-/* === НАСТРОЙКИ === */
-
+/* --- Блок НАСТРОЕК профиля --- */
 .settings {
   width: 100%;
   box-sizing: border-box;
   margin-top: 30px;
 }
-
 .settings-title {
   margin-bottom: 30px;
   font-family: 'cygre';
@@ -1191,14 +1191,12 @@ body {
   color: white;
   text-align: center;
 }
-
 .settings-grid {
   display: flex;
   flex-direction: column;
   gap: 12px;
   align-items: stretch;
 }
-
 .setting-card {
   background: white;
   color: black;
@@ -1214,711 +1212,15 @@ body {
   border: none;
   cursor: pointer;
 }
-
 .setting-card:active {
   background: #e0e0e0;
-}
-
-/* Светлая тема */
-body.light .setting-card {
-  background: white;
-  color: black;
-}
-
-/* ============= */
-/* ===ОВЕРЛЕИ=== */
-/* ============= */
-
-.overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
-  z-index: 1000;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.3s ease;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.overlay.show {
-  display: flex;
-  opacity: 1;
-  pointer-events: all;
-}
-
-.overlay-inner {
-  width: 100%;
-  margin: 0 auto;
-  padding: 20px 20px 40px;
-  box-sizing: border-box;
-}
-
-.overlay .tasks {
-  width: 100%;
-  box-sizing: border-box;
-  z-index: 99999;
-}
-
-.overlay .task {
-  z-index: 99999;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-#task-overlay {
-  z-index: 99999;
-  position: fixed;
-  inset: 0;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 20px;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
-  transition: opacity 0.3s ease;
-  opacity: 0;
-  pointer-events: none;
-  box-sizing: border-box;
-}
-
-#task-overlay.show {
-  display: flex;
-  opacity: 1;
-  pointer-events: all;
-}
-
-/* overlay с id */
-#subscribe-overlay {
-  transition: opacity 0.3s ease;
-  opacity: 0;
-  pointer-events: none;
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(5px);
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-#subscribe-overlay.show {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.subscribe-inner {
-  margin: 0;
-  background: black;
-  border-radius: 24px;
-  padding: 15px 10px 20px;
-  width: calc(100% - 40px);
-  text-align: center;
-  box-sizing: border-box;
-}
-
-.subscribe-text {
-  margin: 0;
-  margin-bottom: 25px;
-  font-family: 'geologica';
-  font-size: 18px;
-  font-weight: 400;
-  color: white;
-  line-height: 1.4;
-}
-
-.subscribe-btn {
-  display: inline-block;
-  background: #317BFF;
-  color: black;
-  font-family: 'geologica';
-  font-size: 14px;
-  font-weight: 400;
-  padding: 12px 35px;
-  border-radius: 100px;
-  text-decoration: none;
-}
-
-.task-popup {
-  background: #111111;
-  color: white;
-  padding: 20px 22.5px 28px;
-  border-radius: 24px;
-  width: calc(100% - 40px);
-  max-width: none;
-  font-family: 'geologica';
-  text-align: center;
-  margin: 0 auto;
-}
-
-
-.task-label {
-  font-family: 'cygre';
-  font-weight: 800;
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-
-.task-text {
-  font-size: 16px;
-  font-weight: 400;
-  margin-bottom: 20px;
-  line-height: 1.4;
-}
-
-.task-action {
-  font-family: 'geologica';
-  font-weight: 500;
-  padding: 13px 26px;
-  background: #317BFF;
-  color: white;
-  border: none;
-  border-radius: 100px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-/* ====================================== */
-/* === ОВЕРЛЕЙ ПОДТВЕРЖДЕНИЯ УДАЛЕНИЯ === */
-/* ====================================== */
-
-.overlay-delete {
-  position: fixed;
-  z-index: 9999;
-  inset: 0;
-  display: none;
-  background: rgba(0,0,0,0.7);
-  justify-content: center;
-  align-items: center;
-  padding-left: 20px;
-  padding-right: 20px;
-}
-.overlay-delete.active { display: flex; }
-
-.overlay-delete-content {
-  background: #393939;
-  border-radius: 16px;
-  padding: 20px 15px;
-  width: 100%;
-  text-align: center;
-  color: white;
-  font-family: 'geologica';
-}
-.overlay-delete-title {
-  font-family: 'geologica';
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 15px;
-}
-.overlay-delete-text {
-  font-family: 'geologica';
-  font-size: 14px;
-  font-weight: 300;
-  margin-bottom: 25px;
-  line-height: 1.1;
-}
-.overlay-delete-buttons {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-.btn.cancel {
-  flex: 1;
-  background: #676767;
-  color: white;
-  border-radius: 100px;
-  padding: 10px 0;
-  font-weight: 300;
-  border: none;
-}
-.btn.delete {
-  flex: 1;
-  background: none;
-  color: #FF3D3D;
-  border: 0.5px solid #FF3D3D;
-  border-radius: 999px;
-  padding: 10px 0;
-  font-weight: 300;
-}
-
-/* ========================== */
-/* ===ОВЕРЛЕЙ: ВНЕШНИЙ ВИД=== */
-/* ========================== */
-
-.theme-inner {
-  margin: 0 20px;
-  padding: 5px 20px 40px;
-  background: #000;
-  border-radius: 16px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.theme-title {
-  font-family: 'cygre';
-  font-size: 24px;
-  font-weight: 800;
-  color: white;
-  margin-bottom: 40px;
-  text-align: center;
-  line-height: 1.1;
-}
-
-.theme-switcher {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #fff;
-  border-radius: 24px;
-  padding: 15px;
-}
-
-.theme-switch-label {
-  font-family: 'cygre';
-  font-weight: 800;
-  font-size: 20px;
-  color: black;
-  line-height: 1.1;
-}
-
-/* Переключатель темы */
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 130px;
-  height: 70px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #636363;
-  transition: .4s;
-  border-radius: 70px;
-}
-
-.slider::before {
-  position: absolute;
-  content: "";
-  height: 56px;
-  width: 56px;
-  border-radius: 50%;
-  left: 7px;
-  bottom: 7px;
-  background-color: white;
-  transition: .4s;
-}
-
-input:checked + .slider {
-  background-color: #317BFF;
-}
-
-input:checked + .slider::before {
-  transform: translateX(60px);
-}
-
-/* === Светлая тема (полный набор стилей) === */
-
-body.light {
-  background-color: #DFD7D0; 
-  color: black;
-}
-
-body.light .title,
-body.light .settings-title,
-body.light .nickname,
-body.light .tab,
-body.light .sub-1,
-body.light .sub-2,
-body.light .drop-timer,
-body.light .balance-nick,
-body.light .level-text,
-body.light .profile-info .dot,
-body.light .quests-title,
-body.light .leaderboard-title,
-body.light .stat-title,
-body.light .stat-subtitle,
-body.light .achievements-title,
-body.light .achievements-subcount {
-  color: black;
-  opacity: 1;
-}
-
-body.light .tab.active {
-  background: black;
-  color: white;
-}
-
-body.light .nav-menu {
-  background: rgba(255,255,255,0.75);
-}
-
-body.light .nav-bg {
-  background: #000;
-  opacity: 0.2;
-}
-
-body.light .task,
-body.light .main-card,
-body.light .balance-card,
-body.light .profile-card,
-body.light .setting-card,
-body.light .buy-btn,
-body.light .more-btn,
-body.light .clc-card,
-body.light .task-btn,
-body.light .task-popup,
-body.light .overlay-inner,
-body.light .daily-reward,
-body.light .reward-btn,
-body.light .quest-card,
-body.light .leader-card,
-body.light .stat-card,
-body.light .achievement-card,
-body.light .search-fab,
-body.light .card-placeholder {
-  background-color: #ffffff;
-  color: #000;
-}
-
-body.light .shop-btn,
-body.light .quests-btn,
-body.light .achievement-btn.green {
-  background-color: #317BFF;
-  color: white;
-}
-
-body.light .task-action,
-body.light .subscribe-btn,
-body.light .task-btn {
-  background-color: #317BFF;
-  color: #fff;
-}
-
-body.light .level-fill.green {
-  background-color: #048876;
-}
-
-body.light .card-footer {
-  background: #D9D9D9;
-}
-
-body.light .profile-card.is-disabled {
-  background: #ccc;
-}
-
-body.light .achievement-btn.ghost {
-  background-color: #fff;
-  border-color: #000;
-  color: #000;
-}
-
-body.light .achievement-btn.blue {
-  background-color: #317BFF;
-  color: white;
-}
-
-body.light .progress-text {
-  color: #000;
-}
-
-body.light .level.current {
-  border-color: #048876;
-  color: #048876;
-}
-
-body.light .level.passed {
-  background-color: #048876;
-  color: white;
-}
-
-body.light .level.upcoming {
-  border-color: rgba(0,0,0,0.2);
-  color: rgba(0,0,0,0.4);
-}
-
-body.light .dotted-line,
-body.light .dotted-line.current-link {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    rgba(0,0,0,0.2),
-    rgba(0,0,0,0.2) 6px,
-    transparent 6px,
-    transparent 12px
-  );
-}
-
-body.light .level-status-bar {
-  background-color: #048876;
-  color: white;
-}
-
-body.light .search-fab {
-  background-color: #ccc;
-}
-
-body.light .search-input {
-  color: black;
-}
-
-body.light .search-icon {
-  filter: invert(1);
-}
-
-/* стиль оверлей внешнего вида */
-body.light .theme-inner {
-  background: #E0D6CE;
-}
-
-body.light .theme-title {
-  color: #000;
-}
-
-/* ============================ */
-/* === ОВЕРЛЕЙ: НАШИ СОЦСЕТИ === */
-/* ============================ */
-
-#social-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  background: rgba(0, 0, 0, 0.6);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 0 20px;
-  backdrop-filter: blur(5px);
-  transition: opacity 0.3s ease;
-}
-
-#social-overlay.show {
-  display: flex;
-}
-
-/* === Контейнер контента === */
-.social-content {
-  background: black;
-  border-radius: 16px;
-  padding: 40px 10px;
-  width: 100%;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* === Заголовок блока === */
-.social-content h2 {
-  margin: 0 0 20px;
-  font-family: 'cygre';
-  font-size: 24px;
-  font-weight: 800;
-  color: white;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* =============================== */
-/* === ОБЩИЙ СТИЛЬ КАРТОЧЕК === */
-/* =============================== */
-
-.social-link {
-  background: white;
-  border-radius: 24px;
-  padding: 10px 10px 10px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-family: 'cygre';
-  font-size: 20px;
-  font-weight: 800;
-  color: black;
-  box-sizing: border-box;
-  position: relative;
-  line-height: 1.1;
-}
-
-/* === Иконка стрелки (общая) === */
-.arrow-icon {
-  background: #3A83FF;
-  border-radius: 16px;
-  width: 72px;
-  height: 53px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.arrow-icon img {
-  width: 22px;
-  height: 22px;
-  transition: transform 0.3s ease;
-}
-
-.arrow-icon.rotated img {
-  transform: rotate(180deg);
-}
-
-/* =============================== */
-/* === КАРТОЧКА: TELEGRAM === */
-/* =============================== */
-
-.social-link.telegram {
-  flex-direction: column;
-  align-items: flex-start;
-  position: relative;
-  padding-right: 90px;
-}
-
-.social-link.telegram .arrow-icon {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-.telegram-label {
-  opacity: 1;
-  transition: opacity 0.3s ease;
-}
-
-.social-link.telegram.expanded .telegram-label {
-  opacity: 0.5;
-}
-
-/* === Раскрывающийся список каналов === */
-.social-hidden-list {
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: max-height 0.4s ease, opacity 0.3s ease;
-  font-family: 'geologica';
-  font-size: 20px;
-  font-weight: 800;
-  color: black;
-  margin-top: 10px;
-  line-height: 1.2;
-}
-
-.social-link.telegram.expanded .social-hidden-list {
-  max-height: 500px;
-  opacity: 1;
-}
-
-.channel-name {
-  display: block;
-  font-family: 'cygre';
-  font-size: 20px;
-  font-weight: 800;
-  color: black;
-  text-decoration: none;
-  margin-bottom: 8px;
-  transition: opacity 0.3s ease;
-}
-
-.channel-name:hover {
-  opacity: 0.6;
-}
-
-/* =============================== */
-/* === КАРТОЧКА: INSTAGRAM === */
-/* =============================== */
-
-.social-link.instagram {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
-}
-
-.top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
-
-.social-text {
-  font-family: 'cygre';
-  font-size: 20px;
-  font-weight: 800;
-  color: black;
-  white-space: nowrap;
-}
-
-.insta-note {
-  text-align: left;
-  font-family: 'geologica';
-  font-size: 10px;
-  font-weight: 300;
-  color: #888;
-  opacity: 0.5;
-  line-height: 1.2;
-  max-width: 100%;
-}
-
-/* ============================= */
-/* === ОВЕРЛЕЙ: СВЯЗЬ С НАМИ === */
-/* ============================= */
-
-.contact-popup {
-  background: black;
-  color: white;
-  padding: 50px 20px 50px;
-  border-radius: 16px;
-  width: 100%;
-  font-family: 'geologica';
-  text-align: center;
-  box-sizing: border-box;
-}
-
-#contact-overlay {
-  padding: 0 20px;
-}
-
-.contact-title {
-  font-family: 'cygre';
-  font-weight: 800;
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-
-.contact-text {
-  font-family: 'geologica';
-  font-size: 18px;
-  font-weight: 300;
-  margin-bottom: 30px;
-  line-height: 1.2;
-}
-
-.contact-btn {
-  display: inline-block;
-  background: #317BFF;
-  color: white;
-  font-family: 'geologica';
-  font-size: 14px;
-  font-weight: 300;
-  padding: 15px 35px;
-  border-radius: 100px;
-  text-decoration: none;
 }
 
 /* ==================================== */
 /* === СТРАНИЦА: ПОПОЛНЕНИЕ БАЛАНСА === */
 /* ==================================== */
 
+/* ——— Заголовок экрана ——— */
 .balance-title {
   font-family: 'cygre';
   font-size: 22px;
@@ -1930,20 +1232,17 @@ body.light .theme-title {
   letter-spacing: 0.5px;
 }
 
+/* ——— Коробка текущего баланса ——— */
 .balance-box {
   width: 100%;
   background: white;
   border: 3px solid #317BFF;
   border-radius: 24px;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-bottom: 20px;
-  padding-top: 15px;
-  box-sizing: border-box;
+  padding: 15px 20px 20px;
   margin: 45px 0;
   text-align: center;
+  box-sizing: border-box;
 }
-
 .balance-label {
   font-family: 'geologica';
   font-size: 16px;
@@ -1951,7 +1250,6 @@ body.light .theme-title {
   color: #888;
   margin-bottom: 10px;
 }
-
 .balance-value {
   font-family: 'cygre';
   font-size: 24px;
@@ -1959,68 +1257,64 @@ body.light .theme-title {
   color: black;
   display: inline-flex;
   align-items: center;
-  gap: 1px; /* небольшой отступ между числом и иконкой */
+  gap: 1px;
 }
-
 .flip-icon-small {
   width: 40px;
   height: 40px;
 }
 
-
-/* === БЛОК: ПОПОЛНЕНИЕ === */
-
+/* ——— Подзаголовок: выбери сумму ——— */
 .topup-title {
   font-family: 'cygre';
   font-size: 20px;
   font-weight: 800;
   color: white;
   text-align: center;
-  margin-top: 25px;
-  margin-bottom: 35px;
+  margin: 25px 0 35px;
   text-transform: uppercase;
 }
 
+/* ——— Сетка карточек пополнения ——— */
 .topup-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   margin-bottom: 15px;
 }
-
 .topup-card {
   background: #242842;
   border-radius: 12px;
-  padding: 8px 8px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
   gap: 6px;
+  justify-content: space-between;
   transition: border 0.2s ease, box-shadow 0.2s ease;
   border: 2px solid transparent;
 }
-
 .topup-card.active {
   border: 2px solid #9EFF44;
   box-shadow: 0 0 0 2px #0f0 inset;
   border-radius: 14px;
 }
-
-.topup-icon {
-  height: 75px;
-  width: auto;
-  image-rendering: auto;
-  display: block;
+.topup-card.error {
+  border: 2px solid red !important;
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
 }
-
+.topup-icon {
+  width: auto;
+  height: 75px;
+  display: block;
+  image-rendering: auto;
+}
 .topup-amount {
   font-family: 'cygre';
   font-size: 18px;
   font-weight: 800;
   color: white;
 }
-
 .topup-price {
   font-family: 'cygre';
   font-size: 12px;
@@ -2035,97 +1329,77 @@ body.light .theme-title {
   box-sizing: border-box;
 }
 
+/* ——— Ввод вручную ——— */
 .amount-input {
   width: 100%;
-  border: none;
-  border-radius: 16px;
   padding: 25px 20px;
   font-size: 14px;
   font-family: 'geologica';
   font-weight: 500;
-  text-align: left;
   background: white;
   color: rgba(0, 0, 0, 0.3);
+  border: 2px solid transparent;
+  border-radius: 16px;
   margin-bottom: 15px;
   box-sizing: border-box;
-  border: 2px solid transparent;
-  box-sizing: border-box;
 }
-
 .amount-input:focus {
   outline: none;
   border: 2px solid #9EFF44;
 }
+#custom-amount.error {
+  border: 2px solid red !important;
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
+}
 
-
-/* === СЧЁТЧИК: сколько пользователь получит и заплатит === */
+/* ——— Подсчёт получу/заплачу ——— */
 .custom-amount-counter {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin: 15px 0 25px;
+  gap: 10px;
   padding: 0 12px;
   font-family: 'geologica';
   font-size: 14px;
   font-weight: 500;
-  line-height: 1.1;
   color: white;
-  gap: 10px;
+  margin: 15px 0 25px;
 }
-
 .custom-amount-counter div {
+  width: 100%;
   display: flex;
   justify-content: space-between;
-  width: 100%;
 }
-
 .custom-amount-counter span {
   color: #ffffff;
 }
 
-/* === Ошибка: красная обводка === */
-.topup-card.error {
-  border: 2px solid red !important;
-  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
-}
-
-#custom-amount.error {
-  border: 2px solid red !important;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.3);
-}
-
-
-/* ========================================= */
-/* === БЛОК: ПОПОЛНИТЬ (SWIPE-КНОПКА)    === */
-/* ========================================= */
-
+/* ——— Swipe-кнопка оплаты ——— */
 .topup-pay-btn {
-  position: relative;              /* ⬅️ Контейнер для абсолютного позиционирования */
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-start;     /* ⬅️ Важно: чтобы .slider-center не уезжал */
-  border-radius: 100px;
-  background: white;
-  padding-left: 6px;               /* ⬅️ Возвращаем левый паддинг */
-  padding-right: 6px;
-  border: none;
+  justify-content: flex-start;
+  padding: 0 6px;
   width: 100%;
   height: 70px;
+  border: none;
+  border-radius: 100px;
+  background: white;
   font-family: 'cygre';
   font-size: 18px;
   font-weight: 800;
   color: gray;
-  cursor: pointer;
   box-sizing: border-box;
+  cursor: pointer;
   overflow: hidden;
 }
 
-/* Круглая стрелка (левая), двигается вручную через JS */
+/* Круглая кнопка (ползунок) */
 #slider-circle {
   position: absolute;
-  left: 6px;
   top: 5px;
+  left: 6px;
   width: 80px;
   height: 60px;
   border-radius: 100px;
@@ -2133,13 +1407,13 @@ body.light .theme-title {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: grab;
   transition: background 0.2s ease;
   z-index: 2;
-  cursor: grab;
   touch-action: pan-y;
 }
 
-/* Центр: текст + корзина */
+/* Центр: текст + иконка */
 .slider-center {
   flex: 1;
   height: 60px;
@@ -2149,62 +1423,34 @@ body.light .theme-title {
   position: relative;
   z-index: 1;
 }
-
-/* Текст */
 #slider-text {
   font-family: 'cygre';
   font-size: 18px;
   font-weight: 800;
   color: gray;
-  pointer-events: none;
   transition: color 0.2s ease;
+  pointer-events: none;
 }
 
-/* Корзина (справа) */
+/* Иконка корзины */
 #confirm-icon {
   position: absolute;
   right: 0;
   width: 80px;
   height: 60px;
-  border-radius: 100px;
   background: #9EFF44;
+  border-radius: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: opacity 0.2s ease;
 }
 
-/* === ДОСТИЖЕНИЯ: КАРТОЧКИ === */
+/* ====================================== */
+/* === СТРАНИЦА: ДОСТИЖЕНИЯ / НАГРАДЫ === */
+/* ====================================== */
 
-.achievements-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.achievement-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.achievement-content .achievement-title {
-  font-family: 'cygre';
-  font-size: 20px;
-  font-weight: 800;
-  color: black;
-  margin-bottom: 1px;
-}
-
-.achievement-content .achievement-subtitle {
-  font-family: 'geologica';
-  font-size: 14px;
-  font-weight: 300;
-  color: black;
-  opacity: 0.8;
-  margin-bottom: 15px;
-}
-
+/* ——— Заголовок и количество ——— */
 .achievements-title {
   font-family: 'cygre';
   font-size: 24px;
@@ -2214,7 +1460,6 @@ body.light .theme-title {
   margin-top: 16px;
   margin-bottom: 5px;
 }
-
 .achievements-subcount {
   font-family: 'cygre';
   font-size: 20px;
@@ -2225,46 +1470,47 @@ body.light .theme-title {
   margin-bottom: 20px;
 }
 
+/* ——— Список всех достижений ——— */
+.achievements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ——— Карточка одного достижения ——— */
 .achievement-card {
   background: white;
   border-radius: 20px;
-  padding:20px;
+  padding: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
 }
 
-.achievement-btn {
+/* ——— Левая часть карточки: контент ——— */
+.achievement-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.achievement-content .achievement-title {
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
+  color: black;
+  margin-bottom: 1px;
+}
+.achievement-content .achievement-subtitle {
   font-family: 'geologica';
   font-size: 14px;
   font-weight: 300;
-  border-radius: 50px;
-  padding: 12px 25px;
-  border: none;
-  cursor: pointer;
-  width: fit-content;
-  white-space: nowrap;
-}
-
-.achievement-btn.green {
-  background: #9EFF44;
   color: black;
+  opacity: 0.8;
+  margin-bottom: 15px;
 }
 
-.achievement-btn.ghost {
-  background: white;
-  color: black;
-  border: 1px solid #333333;
-}
-
-.achievement-btn.blue {
-  background: #317BFF;
-  color: white;
-  cursor: default;
-  pointer-events: none;
-}
-
+/* ——— Правая часть: иконка/прогресс/кнопка ——— */
 .achievement-icon {
   width: 100px;
   height: 100px;
@@ -2275,12 +1521,10 @@ body.light .theme-title {
   justify-content: center;
   flex-shrink: 0;
 }
-
 .achievement-icon img {
   width: 32px;
   height: 24px;
 }
-
 .achievement-icon.progress {
   background: none;
   color: #3F8CFF;
@@ -2289,40 +1533,33 @@ body.light .theme-title {
   font-weight: 500;
 }
 
+/* ——— SVG-прогресс (кольцо вокруг иконки) ——— */
 .progress-ring {
   position: relative;
   width: 100px;
   height: 100px;
 }
-
 .progress-svg {
   transform: rotate(-90deg);
   width: 100%;
   height: 100%;
 }
-
 .progress-svg circle {
   fill: none;
   stroke-width: 1;
 }
-
 .ring-green {
   stroke: #B4FF5B;
   stroke-linecap: round;
 }
-
 .ring-blue {
   stroke: #00AFFF;
   stroke-linecap: round;
   transition: stroke-dashoffset 1s ease;
 }
-
-.ring-green,
-.ring-blue {
+.ring-green, .ring-blue {
   stroke-width: 1;
 }
-
-
 .progress-text {
   position: absolute;
   top: 50%;
@@ -2334,7 +1571,39 @@ body.light .theme-title {
   color: #333333;
 }
 
-/* === МОЙ СЧЁТ === */
+/* ——— Кнопки действий ——— */
+.achievement-btn {
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 300;
+  border-radius: 50px;
+  padding: 12px 25px;
+  border: none;
+  cursor: pointer;
+  width: fit-content;
+  white-space: nowrap;
+}
+.achievement-btn.green {
+  background: #9EFF44;
+  color: black;
+}
+.achievement-btn.ghost {
+  background: white;
+  color: black;
+  border: 1px solid #333333;
+}
+.achievement-btn.blue {
+  background: #317BFF;
+  color: white;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* =================================== */
+/* === СТРАНИЦА: МОЙ СЧЁТ / УРОВНИ === */
+/* =================================== */
+
+/* ——— Обёртка страницы ——— */
 .balance-page {
   padding: 20px;
   display: none;
@@ -2342,6 +1611,7 @@ body.light .theme-title {
   position: relative;
 }
 
+/* ——— Заголовок страницы ——— */
 .balance-title {
   font-family: 'cygre';
   font-size: 24px;
@@ -2354,8 +1624,7 @@ body.light .theme-title {
   text-transform: uppercase;
 }
 
-/* === МОЙ СЧЁТ: УРОВНИ === */
-
+/* ——— Трек уровней (центральная линия + уровни) ——— */
 .level-track {
   display: flex;
   flex-direction: column;
@@ -2365,6 +1634,7 @@ body.light .theme-title {
   position: relative;
 }
 
+/* ——— Карточка уровня ——— */
 .level {
   line-height: 1;
   width: 120px;
@@ -2379,28 +1649,28 @@ body.light .theme-title {
   z-index: 1;
   box-sizing: border-box;
 }
-
-
 .level.passed {
   background-color: #317BFF;
   color: white;
 }
-
 .level.current {
   background-color: transparent;
   border: 2px solid #9EFF44;
   color: #9EFF44;
 }
-
 .level.upcoming {
   background-color: transparent;
   border: 2px solid rgba(255,255,255,0.2);
   color: rgba(255,255,255,0.4);
 }
 
-.dotted-line {
+/* ——— Линии между уровнями (различные состояния) ——— */
+.dotted-line,
+.dotted-line.current-link,
+.dotted-line.half-next,
+.dotted-line.half-up,
+.dotted-line.invisible {
   width: 3px;
-  height: 50px;;
   background-image: repeating-linear-gradient(
     to bottom,
     rgba(255, 255, 255, 0.2),
@@ -2409,7 +1679,9 @@ body.light .theme-title {
     transparent 12px
   );
 }
-
+.dotted-line {
+  height: 50px;
+}
 .dotted-line.passed {
   background-image: repeating-linear-gradient(
     to bottom,
@@ -2419,51 +1691,15 @@ body.light .theme-title {
     transparent 12px
   );
 }
-
-.dotted-line.current-link {
-  height: 50px;
-  width: 3px;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.2),
-    rgba(255, 255, 255, 0.2) 6px,
-    transparent 6px,
-    transparent 12px
-  );
-}
-
-.dotted-line.half-next {
-  height: 25px;
-  width: 3px;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.2),
-    rgba(255, 255, 255, 0.2) 6px,
-    transparent 6px,
-    transparent 12px
-  );
-}
-
+.dotted-line.current-link { height: 50px; }
+.dotted-line.half-next,
+.dotted-line.half-up { height: 25px; }
 .dotted-line.invisible {
   height: 25px;
-  width: 3px;
   visibility: hidden;
 }
 
-.dotted-line.half-up {
-  height: 25px;
-  width: 3px;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.2),
-    rgba(255, 255, 255, 0.2) 6px,
-    transparent 6px,
-    transparent 12px
-  );
-}
-
-/* === МОЙ СЧЁТ: ПЛАШКА ВНИЗУ === */
-
+/* ——— Плашка уровня внизу (sticky bar) ——— */
 .level-status-bar {
   position: fixed;
   bottom: 0;
@@ -2480,10 +1716,9 @@ body.light .theme-title {
   text-align: center;
   color: white;
   transition: height 0.3s ease;
-  touch-action: pan-y; /* ✅ */
+  touch-action: pan-y;
   will-change: height;
 }
-
 .status-inner {
   width: 100%;
   height: 100%;
@@ -2492,7 +1727,6 @@ body.light .theme-title {
   justify-content: center;
   transition: height 0.25s ease;
 }
-
 .status-text {
   font-family: 'cygre';
   font-size: 24px;
@@ -2501,13 +1735,14 @@ body.light .theme-title {
   margin: 0;
   padding: 0;
 }
-
 .status-text .xp-left {
   font-size: 24px;
   font-weight: 800;
 }
 
-/* === СТРАНИЦА ЗАДАНИЯ И КВЕСТЫ === */
+/* ====================================== */
+/* === СТРАНИЦА: ЗАДАНИЯ И КВЕСТЫ ======= */
+/* ====================================== */
 
 .quests-page {
   padding: 20px;
@@ -2569,7 +1804,7 @@ body.light .theme-title {
   opacity: 1;
 }
 
-/* === ЗАГОЛОВОК КВЕСТЫ И КОНТЕНТ === */
+/* ——— Заголовки и контент квестов ——— */
 
 .quests-tasks {
   margin-top: 20px;
@@ -2597,7 +1832,6 @@ body.light .theme-title {
   margin-top: 20px;
   gap: 12px;
 }
-
 
 .quest-info {
   display: flex;
@@ -2638,7 +1872,6 @@ body.light .theme-title {
   align-self: flex-end;
   margin: 0 0 0 10px;
 }
-
 .quest-btn.completed {
   background: #9EFF44;
   color: black;
@@ -2654,16 +1887,19 @@ body.light .theme-title {
   gap: 10px;
 }
 
+/* ================================= */
+/* === СТРАНИЦА: ТАБЛИЦА ЛИДЕРОВ === */
+/* ================================= */
 
-/* === ТАБЛИЦА ЛИДЕРОВ === */
-
+/* Главный контейнер страницы таблицы лидеров */
 .leaderboard-page {
   padding: 20px;
-  display: none;
-  overflow-y: auto;
+  display: none;           /* По умолчанию скрыта, показывается через JS */
+  overflow-y: auto;        /* Вертикальный скролл для длинного списка */
   position: relative;
 }
 
+/* Заголовок страницы */
 .leaderboard-title {
   font-family: 'cygre';
   font-size: 24px;
@@ -2676,11 +1912,13 @@ body.light .theme-title {
   text-transform: uppercase;
 }
 
+/* Список карточек лидеров */
 .leaderboard-list {
   display: flex;
   flex-direction: column;
 }
 
+/* Одна карточка участника таблицы лидеров */
 .leader-card {
   background: white;
   border-radius: 24px;
@@ -2693,49 +1931,58 @@ body.light .theme-title {
   margin-bottom: 10px;
 }
 
+/* Для выделения своей позиции (например, текущий пользователь) */
 .leader-card.my-position {
   border: 3px solid #317BFF;
 }
 
+/* Позиция в рейтинге (номер места) */
 .leader-rank {
   font-weight: 300;
   font-size: 14px;
   opacity: 0.5;
 }
 
+/* Аватарка пользователя */
 .leader-avatar {
   width: 50px;
   height: 50px;
-  background: lightgray;
-  border-radius: 50%;
+  background: lightgray;         /* Серый фон-заглушка */
+  border-radius: 50%;           /* Круглая форма */
   margin: 0 10px;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
 
+/* Имя пользователя */
 .leader-name {
   font-family: 'geologica';
-  flex: 1;
+  flex: 1;                      /* Занимает всё доступное пространство */
   font-weight: 300;
   font-size: 14px;
 }
 
+/* Количество опыта (XP) */
 .leader-xp {
   font-family: 'cygre';
   font-weight: 800;
   font-size: 20px;
 }
 
-/* === МОЯ СТАТИСТИКА === */
+/* ================================ */
+/* === СТРАНИЦА: МОЯ СТАТИСТИКА === */
+/* ================================ */
 
+/* Главный контейнер страницы статистики */
 .stat-page {
   padding: 20px;
-  display: none;
-  overflow-y: auto;
+  display: none;           /* По умолчанию скрыта, показывается через JS */
+  overflow-y: auto;        /* Вертикальный скролл для длинного списка */
   position: relative;
 }
 
+/* Заголовок страницы */
 .stat-title {
   font-family: 'cygre';
   font-size: 24px;
@@ -2748,6 +1995,7 @@ body.light .theme-title {
   text-transform: uppercase;
 }
 
+/* Подзаголовок — дополнительная информация */
 .stat-subtitle {
   font-family: 'geologica';
   font-size: 18px;
@@ -2759,12 +2007,14 @@ body.light .theme-title {
   margin-bottom: 30px;
 }
 
+/* Список всех карточек статистики */
 .stat-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
+/* Одна карточка со статистикой */
 .stat-card {
   background: white;
   border-radius: 24px;
@@ -2776,6 +2026,7 @@ body.light .theme-title {
   color: black;
 }
 
+/* Название показателя (например, “Всего карточек”) */
 .stat-label {
   font-family: 'cygre';
   font-size: 20px;
@@ -2784,6 +2035,7 @@ body.light .theme-title {
   text-transform: uppercase;
 }
 
+/* Значение показателя */
 .stat-value {
   font-family: 'geologica';
   font-size: 16px;
@@ -2791,16 +2043,692 @@ body.light .theme-title {
   margin-top: 15px;
 }
 
-/* === ОТКЛЮЧЕНИЕ ВЫДЕЛЕНИЙ КНОПОК === */
+/* ================================== */
+/* === ОВЕРЛЕИ: БАЗОВАЯ СТРУКТУРА === */
+/* ================================== */
 
-button, .nav-btn, .profile-card, .task-btn, .buy-btn, .quest-btn, .theme-toggle-btn {
-  user-select: none;
-  -webkit-user-select: none;
+/*
+.overlay — универсальный базовый класс для любого модального окна (overlay).
+Все модальные окна и всплывающие блоки (например, подтверждение удаления, попап задач и т.д.) используют эту основу.
+*/
+.overlay {
+  display: none;                             /* Скрыт по умолчанию, показывается через JS */
+  position: fixed;                           /* Перекрывает весь экран */
+  inset: 0;                                  /* Сокращённая запись для top: 0; right: 0; bottom: 0; left: 0; */
+  background: rgba(0, 0, 0, 0.6);            /* Тёмный полупрозрачный фон */
+  backdrop-filter: blur(5px);                /* Размытие фона позади overlay */
+  z-index: 1000;                             /* Поверх основного интерфейса, но ниже некоторых специальных попапов */
+  align-items: center;                       /* Центрирование контента по вертикали */
+  justify-content: center;                   /* Центрирование по горизонтали */
+  transition: opacity 0.3s ease;             /* Плавное появление/скрытие */
+  opacity: 0;                                /* Скрыт (но display: none — основное) */
+  pointer-events: none;                      /* Не принимает клики, пока не показан */
 }
 
-button:focus,
-button:active,
-button:focus-visible {
-  outline: none;
+/*
+.overlay.show — активное состояние overlay.
+В этом состоянии overlay становится видимым и начинает принимать события мыши/тача.
+*/
+.overlay.show {
+  display: flex;                             /* Показываем overlay (flex-режим) */
+  opacity: 1;                                /* Делаем полностью видимым */
+  pointer-events: all;                       /* Overlay принимает все клики */
 }
 
+/*
+.overlay-inner — внутренний контейнер для содержимого overlay.
+Используется для отступов и ограничений ширины контента (например, чтобы попап не растягивался на весь экран).
+*/
+.overlay-inner {
+  width: 100%;                               /* Обычно подстраивается под ширину устройства */
+  margin: 0 auto;                            /* Центрирование по горизонтали */
+  padding: 20px 20px 40px;                   /* Отступы сверху, по бокам и снизу (для комфортного размещения контента) */
+  box-sizing: border-box;                    /* Корректно считаем padding в ширину */
+}
+
+/* =============================== */
+/* === ОВЕРЛЕИ: БАЗОВАЯ СТРУКТУРА === */
+/* =============================== */
+
+/* Универсальный overlay для всех модальных окон */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+/* Активное состояние overlay */
+.overlay.show {
+  display: flex;
+  opacity: 1;
+  pointer-events: all;
+}
+/* Внутренний контейнер overlay для контента и отступов */
+.overlay-inner {
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 20px 40px;
+  box-sizing: border-box;
+}
+
+/* ========================== */
+/* === ОВЕРЛЕЙ: ВНЕШНИЙ ВИД === */
+/* ========================== */
+
+.theme-inner {
+  margin: 0 20px;
+  padding: 5px 20px 40px;
+  background: #000;
+  border-radius: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.theme-title {
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 40px;
+  text-align: center;
+  line-height: 1.1;
+}
+.theme-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 24px;
+  padding: 15px;
+}
+.theme-switch-label {
+  font-family: 'cygre';
+  font-weight: 800;
+  font-size: 20px;
+  color: black;
+  line-height: 1.1;
+}
+/* Переключатель темы */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 130px;
+  height: 70px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #636363;
+  transition: .4s;
+  border-radius: 70px;
+}
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 56px;
+  width: 56px;
+  border-radius: 50%;
+  left: 7px;
+  bottom: 7px;
+  background-color: white;
+  transition: .4s;
+}
+input:checked + .slider {
+  background-color: #317BFF;
+}
+input:checked + .slider::before {
+  transform: translateX(60px);
+}
+
+/* ================================ */
+/* === ОВЕРЛЕЙ: ПОДПИСКА НА КАНАЛ === */
+/* ================================ */
+
+#subscribe-overlay {
+  transition: opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#subscribe-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+.subscribe-inner {
+  margin: 0;
+  background: black;
+  border-radius: 24px;
+  padding: 15px 10px 20px;
+  width: calc(100% - 40px);
+  text-align: center;
+  box-sizing: border-box;
+}
+.subscribe-text {
+  margin: 0;
+  margin-bottom: 25px;
+  font-family: 'geologica';
+  font-size: 18px;
+  font-weight: 400;
+  color: white;
+  line-height: 1.4;
+}
+.subscribe-btn {
+  display: inline-block;
+  background: #317BFF;
+  color: black;
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 400;
+  padding: 12px 35px;
+  border-radius: 100px;
+  text-decoration: none;
+}
+
+/* ============================ */
+/* === ОВЕРЛЕЙ: СВЯЗЬ С НАМИ === */
+/* ============================ */
+
+#contact-overlay {
+  padding: 0 20px;
+}
+.contact-popup {
+  background: black;
+  color: white;
+  padding: 50px 20px 50px;
+  border-radius: 16px;
+  width: 100%;
+  font-family: 'geologica';
+  text-align: center;
+  box-sizing: border-box;
+}
+.contact-title {
+  font-family: 'cygre';
+  font-weight: 800;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+.contact-text {
+  font-family: 'geologica';
+  font-size: 18px;
+  font-weight: 300;
+  margin-bottom: 30px;
+  line-height: 1.2;
+}
+.contact-btn {
+  display: inline-block;
+  background: #317BFF;
+  color: white;
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 300;
+  padding: 15px 35px;
+  border-radius: 100px;
+  text-decoration: none;
+}
+
+/* ======================= */
+/* === ОВЕРЛЕЙ: ЗАДАНИЯ === */
+/* ======================= */
+
+#task-overlay {
+  z-index: 99999;
+  position: fixed;
+  inset: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  transition: opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+#task-overlay.show {
+  display: flex;
+  opacity: 1;
+  pointer-events: all;
+}
+.task-popup {
+  background: #111111;
+  color: white;
+  padding: 20px 22.5px 28px;
+  border-radius: 24px;
+  width: calc(100% - 40px);
+  max-width: none;
+  font-family: 'geologica';
+  text-align: center;
+  margin: 0 auto;
+}
+.task-label {
+  font-family: 'cygre';
+  font-weight: 800;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+.task-text {
+  font-size: 16px;
+  font-weight: 400;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+.task-action {
+  font-family: 'geologica';
+  font-weight: 500;
+  padding: 13px 26px;
+  background: #317BFF;
+  color: white;
+  border: none;
+  border-radius: 100px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ======================== */
+/* === ОВЕРЛЕЙ: СОЦСЕТИ === */
+/* ======================== */
+
+#social-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  backdrop-filter: blur(5px);
+  transition: opacity 0.3s ease;
+}
+#social-overlay.show {
+  display: flex;
+}
+.social-content {
+  background: black;
+  border-radius: 16px;
+  padding: 40px 10px;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.social-content h2 {
+  margin: 0 0 20px;
+  font-family: 'cygre';
+  font-size: 24px;
+  font-weight: 800;
+  color: white;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.social-link {
+  background: white;
+  border-radius: 24px;
+  padding: 10px 10px 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
+  color: black;
+  box-sizing: border-box;
+  position: relative;
+  line-height: 1.1;
+}
+.arrow-icon {
+  background: #3A83FF;
+  border-radius: 16px;
+  width: 72px;
+  height: 53px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+.arrow-icon img {
+  width: 22px;
+  height: 22px;
+  transition: transform 0.3s ease;
+}
+.arrow-icon.rotated img {
+  transform: rotate(180deg);
+}
+.social-link.telegram {
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  padding-right: 90px;
+}
+.social-link.telegram .arrow-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.telegram-label {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+.social-link.telegram.expanded .telegram-label {
+  opacity: 0.5;
+}
+.social-hidden-list {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  font-family: 'geologica';
+  font-size: 20px;
+  font-weight: 800;
+  color: black;
+  margin-top: 10px;
+  line-height: 1.2;
+}
+.social-link.telegram.expanded .social-hidden-list {
+  max-height: 500px;
+  opacity: 1;
+}
+.channel-name {
+  display: block;
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
+  color: black;
+  text-decoration: none;
+  margin-bottom: 8px;
+  transition: opacity 0.3s ease;
+}
+.channel-name:hover {
+  opacity: 0.6;
+}
+.social-link.instagram {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.social-text {
+  font-family: 'cygre';
+  font-size: 20px;
+  font-weight: 800;
+  color: black;
+  white-space: nowrap;
+}
+.insta-note {
+  text-align: left;
+  font-family: 'geologica';
+  font-size: 10px;
+  font-weight: 300;
+  color: #888;
+  opacity: 0.5;
+  line-height: 1.2;
+  max-width: 100%;
+}
+
+/* ============================== */
+/* === ОВЕРЛЕЙ: ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ === */
+/* ============================== */
+
+.overlay-delete {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: none;
+  background: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.overlay-delete.active { display: flex; }
+.overlay-delete-content {
+  background: #393939;
+  border-radius: 16px;
+  padding: 20px 15px;
+  width: 100%;
+  text-align: center;
+  color: white;
+  font-family: 'geologica';
+}
+.overlay-delete-title {
+  font-family: 'geologica';
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+.overlay-delete-text {
+  font-family: 'geologica';
+  font-size: 14px;
+  font-weight: 300;
+  margin-bottom: 25px;
+  line-height: 1.1;
+}
+.overlay-delete-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.btn.cancel {
+  flex: 1;
+  background: #676767;
+  color: white;
+  border-radius: 100px;
+  padding: 10px 0;
+  font-weight: 300;
+  border: none;
+}
+.btn.delete {
+  flex: 1;
+  background: none;
+  color: #FF3D3D;
+  border: 0.5px solid #FF3D3D;
+  border-radius: 999px;
+  padding: 10px 0;
+  font-weight: 300;
+}
+
+/* ============================== */
+/* === СВЕТЛАЯ ТЕМА (LIGHT)   === */
+/* ============================== */
+
+/*
+body.light — активирует все эти стили при смене темы на светлую
+*/
+body.light {
+  background-color: #DFD7D0; /* Общий светлый фон приложения */
+  color: black;              /* Базовый цвет текста */
+}
+
+/* === Основные заголовки и подписи (делает текст чёрным) === */
+body.light .title,                /* Главный заголовок на странице */
+body.light .settings-title,       /* Заголовок блока настроек */
+body.light .nickname,             /* Никнейм пользователя */
+body.light .tab,                  /* Табы меню (неактивные) */
+body.light .sub-1,                /* Название задания (подписка) */
+body.light .sub-2,                /* Описание задания */
+body.light .drop-timer,           /* Таймер до дропа */
+body.light .balance-nick,         /* Ник в блоке баланса */
+body.light .level-text,           /* Текст уровня (например, XP) */
+body.light .profile-info .dot,    /* Разделитель-точка в профиле */
+body.light .quests-title,         /* Заголовок страницы заданий */
+body.light .leaderboard-title,    /* Заголовок таблицы лидеров */
+body.light .stat-title,           /* Заголовок статистики */
+body.light .stat-subtitle,        /* Подзаголовок статистики */
+body.light .achievements-title,   /* Заголовок достижений */
+body.light .achievements-subcount /* Кол-во достижений */
+{
+  color: black;     /* Все эти заголовки — чёрные */
+  opacity: 1;       /* Всегда 100% видимость */
+}
+
+/* Активный таб в светлой теме (чёрный фон, белый текст) */
+body.light .tab.active {
+  background: black;
+  color: white;
+}
+
+/* Нижнее меню: делаем его светлее и немного прозрачнее */
+body.light .nav-menu {
+  background: rgba(255,255,255,0.75);
+}
+
+/* Фон анимированного кружка под иконкой меню */
+body.light .nav-bg {
+  background: #000; /* Чёрный, но прозрачный */
+  opacity: 0.2;
+}
+
+/* === Карточки, кнопки и все основные белые блоки приложения === */
+body.light .task,              /* Одна задача на главной */
+body.light .main-card,         /* Главная карточка */
+body.light .balance-card,      /* Карточка баланса */
+body.light .profile-card,      /* Карточка в профиле */
+body.light .setting-card,      /* Карточка настройки */
+body.light .buy-btn,           /* Кнопка "Купить" */
+body.light .more-btn,          /* Кнопка "Ещё" */
+body.light .clc-card,          /* Широкая карточка (например, спецпредложение) */
+body.light .task-btn,          /* Кнопка выполнить задание */
+body.light .task-popup,        /* Попап задания */
+body.light .overlay-inner,     /* Внутренний контейнер оверлея */
+body.light .daily-reward,      /* Ежедневная награда */
+body.light .reward-btn,        /* Кнопка ежедневки */
+body.light .quest-card,        /* Карточка квеста */
+body.light .leader-card,       /* Карточка в таблице лидеров */
+body.light .stat-card,         /* Карточка статистики */
+body.light .achievement-card,  /* Карточка достижения */
+body.light .search-fab,        /* FAB-кнопка поиска */
+body.light .card-placeholder   /* Плейсхолдер карточки */
+{
+  background-color: #ffffff; /* Белый фон */
+  color: #000;               /* Чёрный текст */
+}
+
+/* Отдельно для карточки настроек (если вдруг выпадет из общего списка выше) */
+body.light .setting-card {
+  background: white;   /* Белый фон */
+  color: black;        /* Чёрный текст */
+}
+
+/* ——— Кнопки синие и зелёные (shop-btn, quests-btn, зелёные достижения) ——— */
+body.light .shop-btn,             /* Кнопка "В магазин" */
+body.light .quests-btn,           /* Кнопка "Все квесты" */
+body.light .achievement-btn.green /* Кнопка "Забрать награду" (зелёная) */
+{
+  background-color: #317BFF; /* Синий фон */
+  color: white;              /* Белый текст */
+}
+
+/* Синие action-кнопки внутри задач и попапов */
+body.light .task-action,      /* Кнопка в попапе задания */
+body.light .subscribe-btn,    /* Кнопка "Подписаться" */
+body.light .task-btn          /* Кнопка выполнить задание */
+{
+  background-color: #317BFF; /* Синий фон */
+  color: #fff;               /* Белый текст */
+}
+
+/* Прогресс-бар для уровня (зелёный) */
+body.light .level-fill.green {
+  background-color: #048876; /* Ярко-зелёный */
+}
+
+/* Футер главной карточки — серый */
+body.light .card-footer {
+  background: #D9D9D9;
+}
+
+/* Отключённая карточка профиля */
+body.light .profile-card.is-disabled {
+  background: #ccc;  /* Светло-серый */
+}
+
+/* Различные состояния кнопок профиля */
+body.light .achievement-btn.ghost {
+  background-color: #fff;   /* Белый фон */
+  border-color: #000;       /* Чёрная рамка */
+  color: #000;              /* Чёрный текст */
+}
+body.light .achievement-btn.blue {
+  background-color: #317BFF; /* Синий фон */
+  color: white;              /* Белый текст */
+}
+
+/* Чёрный цвет текста прогресс-колец (достижения) */
+body.light .progress-text {
+  color: #000;
+}
+
+/* === МОЙ СЧЁТ: стили для кругов уровней и линии === */
+body.light .level.current { /* Текущий уровень */
+  border-color: #048876;  /* Зелёная обводка */
+  color: #048876;         /* Зелёный текст */
+}
+body.light .level.passed { /* Пройденный уровень */
+  background-color: #048876; /* Зелёный фон */
+  color: white;
+}
+body.light .level.upcoming { /* Следующий уровень */
+  border-color: rgba(0,0,0,0.2);  /* Светлая обводка */
+  color: rgba(0,0,0,0.4);         /* Бледный текст */
+}
+body.light .dotted-line,          /* Обычная линия */
+body.light .dotted-line.current-link { /* Активная линия */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.2),
+    rgba(0,0,0,0.2) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+body.light .level-status-bar { /* Нижняя плашка прогресса */
+  background-color: #048876;  /* Ярко-зелёная */
+  color: white;
+}
+
+/* === ПОИСК: FAB-кнопка, инпут, иконка === */
+body.light .search-fab {    /* Кнопка поиска (FAB) */
+  background-color: #ccc;
+}
+body.light .search-input {  /* Строка поиска */
+  color: black;
+}
+body.light .search-icon {   /* Иконка поиска */
+  filter: invert(1);
+}
+
+/* === ВНЕШНИЙ ВИД (оверлей смены темы) === */
+body.light .theme-inner {
+  background: #E0D6CE;  /* Светлый фон */
+}
+body.light .theme-title {
+  color: #000;          /* Чёрный заголовок */
+}
