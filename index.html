@@ -5,18 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
   <meta name="theme-color" content="#0A0A0A" />
   <title>Flip</title>
-  <!-- Стили -->
+
+  <script src="https://unpkg.com/lottie-web@5.10.2/build/player/lottie.min.js"></script>
+
   <link rel="stylesheet" href="styles.css" />
-  <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- Основная логика -->
   <script defer src="main.js"></script>
 </head>
-<body>
 
-  <!-- ================================ -->
-  <!-- === ЭКРАН ЗАГРУЗКИ (Splash)  === -->
-  <!-- ================================ -->
+<body>
+  <!-- Экран загрузки -->
   <div id="splash">
     <img src="/assets/image/flip-logo.svg" class="splash-logo" />
     <div class="progress-bar-bg">
@@ -24,14 +22,9 @@
     </div>
   </div>
 
-  <!-- ============================== -->
-  <!-- === ОСНОВНОЙ КОНТЕЙНЕР     === -->
-  <!-- ============================== -->
   <div id="main-app">
-
-    <!-- ======================= -->
-    <!-- === НИЖНЕЕ МЕНЮ      === -->
-    <!-- ======================= -->
+    
+    <!-- Нижнее меню -->
     <nav class="nav-menu">
       <div class="nav-bg"></div>
       <a href="#" class="nav-btn home-icon active" data-page="home"><img src="assets/icons/home.svg"></a>
@@ -39,19 +32,18 @@
       <a href="#" class="nav-btn collection-icon" data-page="collection"><img src="assets/icons/collection.svg"></a>
       <a href="#" class="nav-btn profile-icon" data-page="profile"><img src="assets/icons/profile-2.svg"></a>
     </nav>
+    
 
-    <!-- ========================= -->
-    <!-- === СТРАНИЦА: ГЛАВНАЯ === -->
-    <!-- ========================= -->
+<!-- ========================= -->
+<!-- === СТРАНИЦА: ГЛАВНАЯ === -->
+<!-- ========================= -->
     <div class="page active" id="home">
-
-      <!-- Дроп -->
       <div class="drop-section">
         <p class="title drop-title">ДРОП</p>
         <p class="drop-timer">следующий дроп через: 3ч 59м</p>
-      </div>
+    </div>
+    
 
-      <!-- Карусель дропа -->
       <div class="carousel-wrapper">
         <div class="carousel-images">
           <div class="drop-slot"></div>
@@ -60,10 +52,8 @@
         </div>
       </div>
 
-      <!-- Кнопка старт -->
       <button class="start-btn">старт</button>
 
-      <!-- Новинки -->
       <p class="title">Новинки</p>
       <div class="card-wrapper">
         <div class="main-card">
@@ -73,54 +63,48 @@
         </div>
       </div>
 
-      <!-- Задания -->
       <p class="title">Задания</p>
       <div class="tasks">
-
+        <!-- Повторяющийся блок заданий (можно в JS шаблонизировать) -->
         <div class="task">
           <div class="subs">
             <div class="sub-1">подпишись на наш канал</div>
             <div class="sub-2">+1 дроп</div>
           </div>
           <button class="task-btn">
-            <img src="/assets/icons/arrow-down.svg" alt="иконка" />
-          </button>
+  <img src="/assets/icons/arrow-down.svg" alt="иконка" />
+</button>
         </div>
-
         <div class="task">
           <div class="subs">
             <div class="sub-1">подпишись на наш канал</div>
             <div class="sub-2">+1 дроп</div>
           </div>
           <button class="task-btn">
-            <img src="/assets/icons/arrow-down.svg" alt="иконка" />
-          </button>
+  <img src="/assets/icons/arrow-down.svg" alt="иконка" />
+</button>
         </div>
-
         <div class="task">
           <div class="subs">
             <div class="sub-1">подпишись на наш канал</div>
             <div class="sub-2">+1 дроп</div>
           </div>
           <button class="task-btn">
-            <img src="/assets/icons/arrow-down.svg" alt="иконка" />
-          </button>
+  <img src="/assets/icons/arrow-down.svg" alt="иконка" />
+</button>
         </div>
-
         <button class="quests-btn" id="go-to-quests">посмотреть квесты</button>
-
       </div>
-  
     </div>
 
-
-    <!-- ========================= -->
-    <!-- === СТРАНИЦА: МАГАЗИН === -->
-    <!-- ========================= -->
-    <div class="page" id="shop" style="display:none;">
+<!-- ========================= -->
+<!-- === СТРАНИЦА: МАГАЗИН === -->
+<!-- ========================= -->
+    <div class="page" id="shop">
       <div class="title-shop">
         <p class="title" id="title-shop">магазин</p>
       </div>
+
       <div class="cards">
         <div class="card">
           <div class="square"></div>
@@ -131,530 +115,179 @@
           <button class="buy-btn">купить</button>
         </div>
       </div>
+
       <p class="title" id="new-collection">новая коллекция</p>
       <div class="clc">
         <div class="clc-card"></div>
         <button class="more-btn">подробнее</button>
       </div>
+
       <p class="title">пополнение баланса</p>
-      <div class="balance-card-option">
-        <div class="balance-amount">ПОПОЛНИТЬ<br>БАЛАНС</div>
-        <button class="task-btn" id="topup-btn">
-          <img src="/assets/icons/arrow-down.svg" alt="иконка" />
-        </button>
-      </div>
+        <div class="balance-card-option">
+  <div class="balance-amount">ПОПОЛНИТЬ<br>БАЛАНС</div>
+  <button class="task-btn" id="topup-btn">
+    <img src="/assets/icons/arrow-down.svg" alt="иконка" />
+  </button>
+</div>
+
+
+
+      
     </div>
 
-    <!-- =============================== -->
-    <!-- === СТРАНИЦА: КОЛЛЕКЦИЯ     === -->
-    <!-- =============================== -->
-    <div class="page" id="collection" style="display:none;">
-      <div class="collection-header">
-        <div class="collection-title">МОЯ КОЛЛЕКЦИЯ</div>
-        <button class="exchange-btn" id="go-to-exchange">ОБМЕН</button>
-      </div>
-      <div class="collection-sort-wrapper">
-        <div class="collection-sort" id="sortToggle">
-          Сначала альбомы
-          <img src="/assets/icons/sort-arrow.svg" alt="↓" class="sort-icon" />
-        </div>
-        <div class="collection-sort-menu" id="sortMenu">
-          <div class="sort-option active" data-value="album">Альбомы</div>
-          <div class="sort-option" data-value="single">Синглы</div>
-          <div class="sort-option" data-value="common">Common</div>
-          <div class="sort-option" data-value="rare">Rare</div>
-          <div class="sort-option" data-value="epic">Epic</div>
-          <div class="sort-option" data-value="mythic">Mythic</div>
-          <div class="sort-option" data-value="legendary">Legendary</div>
-          <div class="sort-option" data-value="exclusive">Exclusive</div>
-        </div>
-      </div>
-      <div class="collection-grid" id="collectionGrid">
-        <!-- Карточки коллекции рендерит JS -->
-      </div>
-      <div class="search-fab" id="searchFab">
-        <img src="/assets/icons/search-icon.svg" alt="Поиск" class="search-icon" />
-        <input type="text" placeholder="поиск по коллекции" class="search-input" />
-      </div>
-    </div>
+<!-- =============================== -->
+<!-- === СТРАНИЦА: МОЯ КОЛЛЕКЦИЯ === -->
+<!-- =============================== -->
 
-    <!-- ========================= -->
-    <!-- === СТРАНИЦА: ПРОФИЛЬ === -->
-    <!-- ========================= -->
-    <div class="page" id="profile" style="display:none;">
-      <div class="title-profile">
-        <p class="title" id="title-profile">МОЙ ПРОФИЛЬ</p>
-        <div class="profile-header">
-          <div class="avatar big"></div>
-          <p class="profile-info">
-            <span class="nickname guest">Гость</span>
-            <span class="dot">•</span>
-            <span class="level-text">уровень 1</span>
-          </p>
-          <p class="user-id">#465788</p>
-          <div class="balance-card-new">
-            <div class="balance-info">
-              <div class="balance-label">баланс</div>
-              <div class="balance-value">6700F</div>
-            </div>
-            <button class="balance-add-btn" id="go-topup">
-              <img src="/assets/icons/plus-icon.svg" alt="+" />
-            </button>
-          </div>
-        </div>
-      </div>
-      <div class="profile-cards">
-        <button id="achievements" class="profile-card">МОИ ДОСТИЖЕНИЯ<br>И НАГРАДЫ</button>
-        <button class="profile-card level-card" id="level">
-          <div class="level-label">мой счет</div>
-          <div class="level-header">
-            <div class="level-main">УРОВЕНЬ 1</div>
-            <div class="level-percent">50%</div>
-          </div>
-          <div class="level-bar">
-            <div class="level-fill green"></div>
-            <div class="level-fill blue" style="width: 50%;"></div>
-          </div>
-        </button>
-        <button id="quests" class="profile-card">ЗАДАНИЯ<br>И КВЕСТЫ</button>
-        <button id="leaderboard" class="profile-card">ТАБЛИЦА<br>ЛИДЕРОВ</button>
-        <button id="stat" class="profile-card">МОЯ<br>СТАТИСТИКА</button>
-        <button id="exchange" class="profile-card is-disabled has-badge">
-          ОБМЕН<br>ЗВЕЗД
-          <span class="badge-dev">в разработке</span>
-        </button>
-        <button id="mini-games" class="profile-card is-disabled has-badge">
-          МИНИ-ИГРЫ<br>И ТЕСТЫ
-          <span class="badge-dev">в разработке</span>
-        </button>
-        <div class="settings">
-          <p class="settings-title">НАСТРОЙКИ</p>
-          <div class="settings-grid">
-            <button id="setting-theme" class="setting-card setting-item">ВНЕШНИЙ ВИД</button>
-            <button id="setting-social" class="setting-card setting-item">НАШИ СОЦСЕТИ</button>
-            <button id="setting-contact" class="setting-card setting-item">СВЯЗЬ С НАМИ</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-
-    <!-- ============================ -->
-    <!-- === ДРУГИЕ СТРАНИЦЫ      === -->
-    <!-- ============================ -->
-
-
-    
-    <!-- =============================== -->
-    <!-- === СТРАНИЦА: ДЕТАЛИ КАРТОЧКИ === -->
-    <!-- =============================== -->
-    <div id="card-detail-page" class="page">
-      <div class="card-detail-wrapper">
-    
-        <!-- Верхняя часть -->
-        <div class="card-top">
-          <div class="card-title">PINK TAPE</div>
-          <div class="card-artist">LIL UZI VERT</div>
-          <img class="card-image" src="/assets/cards/pinktape-cyberpunk.png" alt="card">
-
-          <div class="card-buttons">
-            <button class="card-action-btn card-exchange-btn">обменять</button>
-            <button class="card-action-btn card-gift-btn">подарить</button>
-          </div>
-        </div>
-
-        <!-- Нижняя часть -->
-        <div class="card-bottom">
-
-          <!-- Название редкости -->
-          <div class="card-rarity">EPIC · CYBERPUNK</div>
-
-          <!-- Детали по артисту, альбому и скину -->
-          <div class="card-rarity-details">
-            <div class="card-rarity-row">
-              <div class="card-rarity-label">Young Thug</div>
-              <div class="card-rarity-value">Legendary</div>
-            </div>
-            <div class="card-rarity-row">
-              <div class="card-rarity-label">So Much Fun</div>
-              <div class="card-rarity-value">Legendary</div>
-            </div>
-            <div class="card-rarity-row">
-              <div class="card-rarity-label">Spider-Verse</div>
-              <div class="card-rarity-value">Epic</div>
-            </div>
-          </div>
-
-          <!-- Статистика -->
-          <div class="card-stats">
-            <div class="stats-title">СТАТИСТИКА</div>
-            <div class="info-row">
-              <div class="info-label">Количество повторок:</div>
-              <div class="info-value card-duplicate">0</div>
-            </div>
-            <div class="info-row">
-              <div class="info-label">Получение:</div>
-              <div class="info-value card-drop">Дроп</div>
-            </div>
-            <div class="info-row">
-              <div class="info-label">Опыт:</div>
-              <div class="info-value card-xp">43XP</div>
-            </div>
-            <div class="info-row">
-              <div class="info-label">Дата получения:</div>
-              <div class="info-value card-date">23.07.2025</div>
-            </div>
-          </div>
-
-          <!-- Разделительная линия -->
-          <hr class="card-divider" />
-
-          <!-- Кнопка удаления -->
-          <div class="card-delete">удалить</div>
-
-        </div>
-      </div>
-    </div>
-
-    <!-- ===================================== -->
-    <!-- === СТРАНИЦА: ПОПОЛНЕНИЕ БАЛАНСА ==== -->
-    <!-- ===================================== -->
-    <div id="topup-page" class="page" style="display:none;">
-      <button class="back-btn">← назад</button>
-      <h2 class="balance-title">ПОПОЛНЕНИЕ БАЛАНСА</h2>
-  
-      <div class="balance-box">
-        <div class="balance-label">текущий баланс</div>
-        <div class="balance-value">
-          6700
-          <img src="/assets/icons/flip-icon-small.png" alt="F" class="flip-icon-small" />
-        </div>
-      </div>
-  
-      <p class="topup-title">выбери сумму</p>
-  
-      <div class="topup-grid">
-        <div class="topup-card">
-          <img src="assets/donate/coin.png" alt="50F" class="topup-icon" />
-          <div class="topup-amount">50F</div>
-          <div class="topup-price">100₽</div>
-        </div>
-        <div class="topup-card">
-          <img src="assets/donate/pile-small.png" alt="300F" class="topup-icon" />
-          <div class="topup-amount">300F</div>
-          <div class="topup-price">600₽</div>
-        </div>
-        <div class="topup-card">
-          <img src="assets/donate/pile-big.png" alt="1000F" class="topup-icon" />
-          <div class="topup-amount">1000F</div>
-          <div class="topup-price">2000₽</div>
-        </div>
-        <div class="topup-card">
-          <img src="assets/donate/piggy-broken.png" alt="1900F" class="topup-icon" />
-          <div class="topup-amount">1900F</div>
-          <div class="topup-price">3800₽</div>
-        </div>
-        <div class="topup-card">
-          <img src="assets/donate/bag.png" alt="3500F" class="topup-icon" />
-          <div class="topup-amount">3500F</div>
-          <div class="topup-price">7000₽</div>
-        </div>
-        <div class="topup-card">
-          <img src="assets/donate/chest.png" alt="5000F" class="topup-icon" />
-          <div class="topup-amount">5000F</div>
-          <div class="topup-price">10000₽</div>
-        </div>
-      </div>
-  
-      <input type="number" id="custom-amount" placeholder="или введите количество флипов..." class="amount-input" />
-  
-      <div class="custom-amount-counter">
-        <div>Вы получите: <span id="f-receive">0F</span></div>
-        <div>К оплате: <span id="f-pay">0₽</span></div>
-      </div>
-  
-      <button id="pay-button" class="topup-pay-btn">
-        <div id="slider-circle">
-          <img src="/assets/icons/arrow-swipe.svg" alt="стрелки" />
-        </div>
-        <div class="slider-center">
-          <span id="slider-text">ПОПОЛНИТЬ</span>
-          <div id="confirm-icon" class="right-icon">
-            <img src="/assets/icons/icon-cart.svg" alt="корзина" />
-          </div>
-        </div>
-      </button>
-    </div>
-
-
-    <!-- =================================== -->
-    <!-- === СТРАНИЦА: МОИ ДОСТИЖЕНИЯ ====== -->
-    <!-- =================================== -->
-    <div id="achievements-page" class="page" style="display:none;">
-      <button class="back-btn">← назад</button>
-      <h2 class="achievements-title">МОИ ДОСТИЖЕНИЯ</h2>
-      <div class="achievements-subcount">5/37</div>
-  
-      <div class="achievements-list">
-  
-        <!-- === Ачивка: Первый шаг (готово, можно забрать) === -->
-        <div class="achievement-card done">
-          <div class="achievement-content">
-            <div class="achievement-title">ПЕРВЫЙ ШАГ</div>
-            <div class="achievement-subtitle">получи свою первую карточку</div>
-            <button class="achievement-btn green">забрать</button>
-          </div>
-          <div class="achievement-icon">
-            <img src="/assets/icons/checkmark.svg" alt="✓" />
-          </div>
-        </div>
-    
-        <!-- === Ачивка: Удачный обмен (прогресс) === -->
-        <div class="achievement-card in-progress">
-          <div class="achievement-content">
-            <div class="achievement-title">УДАЧНЫЙ ОБМЕН</div>
-            <div class="achievement-subtitle">обменивай карточку с другим пользователем</div>
-            <button class="achievement-btn ghost">награда</button>
-          </div>
-          <div class="achievement-icon progress">
-            <div class="progress-ring">
-              <svg class="progress-svg" viewBox="0 0 36 36">
-                <circle class="ring-green" cx="18" cy="18" r="17.5" stroke-width="1" fill="none" />
-                <circle class="ring-blue" cx="18" cy="18" r="17.49" stroke-width="1" stroke-dasharray="0" stroke-dashoffset="0" fill="none" />
-              </svg>
-              <div class="progress-text">0/1</div>
-            </div>
-          </div>
-        </div>
-    
-        <!-- === Ачивка: Прокачка (прогресс) === -->
-        <div class="achievement-card in-progress">
-          <div class="achievement-content">
-            <div class="achievement-title">ПРОКАЧКА</div>
-            <div class="achievement-subtitle">достигни 5-го уровня</div>
-            <button class="achievement-btn ghost">награда</button>
-          </div>
-          <div class="achievement-icon progress">
-            <div class="progress-ring">
-              <svg class="progress-svg" viewBox="0 0 36 36">
-                <circle class="ring-green" cx="18" cy="18" r="17.5" stroke-width="1" fill="none" />
-                <circle class="ring-blue" cx="18" cy="18" r="17.45" stroke-width="1" fill="none" />
-              </svg>
-              <div class="progress-text">2/5</div>
-            </div>
-          </div>
-        </div>
-    
-        <!-- === Ачивка: Повторка! (статичная) === -->
-        <div class="achievement-card static">
-          <div class="achievement-content">
-            <div class="achievement-title">ПОВТОРКА!</div>
-            <div class="achievement-subtitle">поймай дубликат</div>
-            <button class="achievement-btn blue" disabled>выполнено</button>
-          </div>
-          <div class="achievement-icon">
-            <img src="/assets/icons/checkmark.svg" alt="✓" />
-          </div>
-        </div>
-    
-        <!-- ...другие ачивки... -->
-  
-      </div>
-    </div>
-
-    <!-- =========================== -->
-    <!-- === СТРАНИЦА: МОЙ СЧЕТ ==== -->
-    <!-- =========================== -->
-    <div id="balance-page" class="page balance-page" style="display:none;">
-      <button class="back-btn">← назад</button>
-      <div class="page-content">
-        <h2 class="balance-title">МОЙ СЧЁТ</h2>
-        <div class="level-track">
-          <div class="level upcoming">10</div>
-          <div class="dotted-line invisible"></div>
-          <div class="dotted-line invisible"></div>
-          <div class="level upcoming">9</div>
-          <div class="dotted-line invisible"></div>
-          <div class="dotted-line invisible"></div>
-          <div class="level upcoming">8</div>
-          <div class="dotted-line invisible"></div>
-          <div class="dotted-line invisible"></div>
-          <div class="level upcoming">7</div>
-          <div class="dotted-line invisible"></div>
-          <div class="dotted-line invisible"></div>
-          <div class="level upcoming">6</div>
-          <div class="dotted-line invisible"></div>
-          <div class="dotted-line invisible"></div>
-          <div class="level upcoming">5</div>
-          <div class="dotted-line invisible"></div>
-          <div class="dotted-line invisible"></div>
-          <div class="level upcoming">4</div>
-          <div class="dotted-line invisible"></div>
-          <div class="dotted-line invisible"></div>
-          <div class="level upcoming">3</div>
-          <div class="dotted-line invisible"></div>
-          <div class="dotted-line half-up"></div>
-          <div class="level current">2</div>
-          <div class="dotted-line current-link"></div>
-          <div class="level passed">1</div>
-        </div>
-      </div>
-      <div class="level-status-bar">
-        <p class="status-text">
-          УРОВЕНЬ 2<br><span class="xp-left">ОСТАЛОСЬ 50 XP</span>
-        </p>
-      </div>
-    </div>
-
-    <!-- =========================== -->
-    <!-- === СТРАНИЦА: ЗАДАНИЯ ==== -->
-    <!-- =========================== -->
-    <div id="quests-page" class="page quests-page" style="display:none;">
-
-      <button class="back-btn">← назад</button>
-      <h2 class="quests-title">ЗАДАНИЯ</h2>
-
-      <!-- Ежедневная награда -->
-      <div class="daily-reward">
-        <div class="reward-info">
-          <span class="reward-title">ЕЖЕДНЕВНАЯ<br>НАГРАДА</span>
-        </div>
-        <button class="reward-btn" id="claimReward">получить 5f</button>
-      </div>
-
-      <!-- Список заданий -->
-      <div class="tasks">
-
-        <div class="task">
-          <div class="subs">
-            <div class="sub-1">подпишись на наш канал</div>
-            <div class="sub-2">+1 дроп</div>
-          </div>
-          <button class="task-btn">
-            <img src="/assets/icons/arrow-down.svg" alt="иконка" />
-          </button>
-        </div>
-
-        <div class="task">
-          <div class="subs">
-            <div class="sub-1">подпишись на наш канал</div>
-            <div class="sub-2">+1 дроп</div>
-          </div>
-          <button class="task-btn">
-            <img src="/assets/icons/arrow-down.svg" alt="иконка" />
-          </button>
-        </div>
-
-        <div class="task">
-          <div class="subs">
-            <div class="sub-1">подпишись на наш канал</div>
-            <div class="sub-2">+1 дроп</div>
-          </div>
-          <button class="task-btn">
-            <img src="/assets/icons/arrow-down.svg" alt="иконка" />
-          </button>
-        </div>
-
-        <!-- Квесты -->
-        <h3 class="quests-subtitle">КВЕСТЫ</h3>
-        <div class="quest-card" id="invite-quest">
-          <div class="quest-title">ПРИГЛАСИ 10 ДРУЗЕЙ</div>
-          <div class="quest-bottom">
-            <div class="quest-sub">
-              +50000f<br>
-              <span id="invite-progress">приглашено: 0/10</span>
-            </div>
-            <button class="quest-btn" id="invite-btn">пригласить</button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- ================================== -->
-    <!-- === СТРАНИЦА: ТАБЛИЦА ЛИДЕРОВ ==== -->
-    <!-- ================================== -->
-    <div id="leaderboard-page" class="page leaderboard-page" style="display:none;">
-      <button class="back-btn">← назад</button>
-      <h2 class="leaderboard-title">ТАБЛИЦА ЛИДЕРОВ</h2>
-      <div class="leaderboard-list">
-        <div class="leader-card my-position">
-          <div class="leader-rank">100000</div>
-          <div class="leader-avatar"></div>
-          <div class="leader-name">username</div>
-          <div class="leader-xp">302XP</div>
-        </div>
-        <div style="height: 20px;"></div>
-        <div class="leader-card">
-          <div class="leader-rank">1</div>
-          <div class="leader-avatar"></div>
-          <div class="leader-name">Артур Игоревич</div>
-          <div class="leader-xp">10568XP</div>
-        </div>
-        <div class="leader-card">
-          <div class="leader-rank">2</div>
-          <div class="leader-avatar"></div>
-          <div class="leader-name">Борат</div>
-          <div class="leader-xp">9856XP</div>
-        </div>
-        <div class="leader-card">
-          <div class="leader-rank">3</div>
-          <div class="leader-avatar"></div>
-          <div class="leader-name">Артур Пирожков</div>
-          <div class="leader-xp">5845XP</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ================================= -->
-    <!-- === СТРАНИЦА: МОЯ СТАТИСТИКА ==== -->
-    <!-- ================================= -->
-    <div id="stat-page" class="page stat-page" style="display:none;">
-      <button class="back-btn">← назад</button>
-      <h2 class="stat-title">МОЯ СТАТИСТИКА</h2>
-      <p class="stat-subtitle">за всё время</p>
-      <div class="stat-list">
-        <div class="stat-card"><div class="stat-label">КОЛИЧЕСТВО XP</div><div class="stat-value">6705</div></div>
-        <div class="stat-card"><div class="stat-label">КАРТОЧЕК ПОЛУЧЕНО</div><div class="stat-value">24</div></div>
-        <div class="stat-card"><div class="stat-label">ПОКУПОК</div><div class="stat-value">2</div></div>
-        <div class="stat-card"><div class="stat-label">УРОВНЕЙ ПРОЙДЕНО</div><div class="stat-value">9</div></div>
-        <div class="stat-card"><div class="stat-label">ЧАСОВ В ПРИЛОЖЕНИИ</div><div class="stat-value">180</div></div>
-        <div class="stat-card"><div class="stat-label">НАГРАД ПОЛУЧЕНО</div><div class="stat-value">5</div></div>
-        <div class="stat-card"><div class="stat-label">КАРТОЧЕК ОБМЕНЯНО</div><div class="stat-value">1</div></div>
-      </div>
-    </div>
-    <!-- ...Конец #main-app... -->
+<div class="page" id="collection">
+  <!-- Заголовок и кнопка ОБМЕН на одном уровне -->
+  <div class="collection-header">
+    <div class="collection-title">МОЯ КОЛЛЕКЦИЯ</div>
+    <button class="exchange-btn">ОБМЕН</button>
   </div>
 
-  <!-- ============================ -->
-  <!-- === ОВЕРЛЕИ и ПОПАПЫ     === -->
-  <!-- ============================ -->
+
+  <!-- Сортировка -->
+  <div class="collection-sort-wrapper">
+  <div class="collection-sort" id="sortToggle">
+    Сначала альбомы
+    <img src="/assets/icons/sort-arrow.svg" alt="↓" class="sort-icon" />
+  </div>
+
+  <div class="collection-sort-menu" id="sortMenu">
+    <div class="sort-option active" data-value="album">Альбомы</div>
+<div class="sort-option" data-value="single">Синглы</div>
+<div class="sort-option" data-value="common">Common</div>
+<div class="sort-option" data-value="rare">Rare</div>
+<div class="sort-option" data-value="epic">Epic</div>
+<div class="sort-option" data-value="mythic">Mythic</div>
+<div class="sort-option" data-value="legendary">Legendary</div>
+<div class="sort-option" data-value="exclusive">Exclusive</div>
+
+  </div>
+</div>
+
+
+
+
+  <!-- Сетка карточек -->
+  <div class="collection-grid" id="collectionGrid">
+    <!-- карточки генерируются динамически -->
+  </div>
+
+  <!-- FAB-поисковик -->
+  <div class="search-fab" id="searchFab">
+    <img src="/assets/icons/search-icon.svg" alt="Поиск" class="search-icon" />
+    <input type="text" placeholder="поиск по коллекции" class="search-input" />
+  </div>
+</div>
+
+
+
+<!-- ========================= -->
+<!-- === СТРАНИЦА: ПРОФИЛЬ === -->
+<!-- ========================= -->
+<div class="page" id="profile">
+  <div class="title-profile">
+    <p class="title" id="title-profile">МОЙ ПРОФИЛЬ</p>
+
+    <div class="profile-header">
+      <div class="avatar big"></div>
+
+      <p class="profile-info">
+        <span class="nickname guest">Гость</span>
+        <span class="dot">•</span>
+        <span class="level-text">уровень 1</span>
+      </p>
+
+      <p class="user-id">#465788</p>
+
+<div class="balance-card-new">
+  <div class="balance-info">
+    <div class="balance-label">баланс</div>
+    <div class="balance-value">6700F</div>
+  </div>
+  <button class="balance-add-btn" id="go-topup">
+    <img src="/assets/icons/plus-icon.svg" alt="+" />
+  </button>
+</div>
+
+    </div>
+  </div>
+
+ <!-- Кнопки профиля -->
+<div class="profile-cards">
+  <button id="achievements" class="profile-card">
+    МОИ ДОСТИЖЕНИЯ<br>И НАГРАДЫ
+  </button>
+
+  <button class="profile-card level-card" id="level">
+    <div class="level-label">мой счет</div>
+
+    <div class="level-header">
+      <div class="level-main">УРОВЕНЬ 1</div>
+      <div class="level-percent">50%</div>
+    </div>
+
+    <div class="level-bar">
+  <div class="level-fill green"></div>
+  <div class="level-fill blue" style="width: 50%;"></div>
+</div>
+
+  </button>
+
+  <button id="quests" class="profile-card">ЗАДАНИЯ<br>И КВЕСТЫ</button>
+  <button id="leaderboard" class="profile-card">ТАБЛИЦА<br>ЛИДЕРОВ</button>
+  <button id="stat" class="profile-card">МОЯ<br>СТАТИСТИКА</button>
+
+  <button id="exchange" class="profile-card is-disabled has-badge">
+  ОБМЕН<br>ЗВЕЗД
+  <span class="badge-dev">в разработке</span>
+</button>
+
+<button id="mini-games" class="profile-card is-disabled has-badge">
+  МИНИ-ИГРЫ<br>И ТЕСТЫ
+  <span class="badge-dev">в разработке</span>
+</button>
+
+
+  <!-- Настройки -->
+  <div class="settings">
+  <p class="settings-title">НАСТРОЙКИ</p>
+  <div class="settings-grid">
+    <button id="setting-theme" class="setting-card setting-item">ВНЕШНИЙ ВИД</button>
+    <button id="setting-social" class="setting-card setting-item">НАШИ СОЦСЕТИ</button>
+    <button id="setting-contact" class="setting-card setting-item">СВЯЗЬ С НАМИ</button>
+  </div>
+</div>
+</div>
+  </div>
 
   <!-- Оверлей: внешний вид -->
-  <div class="overlay" id="theme-overlay">
-    <div class="overlay-inner theme-inner">
-      <p class="title theme-title">ВНЕШНИЙ ВИД</p>
-      <div class="theme-switcher">
-        <span class="theme-switch-label">СМЕНА ТЕМЫ</span>
-        <label class="switch">
-          <input type="checkbox" id="theme-toggle-checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
+<div class="overlay" id="theme-overlay">
+  <div class="overlay-inner theme-inner">
+    <p class="title theme-title">ВНЕШНИЙ ВИД</p>
+    <div class="theme-switcher">
+      <span class="theme-switch-label">СМЕНА ТЕМЫ</span>
+      <label class="switch">
+        <input type="checkbox" id="theme-toggle-checkbox">
+        <span class="slider"></span>
+      </label>
     </div>
   </div>
+</div>
 
-  <!-- Оверлей: подписка на канал -->
-  <div class="overlay" id="subscribe-overlay">
-    <div class="subscribe-inner">
-      <p class="subscribe-text">подпишись на наш telegram-канал,<br>чтобы участвовать в дропах</p>
-      <a class="subscribe-btn" href="https://t.me/freemyswa9" target="_blank" rel="noopener">подписаться</a>
-    </div>
+  <!-- Оверлей: Подписка на канал -->
+<div class="overlay" id="subscribe-overlay">
+  <div class="subscribe-inner">
+    <p class="subscribe-text">подпишись на наш telegram-канал,<br>чтобы участвовать в дропах</p>
+    <a class="subscribe-btn" href="https://t.me/freemyswa9" target="_blank" rel="noopener">подписаться</a>
   </div>
+</div>
 
-  <!-- Оверлей: связь с нами -->
-  <div id="contact-overlay" class="overlay">
+
+<!-- === ОВЕРЛЕЙ: СВЯЗЬ С НАМИ === -->
+<div id="contact-overlay" class="overlay">
     <div class="contact-popup">
       <div class="contact-title">СВЯЗЬ С НАМИ</div>
       <div class="contact-text">
@@ -667,86 +300,482 @@
     </div>
   </div>
 
-  <!-- Оверлей: задания -->
-  <div id="task-overlay" class="overlay">
-    <div class="task-popup">
-      <div class="task-label">ЗАДАНИЕ</div>
-      <div class="task-text">
-        подпишись на наш телеграм-канал:<br>
-        <span id="channel-name">Free My Leaks</span><br>
-        награда: +1 дроп и 10XP
+
+<!-- Оверлей: Задания -->
+<div id="task-overlay" class="overlay">
+  <div class="task-popup">
+    <div class="task-label">ЗАДАНИЕ</div>
+    <div class="task-text">
+      подпишись на наш телеграм-канал:<br>
+      <span id="channel-name">Free My Leaks</span><br>
+      награда: +1 дроп и 10XP
+    </div>
+    <a id="go-subscribe" href="https://t.me/freemyleaks" target="_blank">
+      <button class="task-action">выполнить</button>
+    </a>
+  </div>
+</div>
+
+
+<!-- ============================== -->
+<!-- === ОВЕРЛЕЙ: НАШИ СОЦ СЕТИ === -->
+<!-- ============================== -->
+<div id="social-overlay">
+  <div class="social-content">
+    <h2>НАШИ СОЦСЕТИ</h2>
+
+   <!-- === ТЕЛЕГРАМ-КАНАЛЫ === -->
+<div class="social-link telegram">
+  <span class="telegram-label">НАШИ TELEGRAM <br>КАНАЛЫ</span>
+  <div class="arrow-icon">
+    <img src="/assets/icons/arrow-down.svg" alt="arrow" />
+  </div>
+  <div class="social-hidden-list">
+    <a href="https://t.me/freemyswa9" target="_blank" class="channel-name">FREE MY SWAG</a>
+    <a href="https://t.me/freemyleaks" target="_blank" class="channel-name">FREE MY LEAKS</a>
+    <a href="https://t.me/freemyswagmemes" target="_blank" class="channel-name">FREE MY MEMES</a>
+    <a href="https://t.me/flipappnews" target="_blank" class="channel-name">FLIP APP NEWS</a>
+  </div>
+</div>
+<!-- === INSTAGRAM-КАНАЛЫ === -->
+    <div class="social-link instagram">
+  <div class="top-row">
+    <div class="social-text">МЫ В INSTAGRAM*</div>
+    <div class="arrow-icon">
+      <img src="/assets/icons/arrow-down.svg" alt="arrow" />
+    </div>
+  </div>
+  <div class="insta-note">
+    *соцсеть принадлежит компании Meta, <br>признанной экстремистской и запрещённой на территории РФ
+  </div>
+</div>
+<!-- === YOUTUBE-КАНАЛЫ === -->
+    <div class="social-link">
+      МЫ НА<br>YOUTUBE
+      <div class="arrow-icon">
+        <img src="/assets/icons/arrow-down.svg" alt="arrow" />
       </div>
-      <a id="go-subscribe" href="https://t.me/freemyleaks" target="_blank">
-        <button class="task-action">выполнить</button>
-      </a>
+    </div>
+<!-- === TIK TOK-КАНАЛЫ === -->
+    <div class="social-link">
+      МЫ В<br>TIKTOK
+      <div class="arrow-icon">
+        <img src="/assets/icons/arrow-down.svg" alt="arrow" />
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- === ОВЕРЛЕЙ: ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ === -->
+<div id="delete-confirm-overlay" class="overlay-delete">
+  <div class="overlay-delete-content">
+    <div class="overlay-delete-title">Удалить карточку?</div>
+    <div class="overlay-delete-text">
+      Это действие необратимо - карточка будет удалена из вашей коллекции.
+      Вы уверены, что хотите продолжить?
+    </div>
+    <div class="overlay-delete-buttons">
+      <button class="btn cancel" id="delete-cancel-btn">Отмена</button>
+      <button class="btn delete" id="delete-confirm-btn">Удалить</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- =============================== -->
+<!-- === СТРАНИЦА: ДЕТАЛИ КАРТОЧКИ === -->
+<!-- =============================== -->
+<div id="card-detail-page" class="page">
+  <div class="card-detail-wrapper">
+    
+    <!-- Верхняя часть -->
+    <div class="card-top">
+      <div class="card-title">PINK TAPE</div>
+      <div class="card-artist">LIL UZI VERT</div>
+      <img class="card-image" src="/assets/cards/pinktape-cyberpunk.png" alt="card">
+
+      <div class="card-buttons">
+        <button class="card-action-btn card-exchange-btn">обменять</button>
+        <button class="card-action-btn card-gift-btn">подарить</button>
+      </div>
+    </div>
+
+    <!-- Нижняя часть -->
+    <div class="card-bottom">
+
+      <!-- Название редкости -->
+      <div class="card-rarity">EPIC · CYBERPUNK</div>
+
+      <!-- Детали по артисту, альбому и скину -->
+      <div class="card-rarity-details">
+        <div class="card-rarity-row">
+          <div class="card-rarity-label">Young Thug</div>
+          <div class="card-rarity-value">Legendary</div>
+        </div>
+        <div class="card-rarity-row">
+          <div class="card-rarity-label">So Much Fun</div>
+          <div class="card-rarity-value">Legendary</div>
+        </div>
+        <div class="card-rarity-row">
+          <div class="card-rarity-label">Spider-Verse</div>
+          <div class="card-rarity-value">Epic</div>
+        </div>
+      </div>
+
+      <!-- Статистика -->
+      <div class="card-stats">
+        <div class="stats-title">СТАТИСТИКА</div>
+
+        <div class="info-row">
+          <div class="info-label">Количество повторок:</div>
+          <div class="info-value card-duplicate">0</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Получение:</div>
+          <div class="info-value card-drop">Дроп</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Опыт:</div>
+          <div class="info-value card-xp">43XP</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Дата получения:</div>
+          <div class="info-value card-date">23.07.2025</div>
+        </div>
+      </div>
+       <hr class="card-divider" />
+
+      <!-- Кнопка удаления -->
+      <div class="card-delete">удалить</div>
+
+    </div>
+  </div>
+</div>
+
+<!-- === Страница ПОПОЛНЕНИЕ БАЛАНСА === -->
+<div id="topup-page" class="page">
+  <button class="back-btn">← назад</button>
+  <h2 class="balance-title">ПОПОЛНЕНИЕ БАЛАНСА</h2>
+  <div class="balance-box">
+  <div class="balance-label">текущий баланс</div>
+  <div class="balance-value">
+    6700
+    <img src="/assets/icons/flip-icon-small.png" alt="F" class="flip-icon-small" />
+  </div>
+</div>
+
+<p class="topup-title">ПОПОЛНЕНИЕ</p>
+
+<div class="topup-grid">
+  <div class="topup-card">
+    <img src="assets/donate/coin.png" alt="50F" class="topup-icon" />
+    <div class="topup-amount">50F</div>
+    <div class="topup-price">100₽</div>
+  </div>
+  <div class="topup-card">
+    <img src="assets/donate/pile-small.png" alt="300F" class="topup-icon" />
+    <div class="topup-amount">300F</div>
+    <div class="topup-price">600₽</div>
+  </div>
+  <div class="topup-card">
+    <img src="assets/donate/pile-big.png" alt="1000F" class="topup-icon" />
+    <div class="topup-amount">1000F</div>
+    <div class="topup-price">2000₽</div>
+  </div>
+  <div class="topup-card">
+    <img src="assets/donate/piggy-broken.png" alt="1900F" class="topup-icon" />
+    <div class="topup-amount">1900F</div>
+    <div class="topup-price">3800₽</div>
+  </div>
+  <div class="topup-card">
+    <img src="assets/donate/bag.png" alt="3500F" class="topup-icon" />
+    <div class="topup-amount">3500F</div>
+    <div class="topup-price">7000₽</div>
+  </div>
+  <div class="topup-card">
+    <img src="assets/donate/chest.png" alt="5000F" class="topup-icon" />
+    <div class="topup-amount">5000F</div>
+    <div class="topup-price">10000₽</div>
+  </div>
+</div>
+
+<!-- === Поле ввода суммы === -->
+<input type="number" id="custom-amount" placeholder="или введите количество флипов..." class="amount-input" />
+
+<!-- === Счётчик вручную === -->
+<div class="custom-amount-counter">
+  <div>Вы получите: <span id="f-receive">0F</span></div>
+  <div>К оплате: <span id="f-pay">0₽</span></div>
+</div>
+
+<!-- === Кнопка Пополнить === -->
+<button id="pay-button" class="topup-pay-btn">
+  <div id="slider-circle">
+    <img src="/assets/icons/arrow-swipe.svg" alt="стрелки" />
+  </div>
+  <div class="slider-center">
+    <span id="slider-text">ПОПОЛНИТЬ</span>
+    <div id="confirm-icon" class="right-icon">
+      <img src="/assets/icons/icon-cart.svg" alt="корзина" />
+    </div>
+  </div>
+</button>
+
+
+</div>
+
+
+<!-- Страница МОИ ДОСТИЖЕНИЯ -->
+<div id="achievements-page" class="page">
+  <button class="back-btn">← назад</button>
+  <h2 class="achievements-title">МОИ ДОСТИЖЕНИЯ</h2>
+  <div class="achievements-subcount">5/37</div>
+
+  <div class="achievements-list">
+    <!-- === ПЕРВЫЙ ШАГ (готово, можно забрать) === -->
+    <div class="achievement-card done">
+      <div class="achievement-content">
+        <div class="achievement-title">ПЕРВЫЙ ШАГ</div>
+        <div class="achievement-subtitle">получи свою первую карточку</div>
+        <button class="achievement-btn green">забрать</button>
+      </div>
+      <div class="achievement-icon">
+        <img src="/assets/icons/checkmark.svg" alt="✓" />
+      </div>
+    </div>
+
+    <!-- === УДАЧНЫЙ ОБМЕН (не выполнено) === -->
+    <div class="achievement-card in-progress">
+      <div class="achievement-content">
+        <div class="achievement-title">УДАЧНЫЙ ОБМЕН</div>
+        <div class="achievement-subtitle">обменивай карточку с другим пользователем</div>
+        <button class="achievement-btn ghost">награда</button>
+      </div>
+   <div class="achievement-icon progress">
+  <div class="progress-ring">
+    <svg class="progress-svg" viewBox="0 0 36 36">
+  <circle class="ring-green" cx="18" cy="18" r="17.5" stroke-width="1" fill="none" />
+  <circle class="ring-blue" cx="18" cy="18" r="17.49" stroke-width="1" stroke-dasharray="0" stroke-dashoffset="0" fill="none" />
+</svg>
+
+    <div class="progress-text">0/1</div>
+  </div>
+</div>
+    </div>
+
+    <!-- === ПРОКАЧКА (в процессе) === -->
+    <div class="achievement-card in-progress">
+      <div class="achievement-content">
+        <div class="achievement-title">ПРОКАЧКА</div>
+        <div class="achievement-subtitle">достигни 5-го уровня</div>
+        <button class="achievement-btn ghost">награда</button>
+      </div>
+      <div class="achievement-icon progress">
+  <div class="achievement-icon progress">
+  <div class="progress-ring">
+   <svg class="progress-svg" viewBox="0 0 36 36">
+  <circle class="ring-green" cx="18" cy="18" r="17.5" stroke-width="1" fill="none" />
+  <circle class="ring-blue" cx="18" cy="18" r="17.45" stroke-width="1" fill="none" />
+</svg>
+
+    <div class="progress-text">2/5</div>
+  </div>
+</div>
+
+
+</div>
+    </div>
+
+    <!-- === ПОВТОРКА! (выполнено, награда собрана) === -->
+    <div class="achievement-card static">
+      <div class="achievement-content">
+        <div class="achievement-title">ПОВТОРКА!</div>
+        <div class="achievement-subtitle">поймай дубликат</div>
+        <button class="achievement-btn blue" disabled>выполнено</button>
+      </div>
+      <div class="achievement-icon">
+        <img src="/assets/icons/checkmark.svg" alt="✓" />
+      </div>
     </div>
   </div>
 
-  <!-- Оверлей: соцсети -->
-  <div id="social-overlay">
-    <div class="social-content">
-      <h2>НАШИ СОЦСЕТИ</h2>
-      <div class="social-link telegram">
-        <span class="telegram-label">НАШИ TELEGRAM <br>КАНАЛЫ</span>
-        <div class="arrow-icon">
-          <img src="/assets/icons/arrow-down.svg" alt="arrow" />
-        </div>
-        <div class="social-hidden-list">
-          <a href="https://t.me/freemyswa9" target="_blank" class="channel-name">FREE MY SWAG</a>
-          <a href="https://t.me/freemyleaks" target="_blank" class="channel-name">FREE MY LEAKS</a>
-          <a href="https://t.me/freemyswagmemes" target="_blank" class="channel-name">FREE MY MEMES</a>
-          <a href="https://t.me/flipappnews" target="_blank" class="channel-name">FLIP APP NEWS</a>
-        </div>
-      </div>
-      <div class="social-link instagram">
-        <div class="top-row">
-          <div class="social-text">МЫ В INSTAGRAM*</div>
-          <div class="arrow-icon">
-            <img src="/assets/icons/arrow-down.svg" alt="arrow" />
+
+
+</div>
+<!-- === МОЙ СЧЁТ === -->
+<div id="balance-page" class="page balance-page">
+  <button class="back-btn">← назад</button>
+
+  <div class="page-content">
+    <h2 class="balance-title">МОЙ СЧЁТ</h2>
+
+    <div class="level-track">
+      <div class="level upcoming">10</div>
+      <div class="dotted-line invisible"></div>
+      <div class="dotted-line invisible"></div>
+
+      <div class="level upcoming">9</div>
+      <div class="dotted-line invisible"></div>
+      <div class="dotted-line invisible"></div>
+
+      <div class="level upcoming">8</div>
+      <div class="dotted-line invisible"></div>
+      <div class="dotted-line invisible"></div>
+
+      <div class="level upcoming">7</div>
+      <div class="dotted-line invisible"></div>
+      <div class="dotted-line invisible"></div>
+
+      <div class="level upcoming">6</div>
+      <div class="dotted-line invisible"></div>
+      <div class="dotted-line invisible"></div>
+
+      <div class="level upcoming">5</div>
+      <div class="dotted-line invisible"></div>
+      <div class="dotted-line invisible"></div>
+
+      <div class="level upcoming">4</div>
+      <div class="dotted-line invisible"></div>
+      <div class="dotted-line invisible"></div>
+
+      <div class="level upcoming">3</div>
+      <div class="dotted-line invisible"></div>
+      <div class="dotted-line half-up"></div>
+
+      <div class="level current">2</div>
+      <div class="dotted-line current-link"></div>
+
+      <div class="level passed">1</div>
+    </div>
+  </div>
+
+  <!-- ⚠️ Фиксированная плашка — ВНЕ page-content -->
+  <div class="level-status-bar">
+    <p class="status-text">
+      УРОВЕНЬ 2<br><span class="xp-left">ОСТАЛОСЬ 50 XP</span>
+    </p>
+  </div>
+</div>
+
+<!-- === ЗАДАНИЯ === -->
+<div id="quests-page" class="page quests-page">
+  <button class="back-btn">← назад</button>
+  <h2 class="quests-title">ЗАДАНИЯ</h2>
+
+  <div class="daily-reward">
+    <div class="reward-info">
+      <span class="reward-title">ЕЖЕДНЕВНАЯ<br>НАГРАДА</span>
+    </div>
+    <button class="reward-btn" id="claimReward">получить 5f</button>
+  </div>
+<div class="tasks">
+        <div class="task">
+          <div class="subs">
+            <div class="sub-1">подпишись на наш канал</div>
+            <div class="sub-2">+1 дроп</div>
           </div>
+          <button class="task-btn">
+  <img src="/assets/icons/arrow-down.svg" alt="иконка" />
+</button>
         </div>
-        <div class="insta-note">
-          *соцсеть принадлежит компании Meta,<br>
-          признанной экстремистской и запрещённой на территории РФ
+        <div class="task">
+          <div class="subs">
+            <div class="sub-1">подпишись на наш канал</div>
+            <div class="sub-2">+1 дроп</div>
+          </div>
+          <button class="task-btn">
+  <img src="/assets/icons/arrow-down.svg" alt="иконка" />
+</button>
         </div>
-      </div>
-      <div class="social-link">
-        МЫ НА<br>YOUTUBE
-        <div class="arrow-icon">
-          <img src="/assets/icons/arrow-down.svg" alt="arrow" />
+        <div class="task">
+          <div class="subs">
+            <div class="sub-1">подпишись на наш канал</div>
+            <div class="sub-2">+1 дроп</div>
+          </div>
+          <button class="task-btn">
+  <img src="/assets/icons/arrow-down.svg" alt="иконка" />
+</button>
         </div>
-      </div>
-      <div class="social-link">
-        МЫ В<br>TIKTOK
-        <div class="arrow-icon">
-          <img src="/assets/icons/arrow-down.svg" alt="arrow" />
-        </div>
-      </div>
+        <h3 class="quests-subtitle">КВЕСТЫ</h3>
+<div class="quest-card" id="invite-quest">
+  <div class="quest-title">ПРИГЛАСИ 10 ДРУЗЕЙ</div>
+  <div class="quest-bottom">
+    <div class="quest-sub">
+      +50000f<br>
+      <span id="invite-progress">приглашено: 0/10</span>
     </div>
+    <button class="quest-btn" id="invite-btn">пригласить</button>
   </div>
+</div>
+</div>
+</div>
 
-  <!-- Оверлей: подтверждение удаления -->
-  <div id="delete-confirm-overlay" class="overlay-delete">
-    <div class="overlay-delete-content">
-      <div class="overlay-delete-title">Удалить карточку?</div>
-      <div class="overlay-delete-text">
-        Это действие необратимо - карточка будет удалена из вашей коллекции.<br>
-        Вы уверены, что хотите продолжить?
-      </div>
-      <div class="overlay-delete-buttons">
-        <button class="btn cancel" id="delete-cancel-btn">Отмена</button>
-        <button class="btn delete" id="delete-confirm-btn">Удалить</button>
-      </div>
+
+<!-- === ТАБЛИЦА ЛИДЕРОВ === -->
+<div id="leaderboard-page" class="page leaderboard-page">
+  <button class="back-btn">← назад</button>
+  <h2 class="leaderboard-title">ТАБЛИЦА ЛИДЕРОВ</h2>
+
+  <div class="leaderboard-list">
+    
+    <!-- Моя позиция -->
+    <div class="leader-card my-position">
+      <div class="leader-rank">100000</div> <!-- Можно оставить как есть -->
+      <div class="leader-avatar"></div> <!-- Мы вставим сюда фон -->
+      <div class="leader-name">username</div> <!-- Перезапишем текст -->
+      <div class="leader-xp">302XP</div> <!-- Это остаётся как есть -->
     </div>
+
+
+    <!-- Паддинг между моей позицией и топом -->
+    <div style="height: 20px;"></div>
+
+    <!-- Топ-3 -->
+    <div class="leader-card">
+      <div class="leader-rank">1</div>
+      <div class="leader-avatar"></div>
+      <div class="leader-name">Артур Игоревич</div>
+      <div class="leader-xp">10568XP</div>
+    </div>
+
+    <div class="leader-card">
+      <div class="leader-rank">2</div>
+      <div class="leader-avatar"></div>
+      <div class="leader-name">Борат</div>
+      <div class="leader-xp">9856XP</div>
+    </div>
+
+    <div class="leader-card">
+      <div class="leader-rank">3</div>
+      <div class="leader-avatar"></div>
+      <div class="leader-name">Артур Пирожков</div>
+      <div class="leader-xp">5845XP</div>
+    </div>
+
   </div>
+</div>
+
+
+<!-- === МОЯ СТАТИСТИКА === -->
+<div id="stat-page" class="page stat-page">
+  <button class="back-btn">← назад</button>
+  <h2 class="stat-title">МОЯ СТАТИСТИКА</h2>
+    <p class="stat-subtitle">за всё время</p>
+    <div class="stat-list">
+      <div class="stat-card"><div class="stat-label">КОЛИЧЕСТВО XP</div><div class="stat-value">6705</div></div>
+      <div class="stat-card"><div class="stat-label">КАРТОЧЕК ПОЛУЧЕНО</div><div class="stat-value">24</div></div>
+      <div class="stat-card"><div class="stat-label">ПОКУПОК</div><div class="stat-value">2</div></div>
+      <div class="stat-card"><div class="stat-label">УРОВНЕЙ ПРОЙДЕНО</div><div class="stat-value">9</div></div>
+      <div class="stat-card"><div class="stat-label">ЧАСОВ В ПРИЛОЖЕНИИ</div><div class="stat-value">180</div></div>
+      <div class="stat-card"><div class="stat-label">НАГРАД ПОЛУЧЕНО</div><div class="stat-value">5</div></div>
+      <div class="stat-card"><div class="stat-label">КАРТОЧЕК ОБМЕНЯНО</div><div class="stat-value">1</div></div>
+    </div>
 
 
 
 
 
 
+</div>
 
-
-
-</body>
-</html>
