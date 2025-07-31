@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     title: 'Graduation',
     artist: 'Kanye West',
     category: 'album',
-    rarity: 'Exclusive',
+    rarity: 'Legendary',
     artistRarity: 'Legendary',
     skin: 'Minecraft',
     skinRarity: 'Chromatic',
