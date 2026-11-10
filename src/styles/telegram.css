@@ -1,0 +1,41 @@
+/* FLIP v0.3 · Telegram WebView compatibility */
+:root {
+  --flip-top-space: 14px;
+  --flip-bottom-space: 0px;
+}
+.flip-svg {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  flex: none;
+  vertical-align: -0.14em;
+  overflow: visible;
+  stroke: currentColor;
+  fill: none;
+}
+.hero-star .flip-svg{width:1.05em;height:1.05em;vertical-align:-.16em}
+.section-title b .flip-svg{width:1em;height:1em;vertical-align:-.13em}
+.hero-progress-arrow .flip-svg{width:12px;height:12px;vertical-align:-.22em}
+.drop-cta-arrow .flip-svg{width:26px;height:26px;stroke-width:2.5}
+.drop-badge .flip-svg{width:13px;height:13px;vertical-align:-.2em;margin-right:3px}
+.drop-footer .flip-svg{width:12px;height:12px;vertical-align:-.22em;margin-right:2px}
+.link .flip-svg,.feature button .flip-svg{width:12px;height:12px;vertical-align:-.2em}
+.task-check .flip-svg{width:15px;height:15px}
+.task-arrow .flip-svg{width:15px;height:15px}
+.quick .flip-svg{width:14px;height:14px;vertical-align:-.18em}
+/* .status is the spacer ABOVE the logo; native Telegram buttons must not overlap it. */
+@media (max-width: 520px) {
+  .phone .status { height:var(--flip-top-space, 14px); min-height:var(--flip-top-space, 14px); flex:none; }
+  .phone .topbar { flex:none; }
+  .phone .notif-sheet { top:calc(var(--flip-top-space, 14px) + 55px); }
+  .phone .toast { top:calc(var(--flip-top-space, 14px) + 68px); }
+  .phone .bottom-nav { padding-bottom:max(12px, var(--flip-bottom-space, 0px), env(safe-area-inset-bottom, 0px)); }
+  .phone .scroll { padding-bottom:calc(20px + var(--flip-bottom-space, 0px)); }
+}
+@media (max-width: 360px) {
+  .phone .topbar { padding-left:16px; padding-right:16px; }
+  .phone .top-actions { gap:7px; }
+  .phone .brand { font-size:30px; }
+}
+/* Keep the currency amount readable in iOS WebKit (button text defaults to black). */
+.balance { color:var(--fg); }

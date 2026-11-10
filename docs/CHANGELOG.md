@@ -1,3 +1,12 @@
+# FLIP — CHANGELOG
+
+## v0.3
+- Animated loading splash with delayed font readiness.
+- Telegram iOS safe/content-safe area insets and native bridge.
+- SVG fallback-free icons for mobile Telegram.
+- Cache-busted script/style URLs.
+- Original v0.2 home styling retained.
+
 # История изменений FLIP
 
 ## Прототип 0.2
