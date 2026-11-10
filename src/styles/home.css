@@ -124,3 +124,12 @@ body, button { font-family:var(--ui); }
 .drop-footer { justify-content: flex-end; min-height: 14px; padding-bottom: 0; }
 @media(max-width:520px){ .drop-shell { min-height: 0; } }
 @media(max-width:360px){ .drop-shell { min-height: 0; padding-bottom: 9px; } }
+
+/* v0.5.1: non-awarding, repeatable animation preview below DROP. */
+.drop-footer{justify-content:space-between;gap:7px;min-height:21px;flex-wrap:wrap}
+.drop-footer>span:last-child{white-space:nowrap;flex:1;text-align:right;color:#85958a;font:500 9px var(--ui)}
+.drop-preview-btn{display:inline-flex;align-items:center;justify-content:flex-start;gap:5px;min-height:25px;padding:3px 0;border:0;background:transparent;color:#a5cb81;font:800 9px var(--ui);letter-spacing:.15px;cursor:pointer;touch-action:manipulation}
+.drop-preview-btn:active{opacity:.7}
+.drop-preview-btn:focus-visible{outline:2px solid var(--lime);outline-offset:4px;border-radius:4px}
+.drop-preview-btn svg{width:13px;height:13px;flex:none}
+@media(max-width:360px){.drop-preview-btn{font-size:8.5px}.drop-footer>span:last-child{font-size:8px}}

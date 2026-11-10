@@ -1,4 +1,4 @@
-/* FLIP v0.5 • Drop reveal. Animation ONLY; the game state is awarded by app.js. */
+/* FLIP v0.5.2 • Longer cinematic drop reveal. Animation ONLY; game state is awarded by app.js. */
 (() => {
   'use strict';
   const root = document.querySelector('#dropReveal');
@@ -12,6 +12,9 @@
     hidden:    {label:'HIDDEN',ru:'Скрытая',hex:'#FAFFFE'}
   };
   const order = ['intro','spin','settle','flip','result'];
+  // The full reveal now lasts about 8.9 seconds without skipping.
+  // Tune only these durations; the chosen card and reward logic do not change.
+  const timings = { intro:800, spin:5500, reel:5300, settle:1200, flip:1400 };
   const target = 13;
   let session = null;
   let timeoutId = null;
@@ -28,11 +31,12 @@
     const winner=defs[r.rarity];
     const label=plain(r.card.title||'UNKNOWN SIGNAL');
     const artist=plain(r.card.artist||'FLIP DEMO');
+    const isPreview=!!r.preview;
     root.innerHTML=`
       <div class="flip-reveal-aura" aria-hidden="true"></div>
-      <div class="flip-reveal-head"><span class="flip-reveal-logo">FLIP<span>.</span></span><span class="flip-reveal-headnote">FREE DROP <span class="flip-reveal-dot"></span> DEMO</span></div>
+      <div class="flip-reveal-head"><span class="flip-reveal-logo">FLIP<span>.</span></span><span class="flip-reveal-headnote">${isPreview?'PREVIEW':'FREE DROP'} <span class="flip-reveal-dot"></span> DEMO</span></div>
       <div class="flip-reveal-content">
-        <div class="flip-reveal-eyebrow">DROP / REVEAL</div>
+        <div class="flip-reveal-eyebrow">${isPreview?'ANIMATION / PREVIEW':'DROP / REVEAL'}</div>
         <h2 class="flip-reveal-title" id="flipRevealTitle">ТВОЙ ДРОП<span>.</span></h2>
         <p class="flip-reveal-subtitle" id="flipRevealSubtitle">Что скрывается за карточкой?</p>
         <div class="flip-roulette-wrap" id="flipRouletteWrap" aria-hidden="true">
@@ -58,7 +62,7 @@
           <span class="flip-rarity-chip">${winner.label} <span class="flip-rarity-dot"></span></span>
           <h3>${label}</h3>
           <p>${artist}</p>
-          <span class="flip-reveal-added">✓ ДОБАВЛЕНО В КОЛЛЕКЦИЮ</span>
+          <span class="flip-reveal-added">${isPreview?'ДЕМО · БЕЗ НАГРАДЫ':'✓ ДОБАВЛЕНО В КОЛЛЕКЦИЮ'}</span>
           <button type="button" class="flip-reveal-continue" id="flipRevealContinue">ПРОДОЛЖИТЬ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19 19 5M8 5h11v11"/></svg></button>
         </div>
       </div>
@@ -76,7 +80,7 @@
     const index=toEnd?target:1;
     const offset=(win.clientWidth-tileWidth)/2-index*(tileWidth+gap);
     if(immediate){track.style.transition='none';track.style.transform=`translate3d(${offset}px,0,0)`;void track.offsetHeight}
-    else {track.style.transition='transform 2.95s cubic-bezier(.13,.72,.14,1)';track.style.transform=`translate3d(${offset}px,0,0)`}
+    else {track.style.transition=`transform ${timings.reel}ms cubic-bezier(.13,.72,.14,1)`;track.style.transform=`translate3d(${offset}px,0,0)`}
   }
   function advanceTo(phase){
     if(!session) return;
@@ -92,10 +96,10 @@
     if(outcome)outcome.setAttribute('aria-hidden',String(phase!=='result'));
     if(continueBtn)continueBtn.disabled=phase!=='result';
     if(phase==='intro'){
-      title.innerHTML='ТВОЙ ДРОП<span>.</span>';
-      subtitle.textContent='Что скрывается за карточкой?';
+      title.innerHTML=session.preview?'ТЕСТ РУЛЕТКИ<span>.</span>':'ТВОЙ ДРОП<span>.</span>';
+      subtitle.textContent=session.preview?'Просмотр анимации без изменения коллекции.':'Что скрывается за карточкой?';
       setPosition(false);
-      schedule('spin', reducedMotion?100:520);
+      schedule('spin', reducedMotion?100:timings.intro);
     }else if(phase==='spin'){
       title.innerHTML='ПОЙМАЙ МОМЕНТ<span>.</span>';
       subtitle.textContent='Карточка уже выбрана. Раскрываем результат.';
@@ -105,12 +109,12 @@
           if(session?.phase==='spin')setPosition(true,false);
         });
       });
-      schedule('settle',reducedMotion?120:3120);
+      schedule('settle',reducedMotion?120:timings.spin);
     }else if(phase==='settle'){
       setPosition(true);
       title.innerHTML='ЭТО ОНА<span>.</span>';
       subtitle.textContent='Редкость найдена';
-      schedule('flip',reducedMotion?120:750);
+      schedule('flip',reducedMotion?120:timings.settle);
     }else if(phase==='flip'){
       title.innerHTML='РАСКРЫВАЕМ<span>.</span>';
       subtitle.textContent='';
@@ -120,19 +124,19 @@
           if(session?.phase==='flip')face?.classList.add('is-flipped');
         });
       });
-      schedule('result',reducedMotion?80:900);
+      schedule('result',reducedMotion?80:timings.flip);
     }else if(phase==='result'){
-      title.innerHTML='ТВОЯ КАРТОЧКА<span>.</span>';
+      title.innerHTML=session.preview?'РЕЗУЛЬТАТ ДЕМО<span>.</span>':'ТВОЯ КАРТОЧКА<span>.</span>';
       subtitle.textContent='';
       if(face){face.classList.add('is-instant','is-flipped')}
       hint.textContent='НАЖМИ, ЧТОБЫ ЗАКРЫТЬ';
       try{root.querySelector('#flipRevealContinue')?.focus({preventScroll:true})}catch{}
     }
   }
-  function open(card){
+  function open(card,options={}){
     if(session) return;
     const rarity=String(card?.rarity||'common').toLowerCase();
-    session={card:{...card},rarity:defs[rarity]?rarity:'common',phase:'intro'};
+    session={card:{...card},rarity:defs[rarity]?rarity:'common',phase:'intro',preview:options.preview===true};
     root.style.setProperty('--flip-rarity',defs[session.rarity].hex);
     root.dataset.rarity=session.rarity;
     root.setAttribute('aria-hidden','false');
