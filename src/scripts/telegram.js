@@ -1,4 +1,4 @@
-/* Telegram Mini App bridge and splash screen — FLIP 0.3 */
+/* Telegram Mini App bridge and splash screen — FLIP 0.4 */
 (() => {
   'use strict';
   const root = document.documentElement;
@@ -34,8 +34,8 @@
   }
   // Keep the splash on-screen briefly; do not block forever on slow fonts/network.
   const started = performance.now();
-  const minDuration = 1400;
-  const maxDuration = 2900;
+  const minDuration = 2000;
+  const maxDuration = 3500;
   const fonts = document.fonts ? document.fonts.ready.catch(() => {}) : Promise.resolve();
   const page = new Promise(resolve => {
     if (document.readyState === 'complete') resolve();

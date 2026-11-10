@@ -12,15 +12,14 @@ const save=()=>{try{localStorage.setItem('flip_demo',JSON.stringify(state))}catc
 const money=n=>n.toLocaleString('ru-RU');
 const sq=(c,i=0)=>`<div class="sq-card ${c.color||''}" title="${c.title} · ${c.rarity}"><span class="sq-art">${c.title.replace(' ','<br>')}</span><span class="small-badge">${c.rarity}${c.count?' ×'+c.count:''}</span></div>`;
 function home(){return `<div class="hero-intro">
-  <div class="hero-kicker"><span class="hero-star">✳</span> КОЛЛЕКЦИОННАЯ ИГРА</div>
-  <h2>Твой дроп.<br>Твои правила.</h2>
-  <p class="hero-description">Забирай карточки, находи редкие релизы<br class="wide-only"> и собирай свою коллекцию.</p>
+  <h2>Открой свой дроп.</h2>
+  <p class="hero-description">Находи редкие релизы и пополняй коллекцию.</p>
   <div class="hero-progress" id="levelQuick" role="button" tabindex="0" aria-label="Открыть прогресс уровня">
     <span>LVL ${state.level}</span><span class="progress-separator"></span><span>${state.xp}/100 XP</span><span class="hero-progress-arrow">↗</span>
   </div>
 </div>
 <section class="drop-shell" aria-label="Бесплатный дроп">
-  <div class="drop-info"><span class="drop-badge" id="readyBadge">● ДРОП ДОСТУПЕН</span><span class="drop-no">DROP 001 / FLIP</span></div>
+  <div class="drop-info"><span class="drop-badge" id="readyBadge">● ДРОП ДОСТУПЕН</span></div>
   <div class="drop-stage" aria-hidden="true">
     <div class="drop-stage-ring ring-outer"></div><div class="drop-stage-ring ring-inner"></div>
     <div class="deck">
@@ -29,9 +28,9 @@ function home(){return `<div class="hero-intro">
       <div class="deck-card main"><div class="deck-logo">FLIP</div><div class="deck-tag">+ COLLECT /<br> TRADE +</div></div>
     </div>
   </div>
-  <div class="drop-copy"><h3>Открой свою карточку</h3><p id="dropSubtitle">Одна бесплатная попытка. Какая редкость выпадет сегодня?</p></div>
+  <div class="drop-copy" id="dropCopy" hidden><h3>Открой свою карточку</h3><p id="dropSubtitle">Какая редкость выпадет на этот раз?</p></div>
   <button class="drop-cta" id="dropBtn"><span>ОТКРЫТЬ ДРОП</span><span class="drop-cta-arrow" aria-hidden="true">↗</span></button>
-  <div class="drop-footer"><span>✳ Бесплатно</span><span><span id="timerLabel">Следующий через 4 часа</span> <strong id="timerValue">ГОТОВ</strong></span></div>
+  <div class="drop-footer"><span class="drop-free">Бесплатно</span><span><span id="timerLabel">Следующий через 4 часа</span> <strong id="timerValue">ГОТОВ</strong></span></div>
 </section>
 <section class="content-section"><div class="section-head"><span class="section-title"><b>✳</b> НОВАЯ КОЛЛЕКЦИЯ</span><button class="link" data-action="collection">СМОТРЕТЬ ВСЁ ↗</button></div><div class="feature"><div class="feature-copy"><span class="pill">✦ NEW ARRIVAL</span><h3>LOST<br>FREQUENCIES</h3><p>Новые обложки. Пять разных редкостей. Твоя следующая находка.</p><button data-action="collection">В КОЛЛЕКЦИЮ ↗</button></div><div class="artwork second" aria-hidden="true"></div><div class="artwork" aria-hidden="true"></div></div></section>
 <section class="content-section"><div class="section-head"><span class="section-title"><b>◎</b> ЗАДАНИЯ</span><button class="link" data-action="tasks">СМОТРЕТЬ ВСЕ ↗</button></div><div class="task-list">${taskRow(0,true)}${taskRow(1,true)}${taskRow(2,true)}</div></section>
@@ -48,7 +47,30 @@ const render=(view=current)=>{current=view;$('#screen').innerHTML=({home,collect
 let toastTid;const toast=msg=>{const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTid);toastTid=setTimeout(()=>el.classList.remove('show'),3000)};
 const closeModal=()=>$('#overlay').classList.remove('show');
 function modal(html){$('#modal').innerHTML=html;window.FLIPIcons?.render($('#modal'));$('#overlay').classList.add('show')}
-function updateTimer(){if(current!=='home')return;const delta=state.dropReadyAt-Date.now(),ready=delta<=0;const value=$('#timerValue'),badge=$('#readyBadge'),label=$('#timerLabel'),button=$('#dropBtn');if(!value)return;if(ready){value.textContent='';badge.textContent='● ДРОП ДОСТУПЕН';label.textContent='Следующий через 4 часа';const subtitle=$('#dropSubtitle');if(subtitle)subtitle.textContent='Одна бесплатная попытка. Какая редкость выпадет сегодня?';button.disabled=false;button.innerHTML='<span>ОТКРЫТЬ ДРОП</span><span class="drop-cta-arrow" aria-hidden="true">↗</span>';window.FLIPIcons?.render(button)}else{const s=Math.ceil(delta/1000),h=String(Math.floor(s/3600)).padStart(2,'0'),m=String(Math.floor((s%3600)/60)).padStart(2,'0'),sec=String(s%60).padStart(2,'0');value.textContent=`${h}:${m}:${sec}`;badge.textContent='◷ ДРОП ПЕРЕЗАРЯЖАЕТСЯ';label.textContent='До следующего дропа:';const subtitle=$('#dropSubtitle');if(subtitle)subtitle.textContent='Ты уже забрал карточку. Возвращайся, когда таймер завершится.';button.disabled=true;button.innerHTML='<span>ДРОП НЕ ГОТОВ</span><span class="drop-cta-arrow" aria-hidden="true">↗</span>';window.FLIPIcons?.render(button)}}
+function updateTimer(){
+  if(current!=='home')return;
+  const delta=state.dropReadyAt-Date.now(), ready=delta<=0;
+  const value=$('#timerValue'), badge=$('#readyBadge'), label=$('#timerLabel'), button=$('#dropBtn'), copy=$('#dropCopy');
+  if(!value)return;
+  // The descriptive line belongs to the ready state only: keep charging view calm.
+  if(copy)copy.hidden=!ready;
+  if(ready){
+    value.textContent='';
+    badge.textContent='● ДРОП ДОСТУПЕН';
+    label.textContent='';
+    button.disabled=false;
+    button.innerHTML='<span>ОТКРЫТЬ ДРОП</span><span class="drop-cta-arrow" aria-hidden="true">↗</span>';
+  }else{
+    const s=Math.ceil(delta/1000),h=String(Math.floor(s/3600)).padStart(2,'0'),m=String(Math.floor((s%3600)/60)).padStart(2,'0'),sec=String(s%60).padStart(2,'0');
+    value.textContent=`${h}:${m}:${sec}`;
+    badge.textContent='◷ ДРОП ПЕРЕЗАРЯЖАЕТСЯ';
+    label.textContent='До следующего дропа:';
+    button.disabled=true;
+    button.innerHTML='<span>ДРОП НЕ ГОТОВ</span><span class="drop-cta-arrow" aria-hidden="true">↗</span>';
+  }
+  window.FLIPIcons?.render(button);
+  window.FLIPIcons?.render(badge);
+}
 function randomCard(){const r=Math.random()*100;let idx=r<65?0:r<90?1:r<98?2:r<99.8?3:4;return {...artCards[idx]}}
 function gain(card,source){state.received.push(card);state.xp+=source==='drop'?10:0;let first=!state.received.slice(0,-1).some(x=>x.title===card.title&&x.rarity===card.rarity);if(first)state.xp+=10;const finishTask=i=>{if(!state.claimedTasks.includes(i)){state.claimedTasks.push(i);state.balance+=30;state.xp+=20}};if(source==='drop'){state.dropReadyAt=Date.now()+4*3600*1000;finishTask(0);if(first)finishTask(1)}if(source==='pack'){if(first)finishTask(1);finishTask(2)}while(state.xp>=100){state.xp-=100;state.level++;state.balance+=30}save()}
 function cardReveal(card,label){modal(`<span class="eyebrow">${label}</span><h3>НОВАЯ КАРТОЧКА!</h3>${sq(card)}<div class="pill">✦ ${card.rarity.toUpperCase()} · +10 XP</div><p>Карточка добавлена в твою демо-коллекцию. Все обложки строго квадратные (1:1).</p><button class="bigbtn" id="closeReveal">ПРОДОЛЖИТЬ ↗</button>`)}
