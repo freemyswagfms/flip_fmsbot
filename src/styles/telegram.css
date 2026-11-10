@@ -39,16 +39,7 @@
 }
 /* Keep the currency amount readable in iOS WebKit (button text defaults to black). */
 .balance { color:var(--fg); }
-
-/* Soft atmospheric treatment inside the existing native-safe spacer.
-   Decorative only: never place actions under Telegram's fixed controls. */
-.flip-in-telegram .phone .status { position:relative; isolation:isolate; pointer-events:none; }
-.flip-in-telegram .phone .status::before {
-  content:""; position:absolute; inset:0; display:block; pointer-events:none;
-  background:
-    radial-gradient(ellipse 75% 92% at 50% 116%, rgba(157,255,88,.095), transparent 80%),
-    linear-gradient(to bottom,rgba(21,39,22,.04),transparent);
-  opacity:.65; animation:flip-ambient 10s ease-in-out infinite alternate;
-}
-@keyframes flip-ambient { 0%{opacity:.38;transform:translateX(-5%)} 100%{opacity:.76;transform:translateX(5%)} }
-@media(prefers-reduced-motion:reduce){ .flip-in-telegram .phone .status::before{animation:none;opacity:.55} }
+/* v0.5 — restore flat neutral Telegram safe-space appearance (v0.3). */
+html, body, .phone, .phone .scroll, button { touch-action: manipulation; }
+button { -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; }

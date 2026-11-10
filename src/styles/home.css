@@ -117,3 +117,10 @@ body, button { font-family:var(--ui); }
   .drop-no { font-size:8px; }
   .drop-badge { font-size:9px; padding:6px 8px; }
 }
+
+/* v0.5 — DROP lower padding, remove forced empty panel height. */
+.drop-shell { min-height: 0; padding-bottom: 10px; }
+.drop-cta { margin-bottom: 6px; }
+.drop-footer { justify-content: flex-end; min-height: 14px; padding-bottom: 0; }
+@media(max-width:520px){ .drop-shell { min-height: 0; } }
+@media(max-width:360px){ .drop-shell { min-height: 0; padding-bottom: 9px; } }

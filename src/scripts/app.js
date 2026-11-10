@@ -7,7 +7,8 @@ const initial={balance:1250,xp:64,level:8,dropReadyAt:now,received:[],claimedTas
 let saved={};try{saved=JSON.parse(localStorage.getItem('flip_demo')||localStorage.getItem('flip20_demo')||'{}')||{}}catch{}
 const state={...initial,...saved};
 let current='home';
-const artCards=[{title:'NIGHT DRIVE',rarity:'Common',color:''},{title:'BLUE STATIC',rarity:'Rare',color:'blue'},{title:'AFTER HOURS',rarity:'Epic',color:'purple'},{title:'LOST SIGNAL',rarity:'Legendary',color:'blue'},{title:'VOID TAPE',rarity:'Mythic',color:'purple'}];
+const artCards=[{title:'NIGHT DRIVE',artist:'NOVA RADIO',rarity:'Common',color:'common'},{title:'BLUE STATIC',artist:'ECHO UNIT',rarity:'Rare',color:'rare'},{title:'AFTER HOURS',artist:'SABLE',rarity:'Epic',color:'epic'},{title:'LOST SIGNAL',artist:'ZERO FREQUENCY',rarity:'Legendary',color:'legendary'},{title:'VOID TAPE',artist:'NOIR.exe',rarity:'Mythic',color:'mythic'}];
+const hiddenDemoCard={title:'ARCHIVE 001',artist:'FLIP // SECRET',rarity:'Hidden',color:'hidden'};
 const save=()=>{try{localStorage.setItem('flip_demo',JSON.stringify(state))}catch{}};
 const money=n=>n.toLocaleString('ru-RU');
 const sq=(c,i=0)=>`<div class="sq-card ${c.color||''}" title="${c.title} · ${c.rarity}"><span class="sq-art">${c.title.replace(' ','<br>')}</span><span class="small-badge">${c.rarity}${c.count?' ×'+c.count:''}</span></div>`;
@@ -30,7 +31,7 @@ function home(){return `<div class="hero-intro">
   </div>
   <div class="drop-copy" id="dropCopy" hidden><h3>Открой свою карточку</h3><p id="dropSubtitle">Какая редкость выпадет на этот раз?</p></div>
   <button class="drop-cta" id="dropBtn"><span>ОТКРЫТЬ ДРОП</span><span class="drop-cta-arrow" aria-hidden="true">↗</span></button>
-  <div class="drop-footer"><span class="drop-free">Бесплатно</span><span><span id="timerLabel">Следующий через 4 часа</span> <strong id="timerValue">ГОТОВ</strong></span></div>
+  <div class="drop-footer"><span><span id="timerLabel">Следующий через 4 часа</span> <strong id="timerValue">ГОТОВ</strong></span></div>
 </section>
 <section class="content-section"><div class="section-head"><span class="section-title"><b>✳</b> НОВАЯ КОЛЛЕКЦИЯ</span><button class="link" data-action="collection">СМОТРЕТЬ ВСЁ ↗</button></div><div class="feature"><div class="feature-copy"><span class="pill">✦ NEW ARRIVAL</span><h3>LOST<br>FREQUENCIES</h3><p>Новые обложки. Пять разных редкостей. Твоя следующая находка.</p><button data-action="collection">В КОЛЛЕКЦИЮ ↗</button></div><div class="artwork second" aria-hidden="true"></div><div class="artwork" aria-hidden="true"></div></div></section>
 <section class="content-section"><div class="section-head"><span class="section-title"><b>◎</b> ЗАДАНИЯ</span><button class="link" data-action="tasks">СМОТРЕТЬ ВСЕ ↗</button></div><div class="task-list">${taskRow(0,true)}${taskRow(1,true)}${taskRow(2,true)}</div></section>
@@ -71,10 +72,18 @@ function updateTimer(){
   window.FLIPIcons?.render(button);
   window.FLIPIcons?.render(badge);
 }
-function randomCard(){const r=Math.random()*100;let idx=r<65?0:r<90?1:r<98?2:r<99.8?3:4;return {...artCards[idx]}}
+function randomCard(){
+  // Preview-only override on localhost; NEVER trust a browser RNG for a real economy.
+  const forced=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?new URLSearchParams(location.search).get('previewRarity'):null;
+  if(forced){const found=artCards.find(c=>c.rarity.toLowerCase()===forced.toLowerCase())||(forced.toLowerCase()==='hidden'?hiddenDemoCard:null);if(found)return {...found}}
+  const r=Math.random()*100;
+  if(r>=99.995)return {...hiddenDemoCard};
+  const idx=r<64.995?0:r<89.995?1:r<97.995?2:r<99.795?3:4;
+  return {...artCards[idx]};
+}
 function gain(card,source){state.received.push(card);state.xp+=source==='drop'?10:0;let first=!state.received.slice(0,-1).some(x=>x.title===card.title&&x.rarity===card.rarity);if(first)state.xp+=10;const finishTask=i=>{if(!state.claimedTasks.includes(i)){state.claimedTasks.push(i);state.balance+=30;state.xp+=20}};if(source==='drop'){state.dropReadyAt=Date.now()+4*3600*1000;finishTask(0);if(first)finishTask(1)}if(source==='pack'){if(first)finishTask(1);finishTask(2)}while(state.xp>=100){state.xp-=100;state.level++;state.balance+=30}save()}
 function cardReveal(card,label){modal(`<span class="eyebrow">${label}</span><h3>НОВАЯ КАРТОЧКА!</h3>${sq(card)}<div class="pill">✦ ${card.rarity.toUpperCase()} · +10 XP</div><p>Карточка добавлена в твою демо-коллекцию. Все обложки строго квадратные (1:1).</p><button class="bigbtn" id="closeReveal">ПРОДОЛЖИТЬ ↗</button>`)}
-function doDrop(){if(Date.now()<state.dropReadyAt)return;let card=randomCard();gain(card,'drop');cardReveal(card,'FREE DROP');render('home')}
+function doDrop(){if(Date.now()<state.dropReadyAt)return;const card=randomCard();gain(card,'drop');render('home');if(window.FLIPReveal)window.FLIPReveal.open(card);else cardReveal(card,'FREE DROP')}
 function doPack(){const day=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Moscow'});if(state.lastPackDay!==day){state.lastPackDay=day;state.packsToday=0}if(state.packsToday>=10){toast('Дневной лимит 10 стандартных паков исчерпан');return}if(state.balance<200){toast('Не хватает F для покупки стандартного пака');return}state.balance-=200;state.packsToday++;let pack=[];let attempts=0;while(pack.length<3&&attempts++<1000){let c=randomCard();if(!pack.some(k=>k.title===c.title&&k.rarity===c.rarity))pack.push(c)}if(pack.every(x=>x.rarity==='Common'))pack[Math.floor(Math.random()*3)]={...artCards[1]};for(const card of pack)gain(card,'pack');state.xp+=30;while(state.xp>=100){state.xp-=100;state.level++;state.balance+=30}save();render('store');modal(`<span class="eyebrow">STANDARD PACK / OPENED</span><h3>ТВОЙ ПАК</h3><div class="square-grid" style="margin:22px 0">${pack.map(sq).join('')}</div><p>Три разные карточки, минимум одна Rare+. Выдача и вероятности здесь демонстрационные, не серверный генератор.</p><button class="bigbtn" id="closeReveal">ЗАБРАТЬ КАРТОЧКИ ↗</button>`)}
 function handleTask(i){if(state.claimedTasks.includes(i))return;modal(`<span class="eyebrow">DAILY TASK</span><h3>${taskDefs[i].title}</h3><p>Это макет задания. В реальной игре выполнение определяется сервером автоматически, без ручного начисления.</p><button class="bigbtn" id="closeReveal">ПОНЯТНО</button>`)}
 document.addEventListener('click',e=>{const tab=e.target.closest('[data-tab]');if(tab){render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(['home','collection','trades','store','profile','tasks'].includes(a))render(a);else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#buyPackBtn'))doPack();if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))render('store');if(e.target.closest('#bellBtn'))$('#notifications').classList.toggle('show');if(e.target.closest('#closeNotifications'))$('#notifications').classList.remove('show');if(e.target.closest('#resetBtn')){localStorage.removeItem('flip_demo');localStorage.removeItem('flip20_demo');Object.assign(state,{...initial,dropReadyAt:Date.now(),received:[],claimedTasks:[]});save();render('profile');toast('Демо сброшено — бесплатный дроп доступен')};const t=e.target.closest('[data-task]');if(t)handleTask(+t.dataset.task);if(e.target.closest('#levelQuick'))render('profile')});
