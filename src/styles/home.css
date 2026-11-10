@@ -1,0 +1,118 @@
+/* =======================================================
+   FLIP · home refinement
+   Type: Golos Text (display), Manrope (UI), Space Grotesk (brand).
+   All collectible cards use an exact 1:1 aspect ratio.
+   ======================================================= */
+:root { --display:'Golos Text', 'Manrope', Arial, sans-serif; --ui:'Manrope', Inter, Arial, sans-serif; }
+body, button { font-family:var(--ui); }
+.brand { font-family:'Space Grotesk',sans-serif; font-size:33px; font-style:italic; font-weight:800; letter-spacing:-2.7px; }
+.brand span { color:var(--lime); }
+.balance { font-family:var(--ui); background:#181f1b; border-color:#364536; font-size:12px; padding:9px 11px; }
+.balance-plus { font-size:19px; color:var(--lime); line-height:1; margin-left:2px; }
+.topbar { padding-bottom:15px; }
+.phone { background:#090c0a; }
+.phone:before { height:450px; background:radial-gradient(ellipse 88% 62% at 60% -14%,#253d2148,transparent); }
+.scroll { padding-left:19px; padding-right:19px; }
+/* Main introduction */
+.hero-intro { display:block; margin:7px 3px 19px; }
+.hero-kicker { color:var(--lime); font:800 11px/1.45 var(--ui); letter-spacing:2.0px; }
+.hero-star { color:var(--lime); font-size:22px; line-height:0; vertical-align:-3px; margin-right:6px; }
+.hero-intro h2 { font:900 clamp(29px,7.5vw,37px)/.99 var(--display); letter-spacing:-1.9px; margin:15px 0 10px; }
+.hero-description { margin:0; max-width:355px; color:#bac0be; font:500 12px/1.48 var(--ui); letter-spacing:-.12px; }
+.hero-progress { width:max-content; margin-top:12px; display:flex; align-items:center; gap:7px; border:1px solid #344435; background:#141d16; padding:5px 9px; border-radius:20px; color:#b2c7b0; font:800 9px var(--ui); letter-spacing:.3px; cursor:pointer; }
+.hero-progress span:first-child { color:var(--lime); }
+.progress-separator { display:block; width:1px; height:10px; background:#596d53; }
+.hero-progress-arrow { color:var(--lime); padding-left:2px; }
+/* The reference-inspired FREE DROP panel */
+.drop-shell {
+  isolation:isolate; position:relative; height:auto; min-height:407px;
+  display:flex; flex-direction:column; overflow:hidden;
+  padding:15px 15px 12px; border-radius:22px;
+  border:1px solid #648334;
+  background: radial-gradient(ellipse 70% 55% at 50% 38%,#263c1a63,transparent 80%),
+              linear-gradient(140deg,#111b15 0%,#0b120e 51%,#121914 100%);
+  box-shadow: inset 0 0 65px #a8e64409,0 16px 40px #0009;
+}
+.drop-shell:before { content:""; position:absolute; z-index:0; inset:0; width:auto; height:auto; left:0; top:0;
+  background: radial-gradient(ellipse 55% 40% at 54% 40%,#a3ff3541,transparent 75%);
+  opacity:.63; pointer-events:none;
+}
+.drop-shell:after { content:""; position:absolute; inset:0; z-index:0; opacity:.15;
+  background-image:linear-gradient(#baf58b10 1px,transparent 1px); background-size:100% 5px;
+  mask-image:none; pointer-events:none;
+}
+.drop-info { align-items:center; gap:4px; z-index:3; }
+.drop-badge { display:inline-block; white-space:nowrap; border-radius:30px; border:1px solid #86bc38; background:#152015; color:var(--lime);
+  font:800 10px var(--ui); letter-spacing:.25px; padding:7px 11px; }
+.drop-no { white-space:nowrap; font:700 9px var(--ui); color:#a0ada4; letter-spacing:.4px; }
+.drop-stage { position:relative; z-index:1; height:205px; flex:none; margin-top:3px; }
+.drop-stage:before { content:""; position:absolute; inset:9px 6px 1px; border-radius:50%;
+  background:radial-gradient(ellipse at center,#b8fc3b1c,transparent 70%); filter:blur(5px); }
+.drop-stage-ring { position:absolute; left:50%; top:50%; translate:-50% -50%; width:96%; height:69%; border-radius:50%;
+  border:1px solid #9ce73818; transform:rotate(-12deg); pointer-events:none; }
+.drop-stage-ring.ring-inner { width:68%; height:48%; border-color:#b7ff5221; transform:rotate(11deg); }
+.deck { width:164px; height:164px; top:26px; left:50%; transform:translateX(-50%); filter:drop-shadow(0 24px 26px #000b); }
+.deck:hover { transform:translateX(-50%) translateY(-3px); }
+.deck-card { aspect-ratio:1/1; border-radius:17px; width:100%; height:100%; display:block; border:2px solid #92bc56;
+  background:linear-gradient(125deg,#1a261d,#09140e 65%); }
+.deck-card.one { transform:translate(-47px,7px) rotate(-19deg); border-color:#9c6fd1;
+  background:radial-gradient(circle at 60% 45%,#b377c04b,transparent 55%),linear-gradient(150deg,#36213e,#11101b 85%); }
+.deck-card.two { transform:translate(48px,6px) rotate(18deg); border-color:#c078b0;
+  background:radial-gradient(circle at 42% 50%,#ff9edb39,transparent 60%),linear-gradient(140deg,#452c45,#190f20 78%); }
+.deck-card.main { transform:rotate(0deg); z-index:3; border:2.5px solid #c6ff75;
+  background:radial-gradient(circle at 65% 50%,#74a3284a,transparent 53%),linear-gradient(140deg,#141e14,#07140c 65%);
+  box-shadow:0 0 0 3px #1b2d13,0 0 22px #b9ff4b66, inset 0 0 24px #9cff3119; }
+.deck-card.main:before { inset:7px; border:1px solid #d0ff8b62; border-radius:11px; }
+.deck-card.main:after { opacity:.75; }
+.back-mark { position:absolute; top:40%; left:17%; transform:rotate(-12deg); font:900 31px var(--display); color:#c692de; letter-spacing:-3px; opacity:.85; }
+.deck-card.two .back-mark { color:#efafd8; }
+.deck-logo { position:absolute; top:38%; left:50%; transform:translate(-50%,-4%) rotate(-8deg);
+  color:#c2ff79; font:900 37px var(--display); letter-spacing:-2.6px; text-shadow:0 0 18px #afff6280; }
+.deck-tag { position:absolute; bottom:16px; left:17px; z-index:1; color:var(--lime);
+  font:800 9px/1.2 var(--ui); letter-spacing:1.15px; }
+.drop-copy { position:relative; z-index:3; }
+.drop-copy h3 { font:900 19px/1.1 var(--display); letter-spacing:-.65px; margin:0 0 6px; }
+.drop-copy p { color:#aebbb3; font:500 11px/1.4 var(--ui); margin:0; min-height:30px; }
+.drop-cta { position:relative; z-index:3; background:var(--lime); color:#11180b; display:flex; justify-content:space-between; align-items:center;
+  width:100%; flex:none; margin:13px 0 10px; border:0; border-radius:12px; min-height:50px; padding:0 16px;
+  font:900 15px var(--display); letter-spacing:-.45px; box-shadow:0 0 24px #b5f93b2c; transition:transform .15s, box-shadow .15s; }
+.drop-cta:hover { box-shadow:0 0 35px #b5f93b55; transform:translateY(-1px); }
+.drop-cta:active { transform:translateY(1px); }
+.drop-cta:disabled { opacity:.65; box-shadow:none; transform:none; }
+.drop-cta-arrow { font:800 26px/1 var(--ui); }
+.drop-footer { display:flex; gap:8px; justify-content:space-between; align-items:center; position:relative; z-index:3;
+  color:#aeb8b0; font:600 9px var(--ui); }
+.drop-footer > span:first-child { color:#d7e8d4; white-space:nowrap; }
+.drop-footer > span:last-child { text-align:right; font-variant-numeric:tabular-nums; }
+.drop-footer strong { color:var(--lime); font-weight:800; }
+/* Normalize UI typography while retaining approved panels and colors. */
+.section-head { margin-bottom:12px; }
+.section-title { font:900 17px/1.1 var(--display); letter-spacing:-.55px; }
+.section-title b { font-size:23px; line-height:0; vertical-align:-2px; margin-right:4px; }
+.link { font:700 9px var(--ui); white-space:nowrap; }
+.content-section { margin-top:23px; }
+.feature h3,.panel h2 { font-family:var(--display); font-weight:900; }
+.feature h3 { letter-spacing:-1px; }
+.pill,.reward,.tab span,.panel h3,.task-text h4,.cta,.bigbtn,.outlinebtn,.drop-no,.f-coin {
+  font-family:var(--ui);
+}
+.task-text h4 { font-size:11px; }
+.tab span { font-size:9px; font-weight:700; letter-spacing:-.1px; }
+.note { font-size:10px; }
+/* Smaller screens: preserve cards as square even with little width. */
+@media (max-width:520px){
+  .scroll { padding-left:18px; padding-right:18px; }
+  .hero-intro { margin-top:6px; }
+  .drop-shell { min-height:402px; }
+}
+@media (max-width:360px){
+  .hero-intro h2 { font-size:29px; }
+  .hero-description { font-size:11px; }
+  .drop-shell { padding:13px 12px 11px; min-height:390px; }
+  .drop-stage { height:191px; }
+  .deck { width:148px; height:148px; top:26px; }
+  .drop-copy h3 { font-size:18px; }
+  .drop-cta { min-height:47px; font-size:14px; }
+  .drop-no { font-size:8px; }
+  .drop-badge { font-size:9px; padding:6px 8px; }
+}
