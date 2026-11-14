@@ -1,8 +1,8 @@
-/* FLIP v0.6 — temporary static content catalog. Replace image files by path; no artwork in JS. */
+/* FLIP v0.7.2 — temporary static content catalog. Common is marble sculpture; artwork files can be replaced without code changes. */
 (() => {
   'use strict';
   const rarityStyles = Object.freeze({
-    common: 'Печатная текстура',
+    common: 'Мраморная скульптура',
     rare: 'Нитки / вышивка',
     epic: 'Мозаика / витраж',
     legendary: 'Масляные краски',
@@ -51,5 +51,5 @@
     const release=artist.releases[Math.floor(Math.random()*artist.releases.length)];
     return makeCard(artist,release,rarity);
   }
-  window.FLIPCatalog={artists,rarities,rarityStyles,rarityLabels,getCard,getRandomCard,version:'0.6.0'};
+  window.FLIPCatalog={artists,rarities,rarityStyles,rarityLabels,getCard,getRandomCard,version:'0.7.2'};
 })();
