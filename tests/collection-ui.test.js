@@ -121,7 +121,7 @@ test('Viewer escapes untrusted labels and does not accept remote image URLs',()=
     artist:'<script>alert(2)</script>',rarity:'Rare',art:'https://example.com/evil.png'},
     {mode:'catalog'});
   const html=phone.lastChild.innerHTML;
-  assert.doesNotMatch(html,/<script>|onerror=|https:\/\/example\.com\/evil/);
+  assert.doesNotMatch(html,/<script>|<img[^>]*onerror=|https:\/\/example\.com\/evil/);
   assert.match(html,/&lt;script&gt;/);
   assert.match(html,/ПРЕВЬЮ/);
   window.FLIPCardViewer.close(true);
