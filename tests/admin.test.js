@@ -59,3 +59,47 @@ test('Admin grants use the signed actor ID, never an actor ID supplied in reques
    assert.equal(invalid.status,400);
  }finally{process.env=old;globalThis.fetch=oldFetch}
 });
+
+test('Admin searches cards with bounded server query, never the full catalog',async()=>{
+ const old=process.env,oldFetch=globalThis.fetch;
+ let url,payload;
+ process.env={...old,TELEGRAM_BOT_TOKEN:token,SUPABASE_URL:'https://example.supabase.co',
+   SUPABASE_SECRET_KEY:'sb_secret_testing',FLIP_ADMIN_TELEGRAM_ID:'12345'};
+ globalThis.fetch=async(u,opt)=>{url=u;payload=JSON.parse(opt.body);return new Response('[]',{status:200});};
+ try{
+   const res=await handleAdminRequest(req(12345,'https://flip.example.com/api/admin?view=cards&q=Playboi%20Carti'));
+   assert.equal(res.status,200);
+   assert.match(url,/flip_admin_search_cards$/);
+   assert.deepEqual(payload,{p_query:'Playboi Carti',p_limit:50});
+   const tooLong=await handleAdminRequest(req(12345,'https://flip.example.com/api/admin?view=cards&q='+('a'.repeat(81))));
+   assert.equal(tooLong.status,400);
+ }finally{process.env=old;globalThis.fetch=oldFetch}
+});
+test('XP/F grants are owner-only, bounded and use the signed Telegram actor',async()=>{
+ const old=process.env,oldFetch=globalThis.fetch;
+ const calls=[];
+ process.env={...old,TELEGRAM_BOT_TOKEN:token,SUPABASE_URL:'https://example.supabase.co',
+   SUPABASE_SECRET_KEY:'sb_secret_testing',FLIP_ADMIN_TELEGRAM_ID:'12345'};
+ globalThis.fetch=async(u,opt)=>{calls.push({url:u,body:JSON.parse(opt.body)});
+   return new Response(JSON.stringify({ok:true,level:2,balance:100,kind:'xp'}),{status:200});};
+ try{
+   const data={action:'grant_resource',recipientId:'67890',kind:'xp',amount:250,note:'Bonus',
+     requestId:'11111111-1111-4111-8111-111111111111',adminId:'67890'};
+   const forbidden=await handleAdminRequest(req(67890,'https://flip.example.com/api/admin','POST',data));
+   assert.equal(forbidden.status,403);
+   const res=await handleAdminRequest(req(12345,'https://flip.example.com/api/admin','POST',data));
+   assert.equal(res.status,200);
+   assert.match(calls[0].url,/flip_admin_grant_resource$/);
+   assert.equal(calls[0].body.p_admin_id,12345);
+   assert.equal(calls[0].body.p_amount,250);
+   assert.equal(calls[0].body.p_kind,'xp');
+   const invalid=await handleAdminRequest(req(12345,'https://flip.example.com/api/admin','POST',
+     {...data,amount:1000001}));
+   assert.equal(invalid.status,400);
+   assert.equal(calls.length,1);
+   const f=await handleAdminRequest(req(12345,'https://flip.example.com/api/admin','POST',
+     {...data,kind:'f',amount:100}));
+   assert.equal(f.status,200);
+   assert.equal(calls[1].body.p_kind,'f');
+ }finally{process.env=old;globalThis.fetch=oldFetch}
+});
