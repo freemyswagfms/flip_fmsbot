@@ -59,7 +59,7 @@ export async function handleAdminRequest(request){
       }
       if(view==='rewards')return json({rewards:await rpc('flip_admin_search_rewards',{p_limit:30},db)});
       if(view==='history')return json({history:await rpc('flip_admin_history',{p_limit:30},db)});
-      if(view==='ranked')return json({leaders:await rpc('flip_ranked_leaderboard',{p_limit:20},db)});
+      if(view==='ranked'){const data=await rpc('flip_cp_leaderboard',{p_viewer_id:user.telegram_id,p_limit:20},db);return json({leaders:data.leaders||[]});}
       return json({error:'BAD_REQUEST'},400);
     }
     if(Number(request.headers.get('content-length')||0)>1500)return json({error:'BAD_REQUEST'},400);
