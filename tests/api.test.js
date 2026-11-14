@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {createHmac} from 'node:crypto';
 import {validateTelegramInitData,handleRequest} from '../api/flip.js';
 const key='12345:TEST-TOKEN';
-function signedData({id=12345,date=Math.floor(Date.now()/1000),username='tester',token=key,userExtras={}}={}){
+function signedData(options={}){
+  const {id=12345,date=Math.floor(Date.now()/1000),token=key,userExtras={}}=options;
+  const username=Object.prototype.hasOwnProperty.call(options,'username')?options.username:'tester';
   const user=JSON.stringify({id,username,first_name:'Tester',...userExtras});
   const raw=new URLSearchParams({auth_date:String(date),user});
   const secret=createHmac('sha256','WebAppData').update(token).digest();

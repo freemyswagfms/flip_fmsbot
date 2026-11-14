@@ -1,12 +1,12 @@
-/* FLIP v0.8.3 — private in-app admin controls. API verifies Telegram ID on every call. */
+/* FLIP v0.8.4 — private in-app admin controls. API verifies Telegram ID on every call. */
 (() => {
   'use strict';
   const E=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const tg=window.Telegram?.WebApp;
   const raw=tg?.initData||'';
-  let root=null,stamp=0;
-  const s={players:[],cards:[],history:[],leaders:[],q:'',recipient:'',card:'',
-    mode:'test',note:'',busy:false,message:'',error:false,retryId:null,retryPayload:null};
+  let root=null,stamp=0,cardTimer=null,cardSeq=0;
+  const s={players:[],cards:[],history:[],rewards:[],leaders:[],q:'',recipient:'',card:'',cardQuery:'',
+    rewardKind:'card',amount:'',mode:'test',note:'',busy:false,message:'',error:false,retryId:null,retryPayload:null};
   function selfId(){
     try{const p=JSON.parse(new URLSearchParams(raw).get('user')||'null');
       return Number.isSafeInteger(p?.id)&&p.id>0?String(p.id):'';}
@@ -14,8 +14,8 @@
   }
   async function call(view,payload){
     const url=new URL('/api/admin',location.origin);
-    if(!payload){url.searchParams.set('view',view);if(view==='players'&&s.q.trim())
-      url.searchParams.set('q',s.q.trim().replace(/^@/,''));}
+    if(!payload){url.searchParams.set('view',view);if(view==='players'&&s.q.trim())url.searchParams.set('q',s.q.trim().replace(/^@/,''));
+      if(view==='cards'&&s.cardQuery.trim())url.searchParams.set('q',s.cardQuery.trim());}
     const options={method:payload?'POST':'GET',cache:'no-store',headers:{'x-telegram-init-data':raw}};
     if(payload){options.headers['content-type']='application/json';options.body=JSON.stringify(payload);}
     const res=await fetch(url,options);
@@ -38,6 +38,45 @@
       '</small>'+(a.note?'<small>'+E(a.note)+'</small>':'')+'</div>').join(''):
       '<p class="flip-admin-hint">Выдач пока нет.</p>';
   }
+  function rewardHistory(){
+    return s.rewards.length?s.rewards.slice(0,12).map(a=>
+      '<div class="flip-admin-history-row"><span class="flip-admin-mode ranked">'+
+      (a.kind==='xp'?'XP':'F')+' +'+E(a.amount)+'</span><strong>Получатель ID '+E(a.recipient_telegram_id)+
+      '</strong><small>'+E(new Date(a.created_at).toLocaleDateString('ru-RU'))+'</small>'+
+      (a.note?'<small>'+E(a.note)+'</small>':'')+'</div>').join(''):
+      '<p class="flip-admin-hint">Начислений пока нет.</p>';
+  }
+  function cardOptions(){
+    return s.cards.length?s.cards.map(c=>'<option value="'+E(c.id)+'" '+
+      (s.card===c.id?'selected':'')+'>'+E(c.label)+'</option>').join(''):
+      '<option value="">Ничего не найдено</option>';
+  }
+  function updateCardOptions(){
+    if(!root)return;
+    const select=root.querySelector('#flip-admin-card');
+    if(!select)return;
+    if(!s.cards.some(c=>c.id===s.card))s.card=s.cards[0]?.id||'';
+    select.innerHTML=cardOptions();
+    select.disabled=!s.cards.length;
+    const hint=root.querySelector('#flip-admin-card-hint');
+    if(hint)hint.textContent=s.cards.length===50?'Показаны первые 50 вариантов. Уточни поиск.':
+      'Найдено вариантов: '+s.cards.length;
+    const button=root.querySelector('[data-admin-grant]');
+    if(button)button.disabled=s.busy||(s.rewardKind==='card'&&!s.card);
+  }
+  async function searchCards(){
+    const job=stamp,seq=++cardSeq;
+    try{
+      const r=await call('cards');
+      if(job!==stamp||seq!==cardSeq)return;
+      s.cards=r.cards||[];
+      updateCardOptions();
+    }catch(e){
+      if(job!==stamp||seq!==cardSeq)return;
+      const hint=root?.querySelector('#flip-admin-card-hint');
+      if(hint)hint.textContent='Ошибка поиска: '+e.message;
+    }
+  }
   function ranking(){
     return s.leaders.length?s.leaders.slice(0,10).map((p,i)=>'<div class="flip-admin-leader"><span>'+
       (i+1)+'.</span><strong>'+E(p.username?'@'+p.username:(p.first_name||'FLIP PLAYER'))+
@@ -46,6 +85,7 @@
   }
   function draw(){
     if(!root||!root.isConnected)return;
+    const isCard=s.rewardKind==='card';
     root.innerHTML=[
       '<section class="flip-admin-section"><div class="flip-admin-section-heading"><h3>01 / ПОЛУЧАТЕЛЬ</h3>',
       '<button type="button" class="outlinebtn" data-admin-self>СЕБЕ</button></div>',
@@ -54,64 +94,109 @@
       '<div class="flip-admin-users">',players(),'</div>',
       '<label class="flip-admin-field-label" for="flip-admin-recipient">Telegram ID получателя</label>',
       '<input class="flip-admin-input" id="flip-admin-recipient" inputmode="numeric" maxlength="16" placeholder="Выбери игрока" value="',E(s.recipient),'"></section>',
-      '<section class="flip-admin-section"><h3>02 / КАРТОЧКА</h3>',
-      '<select class="flip-admin-input" id="flip-admin-card">',
-      s.cards.map(c=>'<option value="'+E(c.id)+'" '+(s.card===c.id?'selected':'')+'>'+E(c.label)+'</option>').join(''),
-      '</select><h3 class="flip-admin-small-heading">03 / ТИП ВЫДАЧИ</h3>',
-      '<label class="flip-admin-mode-choice '+(s.mode==='test'?'chosen':'')+'">',
-      '<input type="radio" name="flip-admin-mode" value="test" '+(s.mode==='test'?'checked':'')+'>',
-      '<span><strong>Тестовая / административная</strong><small>Пометка «ТЕСТ» в коллекции. В топе не учитывается.</small></span></label>',
-      '<label class="flip-admin-mode-choice '+(s.mode==='ranked'?'chosen':'')+'">',
-      '<input type="radio" name="flip-admin-mode" value="ranked" '+(s.mode==='ranked'?'checked':'')+'>',
-      '<span><strong>Рейтинговая / обычная</strong><small>Учитывается в топе. Источник выдачи сохраняется в журнале администрации.</small></span></label>',
+      '<section class="flip-admin-section"><h3>02 / ЧТО ВЫДАТЬ</h3>',
+      '<div class="flip-admin-kind-tabs">',
+      [['card','КАРТОЧКА'],['xp','XP'],['f','F']].map(([key,label])=>
+        '<button type="button" class="flip-admin-kind '+(s.rewardKind===key?'active':'')+
+        '" data-admin-kind="'+key+'">'+label+'</button>').join(''),
+      '</div>',
+      isCard?[
+        '<label class="flip-admin-field-label" for="flip-admin-card-search">Поиск карточки</label>',
+        '<input class="flip-admin-input" id="flip-admin-card-search" type="search" maxlength="80" autocomplete="off" placeholder="Артист, альбом, редкость или ID" value="',E(s.cardQuery),'">',
+        '<p class="flip-admin-hint" id="flip-admin-card-hint">',
+          s.cards.length===50?'Показаны первые 50 вариантов. Уточни поиск.':'Найдено вариантов: '+s.cards.length,
+        '</p>',
+        '<select class="flip-admin-input" id="flip-admin-card" ',s.cards.length?'':'disabled','>',
+          cardOptions(),'</select>',
+        '<h3 class="flip-admin-small-heading">03 / ТИП ВЫДАЧИ</h3>',
+        '<label class="flip-admin-mode-choice '+(s.mode==='test'?'chosen':'')+'">',
+        '<input type="radio" name="flip-admin-mode" value="test" '+(s.mode==='test'?'checked':'')+'>',
+        '<span><strong>Тестовая / административная</strong><small>Пометка «ТЕСТ» в коллекции. В топе не учитывается.</small></span></label>',
+        '<label class="flip-admin-mode-choice '+(s.mode==='ranked'?'chosen':'')+'">',
+        '<input type="radio" name="flip-admin-mode" value="ranked" '+(s.mode==='ranked'?'checked':'')+'>',
+        '<span><strong>Рейтинговая / обычная</strong><small>Учитывается в предварительном топе. Источник сохраняется в журнале.</small></span></label>'
+      ].join(''):[
+        '<label class="flip-admin-field-label" for="flip-admin-amount">Сколько ',s.rewardKind==='xp'?'XP':'F',' начислить</label>',
+        '<input class="flip-admin-input" id="flip-admin-amount" inputmode="numeric" type="number" min="1" max="1000000" step="1" placeholder="От 1 до 1 000 000" value="',E(s.amount),'">',
+        '<p class="flip-admin-hint">',s.rewardKind==='xp'?
+          'XP повышает уровень по обычным правилам, включая положенные награды уровня.':
+          'F поступают сразу на баланс игрока.',
+          ' Награда административная, в будущие CP не входит напрямую.</p>'
+      ].join(''),
       '<label class="flip-admin-field-label" for="flip-admin-note">Причина (необязательно)</label>',
-      '<input class="flip-admin-input" id="flip-admin-note" maxlength="200" placeholder="Например, тест оформления" value="',E(s.note),'">',
-      '<p class="flip-admin-hint">Историю выдачи невозможно скрыть из журнала. Тестовые копии исключены из рейтингов.</p>',
+      '<input class="flip-admin-input" id="flip-admin-note" maxlength="200" placeholder="Например, компенсация или тест" value="',E(s.note),'">',
       s.message?'<div role="status" class="flip-admin-message '+(s.error?'failed':'ok')+'">'+E(s.message)+'</div>':'',
-      '<button type="button" class="bigbtn" data-admin-grant '+(s.busy||!s.cards.length?'disabled':'')+'>',
-      s.busy?'СОХРАНЕНИЕ…':'ВЫДАТЬ КАРТОЧКУ ↗','</button></section>',
-      '<section class="flip-admin-section"><h3>ЖУРНАЛ ВЫДАЧ</h3>',history(),'</section>',
+      '<button type="button" class="bigbtn" data-admin-grant '+(s.busy||(isCard&&!s.card)?'disabled':'')+'>',
+      s.busy?'СОХРАНЕНИЕ…':isCard?'ВЫДАТЬ КАРТОЧКУ ↗':'НАЧИСЛИТЬ '+s.rewardKind.toUpperCase()+' ↗',
+      '</button></section>',
+      '<section class="flip-admin-section"><h3>ЖУРНАЛ КАРТОЧЕК</h3>',history(),'</section>',
+      '<section class="flip-admin-section"><h3>ЖУРНАЛ XP И F</h3>',rewardHistory(),'</section>',
       '<section class="flip-admin-section"><h3>ПРЕДВАРИТЕЛЬНЫЙ ТОП</h3>',
-      '<p class="flip-admin-hint">Включает только рейтинговые экземпляры.</p>',ranking(),'</section>'
+      '<p class="flip-admin-hint">Пока учитываются только рейтинговые экземпляры. Новую формулу CP обсудим отдельно.</p>',ranking(),'</section>'
     ].join('');
+    window.FLIPIcons?.render(root); // admin markup is injected after the app's global icon pass
   }
   async function load(part='all'){
     const job=stamp;
+    if(part==='cards'){await searchCards();return;}
     try{
       if(part==='all'){
-        const [u,c,h,l]=await Promise.all([call('players'),call('catalog'),call('history'),call('ranked')]);
+        const [u,c,h,r,l]=await Promise.all([
+          call('players'),call('cards'),call('history'),call('rewards'),call('ranked')
+        ]);
         if(job!==stamp)return;
-        s.players=u.players||[];s.cards=c.cards||[];s.history=h.history||[];s.leaders=l.leaders||[];
+        s.players=u.players||[];s.cards=c.cards||[];s.history=h.history||[];
+        s.rewards=r.rewards||[];s.leaders=l.leaders||[];
         if(!s.cards.some(x=>x.id===s.card))s.card=s.cards[0]?.id||'';
       }else if(part==='players'){
         const r=await call('players');if(job!==stamp)return;s.players=r.players||[];
       }else{
-        const [u,h,l]=await Promise.all([call('players'),call('history'),call('ranked')]);
-        if(job!==stamp)return;s.players=u.players||[];s.history=h.history||[];s.leaders=l.leaders||[];
+        const [u,h,r,l]=await Promise.all([
+          call('players'),call('history'),call('rewards'),call('ranked')
+        ]);
+        if(job!==stamp)return;
+        s.players=u.players||[];s.history=h.history||[];
+        s.rewards=r.rewards||[];s.leaders=l.leaders||[];
       }
       draw();
-    }catch(e){if(job!==stamp)return;s.error=true;s.message='Ошибка запроса: '+e.message;draw()}
+    }catch(e){if(job!==stamp)return;s.error=true;s.message='Ошибка запроса: '+e.message;draw();}
   }
   async function grant(){
     if(s.busy)return;
-    const payload={action:'grant_card',recipientId:s.recipient.trim(),cardId:s.card,mode:s.mode,note:s.note.trim()};
-    if(!/^[1-9]\d{0,15}$/.test(payload.recipientId)||!payload.cardId){
-      s.error=true;s.message='Сначала выбери получателя и карточку.';draw();return;
+    const payload={action:s.rewardKind==='card'?'grant_card':'grant_resource',
+      recipientId:s.recipient.trim(),note:s.note.trim()};
+    if(!/^[1-9]\d{0,15}$/.test(payload.recipientId)){
+      s.error=true;s.message='Выбери получателя.';draw();return;
     }
-    const card=s.cards.find(x=>x.id===payload.cardId);
-    if(!window.confirm('Выдать '+(card?.label||payload.cardId)+' игроку ID '+payload.recipientId+
-      '?\nРежим: '+(payload.mode==='test'?'ТЕСТ (не учитывается в топе)':'РЕЙТИНГОВАЯ')))return;
+    let subject;
+    if(s.rewardKind==='card'){
+      payload.cardId=s.card;payload.mode=s.mode;
+      if(!payload.cardId){s.error=true;s.message='Выбери карточку.';draw();return;}
+      const card=s.cards.find(x=>x.id===payload.cardId);
+      subject=(card?.label||payload.cardId)+' / '+(payload.mode==='test'?'ТЕСТ':'РЕЙТИНГОВАЯ');
+    }else{
+      if(!/^[1-9]\d{0,6}$/.test(s.amount)||Number(s.amount)>1000000){
+        s.error=true;s.message='Укажи целое положительное число от 1 до 1 000 000.';draw();return;
+      }
+      payload.kind=s.rewardKind;payload.amount=Number(s.amount);
+      subject='+'+payload.amount+' '+payload.kind.toUpperCase();
+    }
+    if(!window.confirm('Начислить '+subject+' игроку ID '+payload.recipientId+'?'))return;
     const marker=JSON.stringify(payload);
     if(s.retryPayload!==marker){s.retryId=crypto.randomUUID();s.retryPayload=marker;}
     s.busy=true;s.message='';draw();
     try{
       const result=await call('',{...payload,requestId:s.retryId});
       s.retryId=null;s.retryPayload=null;s.busy=false;s.error=false;
-      s.message='Карточка выдана. '+(result.mode==='test'?'Не учитывается в топе.':'Учитывается в топе.');
+      s.message=s.rewardKind==='card'?
+        'Карточка выдана. '+(result.mode==='test'?'Не учитывается в топе.':'Учитывается в топе.'):
+        'Начислено '+payload.amount+' '+payload.kind.toUpperCase()+
+        '. Уровень: '+result.level+'; баланс: '+result.balance+' F.';
+      if(s.recipient===selfId())window.dispatchEvent(new Event('flip-admin-self-changed'));
       await load('refresh');
     }catch(e){
       s.busy=false;s.error=true;
-      s.message='Не удалось выдать: '+e.message+'. Если связь оборвалась, повтори с той же формой — это безопасно.';
+      s.message='Не удалось начислить: '+e.message+'. Если связь оборвалась, повтори с той же формой.';
       draw();
     }
   }
@@ -120,12 +205,19 @@
     if(b.hasAttribute('data-admin-self')){s.recipient=selfId();s.message='';draw();return;}
     if(b.hasAttribute('data-admin-user')){s.recipient=b.dataset.adminUser;s.message='';draw();return;}
     if(b.hasAttribute('data-admin-search')){s.message='';load('players');return;}
+    if(b.hasAttribute('data-admin-kind')){s.rewardKind=b.dataset.adminKind;s.message='';draw();return;}
     if(b.hasAttribute('data-admin-grant'))grant();
   }
   function input(e){
     if(e.target.id==='flip-admin-search')s.q=e.target.value;
     if(e.target.id==='flip-admin-recipient')s.recipient=e.target.value;
     if(e.target.id==='flip-admin-note')s.note=e.target.value;
+    if(e.target.id==='flip-admin-amount')s.amount=e.target.value;
+    if(e.target.id==='flip-admin-card-search'){
+      s.cardQuery=e.target.value;
+      if(cardTimer)clearTimeout(cardTimer);
+      cardTimer=setTimeout(()=>searchCards(),250);
+    }
   }
   function change(e){
     if(e.target.id==='flip-admin-card')s.card=e.target.value;
@@ -135,7 +227,8 @@
     mount(el){
       if(!el||window.FLIPServer?.isAdmin!==true)return;
       if(root===el)return;
-      root=el;stamp++;s.message='';s.error=false;
+      root=el;stamp++;cardSeq++;if(cardTimer)clearTimeout(cardTimer);
+      s.message='';s.error=false;
       el.addEventListener('click',click);
       el.addEventListener('input',input);
       el.addEventListener('change',change);
