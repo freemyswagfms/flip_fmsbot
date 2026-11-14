@@ -262,7 +262,7 @@ BEGIN
         ON CONFLICT DO NOTHING;
       GET DIAGNOSTICS v_eligible=ROW_COUNT;
     ELSE
-      v_signature:=CASE WHEN v.sender_id<v.recipient_id THEN
+      v_signature:=CASE WHEN array_to_string(v_offer,',')<=array_to_string(v_want,',') THEN
         array_to_string(v_offer,',')||'::'||array_to_string(v_want,',')
       ELSE array_to_string(v_want,',')||'::'||array_to_string(v_offer,',') END;
       INSERT INTO public.flip_trade_bundle_xp_pairs(player_a,player_b,cards_signature,first_trade)
