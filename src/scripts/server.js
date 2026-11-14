@@ -28,7 +28,7 @@
       const ranked=Math.max(0,Math.min(count,Number(item.ranked_count??count)||0));
       for(let i=0;i<count;i++)received.push({...card,isTestCopy:i>=ranked});
     }
-    return {received, discovered:snapshot.discovered, balance:snapshot.balance,
+    return {received, discovered:snapshot.discovered, balance:snapshot.balance,cp:Number(snapshot.cp)||0,
       xp:snapshot.xp,level:snapshot.level,xpToNext:snapshot.xp_to_next,
       dropReadyAt:Date.parse(snapshot.drop_ready_at),
       welcomeRemaining:snapshot.welcome_remaining,
