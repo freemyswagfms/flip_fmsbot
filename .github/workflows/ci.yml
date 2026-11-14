@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-      - feat/v0.8.4-admin-search-rewards-icons
+      - 'feat/**'
   pull_request:
 permissions:
   contents: read
