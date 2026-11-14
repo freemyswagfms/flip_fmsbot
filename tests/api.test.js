@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {createHmac} from 'node:crypto';
 import {validateTelegramInitData,handleRequest} from '../api/flip.js';
 const key='12345:TEST-TOKEN';
-function signedData({id=12345,date=Math.floor(Date.now()/1000),username='tester',token=key}={}){
-  const user=JSON.stringify({id,username,first_name:'Tester'});
+function signedData({id=12345,date=Math.floor(Date.now()/1000),username='tester',token=key,userExtras={}}={}){
+  const user=JSON.stringify({id,username,first_name:'Tester',...userExtras});
   const raw=new URLSearchParams({auth_date:String(date),user});
   const secret=createHmac('sha256','WebAppData').update(token).digest();
   const digest=createHmac('sha256',secret).update([...raw.entries()].sort(([a],[b])=>a.localeCompare(b,'en')).map(([k,v])=>`${k}=${v}`).join('\n')).digest('hex');
@@ -86,4 +86,34 @@ test('First-party Telegram HMAC includes signature when present',()=>{
   assert.equal(validateTelegramInitData(raw.toString(),key).telegram_id,12345);
   raw.set('signature','tampered');
   assert.throws(()=>validateTelegramInitData(raw.toString(),key),/INVALID_TELEGRAM_SESSION/);
+});
+
+test('Telegram validated profile includes safe photo and optional username',()=>{
+  const data=validateTelegramInitData(signedData({username:undefined,userExtras:{
+    first_name:'First',last_name:'Last',photo_url:'https://t.me/i/userpic/320/photo.jpg'}}),key);
+  assert.equal(data.username,'');
+  assert.equal(data.last_name,'Last');
+  assert.equal(data.photo_url,'https://t.me/i/userpic/320/photo.jpg');
+  for(const url of ['javascript:alert(1)','http://host.example/photo.jpg','https://user:pass@host.example/photo.jpg']){
+    assert.equal(validateTelegramInitData(signedData({userExtras:{photo_url:url}}),key).photo_url,'');
+  }
+});
+test('Server profile fallback tag stable for no username and photo never written into Supabase RPC',async()=>{
+  const env=process.env, orig=globalThis.fetch;
+  process.env={...env,SUPABASE_URL:'https://example.supabase.co',SUPABASE_SECRET_KEY:'sb_secret_fake',TELEGRAM_BOT_TOKEN:key};
+  const calls=[];
+  globalThis.fetch=async(url,options)=>{calls.push(JSON.parse(options.body));return new Response(
+    JSON.stringify({balance:0,xp:0,level:1,inventory:[],discovered:[],first_name:'First',username:''}),{status:200}
+  );};
+  try{
+    const init=signedData({id:987654,username:undefined,userExtras:{first_name:'First',last_name:'Last',photo_url:'https://t.me/i/userpic/photo.jpg'}});
+    const request=()=>new Request('https://flip.example.com/api/flip',{headers:{'x-telegram-init-data':init}});
+    const a=await (await handleRequest(request())).json();
+    const b=await (await handleRequest(request())).json();
+    assert.equal(a.profile.display_name,'First Last');
+    assert.match(a.profile.handle,/^FLIP#[0-9A-F]{10}$/);
+    assert.equal(a.profile.handle,b.profile.handle);
+    assert.equal(a.profile.avatar_url,'https://t.me/i/userpic/photo.jpg');
+    assert.deepEqual(calls,[{telegram_id:987654,username:'',first_name:'First'},{telegram_id:987654,username:'',first_name:'First'}]);
+  }finally{process.env=env;globalThis.fetch=orig;}
 });

@@ -5,7 +5,7 @@
   const initData = telegram?.initData || '';
   const telegramClient=window.FLIPViewport?.isTelegram || !!initData;
   const api='/api/flip';
-  const bridge={mode:'loading',error:null,connectedUser:null};
+  const bridge={mode:'loading',error:null,connectedUser:null,profile:null};
   async function request(action,requestId){
     const headers={'x-telegram-init-data':initData};
     const options={method:action?'POST':'GET',headers,cache:'no-store'};
@@ -15,7 +15,7 @@
     if(!response.ok){const error=new Error(data.error||'SERVER_ERROR');error.status=response.status;throw error;}
     return data;
   }
-  function makeState(snapshot){
+  function makeState(snapshot,profile=bridge.profile){
     if(!snapshot || !Array.isArray(snapshot.inventory)||!Array.isArray(snapshot.discovered))throw new Error('INVALID_SNAPSHOT');
     const received=[];
     const catalog=window.FLIPCatalog;
@@ -34,11 +34,13 @@
       pityMisses:snapshot.pity_misses,
       claimedTasks:snapshot.claimed_tasks||[], packsToday:snapshot.packs_today||0,
       bonusPacks:snapshot.bonus_packs||0,
-      telegramName:snapshot.first_name||snapshot.username||'PLAYER'};
+      telegramName:profile?.display_name||snapshot.first_name||snapshot.username||'FLIP PLAYER',
+      telegramHandle:profile?.handle||(snapshot.username?'@'+snapshot.username:'FLIP PLAYER'),
+      telegramAvatarUrl:profile?.avatar_url||''};
   }
   bridge.connect=async()=>{
     if(!initData){bridge.mode=telegramClient?'blocked':'demo';bridge.error=telegramClient?'NO_TELEGRAM_AUTH':'OUTSIDE_TELEGRAM';return null;}
-    try{const data=await request();bridge.mode='server';bridge.error=null;return makeState(data.state);}
+    try{const data=await request();bridge.mode='server';bridge.error=null;bridge.profile=data.profile||null;return makeState(data.state);}
     catch(error){
       // Never switch an authenticated Telegram user back to writable browser currency.
       bridge.mode='blocked';bridge.error=error.message;return null;

@@ -1,0 +1,8 @@
+/* FLIP v0.8.2 — Telegram profile identity */
+.flip-player-row{display:flex;align-items:center;gap:14px;min-width:0}
+.flip-player-avatar{position:relative;width:60px;height:60px;flex:0 0 60px;display:grid;place-items:center;overflow:hidden;border-radius:17px;background:linear-gradient(140deg,#344e2b,#172419);border:1px solid #587149;box-shadow:inset 0 0 20px #beff4f11}
+.flip-player-initials{font:800 21px 'Space Grotesk',sans-serif;color:var(--lime);letter-spacing:-1px}
+.flip-player-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:#1b2d20}
+.flip-player-meta{min-width:0;flex:1}
+.flip-player-meta h3{font:800 16px 'Space Grotesk',sans-serif;margin:0 0 4px;overflow-wrap:anywhere;line-height:1.2}
+.flip-player-handle{font:600 11px 'Space Grotesk',sans-serif!important;color:#9daf9e!important;margin:0 0 8px!important;overflow-wrap:anywhere;letter-spacing:.2px}

@@ -1,7 +1,7 @@
 /** FLIP v0.8 — Vercel Web Function; Telegram initData verified on every request.
  *  Only server has Supabase secret key. There is no public write API for player state.
  */
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHmac, createHash, timingSafeEqual } from 'node:crypto';
 
 const MAX_AGE_SECONDS = 24 * 60 * 60;
 const MAX_INIT_DATA_LENGTH = 8192;
@@ -10,6 +10,20 @@ const json = (value, status=200) => new Response(JSON.stringify(value), {
   status, headers: {'content-type':'application/json; charset=utf-8', 'cache-control':'no-store',
     'x-content-type-options':'nosniff', 'referrer-policy':'no-referrer'}
 });
+
+function safePhotoUrl(value) {
+  if (typeof value !== 'string' || value.length > 2048) return '';
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && !url.username && !url.password ? url.href : '';
+  } catch { return ''; }
+}
+
+// Stable in-game alias for people without a Telegram @username. Not a Telegram link.
+function publicPlayerTag(telegramId) {
+  const digest = createHash('sha256').update(`flip-player-v1:${telegramId}`).digest('hex');
+  return `FLIP#${digest.slice(0, 10).toUpperCase()}`;
+}
 
 export function validateTelegramInitData(raw, token, nowSeconds=Math.floor(Date.now()/1000)) {
   if (!token || typeof raw!=='string' || !raw || raw.length > MAX_INIT_DATA_LENGTH) throw new Error('INVALID_TELEGRAM_SESSION');
@@ -31,7 +45,9 @@ export function validateTelegramInitData(raw, token, nowSeconds=Math.floor(Date.
   try{user=JSON.parse(pairs.get('user')||'null');}catch{throw new Error('INVALID_TELEGRAM_SESSION');}
   if (!user || !Number.isSafeInteger(user.id) || user.id<=0) throw new Error('INVALID_TELEGRAM_SESSION');
   return {telegram_id:user.id, username:typeof user.username==='string'?user.username.slice(0,64):'',
-    first_name:typeof user.first_name==='string'?user.first_name.slice(0,128):''};
+    first_name:typeof user.first_name==='string'?user.first_name.slice(0,128):'',
+    last_name:typeof user.last_name==='string'?user.last_name.slice(0,128):'',
+    photo_url:safePhotoUrl(user.photo_url)};
 }
 
 function settings(){
@@ -70,8 +86,17 @@ export async function handleRequest(request,env=undefined){
     const user=validateTelegramInitData(raw,process.env.TELEGRAM_BOT_TOKEN);
     const db=settings();
     if(request.method==='GET'){
-      const state=await rpc('flip_bootstrap',user,db);
-      return json({state, mode:'server'});
+      // The database only accepts identity fields. Do not persist optional profile-photo URLs.
+      const state=await rpc('flip_bootstrap',{
+        telegram_id:user.telegram_id, username:user.username, first_name:user.first_name
+      },db);
+      const displayName=[user.first_name,user.last_name].filter(Boolean).join(' ').trim()
+        || user.username || 'FLIP PLAYER';
+      return json({state, mode:'server', profile:{
+        display_name:displayName,
+        handle:user.username ? `@${user.username}` : publicPlayerTag(user.telegram_id),
+        avatar_url:user.photo_url
+      }});
     }
     if(Number(request.headers.get('content-length')||0)>MAX_BODY_LENGTH) return json({error:'BAD_REQUEST'},400);
     const rawBody=await request.text();
