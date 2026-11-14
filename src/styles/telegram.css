@@ -43,3 +43,12 @@
 html, body, .phone, .phone .scroll, button { touch-action: manipulation; }
 button { -webkit-tap-highlight-color: transparent; }
 html { -webkit-text-size-adjust: 100%; }
+
+/* v0.7: prevent double-tap zoom on ALL sections, including ordinary text and tiles.
+   Keep native scrolling and pinch-to-zoom available for accessibility. */
+.phone, .phone .scroll, .phone #screen, .phone #screen *,
+.phone .topbar, .phone .topbar *, .phone .bottom-nav, .phone .bottom-nav *,
+.phone .overlay, .phone .overlay *, .phone .flip-reveal, .phone .flip-reveal * {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}

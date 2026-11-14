@@ -6,7 +6,14 @@ const now=Date.now();
 const initial={balance:1250,xp:64,level:8,dropReadyAt:now,received:[],claimedTasks:[],packsToday:0,lastPackDay:'',notices:1,pityMisses:0};
 let saved={};try{saved=JSON.parse(localStorage.getItem('flip_demo')||localStorage.getItem('flip20_demo')||'{}')||{}}catch{}
 const state={...initial,...saved};
+// Keep a permanent discovery register independently from current owned copies.
+if(!Array.isArray(state.received)) state.received=[];
+if(!Array.isArray(state.discovered)) state.discovered=[];
+const previousDiscoveries=new Set(state.discovered);
+for(const oldCard of state.received){if(oldCard?.id && !previousDiscoveries.has(oldCard.id)){state.discovered.push(oldCard.id);previousDiscoveries.add(oldCard.id)}}
+
 let current='home';
+let collectionArtistId=null, collectionReleaseId=null;
 const catalog=window.FLIPCatalog;
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const artCards=catalog.rarities.map((rarity,i)=>catalog.getCard('carti',catalog.artists[0].releases[i%5].id,rarity));
@@ -41,32 +48,17 @@ function home(){return `<div class="hero-intro">
     <span><span id="timerLabel">Следующий через 4 часа</span> <strong id="timerValue">ГОТОВ</strong></span>
   </div>
 </section>
-<section class="content-section"><div class="section-head"><span class="section-title"><b>✳</b> НОВАЯ КОЛЛЕКЦИЯ</span><button class="link" data-action="collection">СМОТРЕТЬ ВСЁ ↗</button></div><div class="feature"><div class="feature-copy"><span class="pill">✦ NEW ARRIVAL</span><h3>PLAYBOI<br>CARTI</h3><p>Первые пять релизов уже в каталоге FLIP. Открой свою находку.</p><button data-action="collection">В КОЛЛЕКЦИЮ ↗</button></div><div class="artwork second" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/die-lit/epic.webp" alt=""></div><div class="artwork" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/whole-lotta-red/mythic.webp" alt=""></div></div></section>
+<section class="content-section"><div class="section-head"><span class="section-title"><b>✳</b> НОВАЯ КОЛЛЕКЦИЯ</span><button class="link" data-action="catalog">СМОТРЕТЬ ВСЁ ↗</button></div><div class="feature"><div class="feature-copy"><span class="pill">✦ NEW ARRIVAL</span><h3>PLAYBOI<br>CARTI</h3><p>Первые пять релизов уже в каталоге FLIP. Открой свою находку.</p><button data-action="catalog">СМОТРЕТЬ РЕЛИЗЫ ↗</button></div><div class="artwork second" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/die-lit/epic.webp" alt=""></div><div class="artwork" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/whole-lotta-red/mythic.webp" alt=""></div></div></section>
 <section class="content-section"><div class="section-head"><span class="section-title"><b>◎</b> ЗАДАНИЯ</span><button class="link" data-action="tasks">СМОТРЕТЬ ВСЕ ↗</button></div><div class="task-list">${taskRow(0,true)}${taskRow(1,true)}${taskRow(2,true)}</div></section>
 <div class="quick-nav"><button class="quick" data-action="store"><span>◈</span> ТЕМАТИЧЕСКИЕ НАБОРЫ ↗</button><button class="quick" data-action="profile"><span>☆</span> МОЙ ПРОФИЛЬ ↗</button></div>
 <div class="note">FLIP · Демо-версия. 25 настоящих изображений Carti; выпадения и награды пока сохраняются только в этом браузере.</div>`}
 const taskDefs=[{title:'Открой бесплатный дроп',detail:'0 / 1 · Ежедневное задание',reward:'30 F'},{title:'Получи новую карточку',detail:'0 / 1 · Коллекция',reward:'30 F'},{title:'Открой стандартный пак',detail:'0 / 1 · Активность',reward:'30 F'}];
 function taskRow(i,compact=false){let t=taskDefs[i],done=state.claimedTasks.includes(i);return `<div class="task"><button class="taskbutton" data-task="${i}" ${done?'disabled':''}><div class="task-check ${done?'completed':''}">${done?'✓':'↗'}</div><div class="task-text"><h4>${t.title}</h4><p>${done?'ВЫПОЛНЕНО':t.detail}</p></div><span class="reward">${done?'✓':t.reward}</span><span class="task-arrow">›</span></button></div>`}
 function uniqueKey(c){return c.id||`${c.artist||''}|${c.title||''}|${c.rarity||''}`}
-function collection(){
-  const grouped=new Map();
-  state.received.forEach(c=>{
-    const key=uniqueKey(c);
-    if(grouped.has(key))grouped.get(key).count++;
-    else grouped.set(key,{...c,count:1});
-  });
-  const cards=[...grouped.values()].reverse();
-  const artistSet=new Set(cards.map(c=>c.artistId).filter(Boolean));
-  return `<div class="panel"><span class="eyebrow">YOUR ARCHIVE / 002</span><h2>КОЛЛЕКЦИЯ<span style="color:var(--lime)">.</span></h2>
-  <p class="desc">Полученные карточки, их редкости и дубликаты. Артист появляется здесь после первого дропа.</p>
-  <div class="chips"><span class="chip active">МОИ КАРТОЧКИ</span><button class="chip" data-action="catalog">КАТАЛОГ · ДЕМО ↗</button></div>
-  <div class="content-card"><div class="collection-heading"><h3>МОИ НАХОДКИ</h3><span class="collection-counter">${cards.length} / ${catalog.artists.reduce((n,a)=>n+a.releases.length*catalog.rarities.length,0)}</span></div>
-    ${cards.length?`<div class="square-grid">${cards.map(sq).join('')}</div>`:`<p class="muted">Пока здесь пусто. Забери бесплатный дроп — и твой первый артист появится в коллекции.</p>`}
-  </div>
-  ${artistSet.size?`<div class="content-card"><h3>МОИ АРТИСТЫ</h3>${catalog.artists.filter(a=>artistSet.has(a.id)).map(a=>`<div class="collection-artist-row"><strong>${escapeHtml(a.name)}</strong><span>${cards.filter(c=>c.artistId===a.id).length} разновидностей</span></div>`).join('')}</div>`:''}
-  <div class="content-card"><h3>БИБЛИОТЕКА FLIP</h3><p>Сейчас загружено ${catalog.artists.length} артист и ${catalog.artists[0].releases.length} релизов. В режиме просмотра доступны все 25 вариантов оформления, даже если они ещё не выпали.</p><button class="outlinebtn" data-action="catalog">ОТКРЫТЬ КАТАЛОГ ДЕМО ↗</button></div>
-  <p class="note">Владение карточками в этой версии демонстрационное и хранится локально, не на сервере.</p></div>`;
-}
+function collection(){return window.FLIPCollection.home(state)}
+function collectionArtist(){return window.FLIPCollection.artist(state,collectionArtistId)}
+function collectionRelease(){return window.FLIPCollection.release(state,collectionArtistId,collectionReleaseId)}
+function collectionHistory(){return window.FLIPCollection.history(state)}
 function catalogView(){
   const artist=catalog.artists[0];
   return `<div class="panel"><button class="link" data-action="collection">← К КОЛЛЕКЦИИ</button>
@@ -85,7 +77,7 @@ function trades(){return `<div class="panel"><span class="eyebrow">PLAYER TO PLA
 function store(){return `<div class="panel"><span class="eyebrow">COLLECT MORE / 004</span><h2>МАГАЗИН<span style="color:var(--lime)">.</span></h2><p class="desc">Стандартные паки и особые тематические коллекции. Цены показаны согласно выбранной базовой экономике.</p><div class="content-card"><span class="pill">◆ STANDARD PACK</span><h3 style="font-size:20px;margin-top:9px">3 СЛУЧАЙНЫЕ КАРТОЧКИ</h3><p>Три разные разновидности, гарантированно хотя бы одна Rare+. Без pity.</p><div class="square-grid" style="margin:17px 0">${[0,1,2].map(()=>`<div class="sq-card" style="background:linear-gradient(135deg,#344d2b,#132318)"><span class="sq-art" style="color:var(--lime)">FLIP</span></div>`).join('')}</div><div class="menu-row"><strong>200 F</strong><small id="packCounter">ЛИМИТ: ${state.packsToday}/10 СЕГОДНЯ</small></div><button class="bigbtn" id="buyPackBtn">КУПИТЬ ПАК · 200 F ↗</button></div><div class="content-card"><span class="pill">✦ SPECIAL COLLECTION</span><h3 style="font-size:21px;margin-top:10px">GTA / ALTERNATE</h3><p>Демонстрационная тематическая коллекция · 5 квадратных карточек · набор приобретается целиком.</p><div class="square-grid">${artCards.slice(0,3).map(sq).join('')}</div><div class="menu-row"><strong>5 000 F</strong><small>РОТАЦИЯ: РАЗ В МЕСЯЦ</small></div><button class="outlinebtn" style="margin-top:10px;width:100%" data-action="special">ПОДРОБНОСТИ ↗</button></div></div>`}
 function profile(){return `<div class="panel"><span class="eyebrow">PERSONAL SPACE / 005</span><h2>ПРОФИЛЬ<span style="color:var(--lime)">.</span></h2><div class="content-card"><div style="display:flex;align-items:center;gap:13px"><div style="width:57px;height:57px;border-radius:16px;background:#314b25;display:grid;place-items:center;color:var(--lime);font:800 25px 'Space Grotesk'">F</div><div><h3 style="margin:0 0 4px">FLIP PLAYER</h3><span class="pill">LVL ${state.level} · ${state.xp} XP</span></div></div><div class="progress" style="--p:${Math.min(state.xp,100)}%;margin-top:19px"><i></i></div><p>Следующий уровень · базовая награда 30 F</p></div><div class="content-card"><h3>ВИТРИНА КАРТОЧЕК <span style="color:#8fa68d">0/3</span></h3><div class="square-grid">${[0,1,2].map(()=>`<div class="sq-card" style="border-style:dashed;background:#171f18;border-color:#3f5740"><span style="color:#516b55;font-size:24px">+</span></div>`).join('')}</div><p>Сюда можно закреплять до трёх любимых карточек, включая Hidden.</p></div><div class="content-card"><h3>ДОСТИЖЕНИЯ</h3><p>31 достижение · 3 избранных слота · секретные награды</p><button class="outlinebtn" data-action="achievements">ПОСМОТРЕТЬ ↗</button></div><div class="content-card"><h3>НАСТРОЙКИ ДЕМО</h3><p>Очистить состояние прототипа и снова сделать дроп доступным.</p><button class="outlinebtn" id="resetBtn">СБРОСИТЬ ДЕМО</button></div></div>`}
 function tasks(){return `<div class="panel"><button class="link" data-action="home">← НА ГЛАВНУЮ</button><h2>ЗАДАНИЯ<span style="color:var(--lime)">.</span></h2><p class="desc">Три ежедневных и три еженедельных испытания. Сброс в 00:00 по Москве.</p><div class="section-head"><span class="section-title">DAILY TASKS</span><span class="section-sub">30 F + 20 XP / КАЖДОЕ</span></div><div class="task-list">${taskRow(0)}${taskRow(1)}${taskRow(2)}</div><div class="content-card"><h3>WEEKLY TASKS</h3>${['Открой 15 бесплатных дропов','Собери 5 новых карточек','Достигни следующего уровня'].map((x,i)=>`<div class="menu-row"><div><strong>${x}</strong><br><small>Еженедельное задание</small></div><span class="reward">100 F</span></div>`).join('')}<p>Бонус за все три: +50 F</p></div></div>`}
-const render=(view=current)=>{current=view;$('#screen').innerHTML=({home,collection,catalog:catalogView,trades,store,profile,tasks}[view]||home)();document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===(view==='catalog'?'collection':view)));$('#balance').textContent=money(state.balance);$('#scroll').scrollTop=0;updateTimer();window.FLIPIcons?.render($('#screen'))};
+const render=(view=current)=>{current=view;$('#screen').innerHTML=({home,collection,collectionArtist,collectionRelease,collectionHistory,catalog:catalogView,trades,store,profile,tasks}[view]||home)();document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===(['catalog','collectionArtist','collectionRelease','collectionHistory'].includes(view)?'collection':view)));$('#balance').textContent=money(state.balance);$('#scroll').scrollTop=0;updateTimer();window.FLIPIcons?.render($('#screen'))};
 let toastTid;const toast=msg=>{const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTid);toastTid=setTimeout(()=>el.classList.remove('show'),3000)};
 const closeModal=()=>$('#overlay').classList.remove('show');
 function modal(html){$('#modal').innerHTML=html;window.FLIPIcons?.render($('#modal'));$('#overlay').classList.add('show')}
@@ -144,6 +136,7 @@ function randomCard(source='drop',rarePlus=false){
 function gain(card,source){
   const first=!state.received.some(c=>uniqueKey(c)===uniqueKey(card));
   state.received.push(card);
+  if(card?.id && !state.discovered.includes(card.id))state.discovered.push(card.id);
   state.xp+=source==='drop'?10:0;
   if(first)state.xp+=10;
   const finishTask=i=>{if(!state.claimedTasks.includes(i)){state.claimedTasks.push(i);state.balance+=30;state.xp+=20}};
@@ -202,7 +195,46 @@ function showCatalogCard(release,rarity){
   modal(`<span class="eyebrow">CATALOG / ${escapeHtml(card.rarity.toUpperCase())}</span><h3>${escapeHtml(card.title)}</h3><div class="catalog-modal-image">${sq(card)}</div><p>${escapeHtml(card.artist)} · ${escapeHtml(card.style)}</p><p>Предпросмотр оформления. Не добавлено в коллекцию.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>`);
 }
 
+function showOwnedCard(cardId, historyMode=false){
+  const entry=historyMode?window.FLIPCollection.historyCard(state,cardId):window.FLIPCollection.cardInfo(state,cardId);
+  if(!entry)return;
+  const owned=entry.count>0;
+  const text=owned ? `${entry.count} ${entry.count===1?'экземпляр':'экз.'}` : 'Больше нет в коллекции';
+  modal(`<span class="eyebrow">${owned?'OWNED CARD / COLLECTION':'DISCOVERED CARD / HISTORY'}</span>
+    <h3>${escapeHtml(entry.title)}</h3>
+    <div class="col-detail-art">${sq(entry)}</div>
+    <p>${escapeHtml(entry.artist)} · ${escapeHtml(entry.style||entry.rarity)}</p>
+    <div class="col-detail-metas"><span><small>РЕДКОСТЬ</small><b>${escapeHtml(entry.rarity)}</b></span><span><small>В НАЛИЧИИ</small><b>${escapeHtml(text)}</b></span></div>
+    <p class="col-detail-note">Обмен и продажу дубликатов подключим после серверной системы. Сейчас просмотр не изменяет количество карточек.</p>
+    <button type="button" class="bigbtn" id="closeReveal">ЗАКРЫТЬ ↗</button>`);
+}
+function applyCollectionSearch(value){
+  const query=String(value||'').toLocaleLowerCase('ru-RU').trim();
+  const rows=[...document.querySelectorAll('#screen [data-filterable]')];
+  let found=0;
+  for(const row of rows){row.hidden=!!query&&!String(row.dataset.filterable||'').toLocaleLowerCase('ru-RU').includes(query);if(!row.hidden)found++;}
+  const empty=document.querySelector('#screen .col-no-matches');if(empty)empty.hidden=found!==0;
+}
+document.addEventListener('input',e=>{if(e.target.matches('[data-collection-search]'))applyCollectionSearch(e.target.value)});
+// touch-action: manipulation is the main iOS fix; this is a second guard for WebViews
+// that still emit dblclick on static regions. No viewport zoom lock: pinch zoom remains allowed.
+document.addEventListener('dblclick',e=>{if(e.target.closest('.phone'))e.preventDefault()},{passive:false});
 function handleTask(i){if(state.claimedTasks.includes(i))return;modal(`<span class="eyebrow">DAILY TASK</span><h3>${taskDefs[i].title}</h3><p>Это макет задания. В реальной игре выполнение определяется сервером автоматически, без ручного начисления.</p><button class="bigbtn" id="closeReveal">ПОНЯТНО</button>`)}
-document.addEventListener('click',e=>{const tab=e.target.closest('[data-tab]');if(tab){render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(['home','collection','catalog','trades','store','profile','tasks'].includes(a))render(a);else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn'))previewRoulette();if(e.target.closest('#buyPackBtn'))doPack();if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))render('store');if(e.target.closest('#bellBtn'))$('#notifications').classList.toggle('show');if(e.target.closest('#closeNotifications'))$('#notifications').classList.remove('show');if(e.target.closest('#resetBtn')){localStorage.removeItem('flip_demo');localStorage.removeItem('flip20_demo');Object.assign(state,{...initial,dropReadyAt:Date.now(),received:[],claimedTasks:[]});save();render('profile');toast('Демо сброшено — бесплатный дроп доступен')};const t=e.target.closest('[data-task]');if(t)handleTask(+t.dataset.task);if(e.target.closest('#levelQuick'))render('profile')});
+document.addEventListener('click',e=>{
+  const collectionArtistTarget=e.target.closest('[data-collection-artist]');
+  if(collectionArtistTarget){collectionArtistId=collectionArtistTarget.dataset.collectionArtist;collectionReleaseId=null;render('collectionArtist');return}
+  const releaseTarget=e.target.closest('[data-collection-release]');
+  if(releaseTarget){collectionReleaseId=releaseTarget.dataset.collectionRelease;render('collectionRelease');return}
+  const historyTarget=e.target.closest('[data-collection-history]');
+  if(historyTarget){render('collectionHistory');return}
+  const backTarget=e.target.closest('[data-collection-back]');
+  if(backTarget){render(backTarget.dataset.collectionBack==='artist'?'collectionArtist':'collection');return}
+  const ownedTarget=e.target.closest('[data-owned-card]');
+  if(ownedTarget){showOwnedCard(ownedTarget.dataset.ownedCard);return}
+  const historyCardTarget=e.target.closest('[data-history-card]');
+  if(historyCardTarget){showOwnedCard(historyCardTarget.dataset.historyCard,true);return}
+  const hiddenTarget=e.target.closest('[data-hidden-card]');
+  if(hiddenTarget){const hidden=state.received.find(c=>c?.id===hiddenTarget.dataset.hiddenCard);if(hidden){const count=state.received.filter(c=>c?.id===hidden.id).length;modal(`<span class="eyebrow">SECRET / HIDDEN</span><h3>${escapeHtml(hidden.title)}</h3><div class="col-detail-art">${sq(hidden)}</div><p>Секретная карточка · ${count} экз.</p><p>Отдельный художественный стиль Hidden будет разработан позже.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ ↗</button>`);}return}
+  const tab=e.target.closest('[data-tab]');if(tab){render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(['home','collection','catalog','trades','store','profile','tasks'].includes(a))render(a);else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn'))previewRoulette();if(e.target.closest('#buyPackBtn'))doPack();if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))render('store');if(e.target.closest('#bellBtn'))$('#notifications').classList.toggle('show');if(e.target.closest('#closeNotifications'))$('#notifications').classList.remove('show');if(e.target.closest('#resetBtn')){localStorage.removeItem('flip_demo');localStorage.removeItem('flip20_demo');Object.assign(state,{...initial,dropReadyAt:Date.now(),received:[],discovered:[],claimedTasks:[]});save();render('profile');toast('Демо сброшено — бесплатный дроп доступен')};const t=e.target.closest('[data-task]');if(t)handleTask(+t.dataset.task);if(e.target.closest('#levelQuick'))render('profile')});
 $('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#notifications').classList.remove('show')}});setInterval(updateTimer,1000);render();window.FLIPIcons?.render($('#notifications'));
 })();
