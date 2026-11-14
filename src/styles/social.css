@@ -1,0 +1,67 @@
+/* FLIP v0.8.5: CP ranking and live player-to-player trading. */
+.flip-social-panel{background:linear-gradient(135deg,#152019,#111814);border:1px solid #304437;
+  border-radius:16px;padding:16px;margin:13px 0}
+.flip-social-panel h3{font:800 12px 'Space Grotesk',sans-serif;letter-spacing:.8px;
+  color:#dbead7;margin:0 0 15px}
+.flip-social-panel p{font:500 11px/1.65 'Manrope',sans-serif;color:#a3b7a8;margin:10px 0}
+.flip-social-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.flip-social-heading h3{margin:0}
+.flip-social-heading .outlinebtn{flex-shrink:0;font-size:10px;padding:8px 9px}
+.flip-social-muted{font-size:10px!important;color:#91a692!important;line-height:1.6!important}
+.flip-social-error{background:#36271f;border:1px solid #795b43;border-radius:10px;padding:11px;
+  color:#ffd7b4!important;font-size:11px;overflow-wrap:anywhere}
+.flip-social-success{background:#1e4024;border:1px solid #5a8553;border-radius:10px;padding:11px;
+  color:#d9ffcb!important;font-size:11px}
+.flip-social-eyebrow{color:#b9fa76;font:800 10px 'Space Grotesk',sans-serif;letter-spacing:1.6px}
+.flip-cp-summary{background:radial-gradient(circle at 95% 10%,#47713033,transparent 55%),#162118;border-color:#587845}
+.flip-social-cp-row{display:grid;grid-template-columns:1fr 1.35fr;gap:13px;margin:12px 0 4px}
+.flip-social-cp-row>div{min-width:0}
+.flip-social-cp-row strong{display:block;color:#eaffd5;font:800 clamp(26px,7vw,34px) 'Space Grotesk',sans-serif;letter-spacing:-1.5px}
+.flip-social-cp-row strong span{font-size:13px;color:#b6f879;letter-spacing:0}
+.flip-social-cp-row small{font:600 9px 'Manrope',sans-serif;color:#9db5a2;line-height:1.5}
+.flip-cp-player{display:flex;gap:11px;align-items:center;border-top:1px solid #293b2f;padding:12px 4px}
+.flip-cp-player.is-me{background:#bbff4922;border-radius:9px;border:1px solid #9bcb6b55;padding:12px 6px}
+.flip-cp-place{width:30px;flex:none;color:#c4ff84;font:800 13px 'Space Grotesk',sans-serif}
+.flip-cp-player>div{min-width:0;flex:1}
+.flip-cp-player strong{display:block;color:#edf5e9;font:800 11px 'Manrope',sans-serif;overflow-wrap:anywhere}
+.flip-cp-player small{display:block;color:#92a994;font:500 9px 'Manrope',sans-serif;margin-top:4px}
+.flip-cp-score{flex-shrink:0;text-align:right;color:#b7fc77;font:800 11px 'Space Grotesk',sans-serif}
+.flip-social-label{display:block;color:#afc3ad;font:700 10px 'Manrope',sans-serif;margin:14px 0 6px}
+.flip-social-input{width:100%;min-width:0;color:#e6f4df;background:#0d1711;border:1px solid #3a513e;
+  border-radius:10px;font:600 12px 'Manrope',sans-serif;padding:12px 10px;outline:none}
+.flip-social-input:focus{border-color:#baff50}
+.flip-social-search{display:flex;gap:7px}
+.flip-social-search input{flex:1}
+.flip-social-search .outlinebtn{font-size:10px;flex-shrink:0;padding:8px}
+.flip-trade-player{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px;
+  text-align:left;background:#1b2b1e;color:#e6f5df;border:1px solid #405b40;
+  border-radius:9px;padding:11px;margin:5px 0}
+.flip-trade-player strong{font-size:11px;overflow-wrap:anywhere}
+.flip-trade-player small{font-size:9px;color:#b7cfb2;white-space:nowrap}
+.flip-social-selected{background:#223723;border:1px solid #507548;border-radius:9px;
+  padding:11px;color:#dcefd7;font-size:11px;margin:10px 0;line-height:1.5}
+.flip-social-selected strong{overflow-wrap:anywhere}
+.flip-social-selected button{border:0;background:none;color:#d1ff98;font-size:10px;float:right;font-weight:800}
+.flip-social-preview{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:15px 0;
+  border:1px solid #375b35;border-radius:11px;background:#192f1d;padding:13px 11px}
+.flip-social-preview div{min-width:0}
+.flip-social-preview small{display:block;font-size:9px;color:#a4b8a4;margin-bottom:6px}
+.flip-social-preview strong{font:800 17px 'Space Grotesk',sans-serif;color:#d9f5cb}
+.flip-social-preview strong.positive{color:#b9ff7a}
+.flip-social-preview strong.negative{color:#ffaaa2}
+.flip-social-panel>.bigbtn{margin-top:14px;width:100%}
+.flip-trade-list-heading{margin-top:25px}
+.flip-trade-offer{border-top:1px solid #354536;padding:13px 0}
+.flip-trade-offer .flip-social-heading{margin-bottom:7px}
+.flip-trade-offer .flip-social-heading strong{color:#e4f4df;font-size:11px;overflow-wrap:anywhere}
+.flip-trade-cards{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}
+.flip-trade-cards>div{background:#101a13;border:1px solid #354333;border-radius:10px;padding:11px;min-width:0}
+.flip-trade-cards small{display:block;font-size:9px;color:#91a893;margin-bottom:5px}
+.flip-trade-cards strong{display:block;color:#ddeed7;font:700 11px/1.45 'Manrope',sans-serif;overflow-wrap:anywhere}
+.flip-trade-status{flex-shrink:0;font:800 9px 'Space Grotesk',sans-serif;background:#2f422c;
+  color:#cbf6a1;padding:5px 7px;border-radius:5px}
+.flip-trade-status.expired,.flip-trade-status.cancelled,.flip-trade-status.declined{color:#a6aeb1;background:#25302d}
+.flip-trade-status.accepted{color:#ceff9c;background:#2b4e2b}
+.flip-trade-actions{display:flex;flex-wrap:wrap;gap:7px;margin:11px 0 0}
+.flip-trade-actions button{padding:9px;font:800 9px 'Space Grotesk',sans-serif;min-height:35px}
+.flip-trade-actions .bigbtn{flex:1}
