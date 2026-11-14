@@ -79,8 +79,8 @@
   }
   function ranking(){
     return s.leaders.length?s.leaders.slice(0,10).map((p,i)=>'<div class="flip-admin-leader"><span>'+
-      (i+1)+'.</span><strong>'+E(p.username?'@'+p.username:(p.first_name||'FLIP PLAYER'))+
-      '</strong><small>'+E(p.ranked_cards)+' карт.</small></div>').join(''):
+      E(p.place||i+1)+'.</span><strong>'+E(p.username?'@'+p.username:(p.first_name||'FLIP PLAYER'))+
+      '</strong><small>'+E(Number(p.cp||0).toLocaleString('ru-RU',{maximumFractionDigits:2}))+' CP · '+E(p.ranked_cards)+' карт.</small></div>').join(''):
       '<p class="flip-admin-hint">Рейтинговых карточек пока нет.</p>';
   }
   function draw(){
@@ -114,7 +114,7 @@
         '<span><strong>Тестовая / административная</strong><small>Пометка «ТЕСТ» в коллекции. В топе не учитывается.</small></span></label>',
         '<label class="flip-admin-mode-choice '+(s.mode==='ranked'?'chosen':'')+'">',
         '<input type="radio" name="flip-admin-mode" value="ranked" '+(s.mode==='ranked'?'checked':'')+'>',
-        '<span><strong>Рейтинговая / обычная</strong><small>Учитывается в предварительном топе. Источник сохраняется в журнале.</small></span></label>'
+        '<span><strong>Рейтинговая / обычная</strong><small>Учитывается в CP наравне с карточками из дропов и паков. Источник сохраняется в журнале.</small></span></label>'
       ].join(''):[
         '<label class="flip-admin-field-label" for="flip-admin-amount">Сколько ',s.rewardKind==='xp'?'XP':'F',' начислить</label>',
         '<input class="flip-admin-input" id="flip-admin-amount" inputmode="numeric" type="number" min="1" max="1000000" step="1" placeholder="От 1 до 1 000 000" value="',E(s.amount),'">',
@@ -132,7 +132,7 @@
       '<section class="flip-admin-section"><h3>ЖУРНАЛ КАРТОЧЕК</h3>',history(),'</section>',
       '<section class="flip-admin-section"><h3>ЖУРНАЛ XP И F</h3>',rewardHistory(),'</section>',
       '<section class="flip-admin-section"><h3>ПРЕДВАРИТЕЛЬНЫЙ ТОП</h3>',
-      '<p class="flip-admin-hint">Пока учитываются только рейтинговые экземпляры. Новую формулу CP обсудим отдельно.</p>',ranking(),'</section>'
+      '<p class="flip-admin-hint">CP учитывают все рейтинговые экземпляры, включая админ-выдачи и обмены. Тестовые исключены.</p>',ranking(),'</section>'
     ].join('');
     window.FLIPIcons?.render(root); // admin markup is injected after the app's global icon pass
   }
