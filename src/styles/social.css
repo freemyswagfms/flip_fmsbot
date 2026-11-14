@@ -65,3 +65,22 @@
 .flip-trade-actions{display:flex;flex-wrap:wrap;gap:7px;margin:11px 0 0}
 .flip-trade-actions button{padding:9px;font:800 9px 'Space Grotesk',sans-serif;min-height:35px}
 .flip-trade-actions .bigbtn{flex:1}
+
+/* v0.8.6: grouped multi-card selection and counteroffer statuses */
+.flip-trade-card-choices{display:grid;gap:7px;max-height:260px;overflow-y:auto;overscroll-behavior:contain}
+.flip-trade-card-choice{display:flex;align-items:flex-start;gap:10px;border:1px solid #324936;
+ background:#111e16;border-radius:10px;padding:11px;cursor:pointer;min-width:0}
+.flip-trade-card-choice.chosen{border-color:#a4e366;background:#223c25}
+.flip-trade-card-choice.at-limit{opacity:.5;cursor:default}
+.flip-trade-card-choice input[type="checkbox"]{accent-color:#baff4a;flex:none;width:18px;height:18px;
+ margin:1px 0 0;cursor:pointer}
+.flip-trade-choice-copy{flex:1;min-width:0}
+.flip-trade-choice-copy strong{display:block;color:#e6f7df;font:700 11px/1.45 'Manrope',sans-serif;
+ overflow-wrap:anywhere}
+.flip-trade-choice-copy small{display:block;margin-top:4px;color:#9fb39f;font:500 9px 'Manrope',sans-serif}
+.flip-trade-offer-list{padding-left:13px;margin:0;list-style:disc}
+.flip-trade-offer-list li{font:700 11px/1.4 'Manrope',sans-serif;color:#deefd8;
+ overflow-wrap:anywhere;margin:5px 0}
+.flip-trade-status.countered{background:#24354d;color:#9fc9ff}
+.flip-trade-actions .outlinebtn{flex:0 1 auto}
+#flip-trade-compose{scroll-margin-top:14px}
