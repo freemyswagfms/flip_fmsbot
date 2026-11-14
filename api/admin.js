@@ -1,4 +1,4 @@
-/** FLIP v0.8.3 — server-only, owner-locked administrative API.
+/** FLIP v0.8.4 — server-only, owner-locked administrative API.
  * A hidden UI is not authorization: each request must pass Telegram HMAC and owner ID.
  */
 import { validateTelegramInitData, isFlipAdmin } from './flip.js';
@@ -24,7 +24,7 @@ async function rpc(name,payload,db){
   });
   const body=await response.text();
   if(!response.ok){
-    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT'];
+    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT'];
     const code=known.find(x=>body.includes(x));
     const error=new Error(code||'DATABASE_ERROR');
     error.status=code?409:502;throw error;
@@ -41,7 +41,7 @@ export async function handleAdminRequest(request){
   }catch{return json({error:'INVALID_TELEGRAM_SESSION'},401)}
   if(!isFlipAdmin(user.telegram_id))return json({error:'FORBIDDEN'},403);
   if(request.method==='GET'&&url.searchParams.get('view')==='me')
-    return json({admin:true,permissions:['grant_card','search_players','history','ranked_preview']});
+    return json({admin:true,permissions:['grant_card','grant_resource','search_players','search_cards','history','ranked_preview']});
   try{
     const db=settings();
     if(request.method==='GET'){
@@ -52,6 +52,12 @@ export async function handleAdminRequest(request){
         return json({players:await rpc('flip_admin_search_players',{p_query:q},db)});
       }
       if(view==='catalog')return json({cards:await rpc('flip_admin_catalog',{},db)});
+      if(view==='cards'){
+        const q=(url.searchParams.get('q')||'').trim();
+        if(q.length>80)return json({error:'BAD_REQUEST'},400);
+        return json({cards:await rpc('flip_admin_search_cards',{p_query:q,p_limit:50},db)});
+      }
+      if(view==='rewards')return json({rewards:await rpc('flip_admin_search_rewards',{p_limit:30},db)});
       if(view==='history')return json({history:await rpc('flip_admin_history',{p_limit:30},db)});
       if(view==='ranked')return json({leaders:await rpc('flip_ranked_leaderboard',{p_limit:20},db)});
       return json({error:'BAD_REQUEST'},400);
@@ -60,22 +66,39 @@ export async function handleAdminRequest(request){
     const bodyText=await request.text();
     if(bodyText.length>1500)return json({error:'BAD_REQUEST'},400);
     let body;try{body=JSON.parse(bodyText)}catch{return json({error:'BAD_REQUEST'},400)}
-    if(!body||body.action!=='grant_card'||!validId(body.recipientId)
-       ||typeof body.cardId!=='string'||!/^[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+$/i.test(body.cardId)
-       ||body.cardId.length>160||!['test','ranked'].includes(body.mode)
-       ||!validUuid(body.requestId)||typeof body.note!=='string'||body.note.length>200)
+    if(!body||!['grant_card','grant_resource'].includes(body.action)
+       ||!validId(body.recipientId)||!validUuid(body.requestId)
+       ||typeof body.note!=='string'||body.note.length>200)
       return json({error:'BAD_REQUEST'},400);
-    const result=await rpc('flip_admin_grant_card',{
-      p_admin_id:user.telegram_id,
-      p_recipient_id:Number(body.recipientId),
-      p_card_id:body.cardId,
-      p_mode:body.mode,
-      p_note:body.note.trim(),
-      p_request_id:body.requestId
-    },db);
+    let result;
+    if(body.action==='grant_card'){
+      if(typeof body.cardId!=='string'||!/^[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+$/i.test(body.cardId)
+         ||body.cardId.length>160||!['test','ranked'].includes(body.mode))
+        return json({error:'BAD_REQUEST'},400);
+      result=await rpc('flip_admin_grant_card',{
+        p_admin_id:user.telegram_id,
+        p_recipient_id:Number(body.recipientId),
+        p_card_id:body.cardId,
+        p_mode:body.mode,
+        p_note:body.note.trim(),
+        p_request_id:body.requestId
+      },db);
+    }else{
+      if(!['xp','f'].includes(body.kind)||!Number.isSafeInteger(body.amount)
+         ||body.amount<1||body.amount>1000000)
+        return json({error:'BAD_REQUEST'},400);
+      result=await rpc('flip_admin_grant_resource',{
+        p_admin_id:user.telegram_id,
+        p_recipient_id:Number(body.recipientId),
+        p_kind:body.kind,
+        p_amount:body.amount,
+        p_note:body.note.trim(),
+        p_request_id:body.requestId
+      },db);
+    }
     return json(result);
   }catch(e){
-    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT'];
+    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT'];
     return json({error:known.includes(e.message)?e.message:'ADMIN_SERVER_ERROR'},e.status||500);
   }
 }
