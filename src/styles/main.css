@@ -26,3 +26,40 @@
 .chip:is(button){cursor:pointer}
 .feature .artwork:before,.feature .artwork:after{display:none}
 .feature .artwork .feature-cover{width:100%;height:100%;display:block;object-fit:cover}
+
+
+/* FLIP v0.7.1 — fix 3-card pack results on iPhone and compact viewports. */
+.modal .pack-open-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  margin:20px 0 17px;
+}
+.modal .pack-open-grid .sq-card{
+  display:grid;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  aspect-ratio:1;
+  margin:0;
+  border-radius:10px;
+}
+.modal .pack-open-grid .small-badge{
+  right:3px;
+  bottom:3px;
+  max-width:calc(100% - 6px);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:clamp(6px,1.75vw,8px);
+  padding:3px 4px;
+}
+/* Large single-card previews retain their original 190px styling. */
+@media(max-width:355px){
+  .overlay{padding:12px}
+  .modal{padding:18px}
+  .modal .pack-open-grid{gap:6px}
+}

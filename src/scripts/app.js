@@ -187,7 +187,7 @@ function doPack(){
   state.xp+=30;
   while(state.xp>=100){state.xp-=100;state.level++;state.balance+=30}
   save();render('store');
-  modal(`<span class="eyebrow">STANDARD PACK / OPENED</span><h3>ТВОЙ ПАК</h3><div class="square-grid" style="margin:22px 0">${pack.map(sq).join('')}</div><p>Три разные карточки, минимум одна Rare+. Награды и вероятности пока демонстрационные, не серверные.</p><button class="bigbtn" id="closeReveal">ЗАБРАТЬ КАРТОЧКИ ↗</button>`);
+  modal(`<span class="eyebrow">STANDARD PACK / OPENED</span><h3>ТВОЙ ПАК</h3><div class="square-grid pack-open-grid" aria-label="Три полученные карточки">${pack.map(sq).join('')}</div><p>Три разные карточки, минимум одна Rare+. Награды и вероятности пока демонстрационные, не серверные.</p><button class="bigbtn" id="closeReveal">ЗАБРАТЬ КАРТОЧКИ ↗</button>`);
 }
 function showCatalogCard(release,rarity){
   const card=catalog.getCard('carti',release,rarity);
