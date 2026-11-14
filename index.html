@@ -8,14 +8,15 @@
   <title>FLIP — музыкальные карточки</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="./src/styles/main.css?v=0.8.6" />
-  <link rel="stylesheet" href="./src/styles/home.css?v=0.8.6" />
-  <link rel="stylesheet" href="./src/styles/telegram.css?v=0.8.6" />
-  <link rel="stylesheet" href="./src/styles/reveal.css?v=0.8.6" />
-  <link rel="stylesheet" href="./src/styles/collection.css?v=0.8.6" />
-  <link rel="stylesheet" href="./src/styles/profile.css?v=0.8.6" />
-  <link rel="stylesheet" href="./src/styles/admin.css?v=0.8.6" />
-  <link rel="stylesheet" href="./src/styles/social.css?v=0.8.6" />
+  <link rel="stylesheet" href="./src/styles/main.css?v=0.8.7" />
+  <link rel="stylesheet" href="./src/styles/home.css?v=0.8.7" />
+  <link rel="stylesheet" href="./src/styles/telegram.css?v=0.8.7" />
+  <link rel="stylesheet" href="./src/styles/reveal.css?v=0.8.7" />
+  <link rel="stylesheet" href="./src/styles/collection.css?v=0.8.7" />
+  <link rel="stylesheet" href="./src/styles/card-viewer.css?v=0.8.7" />
+  <link rel="stylesheet" href="./src/styles/profile.css?v=0.8.7" />
+  <link rel="stylesheet" href="./src/styles/admin.css?v=0.8.7" />
+  <link rel="stylesheet" href="./src/styles/social.css?v=0.8.7" />
   <style>
     /* Critical splash styles are inline to avoid a flash of the unstyled app. */
     #flip-splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;background:#090c0a;color:#f6faf4;font-family:Arial,sans-serif;transition:opacity .4s ease,visibility .4s ease}
@@ -31,8 +32,8 @@
     @media(prefers-reduced-motion:reduce){#flip-splash .splash-cards i{animation:none}}
   </style>
   <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
-  <script src="./src/scripts/telegram.js?v=0.8.6" defer></script>
-  <script src="./src/scripts/icons.js?v=0.8.6" defer></script>
+  <script src="./src/scripts/telegram.js?v=0.8.7" defer></script>
+  <script src="./src/scripts/icons.js?v=0.8.7" defer></script>
 </head>
 <body>
   <div id="flip-splash" role="status" aria-live="polite" aria-label="FLIP загружается">
@@ -44,7 +45,7 @@
       <div class="eyebrow">INTERACTIVE UI / FLIP</div>
       <h1>FLIP<span style="color:var(--lime)">.</span></h1>
       <p>Открой свой дроп.<br>Собирай музыкальные обложки и обменивайся карточками.</p>
-      <div class="label">● FLIP v0.8.6 · TELEGRAM GAME</div>
+      <div class="label">● FLIP v0.8.7 · TELEGRAM GAME</div>
       <p style="margin-top:40px;font-size:11px;opacity:.65">При входе через Telegram прогресс хранится на сервере. Вне Telegram работает отдельное локальное демо.</p>
     </aside>
     <main class="phone" role="application" aria-label="FLIP — коллекция музыкальных карточек">
@@ -87,13 +88,14 @@
       if (splash) splash.classList.add('is-hidden');
     }, 5000);
   </script>
-  <script src="./src/scripts/catalog.js?v=0.8.6" defer></script>
-  <script src="./src/scripts/reveal.js?v=0.8.6" defer></script>
-  <script src="./src/scripts/collection.js?v=0.8.6" defer></script>
-  <script src="./src/scripts/server.js?v=0.8.6" defer></script>
-  <script src="./src/scripts/admin.js?v=0.8.6" defer></script>
-  <script src="./src/scripts/leaderboard.js?v=0.8.6" defer></script>
-  <script src="./src/scripts/trades.js?v=0.8.6" defer></script>
-  <script src="./src/scripts/app.js?v=0.8.6" defer></script>
+  <script src="./src/scripts/catalog.js?v=0.8.7" defer></script>
+  <script src="./src/scripts/reveal.js?v=0.8.7" defer></script>
+  <script src="./src/scripts/collection.js?v=0.8.7" defer></script>
+  <script src="./src/scripts/card-viewer.js?v=0.8.7" defer></script>
+  <script src="./src/scripts/server.js?v=0.8.7" defer></script>
+  <script src="./src/scripts/admin.js?v=0.8.7" defer></script>
+  <script src="./src/scripts/leaderboard.js?v=0.8.7" defer></script>
+  <script src="./src/scripts/trades.js?v=0.8.7" defer></script>
+  <script src="./src/scripts/app.js?v=0.8.7" defer></script>
 </body>
 </html>

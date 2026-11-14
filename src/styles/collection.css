@@ -21,3 +21,94 @@
 @media(max-width:355px){.col-statboard{padding:13px}.col-stat-main strong{font-size:28px}.col-artist-art{flex-basis:85px}.col-artist-card{gap:10px}.col-rarity-grid{gap:9px}.col-release-hero-image{width:88px}.col-release-hero{gap:10px}.col-release-hero-copy strong{font-size:15px}}
 
 .col-secret-thumb{display:grid;place-items:center;border-color:#c2c9bc;background:repeating-linear-gradient(110deg,#0f1a13,#0f1a13 7px,#1d2921 7px,#1d2921 12px)}.col-secret-symbol{font:900 34px 'Space Grotesk';color:#e1f2da;text-shadow:0 0 15px #f8fff755}
+
+
+/* v0.8.7 — editorial art gallery. Each variant is rendered exactly once. */
+.col-v087 .col-title-group{margin-bottom:19px}
+.col-v087 .col-title-group h2{font-size:clamp(27px,7.2vw,34px);letter-spacing:-1.6px}
+.col-v087 .col-title-group .desc{font-size:11px;line-height:1.65}
+.col-statboard-v087{position:relative;overflow:hidden;
+ background:radial-gradient(ellipse 85% 150% at 5% -30%,#659b384b,transparent 70%),
+ linear-gradient(142deg,#1b3020,#101b15 80%);border-color:#526a45}
+.col-statboard-v087:after{content:'FLIP';position:absolute;right:-15px;bottom:-31px;pointer-events:none;
+ font:900 84px 'Space Grotesk',sans-serif;letter-spacing:-8px;color:#ffffff07}
+.col-statboard-v087 .col-stat-main,.col-statboard-v087 .col-stat-side{position:relative;z-index:1}
+.col-stat-percent{display:block;font:700 9px 'Manrope',sans-serif;color:#a4c99b;margin-top:10px}
+.col-v087 .col-gallery-title{margin-top:30px;margin-bottom:5px}
+.col-gallery-intro{color:#96aa99;font:500 10px/1.65 'Manrope',sans-serif;margin:0 2px 16px}
+.col-gallery-tools{display:grid;grid-template-columns:minmax(0,1fr) 128px;gap:8px;align-items:end;margin:0 0 12px}
+.col-v087 .col-gallery-search{margin:0;min-width:0;min-height:47px}
+.col-v087 .col-gallery-search input{font-size:16px}
+.col-gallery-sort-wrap{height:47px;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:3px;
+ padding:7px 9px;border:1px solid #385142;border-radius:11px;background:#141e18}
+.col-gallery-sort-wrap>span{font:800 8px 'Space Grotesk',sans-serif;letter-spacing:.6px;color:#8fa894}
+.col-gallery-sort-wrap select{width:100%;min-width:0;max-width:100%;background:transparent;color:#e6f2e3;
+ border:0;outline:0;font:700 12px 'Manrope',sans-serif;text-overflow:ellipsis}
+.col-gallery-filters{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;
+ scrollbar-width:none;padding:2px 2px 7px;margin:0 -2px 0;touch-action:pan-x}
+.col-gallery-filters::-webkit-scrollbar{display:none}
+.col-gallery-filter{flex:none;white-space:nowrap;padding:9px 11px;border-radius:999px;border:1px solid #394b3b;
+ background:#19221c;color:#b3c2b0;font:800 9px 'Space Grotesk',sans-serif;letter-spacing:.2px}
+.col-gallery-filter[aria-pressed="true"]{background:#baff66;border-color:#baff66;color:#112010;
+ box-shadow:0 0 19px #baff6620}
+.col-gallery-filter:focus-visible{outline:2px solid #baff66;outline-offset:2px}
+.col-gallery-result{font:700 9px 'Space Grotesk',sans-serif;letter-spacing:.45px;
+ color:#839b87;margin:2px 1px 11px}
+.col-showcase-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px 10px}
+.col-gallery-tile{min-width:0;display:block;background:transparent;border:0;padding:0;text-align:left;
+ color:#e6f2e3;position:relative;cursor:pointer;touch-action:manipulation}
+.col-gallery-tile[hidden]{display:none!important}
+.col-gallery-cover{display:grid;place-items:center;position:relative;aspect-ratio:1;border:1px solid #5c6d59;
+ border-radius:15px;overflow:hidden;background:#18201a;box-shadow:0 12px 28px #0005;
+ isolation:isolate;transition:transform 190ms ease,border-color 190ms ease,box-shadow 190ms ease}
+.col-gallery-cover>img{display:block;width:100%;height:100%;object-fit:cover}
+.col-gallery-tile:active .col-gallery-cover{transform:scale(.974)}
+.col-gallery-tile:focus-visible .col-gallery-cover{outline:2px solid #baff66;outline-offset:3px}
+.col-gallery-tile.col-rare .col-gallery-cover{border-color:#86c955}
+.col-gallery-tile.col-epic .col-gallery-cover{border-color:#aa84e1}
+.col-gallery-tile.col-legendary .col-gallery-cover{border-color:#ebc06b}
+.col-gallery-tile.col-mythic .col-gallery-cover{border-color:#e96f80}
+.col-gallery-edition,.col-gallery-quantity,.col-gallery-test,.col-gallery-past{position:absolute;z-index:2}
+.col-gallery-edition{left:7px;bottom:7px;padding:5px 6px;border-radius:6px;
+ font:800 8px 'Space Grotesk',sans-serif;letter-spacing:.35px;color:#ecf6e9;background:#09110ddc;
+ border:1px solid #ffffff32;backdrop-filter:blur(6px)}
+.col-gallery-tile.col-rare .col-gallery-edition{color:#baff6c}
+.col-gallery-tile.col-epic .col-gallery-edition{color:#cb9fff}
+.col-gallery-tile.col-legendary .col-gallery-edition{color:#fdd68b}
+.col-gallery-tile.col-mythic .col-gallery-edition{color:#ff9aa6}
+.col-gallery-quantity{top:7px;right:7px;padding:5px 6px;border-radius:6px;background:#0a100ce6;
+ font:800 10px 'Space Grotesk',sans-serif;color:#fff;border:1px solid #ffffff37}
+.col-gallery-test{top:7px;left:7px;background:#284c80e0;border:1px solid #83b4ff;
+ border-radius:5px;padding:4px 5px;color:#e0f0ff;font:800 8px 'Space Grotesk',sans-serif}
+.col-gallery-zoom{position:absolute;right:7px;bottom:7px;z-index:2;display:grid;place-items:center;
+ height:25px;width:25px;border-radius:7px;background:#09130bb8;color:#eefbe8;font-size:16px;
+ border:1px solid #ffffff34}
+.col-gallery-caption{display:flex;flex-direction:column;gap:5px;padding:10px 2px 0;min-width:0}
+.col-gallery-caption strong{font:800 12px/1.24 'Golos Text',sans-serif;color:#ebf7e7;
+ overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.col-gallery-caption small{font:600 10px/1.4 'Manrope',sans-serif;color:#8da591;overflow:hidden;
+ white-space:nowrap;text-overflow:ellipsis}
+.col-gallery-empty{padding:18px 13px;text-align:center;font:600 11px/1.6 'Manrope',sans-serif;
+ background:#132018;color:#96b49b;border:1px dashed #385442;border-radius:13px}
+.col-gallery-empty[hidden]{display:none!important}
+.col-gallery-artists{margin-top:31px}
+.col-v087 .col-artist-card{border-color:#455b48}
+.col-v087 .col-artist-art{flex-basis:88px}
+.col-v087 .col-shortcuts{margin-top:26px}
+.col-release-hero-open{display:block;border:0;padding:0;cursor:pointer}
+.col-release-hero-open:focus-visible{outline:2px solid #beff4f;outline-offset:3px}
+.col-rarity-tile:not(.col-locked){transition:transform 170ms ease,border-color 170ms ease}
+.col-rarity-tile:not(.col-locked):active{transform:scale(.97)}
+.col-rarity-picture img{pointer-events:none}
+.col-gallery-past{left:5px;right:5px;top:45%;text-align:center;padding:5px;background:#101910df;
+ font:800 8px 'Space Grotesk',sans-serif;color:#e2e8da}
+.col-gallery-discovered .col-gallery-cover img{filter:saturate(.52) brightness(.8)}
+@media(min-width:390px){.col-showcase-grid{gap:17px 12px}}
+@media(max-width:355px){
+ .col-gallery-tools{grid-template-columns:minmax(0,1fr) 114px;gap:6px}
+ .col-gallery-sort-wrap{padding:7px}
+ .col-gallery-cover{border-radius:12px}
+ .col-gallery-edition{font-size:7px}
+ .col-gallery-caption strong{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){.col-gallery-cover,.col-rarity-tile{transition:none}}

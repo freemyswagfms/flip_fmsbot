@@ -53,28 +53,92 @@
        <span class="col-chevron">↗</span></button>`;
   }
   function getArtistCards(owned, artistId) {return [...owned.values()].filter(c=>c.artistId===artistId);}
+  // Each card variant appears once in the gallery; quantity and test status
+  // remain visible without creating duplicates in the layout.
+  function galleryTile(card,action='owned'){
+    const owned=action==='owned',qty=Number(card.count||0),test=Number(card.testCount||0);
+    const rarity=String(card.color||card.rarity||'common').toLowerCase();
+    const tag=rarity==='hidden'?'HIDDEN':(catalog.rarityLabels[rarity]||rarity).toUpperCase();
+    const artMarkup=card.art?art(card):'<span class="col-secret-symbol">?</span>';
+    return '<button type="button" class="col-gallery-tile col-'+esc(rarity)+
+      (owned?'':' col-gallery-discovered')+'" data-'+(owned?'owned':'history')+
+      '-card="'+esc(card.id)+'" data-gallery-item data-filterable="'+
+      esc(card.artist+' '+card.title+' '+card.rarity)+'" data-gallery-rarity="'+esc(rarity)+
+      '" data-gallery-name="'+esc(card.title)+'" data-gallery-count="'+qty+
+      '" aria-label="'+esc('Рассмотреть '+card.title+', '+card.rarity)+
+      '"><span class="col-gallery-cover">'+artMarkup+
+      '<span class="col-gallery-edition">'+esc(tag)+'</span>'+
+      (qty>1?'<span class="col-gallery-quantity">×'+qty+'</span>':'')+
+      (test>0?'<span class="col-gallery-test">ТЕСТ '+test+'</span>':'')+
+      (!owned?'<span class="col-gallery-past">БЫЛА В КОЛЛЕКЦИИ</span>':'')+
+      '<span class="col-gallery-zoom" aria-hidden="true">↗</span></span>'+
+      '<span class="col-gallery-caption"><strong>'+esc(card.title)+'</strong>'+
+      '<small>'+esc(card.artist)+'</small></span></button>';
+  }
   function home(state) {
-    const data=inventory(state), total=catalog.artists.reduce((count,a)=>count+a.releases.length*catalog.rarities.length,0);
-    const all=[...data.owned.values()], releases=new Set(all.map(c=>`${c.artistId}/${c.releaseId}`));
+    const data=inventory(state),all=[...data.owned.values()];
+    const total=catalog.artists.reduce((count,a)=>count+a.releases.length*catalog.rarities.length,0);
+    const releases=new Set(all.map(c=>c.artistId+'/'+c.releaseId));
     const active=catalog.artists.filter(a=>all.some(c=>c.artistId===a.id));
-    const pct=total ? Math.round(100*all.length/total) : 0;
-    return `<div class="panel col-page">${stageHeader('YOUR ARCHIVE / 002','КОЛЛЕКЦИЯ','Твои музыкальные находки. Открывай релизы, собирай редкости и следи за прогрессом.')}
-      <div class="col-statboard"><div class="col-stat-main"><span class="col-micro">СОБРАНО РАЗНОВИДНОСТЕЙ</span><strong>${all.length}<em> / ${total}</em></strong><div class="col-progress" role="progressbar" aria-valuenow="${all.length}" aria-valuemin="0" aria-valuemax="${total}"><i style="width:${pct}%"></i></div></div>
-      <div class="col-stat-side"><span><b>${releases.size}</b><small>релизов</small></span><span><b>${state.received?.length||0}</b><small>экземпляров</small></span></div></div>
-      <div class="col-section-head"><div><span class="col-micro">YOUR ARTISTS</span><h3>МОИ АРТИСТЫ</h3></div><span class="col-count">${active.length}</span></div>
-      ${active.length ? `<div class="col-artist-list">${active.map(a=>{
-          const cards=getArtistCards(data.owned,a.id);
-          const cover=cards[0];
-          const numReleases=new Set(cards.map(c=>c.releaseId)).size;
-          return `<button class="col-artist-card" type="button" data-collection-artist="${esc(a.id)}">
-          <span class="col-artist-art">${art(cover)}<span>FLIP / ARTIST</span></span>
-          <span class="col-artist-copy"><span class="col-micro">DISCOVERED ARTIST</span><strong>${esc(a.name)}</strong><small>${numReleases} ${numReleases===1?'релиз':'релизов'} · ${formatCounts(cards.length)}</small><span class="col-tag">СМОТРЕТЬ КОЛЛЕКЦИЮ ↗</span></span></button>`;
-        }).join('')}</div>` : `<div class="col-empty"><div class="col-empty-symbol">✳</div><strong>ТВОЯ ИСТОРИЯ НАЧИНАЕТСЯ</strong><p>У тебя пока нет карточек. Открой первый дроп — здесь появится артист и его релизы.</p><button class="outlinebtn" data-action="home">К ДРОПУ ↗</button></div>`}
-      ${data.hidden.size?`<div class="col-section-head"><div><span class="col-micro">SECRET ARCHIVE</span><h3>СКРЫТЫЕ НАХОДКИ</h3></div><span class="col-count">${data.hidden.size}</span></div>
-      <div class="col-release-list">${[...data.hidden.values()].map(c=>`<button type="button" class="col-release-row" data-hidden-card="${esc(c.id)}"><span class="col-thumb col-secret-thumb"><span class="col-secret-symbol">?</span></span><span class="col-release-main"><strong>HIDDEN · ${esc(c.title||'SECRET')}</strong><small>Секретная карточка · ×${c.count}</small></span><span class="col-chevron">↗</span></button>`).join('')}</div>`:''}
-      <div class="col-shortcuts"><button type="button" data-collection-history="1"><span class="col-shortcut-symbol">◷</span><span><strong>ИСТОРИЯ НАХОДОК</strong><small>Всё, что удалось открыть</small></span><span>↗</span></button>
-      <button type="button" data-action="catalog"><span class="col-shortcut-symbol">◈</span><span><strong>КАТАЛОГ · ДЕМО</strong><small>Посмотреть все 25 изображений</small></span><span>↗</span></button></div>
-      <p class="note">Редкости и дубликаты сохраняются локально на этом устройстве. Просмотр каталога не выдаёт карточки.</p></div>`;
+    const pct=total?Math.round(100*all.length/total):0;
+    const showcase=all.slice().sort((a,b)=>
+      (rarityRank[b.color]??-1)-(rarityRank[a.color]??-1)||a.title.localeCompare(b.title,'ru'));
+    return '<div class="panel col-page col-v087">'+
+      stageHeader('THE ARCHIVE / 087','МОЯ КОЛЛЕКЦИЯ','Личная галерея музыкальных обложек. Каждая находка — часть твоей истории.')+
+      '<div class="col-statboard col-statboard-v087"><div class="col-stat-main">'+
+      '<span class="col-micro">УНИКАЛЬНЫХ КАРТОЧЕК</span><strong>'+all.length+
+      '<em> / '+total+'</em></strong><div class="col-progress" role="progressbar" aria-valuenow="'+
+      all.length+'" aria-valuemin="0" aria-valuemax="'+total+'"><i style="width:'+pct+'%"></i></div>'+
+      '<small class="col-stat-percent">'+pct+'% доступной коллекции</small></div>'+
+      '<div class="col-stat-side"><span><b>'+releases.size+'</b><small>релизов</small></span>'+
+      '<span><b>'+Number(state.received?.length||0)+'</b><small>экземпляров</small></span></div></div>'+
+      (showcase.length?'<div class="col-section-head col-gallery-title"><div><span class="col-micro">'+
+      'ARTWORK GALLERY</span><h3>ТВОЯ ГАЛЕРЕЯ</h3></div><span class="col-count">'+showcase.length+
+      ' ШТ.</span></div>'+
+      '<p class="col-gallery-intro">Нажми на обложку, чтобы рассмотреть её вблизи и наклонить пальцем.</p>'+
+      '<div class="col-gallery-tools"><label class="col-search-label col-gallery-search"><span aria-hidden="true">⌕</span>'+
+      '<input type="search" data-collection-gallery-search placeholder="Название или артист" aria-label="Поиск по коллекции" autocomplete="off"></label>'+
+      '<label class="col-gallery-sort-wrap"><span>СОРТИРОВКА</span>'+
+      '<select aria-label="Сортировка карточек" data-collection-gallery-sort>'+
+      '<option value="rarity">По редкости</option><option value="title">По названию</option>'+
+      '<option value="quantity">По количеству</option></select></label></div>'+
+      '<div class="col-gallery-filters" role="group" aria-label="Фильтр по редкости">'+
+      ['all',...catalog.rarities].map(r=>'<button type="button" class="col-gallery-filter" data-collection-gallery-filter="'+r+
+      '" aria-pressed="'+(r==='all'?'true':'false')+'">'+
+      esc(r==='all'?'ВСЕ':(catalog.rarityLabels[r]||r).toUpperCase())+'</button>').join('')+'</div>'+
+      '<p class="col-gallery-result" data-collection-gallery-status aria-live="polite">'+
+      formatCounts(showcase.length)+'</p><div class="col-showcase-grid" data-collection-gallery>'+
+      showcase.map(c=>galleryTile(c)).join('')+'</div>'+
+      '<div class="col-gallery-empty" hidden data-collection-gallery-empty>По этому запросу карточек нет. Попробуй другой фильтр.</div>'
+      :'<div class="col-empty"><div class="col-empty-symbol">✳</div><strong>ТВОЯ ИСТОРИЯ НАЧИНАЕТСЯ</strong>'+
+      '<p>У тебя пока нет карточек. Открой первый дроп — здесь появятся твои находки.</p>'+
+      '<button class="outlinebtn" data-action="home">К ДРОПУ ↗</button></div>')+
+      '<div class="col-section-head col-gallery-artists"><div><span class="col-micro">YOUR ARTISTS</span>'+
+      '<h3>АРТИСТЫ</h3></div><span class="col-count">'+active.length+'</span></div>'+
+      (active.length?'<div class="col-artist-list">'+active.map(a=>{
+        const cards=getArtistCards(data.owned,a.id);
+        const cover=cards.slice().sort((x,y)=>(rarityRank[y.color]??-1)-(rarityRank[x.color]??-1))[0];
+        const numReleases=new Set(cards.map(c=>c.releaseId)).size;
+        return '<button class="col-artist-card" type="button" data-collection-artist="'+esc(a.id)+'">'+
+        '<span class="col-artist-art">'+art(cover)+'<span>FLIP / ARTIST</span></span>'+
+        '<span class="col-artist-copy"><span class="col-micro">DISCOVERED ARTIST</span>'+
+        '<strong>'+esc(a.name)+'</strong><small>'+numReleases+' '+(numReleases===1?'релиз':'релизов')+
+        ' · '+formatCounts(cards.length)+'</small><span class="col-tag">ОТКРЫТЬ РЕЛИЗЫ ↗</span></span></button>';
+      }).join('')+'</div>':'<p class="col-gallery-intro">Открой первый дроп, чтобы найти артиста.</p>')+
+      (data.hidden.size?'<div class="col-section-head"><div><span class="col-micro">SECRET ARCHIVE</span>'+
+      '<h3>СКРЫТЫЕ НАХОДКИ</h3></div><span class="col-count">'+data.hidden.size+'</span></div>'+
+      '<div class="col-release-list">'+[...data.hidden.values()].map(c=>
+        '<button type="button" class="col-release-row" data-hidden-card="'+esc(c.id)+'">'+
+        '<span class="col-thumb col-secret-thumb"><span class="col-secret-symbol">?</span></span>'+
+        '<span class="col-release-main"><strong>HIDDEN · '+esc(c.title||'SECRET')+'</strong>'+
+        '<small>Секретная карточка · ×'+c.count+'</small></span><span class="col-chevron">↗</span></button>').join('')+'</div>':'')+
+      '<div class="col-shortcuts"><button type="button" data-collection-history="1">'+
+      '<span class="col-shortcut-symbol">◷</span><span><strong>ИСТОРИЯ НАХОДОК</strong>'+
+      '<small>Все ранее открытые карточки</small></span><span>↗</span></button>'+
+      '<button type="button" data-action="catalog"><span class="col-shortcut-symbol">◈</span>'+
+      '<span><strong>КАТАЛОГ ОФОРМЛЕНИЙ</strong><small>Сравнить все доступные стили</small></span>'+
+      '<span>↗</span></button></div>'+
+      '<p class="note">Просмотр и фильтры не меняют баланс, количество копий или редкость карточек.</p></div>';
   }
   function artist(state, artistId) {
     const a=catalog.artists.find(a=>a.id===artistId);
@@ -101,7 +165,7 @@
     if(!visible.length) return artist(state,artistId);
     const featured=data.owned.get(visible[0].id);
     return `<div class="panel col-page">${stageHeader('RELEASE COLLECTION',r.title,`${a.name} · ${r.year || 'Архив'} · ${visible.length} из 5 редкостей`,'artist')}
-      <div class="col-release-hero"><div class="col-release-hero-image">${art(featured)}</div><div class="col-release-hero-copy"><span class="col-micro">ALBUM ARTWORK</span><strong>${esc(r.title)}</strong><span>${esc(a.name)}</span><small>${visible.length}/5 СОБРАНО</small></div></div>
+      <div class="col-release-hero"><button type="button" class="col-release-hero-image col-release-hero-open" data-owned-card="${esc(featured.id)}" aria-label="Рассмотреть ${esc(r.title)}">${art(featured)}</button><div class="col-release-hero-copy"><span class="col-micro">ALBUM ARTWORK</span><strong>${esc(r.title)}</strong><span>${esc(a.name)}</span><small>${visible.length}/5 СОБРАНО</small></div></div>
       <div class="col-section-head"><div><span class="col-micro">RARITY VARIANTS</span><h3>ПЯТЬ РЕДКОСТЕЙ</h3></div><span class="col-count">${visible.length}/5</span></div>
       <div class="col-rarity-grid">${mine.map(c=>{
         const mineCard=data.owned.get(c.id),owned=!!mineCard;
@@ -109,7 +173,7 @@
           <span class="col-rarity-picture">${owned?art(c):'<span class="col-lock-mark">?</span>'}${owned&&mineCard.testCount>0?'<span class="flip-test-marker">ТЕСТ ×'+mineCard.testCount+'</span>':''}${owned&&mineCard.count>1?`<span class="col-qty">×${mineCard.count}</span>`:''}</span>
           <span class="col-rarity-caption"><b>${esc(c.rarity)}</b><small>${owned?`${mineCard.count} ${mineCard.count===1?'экземпляр':'экз.'}`:'НЕ НАЙДЕНО'}</small></span></button>`;
       }).join('')}</div>
-      <p class="col-info-hint">Открой полученную карточку, чтобы рассмотреть оформление и количество копий. Неоткрытые варианты скрыты.</p>
+      <p class="col-info-hint">Нажми на открытую карточку, чтобы приблизить обложку и повернуть её пальцем. Неоткрытые варианты скрыты.</p>
       ${r.note?`<p class="note">${esc(r.note)}</p>`:''}</div>`;
   }
   function history(state) {
@@ -132,7 +196,7 @@
          if(String(c.rarity).toLowerCase()==='hidden')return `<button type="button" class="col-release-row" data-hidden-card="${esc(c.id)}" data-filterable="${esc(c.title||'Hidden')} Hidden"><span class="col-thumb col-secret-thumb"><span class="col-secret-symbol">?</span></span><span class="col-release-main"><strong>${esc(c.title||'Секретная карточка')}</strong><small>HIDDEN · ×${c.count}</small></span><span class="col-chevron">↗</span></button>`;
          return coverCard(c,c.title,`${c.artist} · ${c.rarity} · ${owned?`×${owned.count}`:'Больше нет'}`,`data-history-card="${esc(c.id)}"`);
       }).join('')}</div><p class="col-no-matches" hidden>Ничего не найдено.</p>`:`<div class="col-empty"><div class="col-empty-symbol">✳</div><strong>ИСТОРИЯ ПОКА ПУСТА</strong><p>Здесь будут сохраняться твои первые открытия.</p></div>`}
-      <p class="note">История пока хранится только локально. После подключения сервера открытия будут закреплены за Telegram-аккаунтом.</p></div>`;
+      <p class="note">История открытий сохраняется вместе с игровым прогрессом при входе через Telegram.</p></div>`;
   }
   function cardInfo(state, id) {
     const data=inventory(state), item=data.owned.get(id);

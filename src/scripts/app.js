@@ -286,22 +286,49 @@ function doPackDemo(){
 function showCatalogCard(release,rarity){
   const card=catalog.getCard('carti',release,rarity);
   if(!card)return;
-  modal(`<span class="eyebrow">CATALOG / ${escapeHtml(card.rarity.toUpperCase())}</span><h3>${escapeHtml(card.title)}</h3><div class="catalog-modal-image">${sq(card)}</div><p>${escapeHtml(card.artist)} · ${escapeHtml(card.style)}</p><p>Предпросмотр оформления. Не добавлено в коллекцию.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>`);
+  if(window.FLIPCardViewer?.open(card,{mode:'catalog'}))return;
+  modal('<h3>'+escapeHtml(card.title)+'</h3><div class="catalog-modal-image">'+sq(card)+'</div>'+
+    '<p>Каталог · '+escapeHtml(card.style)+'</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');
 }
-
-function showOwnedCard(cardId, historyMode=false){
+function showOwnedCard(cardId,historyMode=false){
   const entry=historyMode?window.FLIPCollection.historyCard(state,cardId):window.FLIPCollection.cardInfo(state,cardId);
   if(!entry)return;
-  const owned=entry.count>0;
-  const text=owned ? `${entry.count} ${entry.count===1?'экземпляр':'экз.'}` : 'Больше нет в коллекции';
-  const testNote=entry.testCount>0?'<p class="col-detail-note">ТЕСТОВЫХ КОПИЙ: '+entry.testCount+' · Они не учитываются в рейтинге.</p>':'';
-  modal(`<span class="eyebrow">${owned?'OWNED CARD / COLLECTION':'DISCOVERED CARD / HISTORY'}</span>
-    <h3>${escapeHtml(entry.title)}</h3>
-    <div class="col-detail-art">${sq(entry)}</div>
-    <p>${escapeHtml(entry.artist)} · ${escapeHtml(entry.style||entry.rarity)}</p>
-    <div class="col-detail-metas"><span><small>РЕДКОСТЬ</small><b>${escapeHtml(entry.rarity)}</b></span><span><small>В НАЛИЧИИ</small><b>${escapeHtml(text)}</b></span></div>${testNote}
-    <p class="col-detail-note">Обмен и продажу дубликатов подключим после серверной системы. Сейчас просмотр не изменяет количество карточек.</p>
-    <button type="button" class="bigbtn" id="closeReveal">ЗАКРЫТЬ ↗</button>`);
+  if(window.FLIPCardViewer?.open(entry,{
+    mode:entry.count>0?'owned':'history',count:entry.count,testCount:entry.testCount
+  }))return;
+  modal('<h3>'+escapeHtml(entry.title)+'</h3><div class="col-detail-art">'+sq(entry)+'</div>'+
+    '<p>'+escapeHtml(entry.artist)+' · '+escapeHtml(entry.rarity)+'</p>'+
+    '<button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');
+}
+// Client-side gallery only; inventory and rarity are immutable in the renderer.
+function updateCollectionGallery(){
+  const host=document.querySelector('#screen [data-collection-gallery]');
+  if(!host)return;
+  const search=document.querySelector('#screen [data-collection-gallery-search]');
+  const q=(search?.value||'').toLocaleLowerCase('ru-RU').trim();
+  const filter=document.querySelector('#screen [data-collection-gallery-filter][aria-pressed="true"]')?.dataset.collectionGalleryFilter||'all';
+  const sort=document.querySelector('#screen [data-collection-gallery-sort]')?.value||'rarity';
+  const rarityOrder={common:0,rare:1,epic:2,legendary:3,mythic:4,hidden:5};
+  const tiles=[...host.querySelectorAll('[data-gallery-item]')];
+  tiles.sort((a,b)=>{
+    if(sort==='quantity')return Number(b.dataset.galleryCount||0)-Number(a.dataset.galleryCount||0)||
+      (a.dataset.galleryName||'').localeCompare(b.dataset.galleryName||'','ru');
+    if(sort==='title')return (a.dataset.galleryName||'').localeCompare(b.dataset.galleryName||'','ru');
+    return (rarityOrder[b.dataset.galleryRarity]??-1)-(rarityOrder[a.dataset.galleryRarity]??-1)||
+      (a.dataset.galleryName||'').localeCompare(b.dataset.galleryName||'','ru');
+  });
+  let visible=0;
+  for(const tile of tiles){
+    const matched=(!q||String(tile.dataset.filterable||'').toLocaleLowerCase('ru-RU').includes(q))&&
+      (filter==='all'||tile.dataset.galleryRarity===filter);
+    tile.hidden=!matched;
+    if(matched)visible++;
+    host.appendChild(tile);
+  }
+  const empty=document.querySelector('#screen [data-collection-gallery-empty]');
+  if(empty)empty.hidden=visible>0;
+  const status=document.querySelector('#screen [data-collection-gallery-status]');
+  if(status)status.textContent='ПОКАЗАНО '+visible+' ИЗ '+tiles.length;
 }
 function applyCollectionSearch(value){
   const query=String(value||'').toLocaleLowerCase('ru-RU').trim();
@@ -310,12 +337,24 @@ function applyCollectionSearch(value){
   for(const row of rows){row.hidden=!!query&&!String(row.dataset.filterable||'').toLocaleLowerCase('ru-RU').includes(query);if(!row.hidden)found++;}
   const empty=document.querySelector('#screen .col-no-matches');if(empty)empty.hidden=found!==0;
 }
-document.addEventListener('input',e=>{if(e.target.matches('[data-collection-search]'))applyCollectionSearch(e.target.value)});
+document.addEventListener('input',e=>{
+  if(e.target.matches('[data-collection-search]'))applyCollectionSearch(e.target.value);
+  if(e.target.matches('[data-collection-gallery-search]'))updateCollectionGallery();
+});
+document.addEventListener('change',e=>{
+  if(e.target.matches('[data-collection-gallery-sort]'))updateCollectionGallery();
+});
 // touch-action: manipulation is the main iOS fix; this is a second guard for WebViews
 // that still emit dblclick on static regions. No viewport zoom lock: pinch zoom remains allowed.
 document.addEventListener('dblclick',e=>{if(e.target.closest('.phone'))e.preventDefault()},{passive:false});
 function handleTask(i){if(state.claimedTasks.includes(i))return;modal(`<span class="eyebrow">DAILY TASK</span><h3>${taskDefs[i].title}</h3><p>Это макет задания. В реальной игре выполнение определяется сервером автоматически, без ручного начисления.</p><button class="bigbtn" id="closeReveal">ПОНЯТНО</button>`)}
 document.addEventListener('click',e=>{
+  const galleryFilter=e.target.closest('[data-collection-gallery-filter]');
+  if(galleryFilter){
+    document.querySelectorAll('#screen [data-collection-gallery-filter]').forEach(button=>
+      button.setAttribute('aria-pressed',String(button===galleryFilter)));
+    updateCollectionGallery();return;
+  }
   const collectionArtistTarget=e.target.closest('[data-collection-artist]');
   if(collectionArtistTarget){collectionArtistId=collectionArtistTarget.dataset.collectionArtist;collectionReleaseId=null;render('collectionArtist');return}
   const releaseTarget=e.target.closest('[data-collection-release]');
@@ -329,7 +368,18 @@ document.addEventListener('click',e=>{
   const historyCardTarget=e.target.closest('[data-history-card]');
   if(historyCardTarget){showOwnedCard(historyCardTarget.dataset.historyCard,true);return}
   const hiddenTarget=e.target.closest('[data-hidden-card]');
-  if(hiddenTarget){const hidden=state.received.find(c=>c?.id===hiddenTarget.dataset.hiddenCard);if(hidden){const count=state.received.filter(c=>c?.id===hidden.id).length;modal(`<span class="eyebrow">SECRET / HIDDEN</span><h3>${escapeHtml(hidden.title)}</h3><div class="col-detail-art">${sq(hidden)}</div><p>Секретная карточка · ${count} экз.</p><p>Отдельный художественный стиль Hidden будет разработан позже.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ ↗</button>`);}return}
+  if(hiddenTarget){
+    const hidden=state.received.find(c=>c?.id===hiddenTarget.dataset.hiddenCard);
+    if(hidden){
+      const count=state.received.filter(c=>c?.id===hidden.id).length;
+      if(!window.FLIPCardViewer?.open({...hidden,color:'hidden',count},
+        {mode:'owned',count})){
+        modal('<h3>'+escapeHtml(hidden.title)+'</h3><p>HIDDEN · '+count+' экз.</p>'+
+          '<button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');
+      }
+    }
+    return;
+  }
   const tab=e.target.closest('[data-tab]');if(tab){render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks'].includes(a))render(a);else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn'))previewRoulette();if(e.target.closest('#buyPackBtn'))doPack();if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))render('store');if(e.target.closest('#bellBtn'))$('#notifications').classList.toggle('show');if(e.target.closest('#closeNotifications'))$('#notifications').classList.remove('show');if(e.target.closest('#resetBtn')){if(live()||blocked())return;localStorage.removeItem('flip_demo');localStorage.removeItem('flip20_demo');Object.assign(state,{...initial,dropReadyAt:Date.now(),received:[],discovered:[],claimedTasks:[]});save();render('profile');toast('Демо сброшено — бесплатный дроп доступен')};const t=e.target.closest('[data-task]');if(t)handleTask(+t.dataset.task);if(e.target.closest('#levelQuick'))render('profile')});
 $('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#notifications').classList.remove('show')}});window.addEventListener('flip-trade-completed',async()=>{
   if(!live())return;
