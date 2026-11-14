@@ -1,0 +1,41 @@
+/* FLIP v0.8.3 — integrated owner-only control center */
+.flip-admin-entry{margin:12px 1px 26px;padding:16px;border:1px solid #536d3d;background:linear-gradient(135deg,#1c2c1d,#142118)}
+.flip-admin-entry .outlinebtn{width:100%;text-align:center;padding:13px;font-weight:800;color:#c8ff7d}
+.flip-admin-page .desc{font-size:11px;line-height:1.6;color:#9bad9f;margin-bottom:16px}
+.flip-admin-section{border:1px solid #324736;background:linear-gradient(120deg,#162019,#111b16);border-radius:16px;padding:15px;margin:12px 0}
+.flip-admin-section h3{font:800 12px 'Space Grotesk',sans-serif;color:#d7e9d3;letter-spacing:.7px;margin:0 0 14px}
+.flip-admin-section-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.flip-admin-section-heading h3{margin:0}
+.flip-admin-search{display:flex;gap:7px;margin-bottom:9px}
+.flip-admin-search input,.flip-admin-input{width:100%;min-width:0;background:#0c1510;border:1px solid #38503d;color:#e9f6e7;border-radius:10px;padding:12px 11px;font:600 12px 'Manrope',sans-serif;outline:none}
+.flip-admin-search input:focus,.flip-admin-input:focus{border-color:#a6e965}
+.flip-admin-search .outlinebtn{padding:9px 11px;white-space:nowrap}
+.flip-admin-users{max-height:225px;overflow:auto;border:1px solid #2c3b2c;border-radius:12px;margin:10px 0;padding:5px}
+.flip-admin-player{display:block;width:100%;padding:10px;text-align:left;color:#e2efdf;background:none;border:1px solid transparent;border-radius:8px}
+.flip-admin-player.selected{background:#baff4a18;border-color:#9dc866}
+.flip-admin-player strong,.flip-admin-player small{display:block;overflow-wrap:anywhere}
+.flip-admin-player strong{font-size:12px}
+.flip-admin-player small{color:#8ea58f;font-size:10px;margin-top:3px}
+.flip-admin-field-label{display:block;color:#aabda8;font-size:10px;font-weight:700;margin:11px 0 6px}
+.flip-admin-small-heading{margin-top:20px!important}
+.flip-admin-mode-choice{display:flex;gap:10px;align-items:start;border:1px solid #304536;border-radius:11px;background:#0e1812;padding:12px;margin-bottom:7px;cursor:pointer}
+.flip-admin-mode-choice.chosen{background:#253a24;border-color:#a2d46c}
+.flip-admin-mode-choice input{accent-color:#baff50;margin-top:4px}
+.flip-admin-mode-choice span{min-width:0;flex:1}
+.flip-admin-mode-choice strong{display:block;font-size:11px}
+.flip-admin-mode-choice small{display:block;font-size:10px;line-height:1.5;margin-top:5px;color:#aac0ab}
+.flip-admin-hint{font-size:10px;line-height:1.6;color:#a5b6a6;margin:8px 0 12px}
+.flip-admin-message{margin:10px 0;padding:10px;border-radius:10px;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.flip-admin-message.ok{background:#1b3820;color:#c7f7ca;border:1px solid #51885a}
+.flip-admin-message.failed{background:#422b24;color:#ffd7c9;border:1px solid #8c6152}
+.flip-admin-history-row{display:grid;gap:5px;padding:12px 0;border-top:1px solid #28382d;overflow-wrap:anywhere}
+.flip-admin-history-row strong{font-size:11px}
+.flip-admin-history-row small{color:#93a994;font-size:10px}
+.flip-admin-mode{width:max-content;padding:4px 6px;border-radius:5px;font:800 9px 'Space Grotesk',sans-serif}
+.flip-admin-mode.test{background:#283b63;color:#aecdff}
+.flip-admin-mode.ranked{background:#334923;color:#c2ff7b}
+.flip-admin-leader{display:flex;gap:9px;align-items:center;border-top:1px solid #2a3c30;padding:10px 0}
+.flip-admin-leader span{color:#caff7e;font:800 11px 'Space Grotesk'}
+.flip-admin-leader strong{flex:1;font-size:11px;min-width:0;overflow-wrap:anywhere}
+.flip-admin-leader small{font-size:10px;color:#a3b9a5}
+.flip-test-marker{position:absolute;z-index:2;top:5px;left:5px;border-radius:5px;padding:4px 5px;background:#243b65e8;border:1px solid #86b6ff;color:#d2e5ff;font:800 9px 'Space Grotesk',sans-serif}

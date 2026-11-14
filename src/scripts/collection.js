@@ -19,13 +19,13 @@
       if (!reference) {
         if (String(original?.rarity||'').toLowerCase()==='hidden' && original?.id) {
           const h=hidden.get(original.id);
-          if(h)h.count++;else hidden.set(original.id,{...original,count:1});
+          if(h){h.count++;if(original.isTestCopy)h.testCount=(h.testCount||0)+1;}else hidden.set(original.id,{...original,count:1,testCount:original.isTestCopy?1:0});
         } else if(original) unknown.push(original);
         continue;
       }
       const item = owned.get(reference.id);
-      if (item) item.count += 1;
-      else owned.set(reference.id, {...reference, count:1});
+      if (item) {item.count += 1;if(original.isTestCopy)item.testCount=(item.testCount||0)+1;}
+      else owned.set(reference.id, {...reference, count:1,testCount:original.isTestCopy?1:0});
     }
     const history = Array.isArray(state.discovered) ? state.discovered.filter(id=>typeof id==='string') : [];
     const discovered = new Set(history);
@@ -44,7 +44,8 @@
   }
   function formatDate(ms) {return ms ? new Date(ms).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'}) : 'Ранее';}
   function cardThumb(card, size='normal') {
-    return `<span class="col-thumb ${size==='large'?'col-thumb-large':''} col-${esc(card.color)}">${art(card)}<span class="col-thumb-rarity"></span>${card.count>1?`<span class="col-qty">×${card.count}</span>`:''}</span>`;
+    const testBadge=card.testCount>0?'<span class="flip-test-marker">ТЕСТ ×'+card.testCount+'</span>':'';
+    return `<span class="col-thumb ${size==='large'?'col-thumb-large':''} col-${esc(card.color)}">${art(card)}<span class="col-thumb-rarity"></span>${testBadge}${card.count>1?`<span class="col-qty">×${card.count}</span>`:''}</span>`;
   }
   function coverCard(card, title, meta, action, attrs='') {
     return `<button type="button" class="col-release-row" ${action} ${attrs} data-filterable="${esc(title+' '+meta)}">
@@ -105,7 +106,7 @@
       <div class="col-rarity-grid">${mine.map(c=>{
         const mineCard=data.owned.get(c.id),owned=!!mineCard;
         return `<button type="button" class="col-rarity-tile ${owned?'':'col-locked'} col-${esc(c.color)}" ${owned?`data-owned-card="${esc(c.id)}"`:'disabled aria-disabled="true"'} aria-label="${owned?`Открыть ${esc(c.rarity)}, ${mineCard.count} экземпляров`:`${esc(c.rarity)} пока не найден`}">
-          <span class="col-rarity-picture">${owned?art(c):'<span class="col-lock-mark">?</span>'}${owned&&mineCard.count>1?`<span class="col-qty">×${mineCard.count}</span>`:''}</span>
+          <span class="col-rarity-picture">${owned?art(c):'<span class="col-lock-mark">?</span>'}${owned&&mineCard.testCount>0?'<span class="flip-test-marker">ТЕСТ ×'+mineCard.testCount+'</span>':''}${owned&&mineCard.count>1?`<span class="col-qty">×${mineCard.count}</span>`:''}</span>
           <span class="col-rarity-caption"><b>${esc(c.rarity)}</b><small>${owned?`${mineCard.count} ${mineCard.count===1?'экземпляр':'экз.'}`:'НЕ НАЙДЕНО'}</small></span></button>`;
       }).join('')}</div>
       <p class="col-info-hint">Открой полученную карточку, чтобы рассмотреть оформление и количество копий. Неоткрытые варианты скрыты.</p>

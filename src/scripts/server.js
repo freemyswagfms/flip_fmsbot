@@ -5,7 +5,7 @@
   const initData = telegram?.initData || '';
   const telegramClient=window.FLIPViewport?.isTelegram || !!initData;
   const api='/api/flip';
-  const bridge={mode:'loading',error:null,connectedUser:null,profile:null};
+  const bridge={mode:'loading',error:null,connectedUser:null,profile:null,isAdmin:false};
   async function request(action,requestId){
     const headers={'x-telegram-init-data':initData};
     const options={method:action?'POST':'GET',headers,cache:'no-store'};
@@ -25,7 +25,8 @@
         (item.id==='demo/hidden/archive-001'?{id:item.id,title:'ARCHIVE 001',artist:'FLIP // SECRET',rarity:'Hidden',color:'hidden'}:null);
       if(!card)continue;
       const count=Math.min(10000,Math.max(0,Number(item.count)||0));
-      for(let i=0;i<count;i++)received.push({...card});
+      const ranked=Math.max(0,Math.min(count,Number(item.ranked_count??count)||0));
+      for(let i=0;i<count;i++)received.push({...card,isTestCopy:i>=ranked});
     }
     return {received, discovered:snapshot.discovered, balance:snapshot.balance,
       xp:snapshot.xp,level:snapshot.level,xpToNext:snapshot.xp_to_next,
@@ -40,7 +41,7 @@
   }
   bridge.connect=async()=>{
     if(!initData){bridge.mode=telegramClient?'blocked':'demo';bridge.error=telegramClient?'NO_TELEGRAM_AUTH':'OUTSIDE_TELEGRAM';return null;}
-    try{const data=await request();bridge.mode='server';bridge.error=null;bridge.profile=data.profile||null;return makeState(data.state);}
+    try{const data=await request();bridge.mode='server';bridge.error=null;bridge.profile=data.profile||null;bridge.isAdmin=data.admin===true;return makeState(data.state);}
     catch(error){
       // Never switch an authenticated Telegram user back to writable browser currency.
       bridge.mode='blocked';bridge.error=error.message;return null;

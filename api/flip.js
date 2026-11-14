@@ -50,6 +50,12 @@ export function validateTelegramInitData(raw, token, nowSeconds=Math.floor(Date.
     photo_url:safePhotoUrl(user.photo_url)};
 }
 
+export function isFlipAdmin(telegramId) {
+  // Never trust a client-supplied ID. Call this only after validateTelegramInitData().
+  const allowed=(process.env.FLIP_ADMIN_TELEGRAM_ID||'').trim();
+  return /^[1-9]\d*$/.test(allowed) && String(telegramId)===allowed;
+}
+
 function settings(){
   const url=process.env.SUPABASE_URL;
   const key=process.env.SUPABASE_SECRET_KEY;
@@ -79,7 +85,7 @@ export async function handleRequest(request,env=undefined){
   if (!['GET','POST'].includes(request.method)) return json({error:'METHOD_NOT_ALLOWED'},405);
   const configured=!!(process.env.TELEGRAM_BOT_TOKEN&&process.env.SUPABASE_URL&&process.env.SUPABASE_SECRET_KEY);
   if(request.method==='GET' && u.searchParams.get('health')==='1')
-    return json({service:'FLIP',version:'0.8.2',configured});
+    return json({service:'FLIP',version:'0.8.3',configured});
   if(!configured)return json({error:'SERVER_NOT_CONFIGURED'},503);
   try{
     const raw=request.headers.get('x-telegram-init-data');
@@ -92,7 +98,7 @@ export async function handleRequest(request,env=undefined){
       },db);
       const displayName=[user.first_name,user.last_name].filter(Boolean).join(' ').trim()
         || user.username || 'FLIP PLAYER';
-      return json({state, mode:'server', profile:{
+      return json({state, mode:'server', admin:isFlipAdmin(user.telegram_id), profile:{
         display_name:displayName,
         handle:user.username ? `@${user.username}` : publicPlayerTag(user.telegram_id),
         avatar_url:user.photo_url
