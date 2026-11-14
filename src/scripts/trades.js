@@ -1,11 +1,11 @@
-/* FLIP v0.8.5 — real server-backed 1:1 card trading, no test copies or F. */
+/* FLIP v0.8.6 — secure 1-5 card bundle trading and counteroffers, no test copies or F. */
 (() => {
 'use strict';
 const E=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const initData=window.Telegram?.WebApp?.initData||'';
 const ownId=(()=>{try{return String(JSON.parse(new URLSearchParams(initData).get('user')||'{}').id||'');}catch{return''}})();
-const s={q:'',players:[],targetId:'',targetLabel:'',their:[],give:'',take:'',
-  trades:[],error:'',message:'',busy:false,loading:false,searching:false,inspectId:'',inspection:null};
+const s={q:'',players:[],targetId:'',targetLabel:'',their:[],give:[],take:[],
+  counterOf:'',trades:[],error:'',message:'',busy:false,loading:false,searching:false,inspectId:'',inspection:null};
 let root=null,serial=0,searchSeq=0,searchTimer=null;
 const fmt=x=>Number(x||0).toLocaleString('ru-RU',{maximumFractionDigits:2});
 const signed=x=>(Number(x||0)>0?'+':'')+fmt(x)+' CP';
@@ -36,10 +36,20 @@ function points(rarity,count){
     .reduce((a,b)=>a+b,0)*100)/100;
 }
 function delta(inventory,give,take){
-  const g=inventory.find(c=>c.id===give),t=inventory.find(c=>c.id===take);
-  const giveCount=Number(g?.ranked_count||0),takeCount=Number(t?.ranked_count||0);
-  return Math.round(100*(points(card(give).rarity,giveCount-1)-points(card(give).rarity,giveCount)
-    +points(card(take).rarity,takeCount+1)-points(card(take).rarity,takeCount)))/100;
+  const gives=Array.isArray(give)?give:[give],takes=Array.isArray(take)?take:[take];
+  let total=0;
+  for(const id of new Set([...gives,...takes])){
+    const current=Number(inventory.find(c=>c.id===id)?.ranked_count||0);
+    const after=current-(gives.includes(id)?1:0)+(takes.includes(id)?1:0);
+    total+=points(card(id).rarity,after)-points(card(id).rarity,current);
+  }
+  return Math.round(total*100)/100;
+}
+function validSelection(mine,theirs){
+  return !!(s.targetId&&s.give.length>=1&&s.give.length<=5&&s.take.length>=1&&s.take.length<=5
+    &&s.give.every(id=>mine.some(x=>x.id===id))
+    &&s.take.every(id=>theirs.some(x=>x.id===id))
+    &&!s.give.some(id=>s.take.includes(id)));
 }
 async function api(view,args={},body){
   const url=new URL('/api/social',location.origin);
@@ -51,39 +61,52 @@ async function api(view,args={},body){
   if(!response.ok)throw Error(d.error||'TRADE_REQUEST_FAILED');
   return d;
 }
-const option=(c,selected)=>'<option value="'+E(c.id)+'" '+(selected===c.id?'selected':'')+'>'+
-  E(card(c.id).title)+' ×'+E(c.ranked_count)+'</option>';
+function cardSelector(inventory,selected,side){
+  if(!inventory.length)return '<p class="flip-social-muted">Нет рейтинговых карточек для обмена.</p>';
+  const reached=selected.length>=5;
+  return '<div class="flip-trade-card-choices">'+inventory.map(item=>{
+    const checked=selected.includes(item.id);
+    return '<label class="flip-trade-card-choice '+(checked?'chosen':'')+(reached&&!checked?' at-limit':'')+'">'+
+      '<input type="checkbox" data-trade-toggle="'+side+'" value="'+E(item.id)+'" '+
+        (checked?'checked':'')+' '+(reached&&!checked?'disabled':'')+'>'+
+      '<span class="flip-trade-choice-copy"><strong>'+E(card(item.id).title)+'</strong>'+
+      '<small>Рейтинговых копий: '+E(item.ranked_count)+'</small></span>'+
+      '</label>';
+  }).join('')+'</div>';
+}
 function draft(){
   const mine=groups(),theirs=s.their;
-  const good=!!(s.targetId&&mine.some(x=>x.id===s.give)&&theirs.some(x=>x.id===s.take)&&s.give!==s.take);
+  const good=validSelection(mine,theirs);
   const myDelta=good?delta(mine,s.give,s.take):null;
   const theirDelta=good?delta(theirs,s.take,s.give):null;
-  return '<section class="flip-social-panel"><div class="flip-social-heading"><h3>НОВОЕ ПРЕДЛОЖЕНИЕ</h3>'+
-    '<span class="pill">1 НА 1</span></div>'+
+  return '<section class="flip-social-panel" id="flip-trade-compose">'+
+    '<div class="flip-social-heading"><h3>'+(s.counterOf?'ВСТРЕЧНОЕ ПРЕДЛОЖЕНИЕ':'НОВОЕ ПРЕДЛОЖЕНИЕ')+
+    '</h3><span class="pill">ДО 5 НА 5</span></div>'+
+    (s.counterOf?'<div class="flip-social-selected">Ты меняешь условия исходного предложения. После отправки оно будет закрыто. '+
+      '<button type="button" data-trade-reset-counter>ОТМЕНИТЬ РЕДАКТИРОВАНИЕ</button></div>':'')+
     '<label class="flip-social-label" for="flip-trade-user-search">Найти игрока</label>'+
     '<div class="flip-social-search"><input class="flip-social-input" id="flip-trade-user-search" '+
-      'maxlength="64" placeholder="@username, имя или Telegram ID" autocomplete="off" value="'+E(s.q)+'">'+
-      '<button type="button" class="outlinebtn" data-trade-find>НАЙТИ</button></div>'+
+      'maxlength="64" placeholder="@username, имя или Telegram ID" autocomplete="off" value="'+E(s.q)+'" '+
+      (s.counterOf?'disabled':'')+'>'+
+      '<button type="button" class="outlinebtn" data-trade-find '+(s.counterOf?'disabled':'')+'>НАЙТИ</button></div>'+
     '<div id="flip-trade-player-results">'+playerResults()+'</div>'+
     (s.targetId?'<div class="flip-social-selected">Получатель: <strong>'+E(s.targetLabel)+
-      '</strong> <button type="button" data-trade-clear>ИЗМЕНИТЬ</button></div>':'')+
+      '</strong> '+(s.counterOf?'':'<button type="button" data-trade-clear>ИЗМЕНИТЬ</button>')+'</div>':'')+
     (s.targetId?
-      '<label class="flip-social-label" for="flip-trade-give">Твоя карточка (только рейтинговые)</label>'+
-      '<select class="flip-social-input" id="flip-trade-give">'+
-      (mine.length?mine.map(c=>option(c,s.give)).join(''):'<option value="">Нет рейтинговых карточек</option>')+
-      '</select>'+
-      '<label class="flip-social-label" for="flip-trade-take">Карточка другого игрока</label>'+
-      '<select class="flip-social-input" id="flip-trade-take">'+
-      (theirs.length?theirs.map(c=>option(c,s.take)).join(''):'<option value="">Нет доступных карточек</option>')+
-      '</select>'+
+      '<label class="flip-social-label">ТЫ ОТДАЁШЬ · '+s.give.length+'/5</label>'+
+      cardSelector(mine,s.give,'give')+
+      '<label class="flip-social-label">ТЫ ПОЛУЧАЕШЬ · '+s.take.length+'/5</label>'+
+      cardSelector(theirs,s.take,'take')+
       (good?'<div class="flip-social-preview"><div><small>ТВОЙ CP</small><strong class="'+
         (myDelta>=0?'positive':'negative')+'">'+signed(myDelta)+'</strong></div>'+
         '<div><small>CP ПОЛУЧАТЕЛЯ</small><strong class="'+(theirDelta>=0?'positive':'negative')+'">'+
-        signed(theirDelta)+'</strong></div></div>':'<p class="flip-social-muted">Выбери две разные доступные карточки.</p>')+
+        signed(theirDelta)+'</strong></div></div>':
+        '<p class="flip-social-muted">Выбери от 1 до 5 различных карточек с каждой стороны. '+
+        'Одинаковый вариант с двух сторон одной сделки пока не поддерживается.</p>')+
       '<button type="button" class="bigbtn" data-trade-create '+(!good||s.busy?'disabled':'')+
-      '>ОТПРАВИТЬ ПРЕДЛОЖЕНИЕ ↗</button>':'')+
-    '<p class="flip-social-muted">Срок предложения — 72 часа. Карточки не резервируются: обе стороны должны '+
-    'владеть ими в момент принятия. Тестовые экземпляры и F не обмениваются.</p></section>';
+      '>'+(s.counterOf?'ОТПРАВИТЬ ВСТРЕЧНОЕ ↗':'ОТПРАВИТЬ ПРЕДЛОЖЕНИЕ ↗')+'</button>':'')+
+    '<p class="flip-social-muted">Срок предложения — 72 часа. Карточки не резервируются. '+
+    'Тестовые экземпляры и F не обмениваются, обе стороны должны передать хотя бы одну карточку.</p></section>';
 }
 function playerResults(){
   if(s.searching)return '<p class="flip-social-muted">Ищем игроков…</p>';
@@ -93,25 +116,30 @@ function playerResults(){
 }
 function rowTrade(t){
   const mine=t.mine,partner=mine?t.recipient_label:t.sender_label;
-  const give=mine?t.offer_card_id:t.want_card_id,take=mine?t.want_card_id:t.offer_card_id;
+  const offer=Array.isArray(t.offer_cards)?t.offer_cards:[t.offer_card_id];
+  const want=Array.isArray(t.want_cards)?t.want_cards:[t.want_card_id];
+  const give=mine?offer:want,take=mine?want:offer;
   const statusNames={pending:'ОЖИДАЕТ',accepted:'ПРИНЯТ',declined:'ОТКЛОНЁН',
-    cancelled:'ОТМЕНЁН',expired:'ИСТЁК'};
+    cancelled:'ОТМЕНЁН',expired:'ИСТЁК',countered:'ВСТРЕЧНОЕ'};
+  const itemList=items=>'<ul class="flip-trade-offer-list">'+items.map(id=>'<li>'+E(card(id).title)+'</li>').join('')+'</ul>';
   return '<div class="flip-trade-offer"><div class="flip-social-heading"><strong>'+
     E(partner)+'</strong><span class="flip-trade-status '+E(t.status)+'">'+E(statusNames[t.status]||t.status)+'</span></div>'+
-    '<div class="flip-trade-cards"><div><small>ТЫ ОТДАЁШЬ</small><strong>'+E(card(give).title)+'</strong></div>'+
-    '<div><small>ТЫ ПОЛУЧАЕШЬ</small><strong>'+E(card(take).title)+'</strong></div></div>'+
+    '<div class="flip-trade-cards"><div><small>ТЫ ОТДАЁШЬ · '+give.length+'</small>'+itemList(give)+'</div>'+
+    '<div><small>ТЫ ПОЛУЧАЕШЬ · '+take.length+'</small>'+itemList(take)+'</div></div>'+
     '<small class="flip-social-muted">'+
-    E(new Date(t.created_at).toLocaleDateString('ru-RU'))+' · №'+E(t.id.slice(0,8))+'</small>'+
+    E(new Date(t.created_at).toLocaleDateString('ru-RU'))+' · №'+E(t.id.slice(0,8))+
+    (t.parent_trade_id?' · ВСТРЕЧНОЕ':'')+'</small>'+
     (t.status==='pending'?'<div class="flip-trade-actions">'+
       '<button type="button" class="outlinebtn" data-trade-inspect="'+E(t.id)+'">ПРОВЕРИТЬ CP</button>'+
       (mine?'<button type="button" class="outlinebtn" data-trade-verb="cancel" data-trade-id="'+E(t.id)+'">ОТМЕНИТЬ</button>':
        '<button type="button" class="outlinebtn" data-trade-verb="decline" data-trade-id="'+E(t.id)+'">ОТКЛОНИТЬ</button>'+
+       '<button type="button" class="outlinebtn" data-trade-counter="'+E(t.id)+'">ВСТРЕЧНОЕ</button>'+
        '<button type="button" class="bigbtn" data-trade-verb="accept" data-trade-id="'+E(t.id)+'">ПРИНЯТЬ</button>')+
     '</div>':'')+
     (s.inspectId===t.id&&s.inspection?'<div class="flip-social-preview">'+
       '<div><small>ТВОЙ CP</small><strong>'+signed(mine?s.inspection.sender_delta:s.inspection.recipient_delta)+'</strong></div>'+
       '<div><small>CP ПАРТНЁРА</small><strong>'+signed(mine?s.inspection.recipient_delta:s.inspection.sender_delta)+'</strong></div></div>'+
-      (s.inspection.available?'':'<p class="flip-social-error">Один из игроков уже не владеет нужной карточкой.</p>'):'')+
+      (s.inspection.available?'':'<p class="flip-social-error">Карточки больше недоступны или предложение закрыто.</p>'):'')+
     '</div>';
 }
 function section(title,items){
@@ -161,17 +189,26 @@ function updateResults(){
   const node=root?.querySelector('#flip-trade-player-results');
   if(node)node.innerHTML=playerResults();
 }
-async function choosePlayer(id,label){
-  s.targetId=id;s.targetLabel=label;s.their=[];s.take='';s.error='';draw();
+async function choosePlayer(id,label,preset=null){
+  s.targetId=id;s.targetLabel=label;s.their=[];s.take=[];s.error='';
+  if(preset){
+    s.counterOf=preset.tradeId;
+    s.give=[...preset.give];
+    s.take=[...preset.take];
+  }else{
+    s.counterOf='';s.give=[];s.take=[];
+  }
+  draw();
   const stamp=serial;
   try{
     const result=await api('cards',{playerId:id});
     if(stamp!==serial||s.targetId!==id)return;
     s.their=result.cards||[];
     const mine=groups();
-    if(!mine.some(c=>c.id===s.give))s.give=mine[0]?.id||'';
-    if(!s.their.some(c=>c.id===s.take))s.take=s.their[0]?.id||'';
+    s.give=s.give.filter(key=>mine.some(c=>c.id===key));
+    s.take=s.take.filter(key=>s.their.some(c=>c.id===key));
     draw();
+    if(preset)root?.querySelector('#flip-trade-compose')?.scrollIntoView({block:'start',behavior:'smooth'});
   }catch(e){if(stamp!==serial)return;s.error='Не удалось загрузить карточки: '+e.message;draw();}
 }
 const pendingKey='flip_v085_social_'+ownId;
@@ -193,12 +230,16 @@ async function submit(payload){
     const result=await api('',{}, {...payload,requestId});
     clearPending();
     s.busy=false;s.message=payload.action==='create'?
-      'Предложение отправлено. Оно действует 72 часа.':
+      'Предложение отправлено. Оно действует 72 часа.':payload.action==='counter'?
+      'Встречное предложение отправлено. Прежнее предложение закрыто.':
       payload.action==='accept'?
       'Обмен завершён. Твой CP: '+signed(result.recipient_cp_delta)+
         (result.recipient_xp?' · +'+result.recipient_xp+' XP':''):
       payload.action==='decline'?'Предложение отклонено.':'Предложение отменено.';
     s.inspectId='';s.inspection=null;
+    if(['create','counter'].includes(payload.action)){
+      s.counterOf='';s.targetId='';s.targetLabel='';s.their=[];s.give=[];s.take=[];s.players=[];
+    }
     await loadTrades();
     if(payload.action==='accept')window.dispatchEvent(new Event('flip-trade-completed'));
   }catch(e){
@@ -232,18 +273,36 @@ function click(e){
   if(!target||!root?.contains(target))return;
   if(target.hasAttribute('data-trade-refresh')){loadTrades();return;}
   if(target.hasAttribute('data-trade-find')){searchPlayers();return;}
-  if(target.hasAttribute('data-trade-clear')){s.targetId='';s.targetLabel='';s.their=[];s.players=[];draw();return;}
+  if(target.hasAttribute('data-trade-reset-counter')){
+    s.counterOf='';s.targetId='';s.targetLabel='';s.give=[];s.take=[];s.their=[];draw();return;
+  }
+  if(target.hasAttribute('data-trade-clear')){
+    s.targetId='';s.targetLabel='';s.their=[];s.players=[];s.give=[];s.take=[];draw();return;
+  }
   if(target.hasAttribute('data-trade-select')){
     const p=s.players.find(x=>x.id===target.dataset.tradeSelect);
     if(p)choosePlayer(p.id,p.name);return;
   }
+  if(target.hasAttribute('data-trade-counter')){
+    const t=s.trades.find(t=>t.id===target.dataset.tradeCounter);
+    if(!t||t.mine||t.status!=='pending')return;
+    const offer=Array.isArray(t.offer_cards)?t.offer_cards:[t.offer_card_id];
+    const want=Array.isArray(t.want_cards)?t.want_cards:[t.want_card_id];
+    choosePlayer(t.sender_id,t.sender_label,{tradeId:t.id,give:want,take:offer});
+    return;
+  }
   if(target.hasAttribute('data-trade-create')){
     const my=groups();
-    if(!s.targetId||!my.some(c=>c.id===s.give)||!s.their.some(c=>c.id===s.take)||s.give===s.take)return;
+    if(!validSelection(my,s.their))return;
     const mine=delta(my,s.give,s.take),other=delta(s.their,s.take,s.give);
-    if(!confirm('Предложить обмен игроку '+s.targetLabel+'?\nТвой CP: '+signed(mine)+
+    const action=s.counterOf?'counter':'create';
+    if(!confirm((action==='counter'?'Отправить встречное предложение':'Предложить обмен')+
+      ' игроку '+s.targetLabel+'?\nТы отдаёшь '+s.give.length+
+      ' карт. · Получаешь '+s.take.length+' карт.\nТвой CP: '+signed(mine)+
       '\nCP другого игрока: '+signed(other)+'\nСрок — 72 часа.'))return;
-    submit({action:'create',recipientId:s.targetId,offerCard:s.give,wantCard:s.take});return;
+    const offerCards=[...s.give].sort(),wantCards=[...s.take].sort();
+    submit({action,recipientId:s.targetId,offerCards,wantCards,
+      ...(s.counterOf?{parentTradeId:s.counterOf}:{})});return;
   }
   if(target.hasAttribute('data-trade-inspect')){inspect(target.dataset.tradeInspect);return;}
   if(target.hasAttribute('data-trade-verb'))act(target.dataset.tradeVerb,target.dataset.tradeId);
@@ -255,8 +314,17 @@ function input(e){
   searchTimer=setTimeout(searchPlayers,300);
 }
 function change(e){
-  if(e.target.id==='flip-trade-give'){s.give=e.target.value;draw();}
-  if(e.target.id==='flip-trade-take'){s.take=e.target.value;draw();}
+  const input=e.target.closest('[data-trade-toggle]');
+  if(!input)return;
+  const side=input.dataset.tradeToggle,chosen=side==='give'?s.give:s.take;
+  const id=input.value;
+  if(input.checked){
+    if(!chosen.includes(id)&&chosen.length<5)chosen.push(id);
+  }else{
+    const at=chosen.indexOf(id);
+    if(at>=0)chosen.splice(at,1);
+  }
+  draw();
 }
 window.FLIPTrades={
   mount(el){
@@ -269,7 +337,7 @@ window.FLIPTrades={
     el.addEventListener('input',input);
     el.addEventListener('change',change);
     const mine=groups();
-    s.give=mine[0]?.id||'';
+    s.give=[];s.take=[];s.counterOf='';
     s.error='';s.message='';s.loading=true;draw();
     loadTrades();
   }
