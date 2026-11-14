@@ -52,3 +52,12 @@ html { -webkit-text-size-adjust: 100%; }
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* v0.8.6: iOS Safari/WebView auto-zooms focused form controls whose computed
+   text is below 16px. Use a genuine 16px font instead of disabling pinch zoom. */
+.phone input:not([type="checkbox"]):not([type="radio"]),
+.phone select,
+.phone textarea {
+  font-size:16px !important;
+  -webkit-text-size-adjust:100%;
+}
