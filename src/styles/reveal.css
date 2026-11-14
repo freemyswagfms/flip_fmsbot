@@ -1,4 +1,4 @@
-/* FLIP v0.5.2 • extended reel & 3D card reveal. All backs/fronts are square. */
+/* FLIP v0.6 • extended reel & 3D card reveal. All backs/fronts are square. */
 .flip-reveal{--flip-rarity:#bfff56;--flip-stage-accent:#829c83;position:absolute;z-index:30;inset:0;display:none;
   flex-direction:column;isolation:isolate;overflow:hidden;
   padding:calc(var(--flip-top-space, 14px) + 10px) 18px max(18px,var(--flip-bottom-space,0px));
@@ -64,6 +64,9 @@
 .flip-face-front{transform:rotateY(180deg);border:3px solid var(--flip-rarity);box-shadow:0 0 34px color-mix(in srgb,var(--flip-rarity) 45%,transparent),0 15px 45px #000a}
 .flip-face-art{height:100%;width:100%;position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;padding:18px;text-align:left;
   background:radial-gradient(ellipse at 65% 25%,color-mix(in srgb,var(--flip-rarity) 55%,transparent),transparent 58%),linear-gradient(135deg,#111e1a,#070c0b 68%)}
+/* Full-bleed authentic artwork, never recreate text/UI over the source image. */
+.flip-face-artwork{display:block;padding:0;background:radial-gradient(circle at 50% 45%,#1c2920,#090b09)}
+.flip-art-image{display:block;width:100%;height:100%;object-fit:cover;user-select:none;-webkit-user-drag:none}
 .flip-art-noise{position:absolute;inset:0;opacity:.25;z-index:-1;pointer-events:none;
   background:repeating-linear-gradient(0deg,transparent 0 5px,#eee1 5px 6px),radial-gradient(circle at 28% 14%,#fff4,transparent 27%)}
 .flip-art-orbit{border:1px solid color-mix(in srgb,var(--flip-rarity) 58%,transparent);width:120%;height:48%;position:absolute;left:-16%;top:19%;border-radius:50%;transform:rotate(-25deg);z-index:-1;}
@@ -92,8 +95,18 @@
 .flip-reveal-bottom{position:relative;z-index:2;flex:none;text-align:center;padding:6px 0 0;font:800 10px var(--ui);letter-spacing:1px;color:#789078}
 .flip-hint-symbol{font-size:18px;vertical-align:-2px}
 .flip-reveal[data-rarity="hidden"] .flip-face-art{background:repeating-linear-gradient(108deg,#0a0d0d 0 8px,#1c2927 8px 12px)}
-.flip-reveal[data-rarity="hidden"] .flip-art-emblem{animation:hidden-pulse .2s steps(2,end) infinite}
-@keyframes hidden-pulse{0%{text-shadow:4px 0 #bfff56,-4px 0 #ff5cc3}100%{text-shadow:-4px 0 #bfff56,4px 0 #ff5cc3}}
+/* Hidden glitch ONLY on the frame; the question mark and future leaked artwork stay still. */
+.flip-reveal[data-rarity="hidden"] .flip-face-front::after{content:"";position:absolute;inset:0;border-radius:15px;pointer-events:none;z-index:4;
+  box-shadow:inset 4px 0 #bfff5680,inset -4px 0 #ff5cc380,0 0 16px #f5ffff55;
+  animation:flip-hidden-border .8s steps(2,end) infinite}
+.flip-reveal[data-rarity="hidden"] .flip-face-back .flip-rb-outer,
+.flip-reveal[data-rarity="hidden"][data-phase="settle"] .flip-roulette-tile.is-target .flip-rb-outer{
+  animation:flip-hidden-border .8s steps(2,end) infinite}
+@keyframes flip-hidden-border{
+  0%,37%,64%,100%{border-color:#effff1;filter:none;box-shadow:0 0 16px #e5fff83b}
+  38%,47%{border-color:#bfff56;box-shadow:-3px 0 #bfff56,3px 1px #ff5cc3,0 0 24px #bfff5666}
+  48%,63%{border-color:#ff5cc3;box-shadow:3px 0 #bfff56,-3px -1px #ff5cc3,0 0 23px #ff5cc360}
+}
 @media(max-width:520px){.flip-reveal{padding-left:17px;padding-right:17px}}
 @media(max-height:760px){
  .flip-reveal-content{padding-bottom:0}
@@ -109,7 +122,7 @@
 }
 @media(prefers-reduced-motion:reduce){
  .flip-roulette-track,.flip-roulette-tile,.flip-face-card,.flip-face-wrap,.flip-reveal-outcome{animation:none!important;transition:none!important}
- .flip-reveal[data-rarity="hidden"] .flip-art-emblem{animation:none}
+ .flip-reveal[data-rarity="hidden"] .flip-face-front::after, .flip-reveal[data-rarity="hidden"] .flip-face-back .flip-rb-outer, .flip-reveal[data-rarity="hidden"] .flip-roulette-tile.is-target .flip-rb-outer{animation:none}
 }
 
 /* Matching rarity treatments in the demo collection (the actual cards are art-specific). */

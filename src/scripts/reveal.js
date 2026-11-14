@@ -1,4 +1,4 @@
-/* FLIP v0.5.2 • Longer cinematic drop reveal. Animation ONLY; game state is awarded by app.js. */
+/* FLIP v0.6 • Longer cinematic drop reveal. Animation ONLY; game state is awarded by app.js. */
 (() => {
   'use strict';
   const root = document.querySelector('#dropReveal');
@@ -32,6 +32,10 @@
     const label=plain(r.card.title||'UNKNOWN SIGNAL');
     const artist=plain(r.card.artist||'FLIP DEMO');
     const isPreview=!!r.preview;
+    const actualArtwork=!!r.card.art;
+    const imageMarkup=actualArtwork
+      ? `<div class="flip-face-art flip-face-artwork"><img class="flip-art-image" src="${plain(r.card.art)}" alt="Обложка ${artist} — ${label}" decoding="async" draggable="false"></div>`
+      : `<div class="flip-face-art flip-art-${r.rarity}"><div class="flip-art-noise"></div><div class="flip-art-orbit orbit-one"></div><div class="flip-art-orbit orbit-two"></div><div class="flip-art-emblem">${r.rarity==='hidden'?'?':'✳'}</div><div class="flip-art-artist">${artist}</div><div class="flip-art-title">${label}</div><div class="flip-art-foot">FLIP / DEMO ARTWORK</div></div>`;
     root.innerHTML=`
       <div class="flip-reveal-aura" aria-hidden="true"></div>
       <div class="flip-reveal-head"><span class="flip-reveal-logo">FLIP<span>.</span></span><span class="flip-reveal-headnote">${isPreview?'PREVIEW':'FREE DROP'} <span class="flip-reveal-dot"></span> DEMO</span></div>
@@ -48,13 +52,7 @@
           <div class="flip-face-card" id="flipFaceCard">
             <div class="flip-face flip-face-back">${backMarkup()}</div>
             <div class="flip-face flip-face-front">
-              <div class="flip-face-art flip-art-${r.rarity}">
-                <div class="flip-art-noise"></div><div class="flip-art-orbit orbit-one"></div><div class="flip-art-orbit orbit-two"></div>
-                <div class="flip-art-emblem">${r.rarity==='hidden'?'?':'✳'}</div>
-                <div class="flip-art-artist">${artist}</div>
-                <div class="flip-art-title">${label}</div>
-                <div class="flip-art-foot">FLIP / DEMO ARTWORK</div>
-              </div>
+              ${imageMarkup}
             </div>
           </div>
         </div>
@@ -62,7 +60,7 @@
           <span class="flip-rarity-chip">${winner.label} <span class="flip-rarity-dot"></span></span>
           <h3>${label}</h3>
           <p>${artist}</p>
-          <span class="flip-reveal-added">${isPreview?'ДЕМО · БЕЗ НАГРАДЫ':'✓ ДОБАВЛЕНО В КОЛЛЕКЦИЮ'}</span>
+          <span class="flip-reveal-added">${isPreview?'ДЕМО · БЕЗ НАГРАДЫ':'✓ ДОБАВЛЕНО В ДЕМО-КОЛЛЕКЦИЮ'}</span>
           <button type="button" class="flip-reveal-continue" id="flipRevealContinue">ПРОДОЛЖИТЬ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19 19 5M8 5h11v11"/></svg></button>
         </div>
       </div>
@@ -137,6 +135,8 @@
     if(session) return;
     const rarity=String(card?.rarity||'common').toLowerCase();
     session={card:{...card},rarity:defs[rarity]?rarity:'common',phase:'intro',preview:options.preview===true};
+    // Start loading exactly one winning image while the lightweight roulette runs.
+    if(card?.art){const prefetch=new Image();prefetch.decoding='async';prefetch.src=card.art;}
     root.style.setProperty('--flip-rarity',defs[session.rarity].hex);
     root.dataset.rarity=session.rarity;
     root.setAttribute('aria-hidden','false');
@@ -168,6 +168,10 @@
     if(i===-1)return;
     if(i===order.length-1)close();else advanceTo(order[i+1]);
   }
+  root.addEventListener('error',event=>{
+    const img=event.target;
+    if(img?.classList?.contains('flip-art-image')) img.style.opacity='0';
+  },true);
   root.addEventListener('click',event=>{
     if(event.target.closest('#flipRevealContinue')){event.stopPropagation();close();return}
     skip();
