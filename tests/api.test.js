@@ -72,3 +72,18 @@ test('Authenticated GET and POST forward only the validated Telegram ID to the s
     assert.equal(calls[0].url,'https://example.supabase.co/rest/v1/rpc/flip_bootstrap');
   }finally{process.env=originalEnv;globalThis.fetch=originalFetch;}
 });
+
+test('First-party Telegram HMAC includes signature when present',()=>{
+  const raw=new URLSearchParams({
+    auth_date:String(Math.floor(Date.now()/1000)),
+    user:JSON.stringify({id:12345,first_name:'Tester'}),
+    signature:'tg-third-party-signature-example'
+  });
+  const secret=createHmac('sha256','WebAppData').update(key).digest();
+  const dataCheck=[...raw.entries()].sort(([a],[b])=>a.localeCompare(b,'en'))
+    .map(([k,v])=>k+'='+v).join('\n');
+  raw.set('hash',createHmac('sha256',secret).update(dataCheck).digest('hex'));
+  assert.equal(validateTelegramInitData(raw.toString(),key).telegram_id,12345);
+  raw.set('signature','tampered');
+  assert.throws(()=>validateTelegramInitData(raw.toString(),key),/INVALID_TELEGRAM_SESSION/);
+});

@@ -21,7 +21,7 @@ export function validateTelegramInitData(raw, token, nowSeconds=Math.floor(Date.
   if (!supplied || !/^[a-f0-9]{64}$/i.test(supplied) || !Number.isSafeInteger(authDate) ||
       authDate > nowSeconds + 60 || nowSeconds - authDate > MAX_AGE_SECONDS) throw new Error('EXPIRED_TELEGRAM_SESSION');
   const dataCheckString = [...pairs.entries()]
-    .filter(([k]) => k !== 'hash' && k !== 'signature')
+    .filter(([k]) => k !== 'hash')
     .sort(([a],[b]) => a.localeCompare(b,'en'))
     .map(([k,v]) => `${k}=${v}`).join('\n');
   const secret = createHmac('sha256','WebAppData').update(token).digest();
