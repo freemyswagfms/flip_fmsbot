@@ -1,0 +1,18 @@
+name: FLIP tests
+on:
+  push:
+    branches:
+      - main
+      - feat/v0.8.4-admin-search-rewards-icons
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  node-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d2759730e # v4.2.2
+      - name: Verify Node runtime
+        run: node --version
+      - name: Run server tests
+        run: node --test tests/*.test.js
