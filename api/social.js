@@ -78,7 +78,7 @@ export async function handleSocialRequest(request){
           mine:String(t.sender_id)===String(actor)}))});
       }
       if(view==='players'){
-        const q=(url.searchParams.get('q')||'').trim();
+        const q=(url.searchParams.get('q')||'').trim().replace(/^@/,'');
         if(!q||q.length>64)return json({players:[]});
         const players=await rpc('flip_trade_find_players',{p_actor_id:actor,p_query:q},db);
         return json({players:(players||[]).map(p=>({
