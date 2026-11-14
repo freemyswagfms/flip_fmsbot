@@ -1,3 +1,26 @@
+# FLIP · История обновлений
+
+## v0.8.0 — серверная основа (для подключения)
+- Telegram Mini App initData проверяется на сервере HMAC-SHA256; чужой Telegram ID из браузера не принимается.
+- Новый SQL-скрипт Supabase создаёт 7 таблиц и защищённые игровые функции.
+- Приветственные дропы, бесплатный дроп 4 часа, soft pity, выпадение Hidden, обычный пак за 200 F, XP и F выдаются атомарно на сервере.
+- Идентификатор запроса предотвращает повторное начисление при сетевых сбоях.
+- Инвентарь, открытия, баланс, уровень и счётчики синхронизируются с Telegram-аккаунтом.
+- Старые локальные демо-данные не импортируются; вне Telegram сохраняется отдельное демо.
+- Визуальная рулетка и изображения Carti сохраняются как в v0.7.2.
+- Публикация требует запуска `sql/001_flip_v08.sql` и настройки Vercel. Живое серверное тестирование обязательно.
+
+## v0.8.0 — server foundation (2026-11-14)
+
+- Telegram initData signature validation (server-only), 24-hour freshness limit.
+- Vercel Function `api/flip.js` and secured Supabase Postgres SQL schema.
+- Atomic free drops and standard 3-card pack purchases with idempotency.
+- Server inventory, discoveries, levels, F, XP, 4-hour timer, 3 welcome drops, pity.
+- Distinct local demo vs account-backed server progress; no automatic demo migration.
+- Existing Carti collection, reveal animation, rarity art and safe areas preserved.
+- Step-by-step owner guide: `docs/SETUP_V0_8_RU.md`.
+- Real end-to-end integration requires owner to run SQL and configure Vercel.
+
 ## FLIP v0.7.2 — новый стиль Common: мраморная скульптура
 
 - В метаданных каталога Common переименован с «Печатная текстура» на «Мраморная скульптура» во всех местах отображения, включая коллекцию, историю, предпросмотр и детали карточки.

@@ -63,3 +63,6 @@
   .modal{padding:18px}
   .modal .pack-open-grid{gap:6px}
 }
+
+/* v0.8 — connection badge; no changes to the approved mobile layout. */
+.flip-server-indicator{color:#9cbaa0;font:700 9px/1.5 'Manrope',sans-serif;letter-spacing:.8px;margin:0 0 10px;padding:0 3px;text-transform:uppercase}

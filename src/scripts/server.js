@@ -1,0 +1,82 @@
+/* FLIP v0.8 — browser adapter. Never stores keys or writes authoritative rewards. */
+(() => {
+  'use strict';
+  const telegram = window.Telegram?.WebApp;
+  const initData = telegram?.initData || '';
+  const telegramClient=window.FLIPViewport?.isTelegram || !!initData;
+  const api='/api/flip';
+  const bridge={mode:'loading',error:null,connectedUser:null};
+  async function request(action,requestId){
+    const headers={'x-telegram-init-data':initData};
+    const options={method:action?'POST':'GET',headers,cache:'no-store'};
+    if(action){headers['content-type']='application/json';options.body=JSON.stringify({action,requestId});}
+    const response=await fetch(api,options);
+    let data;try{data=await response.json()}catch{data={error:'INVALID_RESPONSE'}};
+    if(!response.ok){const error=new Error(data.error||'SERVER_ERROR');error.status=response.status;throw error;}
+    return data;
+  }
+  function makeState(snapshot){
+    if(!snapshot || !Array.isArray(snapshot.inventory)||!Array.isArray(snapshot.discovered))throw new Error('INVALID_SNAPSHOT');
+    const received=[];
+    const catalog=window.FLIPCatalog;
+    for(const item of snapshot.inventory){
+      const parts=String(item.id).split('/');
+      const card=parts.length===3&&parts[0]==='carti'?catalog.getCard(parts[0],parts[1],parts[2]):
+        (item.id==='demo/hidden/archive-001'?{id:item.id,title:'ARCHIVE 001',artist:'FLIP // SECRET',rarity:'Hidden',color:'hidden'}:null);
+      if(!card)continue;
+      const count=Math.min(10000,Math.max(0,Number(item.count)||0));
+      for(let i=0;i<count;i++)received.push({...card});
+    }
+    return {received, discovered:snapshot.discovered, balance:snapshot.balance,
+      xp:snapshot.xp,level:snapshot.level,xpToNext:snapshot.xp_to_next,
+      dropReadyAt:Date.parse(snapshot.drop_ready_at),
+      welcomeRemaining:snapshot.welcome_remaining,
+      pityMisses:snapshot.pity_misses,
+      claimedTasks:snapshot.claimed_tasks||[], packsToday:snapshot.packs_today||0,
+      bonusPacks:snapshot.bonus_packs||0,
+      telegramName:snapshot.first_name||snapshot.username||'PLAYER'};
+  }
+  bridge.connect=async()=>{
+    if(!initData){bridge.mode=telegramClient?'blocked':'demo';bridge.error=telegramClient?'NO_TELEGRAM_AUTH':'OUTSIDE_TELEGRAM';return null;}
+    try{const data=await request();bridge.mode='server';bridge.error=null;return makeState(data.state);}
+    catch(error){
+      // Never switch an authenticated Telegram user back to writable browser currency.
+      bridge.mode='blocked';bridge.error=error.message;return null;
+    }
+  };
+  // Keep unfinished requests separate across Telegram accounts on a shared device.
+  let playerNamespace='unknown';
+  try{
+    const rawUser=new URLSearchParams(initData).get('user');
+    const parsedUser=JSON.parse(rawUser||'null');
+    if(Number.isSafeInteger(parsedUser?.id)&&parsedUser.id>0)playerNamespace=String(parsedUser.id);
+  }catch{}
+  function pendingKey(action){return `flip_v08_${playerNamespace}_pending_${action}`;}
+  const validId=id=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id||'');
+  function pending(action){try{const id=localStorage.getItem(pendingKey(action));return validId(id)?id:null;}catch{return null;}}
+  function remember(action,id){try{localStorage.setItem(pendingKey(action),id)}catch{}}
+  function forget(action){try{localStorage.removeItem(pendingKey(action))}catch{}}
+  bridge.hasPending=action=>Boolean(pending(action));
+  async function perform(action,requestId){
+    if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+    const id=pending(action)||requestId;
+    if(!validId(id))throw new Error('INVALID_REQUEST_ID');
+    remember(action,id);
+    try{
+      const data=await request(action,id);
+      const result={...data,state:makeState(data.state)};
+      forget(action);
+      return result;
+    }catch(error){
+      // If transport failed after the database committed, replay the SAME ID.
+      // Business errors cannot have awarded a card, so allow a fresh request next time.
+      const terminal=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT',
+        'DUPLICATE_REQUEST_ACTION','INVALID_TELEGRAM_SESSION','EXPIRED_TELEGRAM_SESSION','BAD_REQUEST'];
+      if(terminal.includes(error.message))forget(action);
+      throw error;
+    }
+  }
+  bridge.drop=id=>perform('drop',id);
+  bridge.pack=id=>perform('pack',id);
+  window.FLIPServer=bridge;
+})();
