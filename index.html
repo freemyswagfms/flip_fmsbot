@@ -8,13 +8,14 @@
   <title>FLIP — музыкальные карточки</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="./src/styles/main.css?v=0.8.4" />
-  <link rel="stylesheet" href="./src/styles/home.css?v=0.8.4" />
-  <link rel="stylesheet" href="./src/styles/telegram.css?v=0.8.4" />
-  <link rel="stylesheet" href="./src/styles/reveal.css?v=0.8.4" />
-  <link rel="stylesheet" href="./src/styles/collection.css?v=0.8.4" />
-  <link rel="stylesheet" href="./src/styles/profile.css?v=0.8.4" />
-  <link rel="stylesheet" href="./src/styles/admin.css?v=0.8.4" />
+  <link rel="stylesheet" href="./src/styles/main.css?v=0.8.5" />
+  <link rel="stylesheet" href="./src/styles/home.css?v=0.8.5" />
+  <link rel="stylesheet" href="./src/styles/telegram.css?v=0.8.5" />
+  <link rel="stylesheet" href="./src/styles/reveal.css?v=0.8.5" />
+  <link rel="stylesheet" href="./src/styles/collection.css?v=0.8.5" />
+  <link rel="stylesheet" href="./src/styles/profile.css?v=0.8.5" />
+  <link rel="stylesheet" href="./src/styles/admin.css?v=0.8.5" />
+  <link rel="stylesheet" href="./src/styles/social.css?v=0.8.5" />
   <style>
     /* Critical splash styles are inline to avoid a flash of the unstyled app. */
     #flip-splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;background:#090c0a;color:#f6faf4;font-family:Arial,sans-serif;transition:opacity .4s ease,visibility .4s ease}
@@ -30,8 +31,8 @@
     @media(prefers-reduced-motion:reduce){#flip-splash .splash-cards i{animation:none}}
   </style>
   <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
-  <script src="./src/scripts/telegram.js?v=0.8.4" defer></script>
-  <script src="./src/scripts/icons.js?v=0.8.4" defer></script>
+  <script src="./src/scripts/telegram.js?v=0.8.5" defer></script>
+  <script src="./src/scripts/icons.js?v=0.8.5" defer></script>
 </head>
 <body>
   <div id="flip-splash" role="status" aria-live="polite" aria-label="FLIP загружается">
@@ -43,7 +44,7 @@
       <div class="eyebrow">INTERACTIVE UI / FLIP</div>
       <h1>FLIP<span style="color:var(--lime)">.</span></h1>
       <p>Открой свой дроп.<br>Собирай музыкальные обложки и обменивайся карточками.</p>
-      <div class="label">● FLIP v0.8.4 · TELEGRAM GAME</div>
+      <div class="label">● FLIP v0.8.5 · TELEGRAM GAME</div>
       <p style="margin-top:40px;font-size:11px;opacity:.65">При входе через Telegram прогресс хранится на сервере. Вне Telegram работает отдельное локальное демо.</p>
     </aside>
     <main class="phone" role="application" aria-label="FLIP — коллекция музыкальных карточек">
@@ -64,13 +65,13 @@
         <h3>УВЕДОМЛЕНИЯ</h3>
         <p>◉ Добро пожаловать в FLIP! Новые музыкальные открытия впереди.</p>
         <p>✦ NEW COLLECTION: свежий релиз уже в каталоге.</p>
-        <p>↔ Демонстрация: входящее предложение обмена.</p>
+        <p>↔ Входящие предложения об обмене ищи в разделе «Обмены».</p>
       </section>
       <div class="scroll" id="scroll"><div id="screen"></div></div>
       <nav class="bottom-nav" aria-label="Основная навигация">
         <button class="tab active" data-tab="home"><svg viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v11h-7v-7h-4v7H3z"/></svg><span>Главная</span></button>
         <button class="tab" data-tab="collection"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Коллекция</span></button>
-        <button class="tab" data-tab="trades"><svg viewBox="0 0 24 24"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4-4 4"/></svg><span>Обмены</span><b class="count">1</b></button>
+        <button class="tab" data-tab="trades"><svg viewBox="0 0 24 24"><path d="M4 7h16m-4-4 4 4-4 4M20 17H4m4-4-4 4-4 4"/></svg><span>Обмены</span><b class="count" hidden>0</b></button>
         <button class="tab" data-tab="store"><svg viewBox="0 0 24 24"><path d="M4 8h16l-1 13H5L4 8ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Магазин</span></button>
         <button class="tab" data-tab="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3-7 8-7s8 3 8 7"/></svg><span>Профиль</span></button>
       </nav>
@@ -86,11 +87,13 @@
       if (splash) splash.classList.add('is-hidden');
     }, 5000);
   </script>
-  <script src="./src/scripts/catalog.js?v=0.8.4" defer></script>
-  <script src="./src/scripts/reveal.js?v=0.8.4" defer></script>
-  <script src="./src/scripts/collection.js?v=0.8.4" defer></script>
-  <script src="./src/scripts/server.js?v=0.8.4" defer></script>
-  <script src="./src/scripts/admin.js?v=0.8.4" defer></script>
-  <script src="./src/scripts/app.js?v=0.8.4" defer></script>
+  <script src="./src/scripts/catalog.js?v=0.8.5" defer></script>
+  <script src="./src/scripts/reveal.js?v=0.8.5" defer></script>
+  <script src="./src/scripts/collection.js?v=0.8.5" defer></script>
+  <script src="./src/scripts/server.js?v=0.8.5" defer></script>
+  <script src="./src/scripts/admin.js?v=0.8.5" defer></script>
+  <script src="./src/scripts/leaderboard.js?v=0.8.5" defer></script>
+  <script src="./src/scripts/trades.js?v=0.8.5" defer></script>
+  <script src="./src/scripts/app.js?v=0.8.5" defer></script>
 </body>
 </html>
