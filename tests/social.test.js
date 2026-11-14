@@ -80,7 +80,7 @@ test('Only a signed actor can accept and only with a valid trade UUID',withEnv(a
   assert.equal(res.status,200);
   assert.equal(calls[0].body.p_actor_id,123);
   assert.equal(calls[0].body.p_verb,'accept');
-  assert.match(calls[0].url,/flip_trade_reply$/);
+  assert.match(calls[0].url,/flip_trade_bundle_reply$/);
   const invalid=await handleSocialRequest(request(123,'https://flip.example.com/api/social',
     {...body,tradeId:'not-a-uuid'}));
   assert.equal(invalid.status,400);
@@ -97,4 +97,61 @@ test('Partner inventory and preview are read-only and validated',withEnv(async()
   assert.equal(calls[0].body.p_actor_id,123);
   assert.equal(calls[0].body.p_player_id,456);
   assert.match(calls[0].url,/flip_trade_player_cards$/);
+}));
+
+
+test('Signed multi-card offer accepts 1 to 5 per side and keeps actor server-side',withEnv(async()=>{
+  const calls=[];
+  globalThis.fetch=async(url,options)=>{
+    calls.push({url,body:JSON.parse(options.body)});
+    return new Response(JSON.stringify({ok:true,id:'77777777-7777-4777-8777-777777777777'}),{status:200});
+  };
+  const multi={action:'create',recipientId:'456',
+    offerCards:['carti/die-lit/mythic','carti/music/epic'],
+    wantCards:['carti/music/legendary'],
+    requestId:'77777777-7777-4777-8777-777777777778',actorId:'456'};
+  const result=await handleSocialRequest(request(123,'https://flip.example.com/api/social',multi));
+  assert.equal(result.status,200);
+  assert.match(calls[0].url,/flip_trade_bundle_create$/);
+  assert.equal(calls[0].body.p_actor_id,123);
+  assert.deepEqual(calls[0].body.p_offer_cards,multi.offerCards);
+  assert.deepEqual(calls[0].body.p_want_cards,multi.wantCards);
+  assert.equal(calls[0].body.p_parent_trade_id,null);
+  for(const invalid of [
+    {...multi,wantCards:[]},
+    {...multi,offerCards:[]},
+    {...multi,wantCards:multi.offerCards},
+    {...multi,offerCards:[multi.offerCards[0],multi.offerCards[0]]},
+    {...multi,offerCards:Array(6).fill('carti/music/epic')},
+    {...multi,offerCards:['carti/../epic']},
+    {...multi,parentTradeId:'88888888-8888-4888-8888-888888888888'}
+  ]){
+    const bad=await handleSocialRequest(request(123,'https://flip.example.com/api/social',invalid));
+    assert.equal(bad.status,400);
+  }
+  assert.equal(calls.length,1);
+}));
+test('Counteroffers use validated parent trade and signed recipient',withEnv(async()=>{
+  const calls=[];
+  globalThis.fetch=async(url,options)=>{
+    calls.push({url,body:JSON.parse(options.body)});
+    return new Response(JSON.stringify({ok:true,id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'}),{status:200});
+  };
+  const counter={action:'counter',recipientId:'987',
+    offerCards:['carti/die-lit/rare'],wantCards:['carti/music/mythic'],
+    parentTradeId:'99999999-9999-4999-8999-999999999999',
+    requestId:'88888888-8888-4888-8888-888888888888',actorId:987};
+  const response=await handleSocialRequest(request(123,'https://flip.example.com/api/social',counter));
+  assert.equal(response.status,200);
+  assert.equal(calls[0].body.p_actor_id,123);
+  assert.equal(calls[0].body.p_recipient_id,987);
+  assert.equal(calls[0].body.p_parent_trade_id,counter.parentTradeId);
+  assert.match(calls[0].url,/flip_trade_bundle_create$/);
+  const forged=await handleSocialRequest(request(123,'https://flip.example.com/api/social',
+    {...counter,parentTradeId:'not-valid'}));
+  assert.equal(forged.status,400);
+  const gift=await handleSocialRequest(request(123,'https://flip.example.com/api/social',
+    {...counter,wantCards:[]}));
+  assert.equal(gift.status,400);
+  assert.equal(calls.length,1);
 }));

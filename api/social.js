@@ -1,4 +1,4 @@
-/** FLIP v0.8.5: server-only CP leaderboard + atomic card trades.
+/** FLIP v0.8.6: server-only CP leaderboard + atomic card trades.
  *  Never trusts a client-submitted actor ID, CP number or inventory count.
  */
 import {createHash} from 'node:crypto';
@@ -54,7 +54,10 @@ function serializeLeaderboard(data){
     rankedCards:data.me.ranked_cards,rankedVariants:data.me.ranked_variants}:null,
     players:data.players};
 }
-const validNoteCard=cardId; // strictly constrained to a catalog key, not an external URI.
+const validNoteCard=cardId;
+const validBundle=list=>Array.isArray(list)&&list.length>=1&&list.length<=5
+  &&list.every(cardId)&&new Set(list).size===list.length;
+
 export async function handleSocialRequest(request){
   const url=new URL(request.url);
   if(url.pathname!=='/api/social')return json({error:'NOT_FOUND'},404);
@@ -100,13 +103,30 @@ export async function handleSocialRequest(request){
       }
       return json({error:'BAD_REQUEST'},400);
     }
-    if(Number(request.headers.get('content-length')||0)>1200)return json({error:'BAD_REQUEST'},400);
+    if(Number(request.headers.get('content-length')||0)>2400)return json({error:'BAD_REQUEST'},400);
     const raw=await request.text();
-    if(raw.length>1200)return json({error:'BAD_REQUEST'},400);
+    if(raw.length>2400)return json({error:'BAD_REQUEST'},400);
     let body;try{body=JSON.parse(raw)}catch{return json({error:'BAD_REQUEST'},400)}
     if(!body||!uuid(body.requestId))return json({error:'BAD_REQUEST'},400);
-    if(body.action==='create'){
-      if(!numberId(body.recipientId)||!validNoteCard(body.offerCard)||!validNoteCard(body.wantCard))
+    if(body.action==='create'||body.action==='counter'){
+      if(!numberId(body.recipientId))return json({error:'BAD_REQUEST'},400);
+      const isBundle=Array.isArray(body.offerCards)||Array.isArray(body.wantCards)
+        ||body.action==='counter';
+      if(isBundle){
+        if(!validBundle(body.offerCards)||!validBundle(body.wantCards)
+           ||body.offerCards.some(x=>body.wantCards.includes(x))
+           ||(body.action==='counter'&&!uuid(body.parentTradeId))
+           ||(body.action==='create'&&body.parentTradeId!=null))
+          return json({error:'BAD_REQUEST'},400);
+        const result=await rpc('flip_trade_bundle_create',{
+          p_actor_id:actor,p_recipient_id:Number(body.recipientId),
+          p_offer_cards:body.offerCards,p_want_cards:body.wantCards,
+          p_request_id:body.requestId,
+          p_parent_trade_id:body.action==='counter'?body.parentTradeId:null
+        },db);
+        return json(result);
+      }
+      if(!validNoteCard(body.offerCard)||!validNoteCard(body.wantCard))
         return json({error:'BAD_REQUEST'},400);
       const result=await rpc('flip_trade_create',{
         p_actor_id:actor,p_recipient_id:Number(body.recipientId),
@@ -115,7 +135,7 @@ export async function handleSocialRequest(request){
       return json(result);
     }
     if(['accept','decline','cancel'].includes(body.action)&&uuid(body.tradeId)){
-      const result=await rpc('flip_trade_reply',{
+      const result=await rpc('flip_trade_bundle_reply',{
         p_actor_id:actor,p_trade_id:body.tradeId,
         p_verb:body.action,p_request_id:body.requestId
       },db);
