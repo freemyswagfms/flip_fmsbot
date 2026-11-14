@@ -1,4 +1,4 @@
-/* FLIP v0.8.3 — integrated owner-only control center */
+/* FLIP v0.8.4 — integrated owner-only control center */
 .flip-admin-entry{margin:12px 1px 26px;padding:16px;border:1px solid #536d3d;background:linear-gradient(135deg,#1c2c1d,#142118)}
 .flip-admin-entry .outlinebtn{width:100%;text-align:center;padding:13px;font-weight:800;color:#c8ff7d}
 .flip-admin-page .desc{font-size:11px;line-height:1.6;color:#9bad9f;margin-bottom:16px}
@@ -39,3 +39,12 @@
 .flip-admin-leader strong{flex:1;font-size:11px;min-width:0;overflow-wrap:anywhere}
 .flip-admin-leader small{font-size:10px;color:#a3b9a5}
 .flip-test-marker{position:absolute;z-index:2;top:5px;left:5px;border-radius:5px;padding:4px 5px;background:#243b65e8;border:1px solid #86b6ff;color:#d2e5ff;font:800 9px 'Space Grotesk',sans-serif}
+
+/* v0.8.4: reward type switch and scalable server-side card search */
+.flip-admin-kind-tabs{display:grid;grid-template-columns:2fr 1fr 1fr;gap:7px;margin-bottom:14px}
+.flip-admin-kind{border:1px solid #35513b;background:#101b14;color:#b4cbb4;border-radius:10px;padding:12px 7px;font:800 11px 'Space Grotesk',sans-serif;letter-spacing:.5px}
+.flip-admin-kind.active{border-color:#baff4a;background:#294024;color:#d8ffb2;box-shadow:inset 0 0 0 1px #baff4a44}
+.flip-admin-kind:focus-visible{outline:2px solid #baff4a;outline-offset:2px}
+#flip-admin-card-search{margin-bottom:2px}
+#flip-admin-card-hint{margin:5px 0 9px}
+.flip-admin-section .bigbtn:disabled{opacity:.48}
