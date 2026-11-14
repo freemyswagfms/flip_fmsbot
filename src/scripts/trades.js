@@ -89,7 +89,7 @@ function draft(){
       'maxlength="64" placeholder="@username, имя или Telegram ID" autocomplete="off" value="'+E(s.q)+'" '+
       (s.counterOf?'disabled':'')+'>'+
       '<button type="button" class="outlinebtn" data-trade-find '+(s.counterOf?'disabled':'')+'>НАЙТИ</button></div>'+
-    '<div id="flip-trade-player-results">'+playerResults()+'</div>'+
+    '<div id="flip-trade-player-results">'+(s.counterOf?'':playerResults())+'</div>'+
     (s.targetId?'<div class="flip-social-selected">Получатель: <strong>'+E(s.targetLabel)+
       '</strong> '+(s.counterOf?'':'<button type="button" data-trade-clear>ИЗМЕНИТЬ</button>')+'</div>':'')+
     (s.targetId?
