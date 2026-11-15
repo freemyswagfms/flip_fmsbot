@@ -87,23 +87,52 @@ function home(){return `<div class="hero-intro">
 </section>
 <section class="content-section"><div class="section-head"><span class="section-title"><b>✳</b> НОВАЯ КОЛЛЕКЦИЯ</span><button class="link" data-action="catalog">СМОТРЕТЬ ВСЁ ↗</button></div><div class="feature"><div class="feature-copy"><span class="pill">✦ NEW ARRIVAL</span><h3>PLAYBOI<br>CARTI</h3><p>Первые пять релизов уже в каталоге FLIP. Открой свою находку.</p><button data-action="catalog">СМОТРЕТЬ РЕЛИЗЫ ↗</button></div><div class="artwork second" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/die-lit/epic.webp" alt=""></div><div class="artwork" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/whole-lotta-red/mythic.webp" alt=""></div></div></section>
 <section class="content-section"><div class="section-head"><span class="section-title"><b>◎</b> ЗАДАНИЯ</span><button class="link" data-action="tasks">СМОТРЕТЬ ВСЕ ↗</button></div><div class="task-list">${taskRow(0,true)}${taskRow(1,true)}${taskRow(2,true)}</div></section>
-<div class="quick-nav"><button class="quick" data-action="store"><span>◈</span> ТЕМАТИЧЕСКИЕ НАБОРЫ ↗</button><button class="quick" data-action="profile"><span>☆</span> МОЙ ПРОФИЛЬ ↗</button></div>
+${streakHomeTeaser()}<div class="quick-nav"><button class="quick" data-action="store"><span>◈</span> ТЕМАТИЧЕСКИЕ НАБОРЫ ↗</button><button class="quick" data-action="profile"><span>☆</span> МОЙ ПРОФИЛЬ ↗</button></div>
 `}
 const taskDefs=[{title:'Открой бесплатный дроп',detail:'0 / 1 · Ежедневное задание',reward:'30 F'},{title:'Получи новую карточку',detail:'0 / 1 · Коллекция',reward:'30 F'},{title:'Открой стандартный пак',detail:'0 / 1 · Активность',reward:'30 F'}];
+
 function gameTaskRow(t){
  const complete=t.claimed,custom=t.type==='subscription';
  const status=complete?'ВЫПОЛНЕНО':custom?'Подпишись на канал, затем проверь подписку':
    Math.min(t.progress,t.target)+' / '+t.target+' · '+t.description;
  const id='data-task-scope="'+escapeHtml(t.scope)+'" data-task-slot="'+Number(t.slot)+'"';
- return '<div class="task flip-real-task"><div class="task-text" style="flex:1;min-width:0">'+
+ const claim=complete?'<span class="pill">✓ ПОЛУЧЕНО</span>':custom?
+   '<button type="button" class="outlinebtn" data-task-action="open" '+id+'>ПЕРЕЙТИ ↗</button>'+
+   '<button type="button" class="outlinebtn" data-task-action="claim" '+id+'>ПРОВЕРИТЬ</button>':
+   '<button type="button" class="outlinebtn" data-task-action="claim" '+id+
+   (t.ready?'':' disabled')+'>'+(t.ready?'ЗАБРАТЬ':'В ПРОЦЕССЕ')+'</button>';
+ const reroll=!custom&&!complete&&t.rerollable?
+   '<button type="button" class="flip-task-reroll" data-task-action="reroll" '+id+
+   ' aria-label="Бесплатно заменить задание '+Number(t.slot)+'">↻ ЗАМЕНИТЬ</button>':'';
+ return '<div class="task flip-real-task"><div class="task-text">'+
    '<h4>'+escapeHtml(t.title)+'</h4><p>'+escapeHtml(status)+'</p></div>'+
-   '<span class="reward">+'+Number(t.reward_f)+' F</span><div class="flip-task-controls">'+
-   (complete?'<span class="pill">✓ ПОЛУЧЕНО</span>':custom?
-     '<button type="button" class="outlinebtn" data-task-action="open" '+id+'>ПЕРЕЙТИ ↗</button>'+
-     '<button type="button" class="outlinebtn" data-task-action="claim" '+id+'>ПРОВЕРИТЬ</button>':
-     '<button type="button" class="outlinebtn" data-task-action="claim" '+id+
-       (t.ready?'':' disabled')+'>'+(t.ready?'ЗАБРАТЬ':'В ПРОЦЕССЕ')+'</button>')+
-   '</div></div>';
+   '<span class="reward">+'+Number(t.reward_f)+' F</span>'+
+   '<div class="flip-task-controls">'+claim+reroll+'</div></div>';
+}
+function streakHomeTeaser(){
+ if(!live()||!bridge?.tasks?.streak)return '';
+ const streak=bridge.tasks.streak,days=Math.min(7,Math.max(0,Number(streak.days)||0));
+ return '<button type="button" class="flip-streak-mini" data-action="tasks">'+
+   '<span>✦ СЕРИЯ АКТИВНОСТИ</span><strong>'+days+' / 7</strong>'+
+   '<small>'+(Number(streak.unclaimed)>0?'Награда +100 F готова к получению ↗':
+     'За 7 активных дней +100 F · 1 пропуск')+'</small></button>';
+}
+function streakPanel(){
+ const streak=live()?bridge?.tasks?.streak:null;
+ if(!streak)return '';
+ const days=Math.min(7,Math.max(0,Number(streak.days)||0)),unclaimed=Math.max(0,Number(streak.unclaimed)||0);
+ return '<section class="flip-streak-panel" aria-label="Серия активности">'+
+   '<div class="flip-streak-head"><div><span class="eyebrow">7-DAY STREAK / FLIP</span>'+
+   '<h3>СЕРИЯ АКТИВНОСТИ</h3></div><b>'+days+' / 7</b></div>'+
+   '<div class="flip-streak-days" aria-label="'+days+' из 7 дней">'+
+   Array.from({length:7},(_,i)=>'<span class="'+(i<days?'is-filled':'')+'">'+(i<days?'✓':i+1)+'</span>').join('')+
+   '</div><p>'+(streak.grace_used?'Один пропуск уже использован в этой серии.':
+     'Можно пропустить один день без потери серии.')+
+   ' За каждые 7 активных дней — <strong>100 F</strong>.</p>'+
+   (unclaimed?'<button class="flip-streak-claim" type="button" data-streak-claim>'+
+     'ЗАБРАТЬ '+(unclaimed>1?unclaimed+' × ':'')+'100 F ↗</button>':
+     '<small>Засчитывается один вход через Telegram в день · 00:00 МСК</small>')+
+   '</section>';
 }
 function taskRow(i,compact=false){
  const t=live()?bridge?.tasks?.daily?.[i]:null;
@@ -160,19 +189,28 @@ function playerAvatar(){
 }
 function profile(){return `<div class="panel"><span class="eyebrow">PERSONAL SPACE / 005</span><h2>ПРОФИЛЬ<span style="color:var(--lime)">.</span></h2><div class="content-card"><div class="flip-player-row">${playerAvatar()}<div class="flip-player-meta"><h3>${escapeHtml(live()?(state.telegramName||'FLIP PLAYER'):'FLIP PLAYER')}</h3><p class="flip-player-handle">${escapeHtml(live()?(state.telegramHandle||'FLIP PLAYER'):'FLIP / DEMO')}</p><span class="pill">LVL ${state.level} · ${state.xp} XP</span></div></div><div class="progress" style="--p:${Math.min(100,100*state.xp/(state.xpToNext||100))}%;margin-top:19px"><i></i></div><p>Следующий уровень · базовая награда 30 F</p></div><div class="content-card"><h3>ВИТРИНА КАРТОЧЕК <span style="color:#8fa68d">0/3</span></h3><div class="square-grid">${[0,1,2].map(()=>`<div class="sq-card" style="border-style:dashed;background:#171f18;border-color:#3f5740"><span style="color:#516b55;font-size:24px">+</span></div>`).join('')}</div><p>Сюда можно закреплять до трёх любимых карточек, включая Hidden.</p></div><div class="content-card"><h3>ДОСТИЖЕНИЯ</h3><p>31 достижение · 3 избранных слота · секретные награды</p><button class="outlinebtn" data-action="achievements">ПОСМОТРЕТЬ ↗</button></div><div class="content-card"><h3>${live()?'ПОДКЛЮЧЕНИЕ К TELEGRAM':blocked()?'СЕРВЕР НЕ ПОДКЛЮЧЕН':'НАСТРОЙКИ ДЕМО'}</h3><p>${live()?'Прогресс сохраняется на сервере и не сбрасывается из приложения. Локальные демо-награды не перенесены.':blocked()?'Подключение не установлено. Локальные награды не отображаются и не выдаются.':'Очистить состояние локального прототипа и снова сделать дроп доступным.'}</p>${live()?'<span class="pill">● SERVER CONNECTED</span>':blocked()?'<span class="pill">● OFFLINE</span>':'<button class="outlinebtn" id="resetBtn">СБРОСИТЬ ДЕМО</button>'}</div></div>`}
 function tasks(){
- const daily=live()?bridge?.tasks?.daily:null,weekly=live()?bridge?.tasks?.weekly:null;
+ const payload=live()?bridge?.tasks:null;
+ const daily=payload?.daily,weekly=payload?.weekly;
+ const note=scope=>'<div class="flip-quest-reroll-info">'+
+   (payload?.[scope+'_reroll_used']?
+     'Бесплатная замена использована · обновится '+(scope==='daily'?'завтра':'в понедельник'):
+     'Доступна 1 бесплатная замена · только для обычных невыполненных заданий')+'</div>';
  return '<div class="panel"><button class="link" data-action="home">← НА ГЛАВНУЮ</button>'+
- '<h2>ЗАДАНИЯ<span style="color:var(--lime)">.</span></h2>'+
- '<p class="desc">Всегда по три задания в каждом разделе. Сброс по Москве.</p>'+
- '<div class="section-head"><span class="section-title">DAILY TASKS · 3</span>'+
- '<span class="section-sub">ЕЖЕДНЕВНО · 00:00</span></div><div class="task-list">'+
- (daily?.length===3?daily.map(gameTaskRow).join(''):[0,1,2].map(i=>taskRow(i)).join(''))+'</div>'+
- '<div class="section-head" style="margin-top:24px"><span class="section-title">WEEKLY TASKS · 3</span>'+
- '<span class="section-sub">ПОНЕДЕЛЬНИК · 00:00</span></div><div class="task-list">'+
- (weekly?.length===3?weekly.map(gameTaskRow).join(''):'<p>Загрузка еженедельных заданий…</p>')+
- '</div><p class="note">За все три недельных задания: дополнительно +50 F.</p></div>';
+  '<h2>ЗАДАНИЯ<span style="color:var(--lime)">.</span></h2>'+
+  '<p class="desc">Три ежедневных и три еженедельных задания. Обновляются по Москве.</p>'+
+  streakPanel()+
+  '<div class="section-head"><span class="section-title">DAILY TASKS · 3</span>'+
+  '<span class="section-sub">ЕЖЕДНЕВНО · 00:00</span></div>'+
+  (payload?note('daily'):'')+
+  '<div class="task-list">'+
+  (daily?.length===3?daily.map(gameTaskRow).join(''):[0,1,2].map(i=>taskRow(i)).join(''))+'</div>'+
+  '<div class="section-head" style="margin-top:24px"><span class="section-title">WEEKLY TASKS · 3</span>'+
+  '<span class="section-sub">ПОНЕДЕЛЬНИК · 00:00</span></div>'+
+  (payload?note('weekly'):'')+
+  '<div class="task-list">'+
+  (weekly?.length===3?weekly.map(gameTaskRow).join(''):'<p>Загрузка еженедельных заданий…</p>')+
+  '</div><p class="note">За выполнение всех трёх недельных заданий: дополнительно +50 F.</p></div>';
 }
-
 function rankingProfile(){return live()?'<div class="content-card"><span class="eyebrow">COLLECTION POINTS</span><h3 style="margin-top:9px;font-size:15px">ТВОЙ РЕЙТИНГ</h3><div class="kpi">'+Number(state.cp||0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' CP</div><p>Рейтинговые экземпляры, включая карточки из обменов и рейтинговые выдачи администрации. Тестовые карточки не учитываются.</p><button type="button" class="outlinebtn" data-action="leaderboard">ОТКРЫТЬ ОБЩИЙ ТОП ↗</button></div>':''}
 function adminProfile(){
   const id=window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
@@ -495,21 +533,47 @@ async function handleGameTask(button){
  }
  serverBusy=true;button.disabled=true;
  try{
-   const result=await bridge.claimTask(scope,slot,task.version);
-   applyServerState(result.state);
-   toast('Получено +'+result.earned_f+' F и +'+result.earned_xp+' XP');
-   render(current);
+   if(button.dataset.taskAction==='reroll'){
+     if(task.type!=='default'||!task.rerollable)return;
+     await bridge.rerollTask(scope,slot);
+     toast('Задание заменено бесплатно');
+     render(current);
+   }else{
+     const result=await bridge.claimTask(scope,slot,task.version);
+     applyServerState(result.state);
+     toast('Получено +'+result.earned_f+' F и +'+result.earned_xp+' XP');
+     render(current);
+   }
  }catch(error){
    const messages={TASK_NOT_SUBSCRIBED:'Подписка не найдена. Подпишись и повтори.',
      TELEGRAM_CHECK_FAILED:'Ошибка Telegram. Проверь подписку позже.',
      TASK_INCOMPLETE:'Задание ещё не выполнено.',TASK_CHANGED:'Задание изменилось.',
-     TASK_ALREADY_CLAIMED:'Награда уже получена.',TASK_NOT_VERIFIED:'Подписка не подтверждена.'};
+     TASK_ALREADY_CLAIMED:'Награда уже получена.',TASK_NOT_VERIFIED:'Подписка не подтверждена.',
+     TASK_REROLL_USED:'Бесплатная замена уже использована.',
+     TASK_REROLL_FORBIDDEN:'Это задание нельзя заменить.',
+     TASK_REROLL_UNAVAILABLE:'Сейчас нет другого подходящего задания.',
+     STREAK_NOT_READY:'Награда за серию ещё недоступна.'};
    toast(messages[error.message]||serverError(error));
+   try{await bridge.refreshTasks();render(current);}catch{}
+ }finally{serverBusy=false;}
+}
+async function claimActivityStreak(){
+ if(!live()||serverBusy||Number(bridge?.tasks?.streak?.unclaimed||0)<1)return;
+ serverBusy=true;
+ const btn=document.querySelector('[data-streak-claim]');if(btn)btn.disabled=true;
+ try{
+   const result=await bridge.claimStreak();
+   applyServerState(result.state);
+   toast('Серия активности: +100 F получено!');
+   render(current);
+ }catch(error){
+   toast(error.message==='STREAK_NOT_READY'?'Награда за серию уже получена.':serverError(error));
    try{await bridge.refreshTasks();render(current);}catch{}
  }finally{serverBusy=false;}
 }
 function handleTask(i){if(state.claimedTasks.includes(i))return;modal(`<span class="eyebrow">DAILY TASK</span><h3>${taskDefs[i].title}</h3><p>Это макет задания. В реальной игре выполнение определяется сервером автоматически, без ручного начисления.</p><button class="bigbtn" id="closeReveal">ПОНЯТНО</button>`)}
 document.addEventListener('click',e=>{
+   if(e.target.closest('[data-streak-claim]')){claimActivityStreak();return;}
   const taskAction=e.target.closest('[data-task-action]');
   if(taskAction){handleGameTask(taskAction);return;}
   const galleryFilter=e.target.closest('[data-collection-gallery-filter]');
@@ -547,6 +611,17 @@ window.addEventListener('flip-admin-self-changed',async()=>{
     if(snapshot){Object.assign(state,snapshot);$('#balance').textContent=money(state.balance);}
   }catch(_){/* balance refresh happens on next Telegram launch */}
 });
+// Update rotating assignments if a player keeps the Mini App open past midnight MSC.
+const mskDay=()=>new Intl.DateTimeFormat('en-CA',{
+ timeZone:'Europe/Moscow',year:'numeric',month:'2-digit',day:'2-digit'
+}).format(new Date());
+let questDay=mskDay();
+setInterval(()=>{
+ const next=mskDay();
+ if(next===questDay||!live()||document.visibilityState==='hidden')return;
+ questDay=next;
+ bridge.refreshTasks?.().then(()=>render(current)).catch(()=>{});
+},60000);
 setInterval(updateTimer,1000);render();updateServerDot();window.FLIPIcons?.render($('#notifications'));
 bridge?.connect().then(snapshot=>{
   if(snapshot)applyServerState(snapshot);

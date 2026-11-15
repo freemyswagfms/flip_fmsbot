@@ -110,6 +110,18 @@
      bridge.tasks=result.tasks||bridge.tasks;
      return {...result,state:makeState(result.state)};
    };
+   bridge.rerollTask=async(scope,slot)=>{
+     if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+     const result=await request('reroll_task',crypto.randomUUID(),{scope,slot});
+     bridge.tasks=result.tasks||bridge.tasks;
+     return result;
+   };
+   bridge.claimStreak=async()=>{
+     if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+     const result=await request('claim_streak',crypto.randomUUID());
+     bridge.tasks=result.tasks||bridge.tasks;
+     return {...result,state:makeState(result.state)};
+   };
   // A visible Telegram client keeps checking connectivity, including during maintenance.
   // Demo mode never contacts the player server and never syncs local state.
   let lastProbe=0,checking=false;
