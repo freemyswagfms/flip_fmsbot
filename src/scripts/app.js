@@ -283,24 +283,68 @@ function doPackDemo(){
   save();render('store');
   modal(`<span class="eyebrow">STANDARD PACK / OPENED</span><h3>ТВОЙ ПАК</h3><div class="square-grid pack-open-grid" aria-label="Три полученные карточки">${pack.map(sq).join('')}</div><p>Три разные карточки, минимум одна Rare+. Награды и вероятности пока демонстрационные, не серверные.</p><button class="bigbtn" id="closeReveal">ЗАБРАТЬ КАРТОЧКИ ↗</button>`);
 }
+// FLIP v0.8.9: construct navigation sets exclusively from visible/owned
+// collection entries. Catalog previews are deliberately kept separate.
+function collectionViewerCards(historyMode=false,hiddenOnly=false){
+  const records=window.FLIPCollection.inventory(state);
+  const hidden=[...records.hidden.values()].map(item=>({...item,color:'hidden',rarity:'Hidden'}));
+  const lookup=id=>records.owned.get(id)||hidden.find(c=>c.id===id)||
+    (historyMode?window.FLIPCollection.historyCard(state,id):null);
+  const selector=historyMode?'#screen [data-history-card],#screen [data-hidden-card]':
+    '#screen [data-owned-card]';
+  const nodes=[...document.querySelectorAll(selector)];
+  const ids=[];
+  for(const node of nodes){
+    if(node.hidden||node.closest('[hidden]'))continue;
+    const id=node.dataset.ownedCard||node.dataset.historyCard||node.dataset.hiddenCard;
+    if(id&&!ids.includes(id))ids.push(id);
+  }
+  const visible=ids.map(lookup).filter(Boolean);
+  if(historyMode)return visible.length?visible:[...records.owned.values(),...hidden];
+  if(hiddenOnly)return hidden;
+  // Gallery reflects active search/filter/sort. Hidden is an independent
+  // secret archive, added only when viewing the whole personal collection.
+  const selectedRarity=document.querySelector('#screen [data-collection-gallery-filter][aria-pressed="true"]')
+    ?.dataset.collectionGalleryFilter||'all';
+  if(current==='collection'&&selectedRarity==='all')visible.push(...hidden);
+  if(visible.length)return visible;
+  return [...records.owned.values(),...hidden];
+}
 function showCatalogCard(release,rarity){
   const card=catalog.getCard('carti',release,rarity);
   if(!card)return;
-  if(window.FLIPCardViewer?.open(card,{mode:'catalog'}))return;
+  const all=catalog.artists.flatMap(artist=>
+    artist.releases.flatMap(item=>catalog.rarities.map(r=>catalog.getCard(artist.id,item.id,r))))
+    .filter(Boolean);
+  if(window.FLIPCardViewer?.open(card,{mode:'catalog',cards:all}))return;
   modal('<h3>'+escapeHtml(card.title)+'</h3><div class="catalog-modal-image">'+sq(card)+'</div>'+
     '<p>Каталог · '+escapeHtml(card.style)+'</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');
 }
 function showOwnedCard(cardId,historyMode=false){
-  const entry=historyMode?window.FLIPCollection.historyCard(state,cardId):window.FLIPCollection.cardInfo(state,cardId);
+  const entry=historyMode?window.FLIPCollection.historyCard(state,cardId):
+    window.FLIPCollection.cardInfo(state,cardId);
   if(!entry)return;
   if(window.FLIPCardViewer?.open(entry,{
-    mode:entry.count>0?'owned':'history',count:entry.count,testCount:entry.testCount
+    mode:historyMode?'history':'owned',
+    cards:collectionViewerCards(historyMode),
+    count:entry.count,testCount:entry.testCount
   }))return;
   modal('<h3>'+escapeHtml(entry.title)+'</h3><div class="col-detail-art">'+sq(entry)+'</div>'+
     '<p>'+escapeHtml(entry.artist)+' · '+escapeHtml(entry.rarity)+'</p>'+
     '<button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');
 }
-// Client-side gallery only; inventory and rarity are immutable in the renderer.
+function showHiddenCard(cardId){
+  const hidden=window.FLIPCollection.inventory(state).hidden.get(cardId);
+  if(!hidden)return;
+  const card={...hidden,color:'hidden',rarity:'Hidden'};
+  const historyMode=current==='collectionHistory';
+  if(window.FLIPCardViewer?.open(card,{
+    mode:historyMode?'history':'owned',
+    cards:historyMode?collectionViewerCards(true):collectionViewerCards(false,true)
+  }))return;
+  modal('<h3>'+escapeHtml(card.title||'HIDDEN')+'</h3><p>HIDDEN · '+card.count+
+    ' экз.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');
+}
 function updateCollectionGallery(){
   const host=document.querySelector('#screen [data-collection-gallery]');
   if(!host)return;
@@ -382,18 +426,7 @@ document.addEventListener('click',e=>{
   const historyCardTarget=e.target.closest('[data-history-card]');
   if(historyCardTarget){showOwnedCard(historyCardTarget.dataset.historyCard,true);return}
   const hiddenTarget=e.target.closest('[data-hidden-card]');
-  if(hiddenTarget){
-    const hidden=state.received.find(c=>c?.id===hiddenTarget.dataset.hiddenCard);
-    if(hidden){
-      const count=state.received.filter(c=>c?.id===hidden.id).length;
-      if(!window.FLIPCardViewer?.open({...hidden,color:'hidden',count},
-        {mode:'owned',count})){
-        modal('<h3>'+escapeHtml(hidden.title)+'</h3><p>HIDDEN · '+count+' экз.</p>'+
-          '<button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');
-      }
-    }
-    return;
-  }
+  if(hiddenTarget){showHiddenCard(hiddenTarget.dataset.hiddenCard);return;}
   const tab=e.target.closest('[data-tab]');if(tab){render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks'].includes(a))render(a);else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn'))previewRoulette();if(e.target.closest('#buyPackBtn'))doPack();if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))render('store');if(e.target.closest('#bellBtn'))$('#notifications').classList.toggle('show');if(e.target.closest('#closeNotifications'))$('#notifications').classList.remove('show');if(e.target.closest('#resetBtn')){if(live()||blocked())return;localStorage.removeItem('flip_demo');localStorage.removeItem('flip20_demo');Object.assign(state,{...initial,dropReadyAt:Date.now(),received:[],discovered:[],claimedTasks:[]});save();render('profile');toast('Демо сброшено — бесплатный дроп доступен')};const t=e.target.closest('[data-task]');if(t)handleTask(+t.dataset.task);if(e.target.closest('#levelQuick'))render('profile')});
 $('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#notifications').classList.remove('show')}});window.addEventListener('flip-trade-completed',async()=>{
   if(!live())return;
