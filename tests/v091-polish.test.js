@@ -82,7 +82,7 @@ test('Desktop viewer disables native dragging, uses hover and red mythic tint',(
   assert.match(js,/event\.pointerType==='mouse'/);
   assert.match(js,/dragstart',event=>event\.preventDefault\(\)/);
   assert.match(js,/tilt\.parentElement\|\|tilt/);
-  assert.match(css,/\.flip-viewer-foil\{[^}]*linear-gradient\(108deg/s);
+  assert.match(css,/\.flip-viewer-foil::before\{[^}]*linear-gradient\(111deg/s);
   assert.doesNotMatch(css,/#d9b7ff48/);
   assert.match(css,/border:2px solid #ff626c/);
   assert.match(css,/\.flip-viewer-backdrop\{[^}]*#040706f1/s);
