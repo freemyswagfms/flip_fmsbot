@@ -74,7 +74,9 @@ async function invite(auth,email,role,request){
    options:{redirectTo:base}
  });
  const actionLink=data?.properties?.action_link;
- if(error||!data?.user?.id||typeof actionLink!=='string')
+ const hashedToken=data?.properties?.hashed_token;
+ if(error||!data?.user?.id||typeof actionLink!=='string'||
+    typeof hashedToken!=='string'||!/^[A-Za-z0-9_-]{32,256}$/.test(hashedToken))
    return response({error:'INVITE_LINK_UNAVAILABLE'},502);
  let secureLink;
  try{
@@ -93,7 +95,11 @@ async function invite(auth,email,role,request){
    actor:auth.user.id,action:'invite_or_change_role',entity:'member',
    detail:{email,role,delivery:'manual_link'}
  }});
- return response({ok:true,email,role,delivery:'copy_link',url:secureLink.href});
+ // A token hash can be redeemed by POST verifyOtp instead of clicking a GET
+ // link, preventing chat link previews/scanners from consuming the one-time
+ // session before the intended team member opens it. Never log this secret.
+ return response({ok:true,email,role,delivery:'copy_code',inviteCode:
+   (candidate?'magiclink':'invite')+'.'+hashedToken,url:secureLink.href});
 }
 async function team(auth){
  if(auth.member.role!=='owner')return response({error:'FORBIDDEN'},403);
