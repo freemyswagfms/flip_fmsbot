@@ -1,4 +1,4 @@
-/* FLIP v0.8.7 — immersive square artwork viewer with constrained pointer tilt.
+/* FLIP v0.8.7.1 — immersive square artwork viewer with locked background and wave highlights.
    Visual-only component: never reads, writes or modifies inventory/CP/XP. */
 (() => {
   'use strict';
@@ -15,6 +15,21 @@
     hidden:{label:'HIDDEN',color:'#e2e9e3',angle:9}
   });
   let dialog=null,lastFocused=null,activePointer=null,closingTimer=null;
+  let lockedSiblings=[];
+  function lockBackground(phone,viewer){
+    // Only the fullscreen dialog remains interactive. Keep the old inert values.
+    lockedSiblings=Array.from(phone.children||[])
+      .filter(el=>el!==viewer).map(el=>({element:el,inert:!!el.inert}));
+    for(const entry of lockedSiblings)entry.element.inert=true;
+    document.documentElement?.classList?.add('flip-viewer-active');
+    try{window.FLIPViewport?.setViewerInteraction?.(true);}catch(_){}
+  }
+  function unlockBackground(){
+    for(const entry of lockedSiblings)entry.element.inert=entry.inert;
+    lockedSiblings=[];
+    document.documentElement?.classList?.remove('flip-viewer-active');
+    try{window.FLIPViewport?.setViewerInteraction?.(false);}catch(_){}
+  }
   const reducedMotion=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches||false;
   function reset(){
     if(!dialog)return;
@@ -23,8 +38,8 @@
     tilt.classList.remove('is-active');
     tilt.style.setProperty('--flip-rotate-x','0deg');
     tilt.style.setProperty('--flip-rotate-y','0deg');
-    tilt.style.setProperty('--flip-shine-x','50%');
-    tilt.style.setProperty('--flip-shine-y','50%');
+    tilt.style.setProperty('--flip-wave-x','0%');
+    tilt.style.setProperty('--flip-wave-y','0%');
     activePointer=null;
   }
   function changeTilt(event){
@@ -40,8 +55,10 @@
     const max=rarities[rarity]?.angle||5;
     tilt.style.setProperty('--flip-rotate-x',((.5-y)*max*2).toFixed(2)+'deg');
     tilt.style.setProperty('--flip-rotate-y',((x-.5)*max*2).toFixed(2)+'deg');
-    tilt.style.setProperty('--flip-shine-x',Math.round(x*100)+'%');
-    tilt.style.setProperty('--flip-shine-y',Math.round(y*100)+'%');
+    // A narrow luminous band travels across the print rather than a
+    // concentrated radial spotlight following the user's finger.
+    tilt.style.setProperty('--flip-wave-x',((x-.5)*56).toFixed(1)+'%');
+    tilt.style.setProperty('--flip-wave-y',((y-.5)*16).toFixed(1)+'%');
   }
   function pointerdown(event){
     if(event.button!==0||reducedMotion())return;
@@ -78,6 +95,7 @@
     dialog=null;
     const phone=old.closest('.phone');
     phone?.classList.remove('flip-viewer-open');
+    unlockBackground();
     document.removeEventListener('keydown',keydown,true);
     if(closingTimer)clearTimeout(closingTimer);
     const done=()=>{old.remove();closingTimer=null};
@@ -124,7 +142,7 @@
       '<div class="flip-viewer-workspace"><div class="flip-viewer-perspective">'+
       '<div class="flip-viewer-tilt" data-flip-tilt>'+
       '<div class="flip-viewer-artwork">'+art+
-      '<div class="flip-viewer-glare" aria-hidden="true"></div>'+
+      '<div class="flip-viewer-wave" aria-hidden="true"></div>'+
       '<div class="flip-viewer-border" aria-hidden="true"></div></div>'+
       '</div></div></div>'+
       '<div class="flip-viewer-foot"><div class="flip-viewer-edition"><span>'+
@@ -141,9 +159,18 @@
     phone.appendChild(node);
     dialog=node;
     phone.classList.add('flip-viewer-open');
+    lockBackground(phone,node);
     node.addEventListener('click',event=>{
       if(event.target.closest('[data-flip-viewer-dismiss]'))close();
     });
+    // Prevent the background/overlay from passing a touch drag to the
+    // WebView; touch-action:none on the card retains pointermove updates.
+    node.addEventListener('touchmove',event=>{
+      if(event.target.closest('[data-flip-tilt]')||
+        event.target.closest('[data-flip-viewer-dismiss]')){
+        if(event.cancelable)event.preventDefault();
+      }
+    },{passive:false});
     const tilt=node.querySelector('[data-flip-tilt]');
     tilt.addEventListener('pointerdown',pointerdown);
     tilt.addEventListener('pointermove',event=>{
