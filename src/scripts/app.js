@@ -533,21 +533,47 @@ async function handleGameTask(button){
  }
  serverBusy=true;button.disabled=true;
  try{
-   const result=await bridge.claimTask(scope,slot,task.version);
-   applyServerState(result.state);
-   toast('Получено +'+result.earned_f+' F и +'+result.earned_xp+' XP');
-   render(current);
+   if(button.dataset.taskAction==='reroll'){
+     if(task.type!=='default'||!task.rerollable)return;
+     await bridge.rerollTask(scope,slot);
+     toast('Задание заменено бесплатно');
+     render(current);
+   }else{
+     const result=await bridge.claimTask(scope,slot,task.version);
+     applyServerState(result.state);
+     toast('Получено +'+result.earned_f+' F и +'+result.earned_xp+' XP');
+     render(current);
+   }
  }catch(error){
    const messages={TASK_NOT_SUBSCRIBED:'Подписка не найдена. Подпишись и повтори.',
      TELEGRAM_CHECK_FAILED:'Ошибка Telegram. Проверь подписку позже.',
      TASK_INCOMPLETE:'Задание ещё не выполнено.',TASK_CHANGED:'Задание изменилось.',
-     TASK_ALREADY_CLAIMED:'Награда уже получена.',TASK_NOT_VERIFIED:'Подписка не подтверждена.'};
+     TASK_ALREADY_CLAIMED:'Награда уже получена.',TASK_NOT_VERIFIED:'Подписка не подтверждена.',
+     TASK_REROLL_USED:'Бесплатная замена уже использована.',
+     TASK_REROLL_FORBIDDEN:'Это задание нельзя заменить.',
+     TASK_REROLL_UNAVAILABLE:'Сейчас нет другого подходящего задания.',
+     STREAK_NOT_READY:'Награда за серию ещё недоступна.'};
    toast(messages[error.message]||serverError(error));
+   try{await bridge.refreshTasks();render(current);}catch{}
+ }finally{serverBusy=false;}
+}
+async function claimActivityStreak(){
+ if(!live()||serverBusy||Number(bridge?.tasks?.streak?.unclaimed||0)<1)return;
+ serverBusy=true;
+ const btn=document.querySelector('[data-streak-claim]');if(btn)btn.disabled=true;
+ try{
+   const result=await bridge.claimStreak();
+   applyServerState(result.state);
+   toast('Серия активности: +100 F получено!');
+   render(current);
+ }catch(error){
+   toast(error.message==='STREAK_NOT_READY'?'Награда за серию уже получена.':serverError(error));
    try{await bridge.refreshTasks();render(current);}catch{}
  }finally{serverBusy=false;}
 }
 function handleTask(i){if(state.claimedTasks.includes(i))return;modal(`<span class="eyebrow">DAILY TASK</span><h3>${taskDefs[i].title}</h3><p>Это макет задания. В реальной игре выполнение определяется сервером автоматически, без ручного начисления.</p><button class="bigbtn" id="closeReveal">ПОНЯТНО</button>`)}
 document.addEventListener('click',e=>{
+   if(e.target.closest('[data-streak-claim]')){claimActivityStreak();return;}
   const taskAction=e.target.closest('[data-task-action]');
   if(taskAction){handleGameTask(taskAction);return;}
   const galleryFilter=e.target.closest('[data-collection-gallery-filter]');
@@ -585,6 +611,17 @@ window.addEventListener('flip-admin-self-changed',async()=>{
     if(snapshot){Object.assign(state,snapshot);$('#balance').textContent=money(state.balance);}
   }catch(_){/* balance refresh happens on next Telegram launch */}
 });
+// Update rotating assignments if a player keeps the Mini App open past midnight MSC.
+const mskDay=()=>new Intl.DateTimeFormat('en-CA',{
+ timeZone:'Europe/Moscow',year:'numeric',month:'2-digit',day:'2-digit'
+}).format(new Date());
+let questDay=mskDay();
+setInterval(()=>{
+ const next=mskDay();
+ if(next===questDay||!live()||document.visibilityState==='hidden')return;
+ questDay=next;
+ bridge.refreshTasks?.().then(()=>render(current)).catch(()=>{});
+},60000);
 setInterval(updateTimer,1000);render();updateServerDot();window.FLIPIcons?.render($('#notifications'));
 bridge?.connect().then(snapshot=>{
   if(snapshot)applyServerState(snapshot);
