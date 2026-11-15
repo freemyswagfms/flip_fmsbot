@@ -149,7 +149,9 @@
   }
   function changeTilt(event){
     if(!dialog||reducedMotion())return;
-    if(event.pointerType!=='mouse'&&activePointer!==event.pointerId)return;
+    // Native mousemove does not expose pointerType: use it for stable desktop hover.
+    const mouse=event.type==='mousemove'||event.pointerType==='mouse';
+    if(!mouse&&activePointer!==event.pointerId)return;
     const tilt=dialog.querySelector('[data-flip-tilt]');
     if(!tilt)return;
     // Measure the stationary perspective plane, not the already-tilted child.
@@ -213,15 +215,30 @@
     tilt.addEventListener('pointerdown',pointerdown);
     tilt.addEventListener('dragstart',event=>event.preventDefault());
     tilt.addEventListener('selectstart',event=>event.preventDefault());
+    // Desktop mouse input is tracked on the NON-ROTATING perspective wrapper.
+    // Tracking the rotated card itself causes pointerleave/re-entry jitter.
+    const area=tilt.parentElement||tilt;
+    area.addEventListener('mousemove',event=>{
+      if(activePointer!==null||reducedMotion())return;
+      const bounds=area.getBoundingClientRect();
+      // Older webviews and test shims can omit right/bottom.
+      const xMax=bounds.right??bounds.left+bounds.width;
+      const yMax=bounds.bottom??bounds.top+bounds.height;
+      if(event.clientX<bounds.left||event.clientX>xMax||
+         event.clientY<bounds.top||event.clientY>yMax){reset();return;}
+      tilt.classList.add('is-active');
+      changeTilt(event);
+    });
+    area.addEventListener('mouseleave',()=>{
+      if(activePointer===null)reset();
+    });
+    // Touch and pen keep the original pointer-capture/swipe behavior.
     tilt.addEventListener('pointermove',event=>{
-      if(activePointer===event.pointerId||event.pointerType==='mouse')changeTilt(event);
+      if(event.pointerType!=='mouse'&&activePointer===event.pointerId)changeTilt(event);
     });
     tilt.addEventListener('pointerup',pointerup);
     tilt.addEventListener('pointercancel',pointerup);
     tilt.addEventListener('lostpointercapture',pointerup);
-    tilt.addEventListener('pointerleave',event=>{
-      if(event.pointerType==='mouse'&&activePointer===null)reset();
-    });
   }
   function keydown(event){
     if(!dialog)return;

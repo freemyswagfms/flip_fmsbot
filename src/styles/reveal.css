@@ -95,13 +95,23 @@
 .flip-reveal-bottom{position:relative;z-index:2;flex:none;text-align:center;padding:6px 0 0;font:800 10px var(--ui);letter-spacing:1px;color:#789078}
 .flip-hint-symbol{font-size:18px;vertical-align:-2px}
 .flip-reveal[data-rarity="hidden"] .flip-face-art{background:repeating-linear-gradient(108deg,#0a0d0d 0 8px,#1c2927 8px 12px)}
-/* Hidden glitch ONLY on the frame; the question mark and future leaked artwork stay still. */
-.flip-reveal[data-rarity="hidden"] .flip-face-front::after{content:"";position:absolute;inset:0;border-radius:15px;pointer-events:none;z-index:4;
-  box-shadow:inset 4px 0 #bfff5680,inset -4px 0 #ff5cc380,0 0 16px #f5ffff55;
-  animation:flip-hidden-border .8s steps(2,end) infinite}
+/* Hidden: only ONE outline is rendered over the artwork. Never animate
+   the transformed 3D face itself: Safari can create a duplicate ghost frame. */
+.flip-reveal[data-rarity="hidden"] .flip-face-front{
+  border:0;box-shadow:0 0 24px #e6f5f135,0 15px 45px #000a;
+}
+.flip-reveal[data-rarity="hidden"] .flip-face-front::after{
+  content:"";position:absolute;inset:0;z-index:4;pointer-events:none;
+  border:3px solid #e6f5f1;border-radius:inherit;box-sizing:border-box;
+  animation:flip-hidden-frame-live 1.8s steps(1,end) infinite;
+}
 .flip-reveal[data-rarity="hidden"] .flip-face-back .flip-rb-outer,
 .flip-reveal[data-rarity="hidden"][data-phase="settle"] .flip-roulette-tile.is-target .flip-rb-outer{
-  animation:flip-hidden-border .8s steps(2,end) infinite}
+  animation:flip-hidden-border .8s steps(2,end) infinite;
+}
+.flip-reveal[data-rarity="hidden"][data-phase="result"] .flip-face-back{
+  visibility:hidden; /* iOS WebKit sometimes paints the reversed back behind the front */
+}
 @keyframes flip-hidden-border{
   0%,37%,64%,100%{border-color:#effff1;filter:none;box-shadow:0 0 16px #e5fff83b}
   38%,47%{border-color:#bfff56;box-shadow:-3px 0 #bfff56,3px 1px #ff5cc3,0 0 24px #bfff5666}
@@ -139,18 +149,7 @@
 /* The selected rarity only becomes visible once the reel settles. */
 .flip-reveal:is([data-phase="settle"],[data-phase="flip"],[data-phase="result"]){--flip-stage-accent:var(--flip-rarity)}
 
-/* The Hidden frame continues glitching while the final awarded card remains
-   visible, including the full-size result with information below it. */
-.flip-reveal[data-rarity="hidden"][data-phase="result"] .flip-face-front{
-  border-color:#e9f6f4;
-  animation:flip-hidden-frame-live 3.2s steps(1,end) infinite;
-}
-.flip-reveal[data-rarity="hidden"][data-phase="result"] .flip-face-front::after{
-  animation:flip-hidden-frame-live 3.2s steps(1,end) infinite;
-}
+/* The same single outline keeps glitching on the result and on the flip. */
 @media(prefers-reduced-motion:reduce){
-  .flip-reveal[data-rarity="hidden"][data-phase="result"] .flip-face-front,
-  .flip-reveal[data-rarity="hidden"][data-phase="result"] .flip-face-front::after{
-    animation:none!important;
-  }
+  .flip-reveal[data-rarity="hidden"] .flip-face-front::after{animation:none!important}
 }
