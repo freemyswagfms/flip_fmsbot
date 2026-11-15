@@ -55,7 +55,7 @@ export async function handleAdminRequest(request){
         const part=Buffer.from(JSON.stringify(payload)).toString('base64url');
         const mac=createHmac('sha256',db.key).update('flip-studio-v1:'+part).digest('base64url');
         const ticket=part+'.'+mac;
-        return json({url:'https://flip-studio.vercel.app/?claim='+encodeURIComponent(ticket)});
+        return json({url:'https://flip-studio-six.vercel.app/?claim='+encodeURIComponent(ticket)});
       }
       if(view==='players'){
         const q=(url.searchParams.get('q')||'').trim();
