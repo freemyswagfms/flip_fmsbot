@@ -89,7 +89,8 @@
     root.innerHTML=[
       '<section class="flip-admin-section flip-admin-studio-link"><div class="flip-admin-section-heading"><h3>FLIP STUDIO</h3></div>',
       '<p class="flip-admin-hint">Отдельный редактор музыки и обложек. Выдача карточек, XP и F остаётся здесь.</p>',
-      '<button class="outlinebtn" type="button" data-admin-studio>ОТКРЫТЬ FLIP STUDIO ↗</button></section>',
+      '<button class="outlinebtn" type="button" data-admin-studio>ОТКРЫТЬ FLIP STUDIO ↗</button>',
+      '<button class="outlinebtn" type="button" data-admin-studio-code>КОПИРОВАТЬ КОД ВЛАДЕЛЬЦА</button></section>',
       '<section class="flip-admin-section"><div class="flip-admin-section-heading"><h3>01 / ПОЛУЧАТЕЛЬ</h3>',
       '<button type="button" class="outlinebtn" data-admin-self>СЕБЕ</button></div>',
       '<div class="flip-admin-search"><input id="flip-admin-search" maxlength="64" placeholder="Имя, @username или ID" value="',E(s.q),
@@ -205,6 +206,15 @@
   }
   async function click(e){
     const b=e.target.closest('button');if(!b||!root.contains(b))return;
+    if(b.hasAttribute('data-admin-studio-code')){
+      try{
+        const r=await call('studio_ticket');
+        if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(r.ticket);
+        else window.prompt('Скопируй код для FLIP STUDIO:',r.ticket);
+        s.error=false;s.message='Код входа владельца готов. Действует 5 минут.';draw();
+      }catch(e){s.error=true;s.message='Не удалось скопировать код: '+e.message;draw()}
+      return;
+    }
     if(b.hasAttribute('data-admin-studio')){
       try{
         const r=await call('studio_ticket');
