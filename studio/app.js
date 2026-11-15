@@ -430,7 +430,7 @@ async function signIn(){
  }catch(e){notice('Не удалось отправить email: '+formatError(e),true)}
 }
 async function claimOwner(){
- const ticket=s.ownerTicket||String($('#owner-claim-code')?.value||'').trim();
+ const ticket=String($('#owner-claim-code')?.value||'').trim()||s.ownerTicket;
  if(!ticket)return notice('Вставь код владельца из админки FLIP.',true);
  try{
   const r=await invoke('owner',{ticket});
