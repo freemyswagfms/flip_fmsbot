@@ -234,7 +234,10 @@ function importer(){
    (s.importReleases.length>=100&&s.importSource!=='iTunes'&&s.importPage*100<s.importCount?button('Показать больше','import-more'):'')+'</div>'+
    '<button class="button primary" data-action="import-selected" '+(!s.importSelected.size||s.busy?'disabled':'')+'>'+
    ico('upload')+' Импортировать ('+s.importSelected.size+')</button></div>':
-   '<div class="empty">Найденных релизов пока нет. Попробуй обновить поиск.</div>');
+   '<div class="empty">'+(s.busy?
+   ico('loader')+'<strong>Загружаем дискографию…</strong><p>Получаем релизы из музыкального каталога.</p>':
+   ico('disc')+'<strong>Релизы не найдены</strong><p>Попробуй другого исполнителя или добавь релиз вручную.</p>')+
+   '</div>');
  }else if(s.importArtists.length){
   results='<div class="panel-title"><h3>Выбери исполнителя</h3><small>'+
    s.importArtists.length+' RESULTS</small></div>'+
@@ -629,8 +632,9 @@ async function selectMusicArtist(id){
  render();await fetchReleases();
 }
 async function fetchReleases(more=false){
- if(!s.importArtist)return;
+ if(!s.importArtist||s.busy)return;
  s.busy=true;s.importError='';
+ render();
  try{
   const result=await invoke('music?kind=releases&id='+encodeURIComponent(s.importArtist.id)+
     '&page='+s.importPage+'&q='+encodeURIComponent(s.importArtist.name));
@@ -938,6 +942,14 @@ async function refreshTeam(){
 document.addEventListener('click',async event=>{
  const navTarget=event.target.closest('[data-nav]');
  if(navTarget){go(navTarget.dataset.nav);return;}
+ // Artist search results are dynamically rendered. Delegate their clicks so
+ // all result rows, including nested labels and arrows, open the discography.
+ const musicArtist=event.target.closest('[data-import-artist]');
+ if(musicArtist){
+  if(s.busy)return;
+  await selectMusicArtist(musicArtist.dataset.importArtist);
+  return;
+ }
  const artist=event.target.closest('[data-artist-view]');
  if(artist){
   s.q='';s.current='releases';s.releases=s.releases.sort((a,b)=>
