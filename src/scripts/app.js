@@ -87,23 +87,52 @@ function home(){return `<div class="hero-intro">
 </section>
 <section class="content-section"><div class="section-head"><span class="section-title"><b>✳</b> НОВАЯ КОЛЛЕКЦИЯ</span><button class="link" data-action="catalog">СМОТРЕТЬ ВСЁ ↗</button></div><div class="feature"><div class="feature-copy"><span class="pill">✦ NEW ARRIVAL</span><h3>PLAYBOI<br>CARTI</h3><p>Первые пять релизов уже в каталоге FLIP. Открой свою находку.</p><button data-action="catalog">СМОТРЕТЬ РЕЛИЗЫ ↗</button></div><div class="artwork second" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/die-lit/epic.webp" alt=""></div><div class="artwork" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/whole-lotta-red/mythic.webp" alt=""></div></div></section>
 <section class="content-section"><div class="section-head"><span class="section-title"><b>◎</b> ЗАДАНИЯ</span><button class="link" data-action="tasks">СМОТРЕТЬ ВСЕ ↗</button></div><div class="task-list">${taskRow(0,true)}${taskRow(1,true)}${taskRow(2,true)}</div></section>
-<div class="quick-nav"><button class="quick" data-action="store"><span>◈</span> ТЕМАТИЧЕСКИЕ НАБОРЫ ↗</button><button class="quick" data-action="profile"><span>☆</span> МОЙ ПРОФИЛЬ ↗</button></div>
+${streakHomeTeaser()}<div class="quick-nav"><button class="quick" data-action="store"><span>◈</span> ТЕМАТИЧЕСКИЕ НАБОРЫ ↗</button><button class="quick" data-action="profile"><span>☆</span> МОЙ ПРОФИЛЬ ↗</button></div>
 `}
 const taskDefs=[{title:'Открой бесплатный дроп',detail:'0 / 1 · Ежедневное задание',reward:'30 F'},{title:'Получи новую карточку',detail:'0 / 1 · Коллекция',reward:'30 F'},{title:'Открой стандартный пак',detail:'0 / 1 · Активность',reward:'30 F'}];
+
 function gameTaskRow(t){
  const complete=t.claimed,custom=t.type==='subscription';
  const status=complete?'ВЫПОЛНЕНО':custom?'Подпишись на канал, затем проверь подписку':
    Math.min(t.progress,t.target)+' / '+t.target+' · '+t.description;
  const id='data-task-scope="'+escapeHtml(t.scope)+'" data-task-slot="'+Number(t.slot)+'"';
- return '<div class="task flip-real-task"><div class="task-text" style="flex:1;min-width:0">'+
+ const claim=complete?'<span class="pill">✓ ПОЛУЧЕНО</span>':custom?
+   '<button type="button" class="outlinebtn" data-task-action="open" '+id+'>ПЕРЕЙТИ ↗</button>'+
+   '<button type="button" class="outlinebtn" data-task-action="claim" '+id+'>ПРОВЕРИТЬ</button>':
+   '<button type="button" class="outlinebtn" data-task-action="claim" '+id+
+   (t.ready?'':' disabled')+'>'+(t.ready?'ЗАБРАТЬ':'В ПРОЦЕССЕ')+'</button>';
+ const reroll=!custom&&!complete&&t.rerollable?
+   '<button type="button" class="flip-task-reroll" data-task-action="reroll" '+id+
+   ' aria-label="Бесплатно заменить задание '+Number(t.slot)+'">↻ ЗАМЕНИТЬ</button>':'';
+ return '<div class="task flip-real-task"><div class="task-text">'+
    '<h4>'+escapeHtml(t.title)+'</h4><p>'+escapeHtml(status)+'</p></div>'+
-   '<span class="reward">+'+Number(t.reward_f)+' F</span><div class="flip-task-controls">'+
-   (complete?'<span class="pill">✓ ПОЛУЧЕНО</span>':custom?
-     '<button type="button" class="outlinebtn" data-task-action="open" '+id+'>ПЕРЕЙТИ ↗</button>'+
-     '<button type="button" class="outlinebtn" data-task-action="claim" '+id+'>ПРОВЕРИТЬ</button>':
-     '<button type="button" class="outlinebtn" data-task-action="claim" '+id+
-       (t.ready?'':' disabled')+'>'+(t.ready?'ЗАБРАТЬ':'В ПРОЦЕССЕ')+'</button>')+
-   '</div></div>';
+   '<span class="reward">+'+Number(t.reward_f)+' F</span>'+
+   '<div class="flip-task-controls">'+claim+reroll+'</div></div>';
+}
+function streakHomeTeaser(){
+ if(!live()||!bridge?.tasks?.streak)return '';
+ const streak=bridge.tasks.streak,days=Math.min(7,Math.max(0,Number(streak.days)||0));
+ return '<button type="button" class="flip-streak-mini" data-action="tasks">'+
+   '<span>✦ СЕРИЯ АКТИВНОСТИ</span><strong>'+days+' / 7</strong>'+
+   '<small>'+(Number(streak.unclaimed)>0?'Награда +100 F готова к получению ↗':
+     'За 7 активных дней +100 F · 1 пропуск')+'</small></button>';
+}
+function streakPanel(){
+ const streak=live()?bridge?.tasks?.streak:null;
+ if(!streak)return '';
+ const days=Math.min(7,Math.max(0,Number(streak.days)||0)),unclaimed=Math.max(0,Number(streak.unclaimed)||0);
+ return '<section class="flip-streak-panel" aria-label="Серия активности">'+
+   '<div class="flip-streak-head"><div><span class="eyebrow">7-DAY STREAK / FLIP</span>'+
+   '<h3>СЕРИЯ АКТИВНОСТИ</h3></div><b>'+days+' / 7</b></div>'+
+   '<div class="flip-streak-days" aria-label="'+days+' из 7 дней">'+
+   Array.from({length:7},(_,i)=>'<span class="'+(i<days?'is-filled':'')+'">'+(i<days?'✓':i+1)+'</span>').join('')+
+   '</div><p>'+(streak.grace_used?'Один пропуск уже использован в этой серии.':
+     'Можно пропустить один день без потери серии.')+
+   ' За каждые 7 активных дней — <strong>100 F</strong>.</p>'+
+   (unclaimed?'<button class="flip-streak-claim" type="button" data-streak-claim>'+
+     'ЗАБРАТЬ '+(unclaimed>1?unclaimed+' × ':'')+'100 F ↗</button>':
+     '<small>Засчитывается один вход через Telegram в день · 00:00 МСК</small>')+
+   '</section>';
 }
 function taskRow(i,compact=false){
  const t=live()?bridge?.tasks?.daily?.[i]:null;
