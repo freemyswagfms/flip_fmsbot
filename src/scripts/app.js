@@ -266,6 +266,7 @@ async function doDrop(){
     try{
       const result=await bridge.drop(crypto.randomUUID());
       applyServerState(result.state);
+      bridge.refreshTasks?.().then(()=>{if(current==='home')render('home')}).catch(()=>{});
       const card=cardById(result.card_id);
       if(card){if(window.FLIPReveal)window.FLIPReveal.open(card);else cardReveal(card,'FREE DROP');}
     }catch(error){toast(serverError(error));}
@@ -300,6 +301,7 @@ async function doPack(){
     try{
       const result=await bridge.pack(crypto.randomUUID());
       applyServerState(result.state);render('store');
+      bridge.refreshTasks?.().catch(()=>{});
       const pack=(result.card_ids||[]).map(cardById).filter(Boolean);
       modal(`<span class="eyebrow">STANDARD PACK / SERVER</span><h3>ТВОЙ ПАК</h3><div class="square-grid pack-open-grid">${pack.map(sq).join('')}</div><p>Три карточки сохранены на сервере. Минимум одна Rare+.</p><button class="bigbtn" id="closeReveal">ЗАБРАТЬ КАРТОЧКИ ↗</button>`);
     }catch(error){toast(serverError(error));}
