@@ -252,7 +252,7 @@ html.flip-viewer-active,html.flip-viewer-active body{overscroll-behavior:none}
  animation:flip-hidden-frame-live 3.2s steps(1,end) infinite;
 }
 .col-gallery-tile.col-hidden .col-gallery-cover::after,
-.col-rarity-tile.col-hidden .col-rarity-picture:not(.col-locked .col-rarity-picture)::after,
+.col-rarity-tile.col-hidden:not(.col-locked) .col-rarity-picture::after,
 .sq-card.hidden::after,
 .flip-hidden-frame::after{
  content:"";position:absolute;inset:0;z-index:3;pointer-events:none;
