@@ -18,7 +18,8 @@ async function call(action,role='owner',extra={},fetchOverride=null,method='POST
   const json=value=>new Response(JSON.stringify(value),{
    headers:{'content-type':'application/json'},status:200});
   if(str.includes('/auth/v1/user'))return json({id:ownerId,email:'owner@example.com'});
-  if(path.pathname.endsWith('/flip_studio_members')&&path.searchParams.has('user_id')){
+  if(path.pathname.endsWith('/flip_studio_members')&&
+    path.searchParams.get('user_id')==='eq.'+ownerId){
    roleReads++;
    return json([{user_id:ownerId,email:'owner@example.com',role,active:true}]);
   }
