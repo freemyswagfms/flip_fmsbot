@@ -77,6 +77,37 @@ export async function handleAdminRequest(request){
     const bodyText=await request.text();
     if(bodyText.length>1500)return json({error:'BAD_REQUEST'},400);
     let body;try{body=JSON.parse(bodyText)}catch{return json({error:'BAD_REQUEST'},400)}
+    if(body?.action==='studio_login'){
+      // Only an authenticated FLIP Telegram owner can request a login link.
+      // The destination account is pinned to a private server-side email;
+      // arbitrary addresses must NEVER be accepted here (account takeover).
+      const email=String(process.env.FLIP_STUDIO_OWNER_EMAIL||'').trim().toLowerCase();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+        return json({error:'STUDIO_LOGIN_NOT_CONFIGURED'},503);
+      const payload={v:1,scope:'studio_owner',n:randomUUID(),
+        t:String(user.telegram_id),e:Date.now()+5*60*1000};
+      const part=Buffer.from(JSON.stringify(payload)).toString('base64url');
+      const mac=createHmac('sha256',db.key).update('flip-studio-v1:'+part).digest('base64url');
+      const redirectTo='https://flip-studio-six.vercel.app/?claim='+
+        encodeURIComponent(part+'.'+mac);
+      // generateLink does not send mail. The privileged action URL is returned
+      // only to the verified owner's Mini App and is never written to logs.
+      const {createClient}=await import('@supabase/supabase-js');
+      const client=createClient(db.origin,db.key,{
+        auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+      });
+      const {data,error}=await client.auth.admin.generateLink({
+        type:'magiclink',email,options:{redirectTo}
+      });
+      const actionLink=data?.properties?.action_link;
+      if(error||typeof actionLink!=='string')
+        return json({error:'STUDIO_LOGIN_UNAVAILABLE'},502);
+      const link=new URL(actionLink);
+      if(link.protocol!=='https:'||link.origin!==db.origin||
+         !link.pathname.startsWith('/auth/v1/verify'))
+        return json({error:'STUDIO_LOGIN_UNAVAILABLE'},502);
+      return json({url:link.href});
+    }
     if(!body||!['grant_card','grant_resource'].includes(body.action)
        ||!validId(body.recipientId)||!validUuid(body.requestId)
        ||typeof body.note!=='string'||body.note.length>200)

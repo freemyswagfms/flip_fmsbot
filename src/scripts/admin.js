@@ -89,6 +89,9 @@
     root.innerHTML=[
       '<section class="flip-admin-section flip-admin-studio-link"><div class="flip-admin-section-heading"><h3>FLIP STUDIO</h3></div>',
       '<p class="flip-admin-hint">Отдельный редактор музыки и обложек. Выдача карточек, XP и F остаётся здесь.</p>',
+      '<button class="bigbtn" type="button" data-admin-studio-login>ВОЙТИ В STUDIO БЕЗ ПОЧТЫ ↗</button>',
+      '<button class="outlinebtn" type="button" data-admin-studio-login-copy>КОПИРОВАТЬ ССЫЛКУ ВХОДА</button>',
+      '<p class="flip-admin-hint">Вход без письма работает только для владельца. Ссылка одноразовая — никому её не передавай.</p>',
       '<button class="outlinebtn" type="button" data-admin-studio>ОТКРЫТЬ FLIP STUDIO ↗</button>',
       '<button class="outlinebtn" type="button" data-admin-studio-code>КОПИРОВАТЬ КОД ВЛАДЕЛЬЦА</button></section>',
       '<section class="flip-admin-section"><div class="flip-admin-section-heading"><h3>01 / ПОЛУЧАТЕЛЬ</h3>',
@@ -206,6 +209,31 @@
   }
   async function click(e){
     const b=e.target.closest('button');if(!b||!root.contains(b))return;
+    if(b.hasAttribute('data-admin-studio-login')||
+       b.hasAttribute('data-admin-studio-login-copy')){
+      if(s.busy)return;
+      s.busy=true;
+      const button=b;button.disabled=true;
+      const previous=button.textContent;button.textContent='СОЗДАЁМ ССЫЛКУ…';
+      try{
+        const result=await call('studio_login',{action:'studio_login'});
+        if(!result?.url)throw new Error('STUDIO_LOGIN_UNAVAILABLE');
+        if(b.hasAttribute('data-admin-studio-login-copy')){
+          if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(result.url);
+          else window.prompt('Скопируй одноразовую ссылку входа (никому не передавай):',result.url);
+          s.error=false;s.message='Одноразовая ссылка входа создана. Вставь её в браузер на компьютере.';
+          draw();
+        }else if(tg?.openLink)tg.openLink(result.url);
+        else window.open(result.url,'_blank','noopener,noreferrer');
+      }catch(error){
+        s.error=true;s.message='Не удалось создать ссылку без email: '+error.message;
+        draw();
+      }finally{
+        s.busy=false;
+        if(button.isConnected){button.disabled=false;button.textContent=previous;}
+      }
+      return;
+    }
     if(b.hasAttribute('data-admin-studio-code')){
       try{
         const r=await call('studio_ticket');
