@@ -21,8 +21,9 @@
     const catalog=window.FLIPCatalog;
     for(const item of snapshot.inventory){
       const parts=String(item.id).split('/');
-      const card=parts.length===3?catalog.getCard(parts[0],parts[1],parts[2]):
-        (item.id==='demo/hidden/archive-001'?{id:item.id,title:'ARCHIVE 001',artist:'FLIP // SECRET',rarity:'Hidden',color:'hidden'}:null);
+      const card=item.id==='demo/hidden/archive-001'?
+        {id:item.id,title:'ARCHIVE 001',artist:'FLIP // SECRET',rarity:'Hidden',color:'hidden'}:
+        (parts.length===3?catalog.getCard(parts[0],parts[1],parts[2]):null);
       if(!card)continue;
       const count=Math.min(10000,Math.max(0,Number(item.count)||0));
       const ranked=Math.max(0,Math.min(count,Number(item.ranked_count??count)||0));
