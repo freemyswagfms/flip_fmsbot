@@ -11,7 +11,7 @@
     rare:{label:'RARE',color:'#baff6d',angle:6},
     epic:{label:'EPIC',color:'#b798ff',angle:7},
     legendary:{label:'LEGENDARY',color:'#f8c86a',angle:8},
-    mythic:{label:'MYTHIC',color:'#edc9ff',angle:9},
+    mythic:{label:'MYTHIC',color:'#ff626c',angle:9},
     hidden:{label:'HIDDEN',color:'#dbe4ff',angle:9}
   });
 
@@ -118,8 +118,11 @@
         '<span>'+String(activeIndex+1).padStart(2,'0')+' / '+String(playlist.length).padStart(2,'0')+'</span>'+
         '<span>ЛИСТАЙ КАРТОЧКИ ← →</span></div>':'')+
       '<p class="flip-viewer-hint">'+
-      (playlist.length>1?'Короткое движение — наклон. Длинный свайп — следующая карточка.':
-        'Проведи пальцем по обложке, чтобы слегка повернуть её')+'</p>'+
+      (window.matchMedia?.('(hover: hover) and (pointer: fine)').matches?
+        (playlist.length>1?'Наведи курсор, чтобы повернуть. Клавиши ← → — следующие карточки.':
+          'Двигай курсором по обложке, чтобы увидеть эффект.'):
+        (playlist.length>1?'Короткое движение — наклон. Длинный свайп — следующая карточка.':
+          'Проведи пальцем по обложке, чтобы слегка повернуть её'))+'</p>'+
       '</div></div>';
     dialog.classList.remove('flip-viewer-slide-prev','flip-viewer-slide-next');
     if(direction&& !reducedMotion()) {
@@ -149,7 +152,8 @@
     if(event.pointerType!=='mouse'&&activePointer!==event.pointerId)return;
     const tilt=dialog.querySelector('[data-flip-tilt]');
     if(!tilt)return;
-    const bounds=tilt.getBoundingClientRect();
+    // Measure the stationary perspective plane, not the already-tilted child.
+    const bounds=(tilt.parentElement||tilt).getBoundingClientRect();
     if(!bounds.width||!bounds.height)return;
     const x=clamp((event.clientX-bounds.left)/bounds.width,0,1);
     const y=clamp((event.clientY-bounds.top)/bounds.height,0,1);
@@ -183,6 +187,12 @@
     if(event.button!==0||reducedMotion())return;
     const tilt=event.target.closest('[data-flip-tilt]');
     if(!tilt)return;
+    if(event.pointerType==='mouse'){
+      // Desktop tilt is driven by hover. Never capture the mouse or drag the image.
+      event.preventDefault();
+      changeTilt(event);
+      return;
+    }
     activePointer=event.pointerId;
     gestureStart={x:event.clientX,y:event.clientY,id:event.pointerId};
     tilt.classList.add('is-active');
@@ -201,6 +211,8 @@
   function bindTilt(tilt){
     if(!tilt)return;
     tilt.addEventListener('pointerdown',pointerdown);
+    tilt.addEventListener('dragstart',event=>event.preventDefault());
+    tilt.addEventListener('selectstart',event=>event.preventDefault());
     tilt.addEventListener('pointermove',event=>{
       if(activePointer===event.pointerId||event.pointerType==='mouse')changeTilt(event);
     });
@@ -277,6 +289,7 @@
       if(event.target.closest('[data-flip-viewer-prev]')){navigate(-1);return;}
       if(event.target.closest('[data-flip-viewer-next]')){navigate(1);return;}
     });
+    node.addEventListener('dragstart',event=>event.preventDefault());
     node.addEventListener('touchmove',event=>{
       if(event.target.closest('[data-flip-viewer-workspace]')&&event.cancelable)event.preventDefault();
     },{passive:false});

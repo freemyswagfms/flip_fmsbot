@@ -14,7 +14,25 @@ let serverBusy=false;
 const bridge=window.FLIPServer;
 const live=()=>bridge?.mode==='server';
 const blocked=()=>bridge?.mode==='blocked'||bridge?.mode==='loading';
-const serverLabel=()=>bridge?.mode==='server'?'● СЕРВЕР · ПРОГРЕСС СОХРАНЁН В АККАУНТЕ':bridge?.mode==='loading'?'◷ ПОДКЛЮЧАЕМ TELEGRAM…':bridge?.mode==='blocked'?'⚠ НЕТ СОЕДИНЕНИЯ С ИГРОВЫМ СЕРВЕРОМ':'◉ ЛОКАЛЬНОЕ ДЕМО · НЕ СИНХРОНИЗИРУЕТСЯ';
+// The point after the FLIP logo is the only visible server-status indicator.
+function updateServerDot(){
+  const brand=$('#flipBrand');
+  if(!brand)return;
+  const mode=bridge?.health||'connecting';
+  const state=['online','demo','offline'].includes(mode)?mode:'connecting';
+  brand.dataset.serverStatus=state;
+  brand.setAttribute('aria-label','FLIP · '+({
+    online:'Сервер работает, прогресс синхронизирован',
+    demo:'Демо без синхронизации',
+    offline:'Игровой сервер временно недоступен',
+    connecting:'Подключение к серверу'
+  }[state]));
+}
+window.addEventListener('flip-server-status',updateServerDot);
+window.addEventListener('flip-server-recovered',event=>{
+  if(event.detail?.state)applyServerState(event.detail.state);
+  updateServerDot();
+});
 function applyServerState(snapshot){
   if(snapshot){Object.assign(state,snapshot);render(current)}
 }
@@ -47,7 +65,6 @@ function home(){return `<div class="hero-intro">
     <span>LVL ${state.level}</span><span class="progress-separator"></span><span>${state.xp}/${state.xpToNext||100} XP</span><span class="hero-progress-arrow">↗</span>
   </div>
 </div>
-<div class="flip-server-indicator" id="flipServerIndicator">${serverLabel()}</div>
 <section class="drop-shell" aria-label="Бесплатный дроп">
   <div class="drop-info"><span class="drop-badge" id="readyBadge">● ДРОП ДОСТУПЕН</span></div>
   <div class="drop-stage" aria-hidden="true">
@@ -71,7 +88,7 @@ function home(){return `<div class="hero-intro">
 <section class="content-section"><div class="section-head"><span class="section-title"><b>✳</b> НОВАЯ КОЛЛЕКЦИЯ</span><button class="link" data-action="catalog">СМОТРЕТЬ ВСЁ ↗</button></div><div class="feature"><div class="feature-copy"><span class="pill">✦ NEW ARRIVAL</span><h3>PLAYBOI<br>CARTI</h3><p>Первые пять релизов уже в каталоге FLIP. Открой свою находку.</p><button data-action="catalog">СМОТРЕТЬ РЕЛИЗЫ ↗</button></div><div class="artwork second" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/die-lit/epic.webp" alt=""></div><div class="artwork" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/whole-lotta-red/mythic.webp" alt=""></div></div></section>
 <section class="content-section"><div class="section-head"><span class="section-title"><b>◎</b> ЗАДАНИЯ</span><button class="link" data-action="tasks">СМОТРЕТЬ ВСЕ ↗</button></div><div class="task-list">${taskRow(0,true)}${taskRow(1,true)}${taskRow(2,true)}</div></section>
 <div class="quick-nav"><button class="quick" data-action="store"><span>◈</span> ТЕМАТИЧЕСКИЕ НАБОРЫ ↗</button><button class="quick" data-action="profile"><span>☆</span> МОЙ ПРОФИЛЬ ↗</button></div>
-<div class="note">FLIP · ${live()?'Серверный тест: карточки и награды привязаны к аккаунту Telegram. Некоторые разделы пока демонстрационные.':'Локальное демо: карточки не переносятся на сервер и не имеют игровой ценности.'}</div>`}
+`}
 const taskDefs=[{title:'Открой бесплатный дроп',detail:'0 / 1 · Ежедневное задание',reward:'30 F'},{title:'Получи новую карточку',detail:'0 / 1 · Коллекция',reward:'30 F'},{title:'Открой стандартный пак',detail:'0 / 1 · Активность',reward:'30 F'}];
 function gameTaskRow(t){
  const complete=t.claimed,custom=t.type==='subscription';
@@ -263,13 +280,25 @@ async function doDrop(){
   if(live()){
     if(!bridge.hasPending('drop')&&!(state.welcomeRemaining>0)&&Date.now()<state.dropReadyAt)return;
     serverBusy=true;updateTimer();
+    // Start the roulette while the authoritative server determines the card.
+    const rouletteStarted=window.FLIPReveal?.begin?.()===true;
     try{
       const result=await bridge.drop(crypto.randomUUID());
       applyServerState(result.state);
       bridge.refreshTasks?.().then(()=>{if(current==='home')render('home')}).catch(()=>{});
       const card=cardById(result.card_id);
-      if(card){if(window.FLIPReveal)window.FLIPReveal.open(card);else cardReveal(card,'FREE DROP');}
-    }catch(error){toast(serverError(error));}
+      if(card){
+        if(rouletteStarted)window.FLIPReveal.resolve(card);
+        else if(window.FLIPReveal)window.FLIPReveal.open(card);
+        else cardReveal(card,'FREE DROP');
+      }else{
+        window.FLIPReveal?.abort?.();
+        toast('Дроп сохранён, но изображение пока не найдено. Открой коллекцию.');
+      }
+    }catch(error){
+      window.FLIPReveal?.abort?.();
+      toast(serverError(error));
+    }
     finally{serverBusy=false;updateTimer();}
     return;
   }
@@ -518,7 +547,7 @@ window.addEventListener('flip-admin-self-changed',async()=>{
     if(snapshot){Object.assign(state,snapshot);$('#balance').textContent=money(state.balance);}
   }catch(_){/* balance refresh happens on next Telegram launch */}
 });
-setInterval(updateTimer,1000);render();window.FLIPIcons?.render($('#notifications'));
+setInterval(updateTimer,1000);render();updateServerDot();window.FLIPIcons?.render($('#notifications'));
 bridge?.connect().then(snapshot=>{
   if(snapshot)applyServerState(snapshot);
   else if(bridge.mode==='demo')applyLocalDemoState();

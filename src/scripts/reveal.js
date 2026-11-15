@@ -26,19 +26,25 @@
   function schedule(next, ms){clearTimeout(timeoutId);timeoutId=setTimeout(()=>advanceTo(next),ms)}
   function backMarkup(){return `<div class="flip-rb-outer"><div class="flip-rb-inner"><span class="flip-rb-logo">FLIP</span><span class="flip-rb-tag">+ COLLECT /<br>TRADE +</span></div></div>`}
   function tileMarkup(i){return `<div class="flip-roulette-tile${i===target?' is-target':''}" aria-hidden="true"><div class="flip-roulette-card">${backMarkup()}</div></div>`}
+  function artworkMarkup(r){
+    const label=plain(r.card.title||'UNKNOWN SIGNAL');
+    const artist=plain(r.card.artist||'FLIP DEMO');
+    const actualArtwork=!!r.card.art;
+    const imageMarkup=actualArtwork
+      ? `<div class="flip-face-art flip-face-artwork"><img class="flip-art-image" src="${plain(r.card.art)}" alt="Обложка ${artist} — ${label}" decoding="async" draggable="false"></div>`
+      : `<div class="flip-face-art flip-art-${r.rarity}"><div class="flip-art-noise"></div><div class="flip-art-orbit orbit-one"></div><div class="flip-art-orbit orbit-two"></div><div class="flip-art-emblem">${r.rarity==='hidden'?'?':'✳'}</div><div class="flip-art-artist">${artist}</div><div class="flip-art-title">${label}</div><div class="flip-art-foot">FLIP / DEMO ARTWORK</div></div>`;
+    return imageMarkup;
+  }
   function layout(){
     const r=session;
     const winner=defs[r.rarity];
     const label=plain(r.card.title||'UNKNOWN SIGNAL');
     const artist=plain(r.card.artist||'FLIP DEMO');
     const isPreview=!!r.preview;
-    const actualArtwork=!!r.card.art;
-    const imageMarkup=actualArtwork
-      ? `<div class="flip-face-art flip-face-artwork"><img class="flip-art-image" src="${plain(r.card.art)}" alt="Обложка ${artist} — ${label}" decoding="async" draggable="false"></div>`
-      : `<div class="flip-face-art flip-art-${r.rarity}"><div class="flip-art-noise"></div><div class="flip-art-orbit orbit-one"></div><div class="flip-art-orbit orbit-two"></div><div class="flip-art-emblem">${r.rarity==='hidden'?'?':'✳'}</div><div class="flip-art-artist">${artist}</div><div class="flip-art-title">${label}</div><div class="flip-art-foot">FLIP / DEMO ARTWORK</div></div>`;
+    const imageMarkup=artworkMarkup(r);
     root.innerHTML=`
       <div class="flip-reveal-aura" aria-hidden="true"></div>
-      <div class="flip-reveal-head"><span class="flip-reveal-logo">FLIP<span>.</span></span><span class="flip-reveal-headnote">${isPreview?'PREVIEW':'FREE DROP'} <span class="flip-reveal-dot"></span> DEMO</span></div>
+      <div class="flip-reveal-head"><span class="flip-reveal-logo">FLIP<span>.</span></span><span class="flip-reveal-headnote">${isPreview?'PREVIEW':'FREE DROP'} <span class="flip-reveal-dot"></span> ${isPreview?'DEMO':'LIVE'}</span></div>
       <div class="flip-reveal-content">
         <div class="flip-reveal-eyebrow">${isPreview?'ANIMATION / PREVIEW':'DROP / REVEAL'}</div>
         <h2 class="flip-reveal-title" id="flipRevealTitle">ТВОЙ ДРОП<span>.</span></h2>
@@ -60,7 +66,7 @@
           <span class="flip-rarity-chip">${winner.label} <span class="flip-rarity-dot"></span></span>
           <h3>${label}</h3>
           <p>${artist}</p>
-          <span class="flip-reveal-added">${isPreview?'ДЕМО · БЕЗ НАГРАДЫ':'✓ ДОБАВЛЕНО В ДЕМО-КОЛЛЕКЦИЮ'}</span>
+          <span class="flip-reveal-added">${isPreview?'ДЕМО · БЕЗ НАГРАДЫ':'✓ ДОБАВЛЕНО В КОЛЛЕКЦИЮ'}</span>
           <button type="button" class="flip-reveal-continue" id="flipRevealContinue">ПРОДОЛЖИТЬ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19 19 5M8 5h11v11"/></svg></button>
         </div>
       </div>
@@ -82,6 +88,11 @@
   }
   function advanceTo(phase){
     if(!session) return;
+    // Never reveal or settle an unreconciled reward while the server is pending.
+    if(!session.ready && ['settle','flip','result'].includes(phase)){
+      session.spinComplete=true;
+      return;
+    }
     clearTimers();
     session.phase=phase;
     root.dataset.phase=phase;
@@ -134,7 +145,9 @@
   function open(card,options={}){
     if(session) return;
     const rarity=String(card?.rarity||'common').toLowerCase();
-    session={card:{...card},rarity:defs[rarity]?rarity:'common',phase:'intro',preview:options.preview===true};
+    session={card:{...card},rarity:defs[rarity]?rarity:'common',phase:'spin',
+      preview:options.preview===true,ready:options.pending!==true,
+      spinComplete:false,skipRequested:false};
     // Start loading exactly one winning image while the lightweight roulette runs.
     if(card?.art){const prefetch=new Image();prefetch.decoding='async';prefetch.src=card.art;}
     root.style.setProperty('--flip-rarity',defs[session.rarity].hex);
@@ -147,8 +160,40 @@
     const scroll=document.querySelector('.phone .scroll');
     if(scroll)scroll.style.overflow='hidden';
     layout();
-    advanceTo('intro');
-    if(reducedMotion)advanceTo('result');
+    // Start spinning immediately; the 800ms intro no longer delays free drops.
+    advanceTo('spin');
+    if(reducedMotion&&session.ready)advanceTo('result');
+  }
+  function begin(){
+    if(session)return false;
+    open({title:'Загрузка результата',artist:'FLIP',rarity:'common'},{pending:true});
+    return true;
+  }
+  function resolve(card){
+    if(!session||session.ready||!card)return false;
+    const rarity=String(card.rarity||'common').toLowerCase();
+    session.card={...card};
+    session.rarity=defs[rarity]?rarity:'common';
+    session.ready=true;
+    if(card.art){const prefetch=new Image();prefetch.decoding='async';prefetch.src=card.art;}
+    root.dataset.rarity=session.rarity;
+    root.style.setProperty('--flip-rarity',defs[session.rarity].hex);
+    const front=root.querySelector('.flip-face-front');
+    if(front)front.innerHTML=artworkMarkup(session);
+    const outcome=root.querySelector('#flipRevealOutcome');
+    if(outcome){
+      const chip=outcome.querySelector('.flip-rarity-chip');
+      if(chip?.firstChild)chip.firstChild.textContent=defs[session.rarity].label+' ';
+      const heading=outcome.querySelector('h3'),artist=outcome.querySelector('p');
+      if(heading)heading.textContent=card.title||'UNKNOWN SIGNAL';
+      if(artist)artist.textContent=card.artist||'FLIP';
+    }
+    if(reducedMotion||session.skipRequested)advanceTo('result');
+    else if(session.spinComplete)advanceTo('settle');
+    return true;
+  }
+  function abort(){
+    if(session&&!session.ready)close();
   }
   function close(){
     if(!session)return;
@@ -166,6 +211,11 @@
     if(!session)return;
     const i=order.indexOf(session.phase);
     if(i===-1)return;
+    if(!session.ready){
+      // The user may skip the animation, never the server verification.
+      session.skipRequested=true;
+      return;
+    }
     if(i===order.length-1)close();else advanceTo(order[i+1]);
   }
   root.addEventListener('error',event=>{
@@ -178,9 +228,9 @@
   });
   document.addEventListener('keydown',event=>{
     if(!session)return;
-    if(event.key==='Escape'){event.preventDefault();if(session.phase==='result')close();else advanceTo('result')}
+    if(event.key==='Escape'){event.preventDefault();if(!session.ready)session.skipRequested=true;else if(session.phase==='result')close();else advanceTo('result')}
     else if(event.key==='Enter'||event.key===' '){if(event.target.closest('#flipRevealContinue'))return;event.preventDefault();skip()}
   });
   window.addEventListener('resize',()=>{if(session&&['intro','spin','settle'].includes(session.phase)){setPosition(session.phase==='settle')}});
-  window.FLIPReveal={open,close,skip,isOpen:()=>!!session};
+  window.FLIPReveal={open,begin,resolve,abort,close,skip,isOpen:()=>!!session};
 })();

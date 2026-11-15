@@ -86,12 +86,17 @@ export async function handleRequest(request,env=undefined){
   if (!['GET','POST'].includes(request.method)) return json({error:'METHOD_NOT_ALLOWED'},405);
   const configured=!!(process.env.TELEGRAM_BOT_TOKEN&&process.env.SUPABASE_URL&&process.env.SUPABASE_SECRET_KEY);
   if(request.method==='GET' && u.searchParams.get('health')==='1')
-    return json({service:'FLIP',version:'0.9.0',configured});
+    return json({service:'FLIP',version:'0.9.1',configured});
   if(!configured)return json({error:'SERVER_NOT_CONFIGURED'},503);
   try{
     const raw=request.headers.get('x-telegram-init-data');
     const user=validateTelegramInitData(raw,process.env.TELEGRAM_BOT_TOKEN);
     const db=settings();
+    // Minimal authenticated database probe for the UI status dot. No player writes.
+    if(request.method==='GET' && u.searchParams.get('probe')==='1'){
+      await rpc('flip_task_snapshot',{p_telegram_id:user.telegram_id},db);
+      return json({ok:true});
+    }
     if(request.method==='GET'){
       // The database only accepts identity fields. Do not persist optional profile-photo URLs.
       const [state,catalog,tasks]=await Promise.all([
