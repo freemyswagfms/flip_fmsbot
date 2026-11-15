@@ -112,3 +112,13 @@
  .col-gallery-caption strong{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){.col-gallery-cover,.col-rarity-tile{transition:none}}
+
+/* v0.8.8: separate, real ownership counts for each rarity chip. */
+.col-gallery-filter{display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.col-gallery-filter-count{display:inline-flex;justify-content:center;align-items:center;
+ min-width:17px;height:17px;padding:0 5px;border-radius:9px;
+ background:#ffffff1c;color:#e8f5e7;font:800 9px 'Space Grotesk',sans-serif;
+ font-variant-numeric:tabular-nums}
+.col-gallery-filter[aria-pressed="true"] .col-gallery-filter-count{
+ background:#1b2f11;color:#eaffd6
+}

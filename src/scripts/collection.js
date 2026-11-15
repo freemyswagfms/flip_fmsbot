@@ -83,6 +83,12 @@
     const pct=total?Math.round(100*all.length/total):0;
     const showcase=all.slice().sort((a,b)=>
       (rarityRank[b.color]??-1)-(rarityRank[a.color]??-1)||a.title.localeCompare(b.title,'ru'));
+    // Each rarity has its own distinct VARIANT count, not the overall inventory size.
+    const galleryRarityCounts=Object.create(null);
+    for(const card of showcase){
+      const key=String(card.color||card.rarity||'').toLowerCase();
+      galleryRarityCounts[key]=(galleryRarityCounts[key]||0)+1;
+    }
     return '<div class="panel col-page col-v087">'+
       stageHeader('THE ARCHIVE / 087','МОЯ КОЛЛЕКЦИЯ','Личная галерея музыкальных обложек. Каждая находка — часть твоей истории.')+
       '<div class="col-statboard col-statboard-v087"><div class="col-stat-main">'+
@@ -105,7 +111,9 @@
       '<div class="col-gallery-filters" role="group" aria-label="Фильтр по редкости">'+
       ['all',...catalog.rarities].map(r=>'<button type="button" class="col-gallery-filter" data-collection-gallery-filter="'+r+
       '" aria-pressed="'+(r==='all'?'true':'false')+'">'+
-      esc(r==='all'?'ВСЕ':(catalog.rarityLabels[r]||r).toUpperCase())+'</button>').join('')+'</div>'+
+      '<span class="col-gallery-filter-label">'+esc(r==='all'?'ВСЕ':(catalog.rarityLabels[r]||r).toUpperCase())+'</span>'+
+      '<span class="col-gallery-filter-count" data-gallery-filter-count="'+r+'">'+
+      (r==='all'?showcase.length:(galleryRarityCounts[r]||0))+'</span></button>').join('')+'</div>'+
       '<p class="col-gallery-result" data-collection-gallery-status aria-live="polite">'+
       formatCounts(showcase.length)+'</p><div class="col-showcase-grid" data-collection-gallery>'+
       showcase.map(c=>galleryTile(c)).join('')+'</div>'+

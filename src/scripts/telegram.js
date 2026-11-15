@@ -53,7 +53,28 @@
     setTimeout(applySafeArea, 300);
     setTimeout(applySafeArea, 850);
   }
-  window.FLIPViewport={isTelegram,mobileClient,requestedFullscreen};
+  // Telegram Bot API 7.7+: temporarily prevent gestures on WebApp content
+  // from minimizing the Mini App while a card is being tilted. Telegram's own
+  // native header remains dismissible by design; there is no API to lock it.
+  const canControlSwipes=isTelegram&&!!tg?.isVersionAtLeast?.('7.7')&&
+    typeof tg.disableVerticalSwipes==='function'&&typeof tg.enableVerticalSwipes==='function';
+  let viewerSwipeLock=false;
+  let previousSwipeEnabled=true;
+  function setViewerInteraction(active){
+    if(!canControlSwipes)return false;
+    if(active){
+      if(viewerSwipeLock)return true;
+      previousSwipeEnabled=tg.isVerticalSwipesEnabled!==false;
+      try{tg.disableVerticalSwipes();viewerSwipeLock=true;}catch(_){viewerSwipeLock=false;}
+    }else if(viewerSwipeLock){
+      if(previousSwipeEnabled){
+        try{tg.enableVerticalSwipes();}catch(_){}
+      }
+      viewerSwipeLock=false;
+    }
+    return viewerSwipeLock;
+  }
+  window.FLIPViewport={isTelegram,mobileClient,requestedFullscreen,setViewerInteraction};
 
   // Splash animation keeps existing v0.5 behavior (minimum 2 s).
   const started=performance.now();
