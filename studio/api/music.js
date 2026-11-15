@@ -1,4 +1,4 @@
-import {response,authenticate,issueError} from './_shared.js';
+import {response,authenticate,issueError} from '../lib/shared.js';
 const normalize=q=>String(q||'').trim().slice(0,90);
 export default async function handler(req){
  if(req.method!=='GET')return response({error:'METHOD_NOT_ALLOWED'},405);
