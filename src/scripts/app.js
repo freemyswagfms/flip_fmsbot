@@ -189,19 +189,28 @@ function playerAvatar(){
 }
 function profile(){return `<div class="panel"><span class="eyebrow">PERSONAL SPACE / 005</span><h2>ПРОФИЛЬ<span style="color:var(--lime)">.</span></h2><div class="content-card"><div class="flip-player-row">${playerAvatar()}<div class="flip-player-meta"><h3>${escapeHtml(live()?(state.telegramName||'FLIP PLAYER'):'FLIP PLAYER')}</h3><p class="flip-player-handle">${escapeHtml(live()?(state.telegramHandle||'FLIP PLAYER'):'FLIP / DEMO')}</p><span class="pill">LVL ${state.level} · ${state.xp} XP</span></div></div><div class="progress" style="--p:${Math.min(100,100*state.xp/(state.xpToNext||100))}%;margin-top:19px"><i></i></div><p>Следующий уровень · базовая награда 30 F</p></div><div class="content-card"><h3>ВИТРИНА КАРТОЧЕК <span style="color:#8fa68d">0/3</span></h3><div class="square-grid">${[0,1,2].map(()=>`<div class="sq-card" style="border-style:dashed;background:#171f18;border-color:#3f5740"><span style="color:#516b55;font-size:24px">+</span></div>`).join('')}</div><p>Сюда можно закреплять до трёх любимых карточек, включая Hidden.</p></div><div class="content-card"><h3>ДОСТИЖЕНИЯ</h3><p>31 достижение · 3 избранных слота · секретные награды</p><button class="outlinebtn" data-action="achievements">ПОСМОТРЕТЬ ↗</button></div><div class="content-card"><h3>${live()?'ПОДКЛЮЧЕНИЕ К TELEGRAM':blocked()?'СЕРВЕР НЕ ПОДКЛЮЧЕН':'НАСТРОЙКИ ДЕМО'}</h3><p>${live()?'Прогресс сохраняется на сервере и не сбрасывается из приложения. Локальные демо-награды не перенесены.':blocked()?'Подключение не установлено. Локальные награды не отображаются и не выдаются.':'Очистить состояние локального прототипа и снова сделать дроп доступным.'}</p>${live()?'<span class="pill">● SERVER CONNECTED</span>':blocked()?'<span class="pill">● OFFLINE</span>':'<button class="outlinebtn" id="resetBtn">СБРОСИТЬ ДЕМО</button>'}</div></div>`}
 function tasks(){
- const daily=live()?bridge?.tasks?.daily:null,weekly=live()?bridge?.tasks?.weekly:null;
+ const payload=live()?bridge?.tasks:null;
+ const daily=payload?.daily,weekly=payload?.weekly;
+ const note=scope=>'<div class="flip-quest-reroll-info">'+
+   (payload?.[scope+'_reroll_used']?
+     'Бесплатная замена использована · обновится '+(scope==='daily'?'завтра':'в понедельник'):
+     'Доступна 1 бесплатная замена · только для обычных невыполненных заданий')+'</div>';
  return '<div class="panel"><button class="link" data-action="home">← НА ГЛАВНУЮ</button>'+
- '<h2>ЗАДАНИЯ<span style="color:var(--lime)">.</span></h2>'+
- '<p class="desc">Всегда по три задания в каждом разделе. Сброс по Москве.</p>'+
- '<div class="section-head"><span class="section-title">DAILY TASKS · 3</span>'+
- '<span class="section-sub">ЕЖЕДНЕВНО · 00:00</span></div><div class="task-list">'+
- (daily?.length===3?daily.map(gameTaskRow).join(''):[0,1,2].map(i=>taskRow(i)).join(''))+'</div>'+
- '<div class="section-head" style="margin-top:24px"><span class="section-title">WEEKLY TASKS · 3</span>'+
- '<span class="section-sub">ПОНЕДЕЛЬНИК · 00:00</span></div><div class="task-list">'+
- (weekly?.length===3?weekly.map(gameTaskRow).join(''):'<p>Загрузка еженедельных заданий…</p>')+
- '</div><p class="note">За все три недельных задания: дополнительно +50 F.</p></div>';
+  '<h2>ЗАДАНИЯ<span style="color:var(--lime)">.</span></h2>'+
+  '<p class="desc">Три ежедневных и три еженедельных задания. Обновляются по Москве.</p>'+
+  streakPanel()+
+  '<div class="section-head"><span class="section-title">DAILY TASKS · 3</span>'+
+  '<span class="section-sub">ЕЖЕДНЕВНО · 00:00</span></div>'+
+  (payload?note('daily'):'')+
+  '<div class="task-list">'+
+  (daily?.length===3?daily.map(gameTaskRow).join(''):[0,1,2].map(i=>taskRow(i)).join(''))+'</div>'+
+  '<div class="section-head" style="margin-top:24px"><span class="section-title">WEEKLY TASKS · 3</span>'+
+  '<span class="section-sub">ПОНЕДЕЛЬНИК · 00:00</span></div>'+
+  (payload?note('weekly'):'')+
+  '<div class="task-list">'+
+  (weekly?.length===3?weekly.map(gameTaskRow).join(''):'<p>Загрузка еженедельных заданий…</p>')+
+  '</div><p class="note">За выполнение всех трёх недельных заданий: дополнительно +50 F.</p></div>';
 }
-
 function rankingProfile(){return live()?'<div class="content-card"><span class="eyebrow">COLLECTION POINTS</span><h3 style="margin-top:9px;font-size:15px">ТВОЙ РЕЙТИНГ</h3><div class="kpi">'+Number(state.cp||0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' CP</div><p>Рейтинговые экземпляры, включая карточки из обменов и рейтинговые выдачи администрации. Тестовые карточки не учитываются.</p><button type="button" class="outlinebtn" data-action="leaderboard">ОТКРЫТЬ ОБЩИЙ ТОП ↗</button></div>':''}
 function adminProfile(){
   const id=window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
