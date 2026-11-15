@@ -56,6 +56,7 @@ const s={db:null,user:null,member:null,artists:[],releases:[],variants:[],audit:
  importPage:0,importCount:0,importError:'',crop:null,
  thumbs:new Map(),ownerTicket:(()=>{try{return localStorage.getItem('flip_studio_claim')||''}catch{return ''}})()};
 let toastTimer=null;
+let emailRequestPending=false,emailCooldownUntil=0,emailUnlockTimer=null;
 const app=$('#app');
 
 function notice(message,error=false){
@@ -76,6 +77,8 @@ function formatError(e){
   'STUDIO_CONFIG_MISSING':'Сайт ещё не настроен. Требуется подключение Supabase.',
   'EMAIL_DELIVERY_UNAVAILABLE':'Приглашение не отправилось. Проверь SMTP в Supabase Auth.'
  };
+ if(/only request this after|rate limit|too many requests/i.test(msg))
+  return 'Слишком частая отправка. Подожди немного и проверь, не пришло ли первое письмо.';
  return codes[msg]||msg;
 }
 async function invoke(path,body=null){
@@ -375,7 +378,8 @@ function authScreen(message=''){
   '<h2>Вход в FLIP STUDIO</h2>'+
   '<p>Введи email. Мы отправим защищённую ссылку для входа. Доступ к редакционным данным появится после приглашения или подтверждения владельца.</p>'+
   '<label class="field"><span class="hint">EMAIL</span><input id="auth-email" class="input" type="email" autocomplete="email" placeholder="you@example.com"></label>'+
-  '<button class="button primary full" data-action="auth-email" '+(!s.db?'disabled':'')+'>'+ico('arrow-right')+' Продолжить с email</button>'+
+  '<button class="button primary full" data-action="auth-email" '+(!s.db||emailRequestPending||Date.now()<emailCooldownUntil?'disabled':'')+'>'+ico('arrow-right')+
+  (emailRequestPending?' Отправляем письмо…':Date.now()<emailCooldownUntil?' Письмо запрошено':' Продолжить с email')+'</button>'+
   (message?'<p style="color:var(--warning)">'+esc(message)+'</p>':'')+
   (!s.db?'<button class="button full ghost" data-action="boot-retry" style="margin-top:10px">'+
   ico('history')+' Повторить подключение</button>':'')+
@@ -420,16 +424,57 @@ async function refreshIdentity(){
  render();
 }
 async function signIn(){
+ // Both the form's Enter event and the button click can fire within a
+ // single interaction. Guard before the first await to prevent a second OTP.
+ if(emailRequestPending)return;
+ if(Date.now()<emailCooldownUntil){
+  notice('Письмо уже запрошено. Проверь почту и «Спам» перед повторной отправкой.');
+  return;
+ }
  const email=String($('#auth-email')?.value||'').trim();
- if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return notice('Укажи корректный email.',true);
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+   return notice('Укажи корректный email.',true);
+ if(!s.db)return notice('Подключение ещё не готово. Попробуй повторить запуск.',true);
+ emailRequestPending=true;
+ const button=$('[data-action="auth-email"]');
+ if(button){button.disabled=true;button.textContent='Отправляем письмо…'}
  try{
   const {error}=await s.db.auth.signInWithOtp({email,options:{
     emailRedirectTo:window.location.origin,shouldCreateUser:true
   }});
   if(error)throw error;
-  authScreen('Ссылка отправлена. Проверь почту и папку «Спам».');
-  notice('Письмо со ссылкой входа отправлено.');
- }catch(e){notice('Не удалось отправить email: '+formatError(e),true)}
+  // Supabase may throttle a rapid second request even after the first
+  // succeeded. Keep the result visible instead of showing contradictory
+  // success and error banners in the same form.
+  emailCooldownUntil=Date.now()+30000;
+  authScreen('Запрос на отправку письма принят. Проверь входящие, «Спам» и «Промоакции».');
+  notice('Проверь почту: ссылка для входа запрошена.');
+  clearTimeout(emailUnlockTimer);
+  emailUnlockTimer=setTimeout(()=>{
+    if(!s.user&&$('#auth-email')&&!emailRequestPending){
+      const retryButton=$('[data-action="auth-email"]');
+      if(retryButton){retryButton.disabled=false;
+        retryButton.innerHTML=ico('arrow-right')+' Отправить ещё раз'}
+    }
+  },30100);
+ }catch(e){
+  const message=String(e?.message||'');
+  if(/only request this after|rate limit|too many requests/i.test(message)){
+    // A prior request may have succeeded. Never claim it definitely failed.
+    emailCooldownUntil=Date.now()+10000;
+    authScreen('Повторный запрос временно ограничен. Возможно, первое письмо уже отправлено — проверь почту.');
+    clearTimeout(emailUnlockTimer);
+    emailUnlockTimer=setTimeout(()=>{
+      if(!s.user&&$('#auth-email')){
+        const retryButton=$('[data-action="auth-email"]');
+        if(retryButton){retryButton.disabled=false;
+          retryButton.innerHTML=ico('arrow-right')+' Отправить ещё раз'}
+      }
+    },10100);
+  }else if(button){button.disabled=false;
+    button.innerHTML=ico('arrow-right')+' Продолжить с email'}
+  notice('Вход по email: '+formatError(e),true);
+ }finally{emailRequestPending=false}
 }
 async function claimOwner(){
  const ticket=String($('#owner-claim-code')?.value||'').trim()||s.ownerTicket;
