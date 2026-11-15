@@ -158,7 +158,7 @@ test('Viewer escapes untrusted labels and does not accept remote image URLs',()=
 test('3D viewer is registered before the application and no viewport zoom lock is introduced',()=>{
   const index=source('index.html'),css=source('src/styles/card-viewer.css');
   assert.ok(index.indexOf('card-viewer.js')<index.indexOf('scripts/app.js'));
-  assert.match(index,/card-viewer\.css\?v=0\.8\.8/);
+  assert.match(index,/card-viewer\.css\?v=0\.8\.9/);
   assert.match(css,/prefers-reduced-motion/);
   assert.match(css,/touch-action:none/);
   assert.match(css,/flip-viewer-wave/);
@@ -192,4 +192,70 @@ test('Telegram viewer mode suppresses native minimize swipes, then restores them
   assert.equal(win.FLIPViewport.setViewerInteraction(false),false);
   assert.equal(tg.isVerticalSwipesEnabled,true);
   assert.deepEqual(events,['disable','enable']);
+});
+
+
+test('Mythic uses prismatic layers, Hidden uses its own spectral fracture material',()=>{
+  const {window,phone}=viewerRuntime();
+  const cards=[
+    {id:'c1',artist:'Carti',title:'MYTHIC COVER',rarity:'Mythic',color:'mythic',
+      art:'./src/assets/carti/music/mythic.webp',count:1},
+    {id:'c2',artist:'FLIP',title:'NULL RELIC',rarity:'Hidden',color:'hidden',
+      art:'./src/assets/carti/music/hidden.webp',count:1},
+    {id:'c3',artist:'Carti',title:'COMMON COVER',rarity:'Common',color:'common',count:2}
+  ];
+  assert.equal(window.FLIPCardViewer.open(cards[0],{cards}),true);
+  const modal=phone.lastChild;
+  assert.match(modal.innerHTML,/flip-viewer-foil/);
+  assert.doesNotMatch(modal.innerHTML,/flip-viewer-anomaly/);
+  assert.deepEqual(JSON.parse(JSON.stringify(window.FLIPCardViewer.current())),
+    {id:'c1',index:0,total:3,rarity:'mythic'});
+  assert.equal(window.FLIPCardViewer.navigate(1),true);
+  assert.equal(modal.dataset.rarity,'hidden');
+  assert.match(modal.innerHTML,/flip-viewer-anomaly-lines/);
+  assert.doesNotMatch(modal.innerHTML,/flip-viewer-foil/);
+  assert.match(modal.innerHTML,/hidden\.webp/);
+  assert.equal(window.FLIPCardViewer.navigate(1),true);
+  assert.equal(modal.dataset.rarity,'common');
+  assert.doesNotMatch(modal.innerHTML,/flip-viewer-foil|flip-viewer-anomaly/);
+  assert.equal(window.FLIPCardViewer.navigate(1),false);
+  assert.equal(window.FLIPCardViewer.current().index,2);
+  window.FLIPCardViewer.close(true);
+});
+test('Flick navigation and keyboard arrows stay in one locked overlay',()=>{
+  const {window,phone,tilt,background,swipeCalls,listeners}=viewerRuntime();
+  const first={id:'rare-1',title:'Cover One',color:'rare',count:1};
+  const second={id:'mythic-2',title:'Cover Two',color:'mythic',count:3};
+  window.FLIPCardViewer.open(first,{cards:[first,first,second]});
+  assert.equal(window.FLIPCardViewer.current().total,2,'duplicate IDs must be deduplicated');
+  tilt.listeners.pointerdown({button:0,pointerId:17,clientX:180,clientY:100,
+    target:{closest:()=>tilt}});
+  tilt.listeners.pointermove({pointerType:'touch',pointerId:17,clientX:130,clientY:101});
+  tilt.listeners.pointerup({pointerId:17,clientX:128,clientY:102});
+  assert.equal(window.FLIPCardViewer.current().index,0,
+    'short drags should tilt the artwork, not navigate');
+  tilt.listeners.pointerdown({button:0,pointerId:18,clientX:185,clientY:100,
+    target:{closest:()=>tilt}});
+  tilt.listeners.pointerup({pointerId:18,clientX:45,clientY:103});
+  assert.equal(window.FLIPCardViewer.current().index,1);
+  assert.equal(phone.lastChild.dataset.rarity,'mythic');
+  assert.equal(background.inert,true);
+  assert.deepEqual(swipeCalls,[true],'Telegram native swipes must stay locked during navigation');
+  const key={key:'ArrowLeft',preventDefault(){},stopPropagation(){}};
+  listeners.keydown(key);
+  assert.equal(window.FLIPCardViewer.current().index,0);
+  window.FLIPCardViewer.close(true);
+  assert.deepEqual(swipeCalls,[true,false]);
+  assert.equal(background.inert,false);
+});
+test('Rarity optics preserve the artwork and include mobile motion safeguards',()=>{
+  const css=source('src/styles/card-viewer.css');
+  const js=source('src/scripts/card-viewer.js');
+  assert.match(css,/flip-viewer-foil-sheen/);
+  assert.match(css,/flip-viewer-anomaly-lines/);
+  assert.match(css,/mix-blend-mode:screen/);
+  assert.match(css,/prefers-reduced-motion/);
+  assert.match(css,/flip-viewer-step/);
+  assert.doesNotMatch(js,/rotateY\(180deg\)|flip-viewer-backface/,
+    'no reverse side should be implemented in this release');
 });
