@@ -159,8 +159,7 @@ html.flip-viewer-active,html.flip-viewer-active body{overscroll-behavior:none}
    radial-gradient(ellipse 67% 75% at 67% 29%,#cfbeff16,transparent 79%),
    linear-gradient(139deg,#070e19a8,transparent 36%,#0a102e19 57%,#08151b8c);
  filter:saturate(1.2);
- transform:translate3d(calc(var(--flip-anomaly-x,0%) * .55),
-    calc(var(--flip-anomaly-y,0%) * .55),0);
+ transform:translate3d(var(--flip-anomaly-x,0%),var(--flip-anomaly-y,0%),0);
  transition:transform 410ms cubic-bezier(.2,.75,.25,1)
 }
 .flip-viewer-anomaly-lines{opacity:.52;mix-blend-mode:screen;
@@ -173,8 +172,7 @@ html.flip-viewer-active,html.flip-viewer-active body{overscroll-behavior:none}
     transparent 75.45% 100%),
   repeating-linear-gradient(122deg,transparent 0 42px,#a8a1ff0b 43px,
     transparent 44px,transparent 88px);
- transform:translate3d(calc(var(--flip-anomaly-x,0%) * -.32),
-   calc(var(--flip-anomaly-y,0%) * -.32),0);
+ transform:translate3d(var(--flip-anomaly-x,0%),var(--flip-anomaly-y,0%),0);
  transition:transform 460ms cubic-bezier(.22,.77,.27,1);
 }
 .flip-viewer[data-rarity="hidden"] .flip-viewer-wave{opacity:.18}
