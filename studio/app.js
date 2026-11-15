@@ -81,8 +81,8 @@ function formatError(e){
 async function invoke(path,body=null){
  const {data:{session}}=await s.db.auth.getSession();
  if(!session)throw new Error('UNAUTHORIZED');
- const separator=path.includes('?')?'&':'?';
- const target='https://flip-fmsbot.vercel.app/api/studio?route='+encodeURIComponent(path.split('?')[0])+separator+path.split('?').slice(1).join('?');
+ const [route,query='']=path.split('?');
+ const target='https://flip-fmsbot.vercel.app/api/studio?route='+encodeURIComponent(route)+(query?'&'+query:'');
  const res=await fetch(target,{
   method:body?'POST':'GET',headers:{Authorization:'Bearer '+session.access_token,
     ...(body?{'content-type':'application/json'}:{})},cache:'no-store',
