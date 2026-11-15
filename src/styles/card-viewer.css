@@ -114,3 +114,119 @@ html.flip-viewer-active,html.flip-viewer-active body{overscroll-behavior:none}
  .flip-viewer-tilt,.flip-viewer-tilt.is-active{transition:none;will-change:auto}
  .flip-viewer-wave:before,.flip-viewer-wave:after{transition:none;will-change:auto}
 }
+
+/* v0.8.9 — premium foil is a separate optical material above the original art. */
+.flip-viewer-artwork{transform:translateZ(0);backface-visibility:hidden}
+.flip-viewer-foil,.flip-viewer-foil-sheen,
+.flip-viewer-anomaly,.flip-viewer-anomaly-lines{
+ position:absolute;inset:0;pointer-events:none;overflow:hidden;
+ border-radius:inherit;backface-visibility:hidden
+}
+
+/* MYTHIC: subtle spectrally separated, shifting physical foil instead of
+   a uniform neon tint. Both layers remain translucent over the artwork. */
+.flip-viewer-foil{opacity:.49;mix-blend-mode:screen;
+ background:
+   conic-gradient(from 103deg at var(--flip-foil-x,50%) var(--flip-foil-y,50%),
+     #a9f5f700 0deg,#a5f0f740 42deg,#ffb5db38 86deg,#d9b7ff48 123deg,
+     #ffe2a03c 173deg,#96f4cd37 223deg,#9cc3ff38 274deg,#b1f4f000 340deg),
+   linear-gradient(110deg,transparent 23%,#f4f1ff15 35%,#ffaceb34 41%,
+     #adf1ff49 48%,#fff3bb26 53%,transparent 68%);
+ filter:saturate(1.3);transform:translateZ(0)
+}
+.flip-viewer-foil-sheen{opacity:.53;mix-blend-mode:soft-light;
+ background:repeating-linear-gradient(114deg,#ffffff00 0px,#e5fcff12 3px,
+   #ffffff00 9px,#b1ffe20d 16px,#ffffff00 28px);
+ transform:translate3d(calc(var(--flip-foil-x,50%) - 50%),0,0);
+ transition:transform 450ms cubic-bezier(.23,.75,.25,1)
+}
+.flip-viewer[data-rarity="mythic"] .flip-viewer-border{
+ border-color:#f9d8ffbb;box-shadow:inset 0 0 0 1px #ffeedc4a,
+  inset 0 0 15px #d6a4ff38,0 0 0 2px #c3aaff18}
+.flip-viewer[data-rarity="mythic"] .flip-viewer-tilt{
+ box-shadow:0 35px 75px #000c,0 0 28px #a784ff2b,0 0 2px #f6dcff9c}
+.flip-viewer[data-rarity="mythic"] .flip-viewer-wave{opacity:.27}
+
+/* HIDDEN: black-mirror spectral interference, dark prismatic veins and
+   hairline fractures. Distinct from colorful foil, never a strobing glitch. */
+.flip-viewer-anomaly{opacity:.42;mix-blend-mode:screen;
+ background:
+   conic-gradient(from 196deg at calc(48% + var(--flip-anomaly-x,0%))
+     calc(45% + var(--flip-anomaly-y,0%)),
+     transparent 0deg,#1b3a4f15 42deg,#6849be3d 96deg,
+     #a8e6e81c 112deg,transparent 149deg,#3e388d33 211deg,
+     #7dbac83b 242deg,transparent 300deg),
+   radial-gradient(ellipse 67% 75% at 67% 29%,#cfbeff16,transparent 79%),
+   linear-gradient(139deg,#070e19a8,transparent 36%,#0a102e19 57%,#08151b8c);
+ filter:saturate(1.2);
+ transform:translate3d(calc(var(--flip-anomaly-x,0%) * .55),
+    calc(var(--flip-anomaly-y,0%) * .55),0);
+ transition:transform 410ms cubic-bezier(.2,.75,.25,1)
+}
+.flip-viewer-anomaly-lines{opacity:.52;mix-blend-mode:screen;
+ background:
+  linear-gradient(127deg,transparent 0 21%,#72e8ff00 21.1%,#b4dfff7d 21.25%,
+    #aa83e878 21.4%,transparent 21.6% 100%),
+  linear-gradient(57deg,transparent 0 62%,#e7acff70 62.1%,#abd0ff2f 62.35%,
+    transparent 62.6% 100%),
+  linear-gradient(165deg,transparent 0 75%,#79cafa46 75.15%,
+    transparent 75.45% 100%),
+  repeating-linear-gradient(122deg,transparent 0 42px,#a8a1ff0b 43px,
+    transparent 44px,transparent 88px);
+ transform:translate3d(calc(var(--flip-anomaly-x,0%) * -.32),
+   calc(var(--flip-anomaly-y,0%) * -.32),0);
+ transition:transform 460ms cubic-bezier(.22,.77,.27,1);
+}
+.flip-viewer[data-rarity="hidden"] .flip-viewer-wave{opacity:.18}
+.flip-viewer[data-rarity="hidden"] .flip-viewer-border{
+ border-color:#bec8e5c9;box-shadow:inset 0 0 0 1px #05090b7a,
+ inset 0 0 24px #7277e92d,0 0 0 2px #b0a6fe1c}
+.flip-viewer[data-rarity="hidden"] .flip-viewer-tilt{
+ box-shadow:0 36px 82px #000d,0 0 18px #6a73a92b,0 0 3px #aaaaf74d}
+.flip-viewer[data-rarity="hidden"] .flip-viewer-kicker-dot{
+ box-shadow:0 0 12px #bdcaff,0 0 24px #6d64e8}
+.flip-viewer-tilt.is-active .flip-viewer-foil-sheen,
+.flip-viewer-tilt.is-active .flip-viewer-anomaly,
+.flip-viewer-tilt.is-active .flip-viewer-anomaly-lines{
+ transition-duration:85ms
+}
+
+/* Swipe navigation: tactile arrow taps + horizontal flick on the cover.
+   Buttons sit in the margin so the square artwork stays large. */
+.flip-viewer-workspace{isolation:isolate}
+.flip-viewer-step{position:absolute;z-index:5;top:50%;transform:translateY(-50%);
+ display:grid;place-items:center;width:34px;height:52px;
+ background:linear-gradient(135deg,#16201bd9,#0b0f0bd9);color:#e2f0e0;
+ border:1px solid #81988566;border-radius:11px;
+ font:500 35px/1 'Manrope',sans-serif;
+ -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+ box-shadow:0 7px 18px #0008;transition:opacity 150ms,border-color 150ms}
+.flip-viewer-prev{left:-17px}
+.flip-viewer-next{right:-17px}
+.flip-viewer-step:disabled{opacity:.2;pointer-events:none}
+.flip-viewer-step:focus-visible{outline:2px solid var(--flip-viewer-accent);outline-offset:3px}
+.flip-viewer-step:not(:disabled):active{border-color:var(--flip-viewer-accent)}
+.flip-viewer-pagination{display:flex;justify-content:space-between;align-items:center;
+ gap:10px;border-top:1px solid #3e4c416f;margin-top:14px;padding-top:10px;
+ font:800 9px 'Space Grotesk',sans-serif;letter-spacing:1px;color:#91a798}
+.flip-viewer-pagination>span:first-child{
+ color:var(--flip-viewer-accent);font-size:11px;font-variant-numeric:tabular-nums}
+.flip-viewer-slide-next .flip-viewer-tilt{animation:flip-viewer-slide-from-right 240ms ease-out both}
+.flip-viewer-slide-prev .flip-viewer-tilt{animation:flip-viewer-slide-from-left 240ms ease-out both}
+@keyframes flip-viewer-slide-from-right{
+ from{opacity:.45;translate:12px 0;scale:.97}to{opacity:1;translate:0 0;scale:1}
+}
+@keyframes flip-viewer-slide-from-left{
+ from{opacity:.45;translate:-12px 0;scale:.97}to{opacity:1;translate:0 0;scale:1}
+}
+@media(max-width:360px){
+ .flip-viewer-step{width:30px;height:44px;font-size:29px}
+ .flip-viewer-prev{left:-15px}.flip-viewer-next{right:-15px}
+ .flip-viewer-pagination>span:last-child{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .flip-viewer-foil-sheen,.flip-viewer-anomaly,.flip-viewer-anomaly-lines,
+ .flip-viewer-step{transition:none!important}
+ .flip-viewer-slide-next .flip-viewer-tilt,.flip-viewer-slide-prev .flip-viewer-tilt{
+   animation:none!important}
+}
