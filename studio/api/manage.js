@@ -1,5 +1,5 @@
 import {createClient} from '@supabase/supabase-js';
-import {response,authenticate,dbFetch,issueError,uuid} from './_shared.js';
+import {response,authenticate,dbFetch,issueError,uuid} from '../lib/shared.js';
 
 const BASE_RARITIES=['common','rare','epic','legendary','mythic'];
 const isEmail=value=>typeof value==='string'&&value.length<=254&&
