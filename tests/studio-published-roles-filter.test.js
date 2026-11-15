@@ -128,3 +128,47 @@ test('Already-published game catalog includes initial Carti release art with imm
  assert.match(app,/action:'replace_artwork',cardId,processedPath/);
  assert.match(app,/editorMode==='published'/);
 });
+
+
+test('An Owner can replace a live Carti image without changing any card ID',async()=>{
+ const cardId='carti/die-lit/common';
+ const path=ownerId+'/published/carti/die-lit/common/'+editorId+'-1024.webp';
+ let downloaded=false,uploaded=false,overridden=false;
+ const bytes=new Uint8Array(32);
+ bytes.set([82,73,70,70],0);bytes.set([87,69,66,80],8);
+ bytes.set([86,80,56,32],12);
+ const r=await call('replace_artwork','owner',{cardId,processedPath:path},
+ async (url,options)=>{
+   const u=new URL(url);
+   if(u.pathname.endsWith('/flip_cards'))
+    return Response.json([{id:cardId,artist_id:'carti',release_id:'die-lit',
+     rarity:'common',active:true}]);
+   if(u.pathname.endsWith('/flip_releases'))
+    return Response.json([{active:true}]);
+   if(u.pathname.includes('/storage/v1/object/authenticated/flip-studio-drafts/')){
+    downloaded=true;
+    return new Response(bytes,{headers:{'content-type':'image/webp'}});
+   }
+   if(u.pathname.includes('/storage/v1/object/flip-artwork/')){
+    uploaded=true;
+    assert.match(u.pathname,/carti\/die-lit\/revisions\/common-[a-f0-9-]+\.webp$/);
+    return Response.json({Key:'test',Id:'test'});
+   }
+   if(u.pathname.endsWith('/flip_artwork_overrides')){
+    if(options.method==='GET')return Response.json([]);
+    assert.equal(options.method,'POST');
+    const values=JSON.parse(options.body);
+    assert.equal(values.card_id,cardId);
+    assert.match(values.public_url,/flip-artwork\/carti\/die-lit\/revisions\//);
+    overridden=true;
+    return Response.json([values]);
+   }
+   if(u.pathname.endsWith('/flip_studio_audit'))return Response.json([{}]);
+   return null;
+ });
+ assert.equal(r.status,200);
+ assert.equal(r.body.cardId,cardId);
+ assert.equal(downloaded,true);
+ assert.equal(uploaded,true);
+ assert.equal(overridden,true);
+});
