@@ -14,7 +14,7 @@ export function GET(){
   const publishableKey=process.env.SUPABASE_PUBLISHABLE_KEY;
   if(!supabaseUrl||!publishableKey)
     return json({error:'STUDIO_CONFIG_MISSING'},503);
-  return json({supabaseUrl,publishableKey,version:'0.9.0'});
+  return json({supabaseUrl,publishableKey,version:'0.9.1'});
 }
 export function POST(){
   return json({error:'METHOD_NOT_ALLOWED'},405);
