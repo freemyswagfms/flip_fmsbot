@@ -6,7 +6,7 @@ const isEmail=value=>typeof value==='string'&&value.length<=254&&
  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 const checkOrigin=req=>{
  const source=req.headers.get('origin');
- return !source||source==='https://flip-studio.vercel.app'||source===new URL(req.url).origin;
+ return !source||source==='https://flip-studio-six.vercel.app'||source===new URL(req.url).origin;
 };
 const clientFor=db=>createClient(db.origin,db.key,{
  auth:{autoRefreshToken:false,persistSession:false,detectSessionInUrl:false}
@@ -55,7 +55,7 @@ async function invite(auth,email,role,request){
  if(auth.member.role!=='owner')return response({error:'FORBIDDEN'},403);
  if(!isEmail(email)||!['admin','editor'].includes(role))return response({error:'BAD_REQUEST'},400);
  const supabase=clientFor(auth.db);
- const base='https://flip-studio.vercel.app';
+ const base='https://flip-studio-six.vercel.app';
  // Adding existing verified Auth users is supported, too.
  let candidate=null;
  for(let page=1;page<=5;page++){
