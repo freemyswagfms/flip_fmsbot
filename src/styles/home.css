@@ -133,3 +133,25 @@ body, button { font-family:var(--ui); }
 .drop-preview-btn:focus-visible{outline:2px solid var(--lime);outline-offset:4px;border-radius:4px}
 .drop-preview-btn svg{width:13px;height:13px;flex:none}
 @media(max-width:360px){.drop-preview-btn{font-size:8.5px}.drop-footer>span:last-child{font-size:8px}}
+
+/* v0.9.1 — the existing FLIP logo dot is the live server indicator. */
+.brand .flip-server-dot{
+  display:inline-block;transform-origin:center;
+  color:#8b978e;transition:color .2s ease,filter .2s ease;
+}
+.brand[data-server-status="online"] .flip-server-dot{
+  color:#baff56;filter:drop-shadow(0 0 5px #baff563a);
+}
+.brand[data-server-status="demo"] .flip-server-dot{
+  color:#f4c857;filter:drop-shadow(0 0 5px #f4c85736);
+}
+.brand[data-server-status="offline"] .flip-server-dot{
+  color:#ff5260;animation:flip-server-offline-pulse 2.4s ease-in-out infinite;
+}
+@keyframes flip-server-offline-pulse{
+  0%,100%{opacity:1;filter:drop-shadow(0 0 2px #ff526052);scale:1}
+  50%{opacity:.5;filter:drop-shadow(0 0 8px #ff5260a8);scale:1.08}
+}
+@media(prefers-reduced-motion:reduce){
+  .brand[data-server-status="offline"] .flip-server-dot{animation:none}
+}
