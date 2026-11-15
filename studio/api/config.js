@@ -1,12 +1,21 @@
-/** Public app configuration only. No admin secrets are stored in Studio. */
-export default async function handler(req){
- const headers={'content-type':'application/json; charset=utf-8',
-   'cache-control':'no-store','x-content-type-options':'nosniff'};
- if(req.method!=='GET')return new Response(JSON.stringify({error:'METHOD_NOT_ALLOWED'}),
-   {status:405,headers});
- const url=process.env.SUPABASE_URL,key=process.env.SUPABASE_PUBLISHABLE_KEY;
- if(!url||!key)return new Response(JSON.stringify({error:'STUDIO_CONFIG_MISSING'}),
-   {status:503,headers});
- return new Response(JSON.stringify({supabaseUrl:url,publishableKey:key,version:'0.9.0'}),
-   {status:200,headers});
+/** FLIP STUDIO public startup configuration.
+ * Vercel's named GET export uses the Web Response contract.
+ * Never return Response from default (req, res): Vercel would ignore it. */
+const headers={
+  'content-type':'application/json; charset=utf-8',
+  'cache-control':'no-store, max-age=0',
+  'x-content-type-options':'nosniff'
+};
+function json(value,status=200){
+  return new Response(JSON.stringify(value),{status,headers});
+}
+export function GET(){
+  const supabaseUrl=process.env.SUPABASE_URL;
+  const publishableKey=process.env.SUPABASE_PUBLISHABLE_KEY;
+  if(!supabaseUrl||!publishableKey)
+    return json({error:'STUDIO_CONFIG_MISSING'},503);
+  return json({supabaseUrl,publishableKey,version:'0.9.0'});
+}
+export function POST(){
+  return json({error:'METHOD_NOT_ALLOWED'},405);
 }
