@@ -202,7 +202,7 @@ begin
      'url',case when v_custom then t.channel_url else null end,
      'reward_f',v_f,'reward_xp',v_xp,'target',v_target,'progress',v_progress,
      'claimed',v_claimed,'ready',not v_claimed and not v_custom and v_progress>=v_target,
-     'rerollable',not v_custom and not v_claimed and not v_used);
+     'rerollable',not v_custom and not v_claimed and not v_used and v_progress<v_target);
    if t.scope='daily' then daily_tasks:=daily_tasks||jsonb_build_array(v_task);
    else weekly_tasks:=weekly_tasks||jsonb_build_array(v_task);end if;
  end loop;
@@ -242,6 +242,10 @@ begin
  select * into v_assignment from public.flip_task_assignments a where
   a.telegram_id=p_telegram_id and a.scope=p_scope and a.slot=p_slot and a.period_start=v_period for update;
  if not found then raise exception 'TASK_ASSIGNMENT_MISSING'; end if;
+ if exists(select 1 from public.flip_task_templates tt where tt.task_key=v_assignment.task_key
+    and public.flip_metric_progress(p_telegram_id,p_scope,tt.metric)>=tt.target) then
+   raise exception 'TASK_REROLL_FORBIDDEN';
+ end if;
  select task_key into v_next from public.flip_task_templates tt
    where tt.scope=p_scope and tt.slot=p_slot and tt.active and tt.task_key<>v_assignment.task_key
      and tt.min_level<=p.level and (tt.max_level is null or p.level<=tt.max_level)
