@@ -310,6 +310,20 @@ function updateCollectionGallery(){
   const sort=document.querySelector('#screen [data-collection-gallery-sort]')?.value||'rarity';
   const rarityOrder={common:0,rare:1,epic:2,legendary:3,mythic:4,hidden:5};
   const tiles=[...host.querySelectorAll('[data-gallery-item]')];
+  // Recount independently for every rarity. A search may narrow these counts,
+  // but switching the selected rarity must never copy the global total.
+  const filteredBySearch=tiles.filter(tile=>!q||
+    String(tile.dataset.filterable||'').toLocaleLowerCase('ru-RU').includes(q));
+  const counts=Object.create(null);
+  for(const tile of filteredBySearch){
+    const rarity=tile.dataset.galleryRarity;
+    counts[rarity]=(counts[rarity]||0)+1;
+  }
+  for(const button of document.querySelectorAll('#screen [data-collection-gallery-filter]')){
+    const rarity=button.dataset.collectionGalleryFilter;
+    const node=button.querySelector('[data-gallery-filter-count]');
+    if(node)node.textContent=String(rarity==='all'?filteredBySearch.length:(counts[rarity]||0));
+  }
   tiles.sort((a,b)=>{
     if(sort==='quantity')return Number(b.dataset.galleryCount||0)-Number(a.dataset.galleryCount||0)||
       (a.dataset.galleryName||'').localeCompare(b.dataset.galleryName||'','ru');
