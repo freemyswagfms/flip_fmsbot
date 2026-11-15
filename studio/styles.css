@@ -103,6 +103,12 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{
 .art-slot{border:1px solid #3d5241;background:#121b14;border-radius:14px;padding:11px;min-width:0;transition:border-color .2s}
 .art-slot:hover{border-color:#9abc8b}
 .art-slot.has-art{border-color:#4a7250}
+.art-slot.paste-selected{border-color:#bbfa72;box-shadow:0 0 0 1px #bbfa7250,inset 0 0 28px #bbfa7207}
+.art-slot .paste-select{margin-top:7px;color:#b9d6b1}
+.art-slot.paste-selected .paste-select{background:#293d22;border-color:#9edb64;color:#e1ffbc}
+.paste-instructions{font-size:12px;line-height:1.7;color:#b6c5ae;background:#172317;border:1px dashed #5b8154;border-radius:12px;padding:12px 15px;margin:14px 0 16px;display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.paste-instructions strong{color:#d4ff9b}
+
 .art-preview{width:100%;aspect-ratio:1;border-radius:10px;background:radial-gradient(circle,#29412d,#111b14);display:grid;place-items:center;overflow:hidden;position:relative}
 .art-preview img{display:block;width:100%;height:100%;object-fit:cover}
 .art-preview svg{height:30px;width:30px;color:#557456}

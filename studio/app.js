@@ -56,6 +56,7 @@ const s={db:null,user:null,member:null,artists:[],releases:[],variants:[],audit:
  importPage:0,importCount:0,importError:'',crop:null,
  thumbs:new Map(),ownerTicket:(()=>{try{return localStorage.getItem('flip_studio_claim')||''}catch{return ''}})()};
 let toastTimer=null;
+let clipboardRarity=null,clipboardRelease=null;
 let inviteCodePending=false;
 let emailRequestPending=false,emailCooldownUntil=0,emailUnlockTimer=null;
 const app=$('#app');
@@ -280,11 +281,18 @@ function editor(){
  button('Music Importer','nav-import',true)+'</div>';
  s.selectedRelease=release.id;
  const own=releaseVariants(release.id);
+ // Pick the first missing artwork on initial entry; user may select a different
+ // target for Ctrl+V. Never accidentally reuse a slot from another release.
+ if(clipboardRelease!==release.id||!rarities.some(r=>r.id===clipboardRarity)){
+  clipboardRelease=release.id;
+  clipboardRarity=mainRarities.find(r=>!own.some(v=>v.rarity===r))||'common';
+ }
  const count=releaseProgress(release.id),complete=count===5;
  const art=rarities.map(r=>{
   const v=own.find(x=>x.rarity===r.id);
   const image=v?(v.public_url||s.thumbs.get(v.thumbnail_path)):'';
-  return '<div class="art-slot '+(v?'has-art':'')+'"><div class="art-preview">'+
+  return '<div data-art-slot="'+r.id+'" class="art-slot '+(v?'has-art ':'')+
+    (clipboardRarity===r.id?'paste-selected':'')+'"><div class="art-preview">'+
     (image?'<img src="'+esc(image)+'" loading="lazy" alt="'+esc(r.label)+'">':
      ico(v?'loader':'image',35))+
     (v?'<span class="tag published">✓ WEBP</span>':'')+
@@ -293,7 +301,10 @@ function editor(){
     (release.status==='published'?
       '<button type="button" class="button ghost" disabled>Опубликовано</button>':
       '<button type="button" class="button" data-upload-rarity="'+r.id+'">'+
-      ico(v?'image':'upload')+(v?' Заменить':' Загрузить')+'</button>')+'</div>';
+      ico(v?'image':'upload')+(v?' Заменить':' Загрузить')+'</button>'+
+      '<button type="button" class="button ghost paste-select" data-paste-rarity="'+r.id+
+      '" aria-pressed="'+(clipboardRarity===r.id?'true':'false')+'">'+ico('copy')+
+      (clipboardRarity===r.id?' Выбрано · Ctrl+V':' Вставить · Ctrl+V')+'</button>')+'</div>';
  }).join('');
  const right='<aside class="panel editor-side"><div class="panel-title"><h3>Данные релиза</h3>'+tag(release.status)+'</div>'+
    '<div class="field"><label>Исполнитель</label><input class="input" readonly value="'+
@@ -327,6 +338,11 @@ function editor(){
     esc(artistName(r.artist_id)+' — '+r.title)+'</option>').join('')+'</select>'+
   (release.status!=='published'?'<button class="button" data-action="bulk-start">'+ico('upload')+
     ' Пакетная загрузка 5 файлов</button>':'')+'</div>'+
+  (release.status!=='published'?
+  '<p class="paste-instructions">'+ico('copy',15)+
+  ' Скопируй изображение (Ctrl+C), выбери редкость и нажми Ctrl+V. Сейчас: <strong id="paste-target-label">'+
+  esc(rarities.find(x=>x.id===clipboardRarity)?.label||'Common')+'</strong>. '+
+  'Поддерживаются PNG, JPEG и WebP до 15 МБ. На Mac: Cmd+V.</p>':'')+
   '<div class="editor-cols"><section class="panel"><div class="panel-title"><h3>'+
   esc(release.title)+'</h3><small>'+count+'/5 READY</small></div>'+
   '<div class="editor-options">'+art+'</div>'+
@@ -981,6 +997,62 @@ async function refreshTeam(){
    '<div class="empty">Сотрудники ещё не приглашены.</div>');
  }catch(e){notice('Не удалось загрузить команду: '+formatError(e),true)}
 }
+function isTextPasteTarget(target){
+ return Boolean(target?.closest?.('input,textarea,select,[contenteditable="true"],[role="textbox"]'));
+}
+function pasteImageFile(data){
+ if(!data)return null;
+ // Read the image from the paste event, not from the Clipboard API:
+ // works in HTTPS Chrome/Edge and does not require extra permissions.
+ const items=Array.from(data.items||[]);
+ for(const item of items){
+  if(item.kind==='file'&&item.type?.startsWith('image/')){
+   const file=item.getAsFile?.();
+   if(file)return file;
+  }
+ }
+ return Array.from(data.files||[]).find(file=>file.type?.startsWith('image/'))||null;
+}
+function setClipboardTarget(rarity){
+ if(!rarities.some(x=>x.id===rarity)||s.current!=='editor')return;
+ const release=s.releases.find(r=>r.id===s.selectedRelease);
+ if(!release||release.status==='published')return;
+ clipboardRarity=rarity;
+ clipboardRelease=release.id;
+ document.querySelectorAll('[data-art-slot]').forEach(slot=>{
+   const active=slot.dataset.artSlot===rarity;
+   slot.classList.toggle('paste-selected',active);
+   const button=slot.querySelector('[data-paste-rarity]');
+   if(button){
+    button.setAttribute('aria-pressed',String(active));
+    button.innerHTML=ico('copy')+(active?' Выбрано · Ctrl+V':' Вставить · Ctrl+V');
+   }
+ });
+ const label=$('#paste-target-label');
+ if(label)label.textContent=rarities.find(x=>x.id===rarity)?.label||rarity;
+ notice('Выбрана редкость '+rarity.toUpperCase()+'. Скопируй изображение и нажми Ctrl+V.');
+}
+document.addEventListener('paste',event=>{
+ if(!s.member||s.current!=='editor'||s.busy||$('#studio-modal')||$('#crop-overlay'))return;
+ if(isTextPasteTarget(event.target))return; // preserve text fields & OTP
+ const file=pasteImageFile(event.clipboardData);
+ if(!file)return; // allow normal paste if clipboard has text, not an image
+ const release=s.releases.find(r=>r.id===s.selectedRelease);
+ if(!release||release.status==='published')return;
+ event.preventDefault();
+ const rarity=clipboardRelease===release.id&&rarities.some(r=>r.id===clipboardRarity)?
+  clipboardRarity:mainRarities.find(r=>!releaseVariants(release.id).some(v=>v.rarity===r))||'common';
+ if(!['image/png','image/jpeg','image/webp'].includes(file.type)){
+   notice('Этот формат картинки не поддерживается. Скопируй PNG, JPG или WebP.',true);
+   return;
+ }
+ if(file.size>15*1024*1024){
+   notice('Картинка из буфера больше 15 МБ. Выбери файл меньшего размера.',true);
+   return;
+ }
+ // Reuse the exact same crop, 1024x1024 WebP and Storage pipeline as file upload.
+ openCrop(file,rarity);
+});
 document.addEventListener('click',async event=>{
  const navTarget=event.target.closest('[data-nav]');
  if(navTarget){go(navTarget.dataset.nav);return;}
@@ -1000,9 +1072,12 @@ document.addEventListener('click',async event=>{
  }
  const release=event.target.closest('[data-edit-release]');
  if(release){s.selectedRelease=release.dataset.editRelease;go('editor');return;}
+ const pasteSlot=event.target.closest('[data-paste-rarity]');
+ if(pasteSlot){setClipboardTarget(pasteSlot.dataset.pasteRarity);return;}
  const upload=event.target.closest('[data-upload-rarity]');
  if(upload){
   uploadRarity=upload.dataset.uploadRarity;
+  clipboardRarity=uploadRarity;clipboardRelease=s.selectedRelease;
   $('#single-upload').value='';$('#single-upload').click();return;
  }
  const act=event.target.closest('[data-action]')?.dataset.action;
