@@ -15,6 +15,15 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Verify Node runtime
         run: node --version
+      - name: Install server dependencies
+        run: npm install --no-audit --no-fund
+      - name: Validate application scripts
+        run: |
+          node --check api/studio.js
+          node --check api/admin.js
+          node --check src/scripts/app.js
+          node --check src/scripts/server.js
+          node --check src/scripts/catalog.js
       - name: Run server tests
         run: node --test tests/*.test.js
 
