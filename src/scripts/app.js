@@ -80,17 +80,26 @@ function collectionArtist(){return window.FLIPCollection.artist(state,collection
 function collectionRelease(){return window.FLIPCollection.release(state,collectionArtistId,collectionReleaseId)}
 function collectionHistory(){return window.FLIPCollection.history(state)}
 function catalogView(){
-  const artist=catalog.artists[0];
-  return `<div class="panel"><button class="link" data-action="collection">← К КОЛЛЕКЦИИ</button>
-  <span class="eyebrow">CATALOG / FIRST ARTIST</span><h2>PLAYBOI CARTI<span style="color:var(--lime)">.</span></h2>
-  <p class="desc">Все 25 вариантов из твоего архива. Здесь можно оценить стили, даже если карточка ещё не выпадала. Просмотр не добавляет карточки в коллекцию.</p>
-  <div class="chips"><span class="chip active">5 РЕЛИЗОВ</span><span class="chip">25 ОФОРМЛЕНИЙ</span></div>
-  ${artist.releases.map(release=>`<section class="catalog-release"><div class="collection-heading"><h3>${escapeHtml(release.title)}</h3><span>${release.year||'АРХИВ'}</span></div>
-    <div class="square-grid catalog-grid">${catalog.rarities.map(rarity=>{
-      const card=catalog.getCard(artist.id,release.id,rarity);
-      return `<button type="button" class="catalog-tile" data-catalog-release="${escapeHtml(release.id)}" data-catalog-rarity="${rarity}" aria-label="Посмотреть ${escapeHtml(card.title)}, ${escapeHtml(card.rarity)}">${sq(card)}<span class="catalog-tile-label rarity-${rarity}">${escapeHtml(card.rarity)}</span></button>`;
-    }).join('')}</div></section>`).join('')}
-  <p class="note">In Abundance добавлен из твоего набора изображений. Отнесение к официальным релизам уточним при финальной проверке дискографии.</p></div>`;
+  const artistList=catalog.artists.filter(a=>a.active!==false);
+  const releases=artistList.flatMap(artist=>artist.releases.filter(r=>r.active!==false)
+    .map(release=>({artist,release})));
+  return '<div class="panel"><button class="link" data-action="collection">← К КОЛЛЕКЦИИ</button>'+
+   '<span class="eyebrow">CATALOG / PUBLISHED ARTWORK</span><h2>КАТАЛОГ<span style="color:var(--lime)">.</span></h2>'+
+   '<p class="desc">Все опубликованные релизы. Просмотр оформления не добавляет карточки в коллекцию. Новые обложки появляются после публикации в FLIP STUDIO.</p>'+
+   '<div class="chips"><span class="chip active">'+artistList.length+' АРТИСТОВ</span>'+
+   '<span class="chip">'+releases.length+' РЕЛИЗОВ</span></div>'+
+   releases.map(({artist,release})=>'<section class="catalog-release">'+
+     '<div class="collection-heading"><h3>'+escapeHtml(artist.name+' — '+release.title)+
+     '</h3><span>'+escapeHtml(String(release.year||'АРХИВ'))+'</span></div>'+
+     '<div class="square-grid catalog-grid">'+catalog.rarities.map(rarity=>{
+       const card=catalog.getCard(artist.id,release.id,rarity);
+       return '<button type="button" class="catalog-tile" data-catalog-artist="'+escapeHtml(artist.id)+
+        '" data-catalog-release="'+escapeHtml(release.id)+'" data-catalog-rarity="'+rarity+
+        '" aria-label="Посмотреть '+escapeHtml(card.title)+', '+escapeHtml(card.rarity)+'">'+
+        sq(card)+'<span class="catalog-tile-label rarity-'+rarity+'">'+escapeHtml(card.rarity)+
+        '</span></button>';
+     }).join('')+'</div></section>').join('')+
+   '<p class="note">Каталог синхронизируется при входе в игру. Карточки из старых релизов сохраняют свои идентификаторы.</p></div>';
 }
 
 function trades(){return '<div class="panel"><span class="eyebrow">PLAYER TO PLAYER / 003</span><h2>ОБМЕНЫ<span style="color:var(--lime)">.</span></h2><p class="desc">Реальные обмены от 1 до 5 карточек с каждой стороны, встречные предложения и предварительный расчёт CP.</p><div id="flip-trades-root"></div></div>'}
@@ -310,8 +319,8 @@ function collectionViewerCards(historyMode=false,hiddenOnly=false){
   if(visible.length)return visible;
   return [...records.owned.values(),...hidden];
 }
-function showCatalogCard(release,rarity){
-  const card=catalog.getCard('carti',release,rarity);
+function showCatalogCard(artistId,release,rarity){
+  const card=catalog.getCard(artistId,release,rarity);
   if(!card)return;
   const all=catalog.artists.flatMap(artist=>
     artist.releases.flatMap(item=>catalog.rarities.map(r=>catalog.getCard(artist.id,item.id,r))))
@@ -427,7 +436,7 @@ document.addEventListener('click',e=>{
   if(historyCardTarget){showOwnedCard(historyCardTarget.dataset.historyCard,true);return}
   const hiddenTarget=e.target.closest('[data-hidden-card]');
   if(hiddenTarget){showHiddenCard(hiddenTarget.dataset.hiddenCard);return;}
-  const tab=e.target.closest('[data-tab]');if(tab){render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks'].includes(a))render(a);else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn'))previewRoulette();if(e.target.closest('#buyPackBtn'))doPack();if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))render('store');if(e.target.closest('#bellBtn'))$('#notifications').classList.toggle('show');if(e.target.closest('#closeNotifications'))$('#notifications').classList.remove('show');if(e.target.closest('#resetBtn')){if(live()||blocked())return;localStorage.removeItem('flip_demo');localStorage.removeItem('flip20_demo');Object.assign(state,{...initial,dropReadyAt:Date.now(),received:[],discovered:[],claimedTasks:[]});save();render('profile');toast('Демо сброшено — бесплатный дроп доступен')};const t=e.target.closest('[data-task]');if(t)handleTask(+t.dataset.task);if(e.target.closest('#levelQuick'))render('profile')});
+  const tab=e.target.closest('[data-tab]');if(tab){render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks'].includes(a))render(a);else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogArtist||'carti',b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn'))previewRoulette();if(e.target.closest('#buyPackBtn'))doPack();if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))render('store');if(e.target.closest('#bellBtn'))$('#notifications').classList.toggle('show');if(e.target.closest('#closeNotifications'))$('#notifications').classList.remove('show');if(e.target.closest('#resetBtn')){if(live()||blocked())return;localStorage.removeItem('flip_demo');localStorage.removeItem('flip20_demo');Object.assign(state,{...initial,dropReadyAt:Date.now(),received:[],discovered:[],claimedTasks:[]});save();render('profile');toast('Демо сброшено — бесплатный дроп доступен')};const t=e.target.closest('[data-task]');if(t)handleTask(+t.dataset.task);if(e.target.closest('#levelQuick'))render('profile')});
 $('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#notifications').classList.remove('show')}});window.addEventListener('flip-trade-completed',async()=>{
   if(!live())return;
   try{

@@ -87,6 +87,9 @@
     if(!root||!root.isConnected)return;
     const isCard=s.rewardKind==='card';
     root.innerHTML=[
+      '<section class="flip-admin-section flip-admin-studio-link"><div class="flip-admin-section-heading"><h3>FLIP STUDIO</h3></div>',
+      '<p class="flip-admin-hint">Отдельный редактор музыки и обложек. Выдача карточек, XP и F остаётся здесь.</p>',
+      '<button class="outlinebtn" type="button" data-admin-studio>ОТКРЫТЬ FLIP STUDIO ↗</button></section>',
       '<section class="flip-admin-section"><div class="flip-admin-section-heading"><h3>01 / ПОЛУЧАТЕЛЬ</h3>',
       '<button type="button" class="outlinebtn" data-admin-self>СЕБЕ</button></div>',
       '<div class="flip-admin-search"><input id="flip-admin-search" maxlength="64" placeholder="Имя, @username или ID" value="',E(s.q),
@@ -200,8 +203,16 @@
       draw();
     }
   }
-  function click(e){
+  async function click(e){
     const b=e.target.closest('button');if(!b||!root.contains(b))return;
+    if(b.hasAttribute('data-admin-studio')){
+      try{
+        const r=await call('studio_ticket');
+        if(tg?.openLink)tg.openLink(r.url);
+        else window.open(r.url,'_blank','noopener,noreferrer');
+      }catch(e){s.error=true;s.message='Не удалось открыть FLIP STUDIO: '+e.message;draw()}
+      return;
+    }
     if(b.hasAttribute('data-admin-self')){s.recipient=selfId();s.message='';draw();return;}
     if(b.hasAttribute('data-admin-user')){s.recipient=b.dataset.adminUser;s.message='';draw();return;}
     if(b.hasAttribute('data-admin-search')){s.message='';load('players');return;}

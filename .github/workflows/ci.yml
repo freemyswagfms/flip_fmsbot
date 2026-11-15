@@ -15,5 +15,36 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Verify Node runtime
         run: node --version
+      - name: Install server dependencies
+        run: npm install --no-audit --no-fund
+      - name: Validate application scripts
+        run: |
+          node --check api/studio.js
+          node --check api/admin.js
+          node --check src/scripts/app.js
+          node --check src/scripts/server.js
+          node --check src/scripts/catalog.js
       - name: Run server tests
         run: node --test tests/*.test.js
+
+  studio-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: studio
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Validate JS modules and production functions
+        run: |
+          node --check app.js
+          node --check api/owner.js
+          node --check api/manage.js
+          node --check api/music.js
+          node --check lib/shared.js
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build FLIP STUDIO
+        run: npm run build

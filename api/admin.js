@@ -2,6 +2,7 @@
  * A hidden UI is not authorization: each request must pass Telegram HMAC and owner ID.
  */
 import { validateTelegramInitData, isFlipAdmin } from './flip.js';
+import { createHmac, randomUUID } from 'node:crypto';
 
 const json=(value,status=200)=>new Response(JSON.stringify(value),{
   status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store',
@@ -46,6 +47,16 @@ export async function handleAdminRequest(request){
     const db=settings();
     if(request.method==='GET'){
       const view=url.searchParams.get('view')||'players';
+      if(view==='studio_ticket'){
+        // A short-lived, one-time owner pairing link. Available only after
+        // Telegram initData HMAC verification and exact owner Telegram ID.
+        const payload={v:1,scope:'studio_owner',n:randomUUID(),
+          t:String(user.telegram_id),e:Date.now()+5*60*1000};
+        const part=Buffer.from(JSON.stringify(payload)).toString('base64url');
+        const mac=createHmac('sha256',db.key).update('flip-studio-v1:'+part).digest('base64url');
+        const ticket=part+'.'+mac;
+        return json({url:'https://flip-studio-six.vercel.app/?claim='+encodeURIComponent(ticket)});
+      }
       if(view==='players'){
         const q=(url.searchParams.get('q')||'').trim();
         if(q.length>64)return json({error:'BAD_REQUEST'},400);

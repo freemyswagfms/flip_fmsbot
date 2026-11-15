@@ -21,8 +21,9 @@
     const catalog=window.FLIPCatalog;
     for(const item of snapshot.inventory){
       const parts=String(item.id).split('/');
-      const card=parts.length===3&&parts[0]==='carti'?catalog.getCard(parts[0],parts[1],parts[2]):
-        (item.id==='demo/hidden/archive-001'?{id:item.id,title:'ARCHIVE 001',artist:'FLIP // SECRET',rarity:'Hidden',color:'hidden'}:null);
+      const card=item.id==='demo/hidden/archive-001'?
+        {id:item.id,title:'ARCHIVE 001',artist:'FLIP // SECRET',rarity:'Hidden',color:'hidden'}:
+        (parts.length===3?catalog.getCard(parts[0],parts[1],parts[2]):null);
       if(!card)continue;
       const count=Math.min(10000,Math.max(0,Number(item.count)||0));
       const ranked=Math.max(0,Math.min(count,Number(item.ranked_count??count)||0));
@@ -41,7 +42,7 @@
   }
   bridge.connect=async()=>{
     if(!initData){bridge.mode=telegramClient?'blocked':'demo';bridge.error=telegramClient?'NO_TELEGRAM_AUTH':'OUTSIDE_TELEGRAM';return null;}
-    try{const data=await request();bridge.mode='server';bridge.error=null;bridge.profile=data.profile||null;bridge.isAdmin=data.admin===true;return makeState(data.state);}
+    try{const data=await request();if(data.catalog)window.FLIPCatalog?.importServerCatalog?.(data.catalog);bridge.mode='server';bridge.error=null;bridge.profile=data.profile||null;bridge.isAdmin=data.admin===true;return makeState(data.state);}
     catch(error){
       // Never switch an authenticated Telegram user back to writable browser currency.
       bridge.mode='blocked';bridge.error=error.message;return null;

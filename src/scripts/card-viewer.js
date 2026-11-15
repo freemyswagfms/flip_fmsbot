@@ -54,7 +54,11 @@
     const title=String(card.title||'Неизвестный релиз');
     const artist=String(card.artist||'FLIP');
     const src=card.art;
-    const art=typeof src==='string'&&/^\.\/src\/assets\/[a-zA-Z0-9/_-]+\.webp(?:\?[a-zA-Z0-9=&_-]+)?$/.test(src)?
+    const safeLocal=typeof src==='string'&&
+      /^\.\/src\/assets\/[a-zA-Z0-9/_-]+\.webp(?:\?[a-zA-Z0-9=&_-]+)?$/.test(src);
+    const safePublished=typeof src==='string'&&
+      /^https:\/\/sodhvekjhlmbhnrkmkzb\.supabase\.co\/storage\/v1\/object\/public\/flip-artwork\/[a-zA-Z0-9/_-]+\.webp$/.test(src);
+    const art=(safeLocal||safePublished)?
       '<img class="flip-viewer-image" draggable="false" src="'+esc(src)+
         '" alt="'+esc(artist+' — '+title+', '+look.label)+'">' :
       '<div class="flip-viewer-placeholder" aria-label="Изображение отсутствует">FLIP<span>?</span></div>';
