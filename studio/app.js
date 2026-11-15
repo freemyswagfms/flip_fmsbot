@@ -1,7 +1,7 @@
 import './styles.css';
 import {createClient} from '@supabase/supabase-js';
 
-/* FLIP STUDIO v0.9.0 — creative workspace. All privileged writes use RLS or
+/* FLIP STUDIO v0.9.1 — creative workspace. All privileged writes use RLS or
    authenticated server functions; no secret/service-role keys in this bundle. */
 const $=selector=>document.querySelector(selector);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
