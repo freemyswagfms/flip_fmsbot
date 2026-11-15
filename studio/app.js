@@ -854,7 +854,7 @@ async function populateThumbnails(){
  const id=s.selectedRelease;
  const current=releaseVariants(id).filter(v=>!v.public_url&&!s.thumbs.has(v.thumbnail_path));
  await Promise.all(current.map(async v=>{try{await variantPreview(v)}catch{}}));
- if(s.current==='editor'&&s.selectedRelease===id)renderThumbnailDOM(id);
+ if(s.current==='editor'&&s.editorMode==='draft'&&s.selectedRelease===id)renderThumbnailDOM(id);
 }
 function renderThumbnailDOM(id){
  for(const v of releaseVariants(id)){
