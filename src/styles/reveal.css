@@ -138,3 +138,19 @@
 
 /* The selected rarity only becomes visible once the reel settles. */
 .flip-reveal:is([data-phase="settle"],[data-phase="flip"],[data-phase="result"]){--flip-stage-accent:var(--flip-rarity)}
+
+/* The Hidden frame continues glitching while the final awarded card remains
+   visible, including the full-size result with information below it. */
+.flip-reveal[data-rarity="hidden"][data-phase="result"] .flip-face-front{
+  border-color:#e9f6f4;
+  animation:flip-hidden-frame-live 3.2s steps(1,end) infinite;
+}
+.flip-reveal[data-rarity="hidden"][data-phase="result"] .flip-face-front::after{
+  animation:flip-hidden-frame-live 3.2s steps(1,end) infinite;
+}
+@media(prefers-reduced-motion:reduce){
+  .flip-reveal[data-rarity="hidden"][data-phase="result"] .flip-face-front,
+  .flip-reveal[data-rarity="hidden"][data-phase="result"] .flip-face-front::after{
+    animation:none!important;
+  }
+}
