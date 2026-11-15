@@ -56,6 +56,7 @@ const s={db:null,user:null,member:null,artists:[],releases:[],variants:[],audit:
  importPage:0,importCount:0,importError:'',crop:null,
  thumbs:new Map(),ownerTicket:(()=>{try{return localStorage.getItem('flip_studio_claim')||''}catch{return ''}})()};
 let toastTimer=null;
+let inviteCodePending=false;
 let emailRequestPending=false,emailCooldownUntil=0,emailUnlockTimer=null;
 const app=$('#app');
 
@@ -75,7 +76,8 @@ function formatError(e){
   'INVALID_OWNER_TICKET':'Ссылка активации истекла. Получи новую в FLIP.',
   'ALREADY_CLAIMED':'Ссылка уже использована. Получи новую в FLIP.',
   'STUDIO_CONFIG_MISSING':'Сайт ещё не настроен. Требуется подключение Supabase.',
-  'EMAIL_DELIVERY_UNAVAILABLE':'Приглашение не отправилось. Проверь SMTP в Supabase Auth.'
+  'EMAIL_DELIVERY_UNAVAILABLE':'Встроенная отправка почты ограничена. Используй код приглашения.',
+ 'INVITE_LINK_UNAVAILABLE':'Не удалось создать код приглашения. Проверь доступ и попробуй ещё раз.'
  };
  if(/only request this after|rate limit|too many requests/i.test(msg))
   return 'Слишком частая отправка. Подожди немного и проверь, не пришло ли первое письмо.';
@@ -214,8 +216,8 @@ function importer(){
  if(s.importArtist){
   results='<div class="import-toolbar"><div><div class="page-kicker">SELECTED ARTIST</div>'+
    '<h3 style="margin:8px 0 4px;font:800 21px Space Grotesk">'+esc(s.importArtist.name)+'</h3>'+
-   '<p class="hint">'+esc(s.importArtist.country||s.importArtist.disambiguation||'MusicBrainz')+
-   ' · '+s.importCount+' найденных записей</p></div>'+
+   '<p class="hint">'+esc(s.importArtist.country||s.importArtist.disambiguation||'Музыкальный каталог')+
+   ' · '+s.importCount+' найденных записей · '+esc(s.importSource||s.importArtist.source||'MusicBrainz')+'</p></div>'+
    '<button class="button sm ghost" data-action="import-reset">'+ico('chevron-left')+' Выбрать другого</button></div>'+
    (s.importReleases.length?'<div class="import-toolbar"><div class="hint">Выбрано: <b>'+
    s.importSelected.size+'</b> / '+s.importReleases.length+'</div>'+
@@ -229,7 +231,7 @@ function importer(){
    esc(item.date||'Дата неизвестна')+' · '+esc(item.type.toUpperCase())+'</small></span>'+
    '<span class="tag">'+esc(item.type.toUpperCase())+'</span></label>').join('')+'</div>'+
    '<div class="import-toolbar" style="margin-top:17px"><div>'+
-   (s.importReleases.length>=100?button('Показать больше','import-more'):'')+'</div>'+
+   (s.importReleases.length>=100&&s.importSource!=='iTunes'&&s.importPage*100<s.importCount?button('Показать больше','import-more'):'')+'</div>'+
    '<button class="button primary" data-action="import-selected" '+(!s.importSelected.size||s.busy?'disabled':'')+'>'+
    ico('upload')+' Импортировать ('+s.importSelected.size+')</button></div>':
    '<div class="empty">Найденных релизов пока нет. Попробуй обновить поиск.</div>');
@@ -239,10 +241,10 @@ function importer(){
    s.importArtists.map(a=>'<button class="import-artist" data-import-artist="'+esc(a.id)+'">'+
     '<span class="artist-initial">'+esc(a.name.slice(0,1))+'</span><span style="flex:1">'+
     '<strong>'+esc(a.name)+'</strong><small>'+esc([a.country,a.disambiguation].filter(Boolean).join(' · ')||'Исполнитель')+
-    '</small></span><span class="tag">'+(a.score||'—')+'% MATCH</span>'+
+    '</small></span><span class="tag">'+esc(a.source||'MusicBrainz')+'</span>'+
     ico('chevron-right')+'</button>').join('');
  }else results='<div class="empty">'+ico('search')+'<strong>Найди артиста</strong>'+
- '<p>Поиск по MusicBrainz. SoundCloud полностью исключён.<br>После выбора загружаем дискографию для пакетного импорта.</p></div>';
+ '<p>Поиск по MusicBrainz с автоматическим резервным источником iTunes.<br>SoundCloud исключён. После выбора артиста можно импортировать найденные релизы.</p></div>';
  return pageHead('DISCOVERY / 004','Music Importer',
   'Импортируй названия, типы и даты релизов из музыкальных каталогов, без ручного набора. Ты решаешь, что публиковать.')+
   importStage(stage)+'<section class="panel"><div class="import-search">'+
@@ -251,9 +253,11 @@ function importer(){
   '" placeholder="Например, Playboi Carti" autocomplete="off"></div>'+
   '<button class="button primary" data-action="import-find" '+(s.busy?'disabled':'')+'>'+
   ico('search')+' Найти</button></div>'+
+  (s.busy?'<p class="hint">Ищем музыку в каталогах…</p>':'')+
   (s.importError?'<p style="color:var(--danger)">'+esc(s.importError)+'</p>':'')+
+  (!s.busy&&s.importSource==='iTunes'?'<p class="hint">MusicBrainz недоступен или не дал результатов. Показаны данные iTunes; перед импортом проверь типы релизов.</p>':'')+
   results+'</section><p class="hint" style="margin-top:18px">'+ico('info',14)+
-  ' Редкие и альтернативные издания иногда отсутствуют в MusicBrainz. Их можно добавить вручную.'+
+  ' Редкие и альтернативные издания могут отсутствовать в MusicBrainz и iTunes. Их можно добавить вручную.'+
   ' Система никогда не импортирует аудиофайлы.</p>';
 }
 async function variantPreview(v){
@@ -339,8 +343,8 @@ function team(){
     '<select class="input" id="invite-role"><option value="editor">Editor — черновики и изображения</option>'+
     '<option value="admin">Admin — также публикация</option></select></div>'+
     '<button class="button primary full" data-action="invite-send" style="margin-top:17px">'+
-    ico('plus')+' Создать ссылку-приглашение</button>'+
-    '<p class="hint">Письмо не требуется. Ссылка создаётся сервером только для Owner. Отправь её сотруднику лично — любой, кто получит ссылку, сможет войти под приглашённым аккаунтом. Право Owner через приглашение не выдаётся.</p></section>'+
+    ico('plus')+' Создать код приглашения</button>'+
+    '<p class="hint">SMTP не нужен. Код выдаётся только владельцу и используется сотрудником на экране входа. Любой, кто получит код, сможет войти под этим аккаунтом: отправляй его лично. Роль Owner не выдаётся.</p></section>'+
     '<section class="panel"><div class="panel-title"><h3>Участники</h3>'+
     '<button class="button sm ghost" data-action="team-refresh">Обновить</button></div>'+
     '<div id="team-members">'+loadingMarkup('Загружаем список команды…')+'</div></section></div>';
@@ -376,10 +380,19 @@ function authScreen(message=''){
   '<div class="hint">PRIVATE WORKSPACE · SUPABASE AUTH · VERCEL</div></div>'+
   '<div class="auth-right"><div class="auth-box"><div class="page-kicker">SECURE ACCESS</div>'+
   '<h2>Вход в FLIP STUDIO</h2>'+
-  '<p>Введи email. Мы отправим защищённую ссылку для входа. Доступ к редакционным данным появится после приглашения или подтверждения владельца.</p>'+
-  '<label class="field"><span class="hint">EMAIL</span><input id="auth-email" class="input" type="email" autocomplete="email" placeholder="you@example.com"></label>'+
-  '<button class="button primary full" data-action="auth-email" '+(!s.db||emailRequestPending||Date.now()<emailCooldownUntil?'disabled':'')+'>'+ico('arrow-right')+
-  (emailRequestPending?' Отправляем письмо…':Date.now()<emailCooldownUntil?' Письмо запрошено':' Продолжить с email')+'</button>'+
+  '<p>Получил приглашение от владельца? Вставь одноразовый код. Email и SMTP не потребуются.</p>'+
+  '<label class="field"><span class="hint">КОД ПРИГЛАШЕНИЯ</span>'+
+  '<input id="studio-invite-code" type="password" class="input" autocomplete="off" '+
+  'placeholder="Вставь код от владельца FLIP STUDIO"></label>'+
+  '<button class="button primary full" data-action="auth-invite-code" '+(!s.db||inviteCodePending?'disabled':'')+'>'+
+  ico('shield')+' Войти по приглашению</button>'+
+  '<div style="border-top:1px solid #3b513d;margin-top:23px;padding-top:20px" class="field">'+
+  '<label>ВХОД ПО EMAIL · ТРЕБУЕТ РАБОТАЮЩЕЙ ПОЧТЫ</label>'+
+  '<input id="auth-email" class="input" type="email" autocomplete="email" placeholder="you@example.com">'+
+  '<button class="button full ghost" data-action="auth-email" '+(!s.db||emailRequestPending||Date.now()<emailCooldownUntil?'disabled':'')+'>'+
+  ico('arrow-right')+
+  (emailRequestPending?' Отправляем письмо…':Date.now()<emailCooldownUntil?' Письмо запрошено':' Запросить письмо')+
+  '</button><p class="hint">Для приглашённых участников рекомендуем код выше. Почтовый вход ограничен Supabase.</p></div>'+
   (message?'<p style="color:var(--warning)">'+esc(message)+'</p>':'')+
   (!s.db?'<button class="button full ghost" data-action="boot-retry" style="margin-top:10px">'+
   ico('history')+' Повторить подключение</button>':'')+
@@ -480,6 +493,35 @@ async function signIn(){
   }
  }
 }
+
+async function acceptInviteCode(){
+ if(inviteCodePending||!s.db)return;
+ const secret=String($('#studio-invite-code')?.value||'').trim();
+ const match=/^(invite|magiclink)\.([a-zA-Z0-9_-]{32,256})$/.exec(secret);
+ if(!match)return notice('Вставь полный код приглашения, полученный от владельца.',true);
+ inviteCodePending=true;
+ const btn=$('[data-action="auth-invite-code"]');
+ if(btn){btn.disabled=true;btn.textContent='Проверяем код…'}
+ try{
+   // verifyOtp redeems the hashed token directly, with no SMTP or GET link
+   // that could be prematurely consumed by Telegram previews.
+   const {data,error}=await s.db.auth.verifyOtp({token_hash:match[2],type:match[1]});
+   if(error)throw error;
+   if(!data?.session)throw new Error('Сессия не создана. Запроси новый код у владельца.');
+   const field=$('#studio-invite-code');if(field)field.value='';
+   await refreshIdentity();
+   notice('Успешный вход в FLIP STUDIO.');
+ }catch(e){
+   const msg=String(e?.message||'');
+   const meaningful=/expired|invalid|used|not found|otp/i.test(msg)?
+     'Код устарел или уже использован. Попроси владельца создать новый.':
+     'Не удалось войти по коду: '+formatError(e);
+   notice(meaningful,true);
+ }finally{
+   inviteCodePending=false;
+   if(btn?.isConnected){btn.disabled=false;btn.innerHTML=ico('shield')+' Войти по приглашению'}
+ }
+}
 async function claimOwner(){
  const ticket=String($('#owner-claim-code')?.value||'').trim()||s.ownerTicket;
  if(!ticket)return notice('Вставь код владельца из админки FLIP.',true);
@@ -565,12 +607,20 @@ async function createRelease(){
  }catch(e){notice(formatError(e),true)}
 }
 async function findArtists(){
+ if(s.busy)return;
  if(s.importQ.trim().length<2)return notice('Введите хотя бы две буквы.',true);
- s.busy=true;s.importError='';
+ s.busy=true;s.importError='';s.importArtists=[];s.importArtist=null;
+ s.importReleases=[];s.importSelected.clear();s.importSource='';
+ render();
  try{
-  const {artists}=await invoke('music?kind=artists&q='+encodeURIComponent(s.importQ.trim()));
-  s.importArtists=artists||[];s.importArtist=null;s.importReleases=[];s.importSelected.clear();
- }catch(e){s.importError=formatError(e);notice(s.importError,true)}
+  const result=await invoke('music?kind=artists&q='+encodeURIComponent(s.importQ.trim()));
+  s.importArtists=result.artists||[];
+  s.importSource=result.source||'MusicBrainz';
+  if(!s.importArtists.length)notice('Исполнители не найдены. Попробуй другое написание.');
+ }catch(e){
+  s.importArtists=[];s.importError='Каталоги временно недоступны. Попробуй позже или добавь артиста вручную.';
+  notice(s.importError,true);
+ }
  s.busy=false;render();
 }
 async function selectMusicArtist(id){
@@ -583,10 +633,11 @@ async function fetchReleases(more=false){
  s.busy=true;s.importError='';
  try{
   const result=await invoke('music?kind=releases&id='+encodeURIComponent(s.importArtist.id)+
-    '&page='+s.importPage);
+    '&page='+s.importPage+'&q='+encodeURIComponent(s.importArtist.name));
   const seen=new Set(s.importReleases.map(x=>x.id));
   s.importReleases.push(...(result.releases||[]).filter(x=>!seen.has(x.id)));
   s.importCount=result.count||s.importReleases.length;
+  s.importSource=result.source||s.importArtist.source||'MusicBrainz';
   s.importPage++;
  }catch(e){s.importError=formatError(e);notice(s.importError,true)}
  s.busy=false;render();
@@ -838,36 +889,37 @@ async function bulkUpload(files){
 }
 async function inviteMember(){
  const email=String($('#invite-email')?.value||'').trim(),role=$('#invite-role')?.value||'editor';
- if(!email||!window.confirm('Создать одноразовую ссылку для '+email+' с ролью '+role+'?'))return;
+ if(!email||!window.confirm('Создать одноразовый код входа для '+email+' с ролью '+role+'?'))return;
  const btn=$('[data-action="invite-send"]');
- if(btn){btn.disabled=true;btn.textContent='Создаём ссылку…'}
+ if(btn){btn.disabled=true;btn.textContent='Создаём код…'}
  try{
   const result=await invoke('manage',{action:'invite',email,role});
-  if(!result?.url||result.delivery!=='copy_link')throw new Error('INVITE_LINK_UNAVAILABLE');
-  // Link is a bearer credential. Keep only in this transient modal, never
-  // persist it to localStorage, URL parameters, database logs or history.
-  const ticket=result.url;
-  modal('Ссылка для участника',
-   '<p class="hint">Ссылка подготовлена для <strong>'+esc(result.email)+
+  if(!result?.inviteCode||result.delivery!=='copy_code')throw new Error('INVITE_LINK_UNAVAILABLE');
+  // A credential, not a permanent invite ID. Display only in a transient
+  // dialog; never save to storage, browser history or any database column.
+  modal('Код приглашения',
+   '<p class="hint">Код создан для <strong>'+esc(result.email)+
    '</strong> с ролью <strong>'+esc(result.role.toUpperCase())+
-   '</strong>. Она одноразовая и действует ограниченное время. Отправь её только этому человеку.</p>'+
-   '<div class="field"><label>ССЫЛКА-ПРИГЛАШЕНИЕ</label>'+
-   '<input id="studio-team-invite-url" class="input" type="password" readonly value="'+esc(ticket)+'"></div>'+
-   '<p class="hint">Никакое письмо от Supabase не отправлялось. После перехода участник автоматически войдёт в STUDIO.</p>',
-   '<button class="button primary" data-action="invite-copy">'+ico('copy')+' Скопировать ссылку</button>');
-  notice('Ссылка-приглашение готова. Отправь её сотруднику.');
+   '</strong>. Отправь его лично этому человеку, не публикуй в группах.</p>'+
+   '<div class="field"><label>ОДНОРАЗОВЫЙ КОД</label>'+
+   '<input id="studio-team-invite-code" class="input" type="password" readonly value="'+
+   esc(result.inviteCode)+'"></div>'+
+   '<p class="hint">Сотрудник открывает FLIP STUDIO, вставляет этот код в поле «Код приглашения»'+
+   ' и нажимает «Войти по приглашению». Почта и SMTP не используются. Код сгорает после входа.</p>',
+   '<button class="button primary" data-action="invite-copy">'+ico('copy')+' Скопировать код</button>');
+  notice('Код создан. Отправь его сотруднику.');
   refreshTeam();
- }catch(e){notice('Не удалось создать приглашение: '+formatError(e),true)}
- finally{if(btn?.isConnected){btn.disabled=false;btn.innerHTML=ico('plus')+' Создать ссылку-приглашение'}}
+ }catch(e){notice('Не удалось создать код: '+formatError(e),true)}
+ finally{if(btn?.isConnected){btn.disabled=false;btn.innerHTML=ico('plus')+' Создать код приглашения'}}
 }
 async function copyInviteLink(){
- const field=$('#studio-team-invite-url');if(!field?.value)return;
+ const field=$('#studio-team-invite-code');if(!field?.value)return;
  try{
   await navigator.clipboard.writeText(field.value);
-  notice('Ссылка скопирована. Отправь её только приглашённому сотруднику.');
+  notice('Код скопирован. Отправь его лично приглашённому сотруднику.');
  }catch(e){
   field.type='text';field.select();
-  notice('Автоматическое копирование недоступно. Скопируй выделенную ссылку вручную.');
+  notice('Автокопирование недоступно. Скопируй выделенный код вручную.');
  }
 }
 async function refreshTeam(){
@@ -904,6 +956,7 @@ document.addEventListener('click',async event=>{
  if(act.startsWith('nav-'))return go(act.slice(4));
  switch(act){
   case 'auth-email':await signIn();break;
+  case 'auth-invite-code':await acceptInviteCode();break;
   case 'boot-retry':await boot();break;
   case 'claim-owner':await claimOwner();break;
   case 'access-refresh':try{await refreshIdentity();notice('Права обновлены.')}catch(e){notice(formatError(e),true)}break;
@@ -963,6 +1016,7 @@ document.addEventListener('input',event=>{
 document.addEventListener('keydown',event=>{
  if(event.key==='Enter'&&event.target.id==='music-search'){event.preventDefault();findArtists()}
  if(event.key==='Enter'&&event.target.id==='auth-email'){event.preventDefault();signIn()}
+ if(event.key==='Enter'&&event.target.id==='studio-invite-code'){event.preventDefault();acceptInviteCode()}
  if(event.key==='Escape'&&$('#crop-overlay')){cancelCrop()}
  else if(event.key==='Escape'&&$('#studio-modal'))closeModal();
 });
