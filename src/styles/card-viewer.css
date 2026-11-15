@@ -1,4 +1,4 @@
-/* FLIP v0.8.7.1: immersive inspection with native swipe protection and satin light-wave. */
+/* FLIP v0.8.8: immersive inspection with native swipe protection and satin light-wave. */
 .phone.flip-viewer-open{overflow:hidden}
 .phone.flip-viewer-open>.scroll{overflow:hidden}
 .phone.flip-viewer-open>:not(.flip-viewer){pointer-events:none;user-select:none}
@@ -12,7 +12,7 @@ html.flip-viewer-active,html.flip-viewer-active body{overscroll-behavior:none}
 .flip-viewer.is-closing{animation:flip-viewer-out 210ms ease-in both;pointer-events:none}
 .flip-viewer-backdrop{
   position:absolute;inset:0;
-  background:radial-gradient(ellipse 85% 65% at 50% 38%,#18271f7a 0%,transparent 82%),#050908d9;
+  background:radial-gradient(ellipse 85% 65% at 50% 38%,#18271f7a 0%,transparent 82%),#050908bf;
   -webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)
 }
 .flip-viewer-content{
@@ -68,7 +68,7 @@ html.flip-viewer-active,html.flip-viewer-active body{overscroll-behavior:none}
  background:linear-gradient(111deg,transparent 38%,#e2eeff03 44%,
  #d5e7ff17 49%,#ffffff34 51%,#fff8ed0d 56%,transparent 63%);
  filter:blur(4px);opacity:.62;
- transform:translate3d(calc(var(--flip-wave-x,0%) * .76),var(--flip-wave-y,0%),0)
+ transform:translate3d(var(--flip-wave-x,0%),var(--flip-wave-y,0%),0)
 }
 .flip-viewer-tilt.is-active .flip-viewer-wave:before,
 .flip-viewer-tilt.is-active .flip-viewer-wave:after{
