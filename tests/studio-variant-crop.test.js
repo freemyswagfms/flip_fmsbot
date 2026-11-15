@@ -39,7 +39,7 @@ test('Portrait photo is fully visible by default, without forced crop or zoom',(
  assert.equal(bitmap.height,1280);
  assert.equal(y,0);
  assert.equal(h,1024);
- assert.equal(w,614.4);
+ assert.ok(Math.abs(w-614.4)<1e-6,'portrait width should fit without cropping');
  assert.equal(x,(1024-w)/2);
  assert.ok(result.operations.some(x=>x[0]==='fillRect'),'blank margins are filled neutrally');
 });
