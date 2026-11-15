@@ -216,8 +216,8 @@ function importer(){
  if(s.importArtist){
   results='<div class="import-toolbar"><div><div class="page-kicker">SELECTED ARTIST</div>'+
    '<h3 style="margin:8px 0 4px;font:800 21px Space Grotesk">'+esc(s.importArtist.name)+'</h3>'+
-   '<p class="hint">'+esc(s.importArtist.country||s.importArtist.disambiguation||'MusicBrainz')+
-   ' · '+s.importCount+' найденных записей</p></div>'+
+   '<p class="hint">'+esc(s.importArtist.country||s.importArtist.disambiguation||'Музыкальный каталог')+
+   ' · '+s.importCount+' найденных записей · '+esc(s.importSource||s.importArtist.source||'MusicBrainz')+'</p></div>'+
    '<button class="button sm ghost" data-action="import-reset">'+ico('chevron-left')+' Выбрать другого</button></div>'+
    (s.importReleases.length?'<div class="import-toolbar"><div class="hint">Выбрано: <b>'+
    s.importSelected.size+'</b> / '+s.importReleases.length+'</div>'+
@@ -241,10 +241,10 @@ function importer(){
    s.importArtists.map(a=>'<button class="import-artist" data-import-artist="'+esc(a.id)+'">'+
     '<span class="artist-initial">'+esc(a.name.slice(0,1))+'</span><span style="flex:1">'+
     '<strong>'+esc(a.name)+'</strong><small>'+esc([a.country,a.disambiguation].filter(Boolean).join(' · ')||'Исполнитель')+
-    '</small></span><span class="tag">'+(a.score||'—')+'% MATCH</span>'+
+    '</small></span><span class="tag">'+esc(a.source||'MusicBrainz')+'</span>'+
     ico('chevron-right')+'</button>').join('');
  }else results='<div class="empty">'+ico('search')+'<strong>Найди артиста</strong>'+
- '<p>Поиск по MusicBrainz. SoundCloud полностью исключён.<br>После выбора загружаем дискографию для пакетного импорта.</p></div>';
+ '<p>Поиск по MusicBrainz с автоматическим резервным источником iTunes.<br>SoundCloud исключён. После выбора артиста можно импортировать найденные релизы.</p></div>';
  return pageHead('DISCOVERY / 004','Music Importer',
   'Импортируй названия, типы и даты релизов из музыкальных каталогов, без ручного набора. Ты решаешь, что публиковать.')+
   importStage(stage)+'<section class="panel"><div class="import-search">'+
@@ -253,9 +253,11 @@ function importer(){
   '" placeholder="Например, Playboi Carti" autocomplete="off"></div>'+
   '<button class="button primary" data-action="import-find" '+(s.busy?'disabled':'')+'>'+
   ico('search')+' Найти</button></div>'+
+  (s.busy?'<p class="hint">Ищем музыку в каталогах…</p>':'')+
   (s.importError?'<p style="color:var(--danger)">'+esc(s.importError)+'</p>':'')+
+  (!s.busy&&s.importSource==='iTunes'?'<p class="hint">MusicBrainz недоступен или не дал результатов. Показаны данные iTunes; перед импортом проверь типы релизов.</p>':'')+
   results+'</section><p class="hint" style="margin-top:18px">'+ico('info',14)+
-  ' Редкие и альтернативные издания иногда отсутствуют в MusicBrainz. Их можно добавить вручную.'+
+  ' Редкие и альтернативные издания могут отсутствовать в MusicBrainz и iTunes. Их можно добавить вручную.'+
   ' Система никогда не импортирует аудиофайлы.</p>';
 }
 async function variantPreview(v){
@@ -602,12 +604,20 @@ async function createRelease(){
  }catch(e){notice(formatError(e),true)}
 }
 async function findArtists(){
+ if(s.busy)return;
  if(s.importQ.trim().length<2)return notice('Введите хотя бы две буквы.',true);
- s.busy=true;s.importError='';
+ s.busy=true;s.importError='';s.importArtists=[];s.importArtist=null;
+ s.importReleases=[];s.importSelected.clear();s.importSource='';
+ render();
  try{
-  const {artists}=await invoke('music?kind=artists&q='+encodeURIComponent(s.importQ.trim()));
-  s.importArtists=artists||[];s.importArtist=null;s.importReleases=[];s.importSelected.clear();
- }catch(e){s.importError=formatError(e);notice(s.importError,true)}
+  const result=await invoke('music?kind=artists&q='+encodeURIComponent(s.importQ.trim()));
+  s.importArtists=result.artists||[];
+  s.importSource=result.source||'MusicBrainz';
+  if(!s.importArtists.length)notice('Исполнители не найдены. Попробуй другое написание.');
+ }catch(e){
+  s.importArtists=[];s.importError='Каталоги временно недоступны. Попробуй позже или добавь артиста вручную.';
+  notice(s.importError,true);
+ }
  s.busy=false;render();
 }
 async function selectMusicArtist(id){
@@ -620,10 +630,11 @@ async function fetchReleases(more=false){
  s.busy=true;s.importError='';
  try{
   const result=await invoke('music?kind=releases&id='+encodeURIComponent(s.importArtist.id)+
-    '&page='+s.importPage);
+    '&page='+s.importPage+'&q='+encodeURIComponent(s.importArtist.name));
   const seen=new Set(s.importReleases.map(x=>x.id));
   s.importReleases.push(...(result.releases||[]).filter(x=>!seen.has(x.id)));
   s.importCount=result.count||s.importReleases.length;
+  s.importSource=result.source||s.importArtist.source||'MusicBrainz';
   s.importPage++;
  }catch(e){s.importError=formatError(e);notice(s.importError,true)}
  s.busy=false;render();
