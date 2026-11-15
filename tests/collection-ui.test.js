@@ -92,7 +92,9 @@ function viewerRuntime(){
     setPointerCapture(){}
   }
   const phone=new FakeNode('phone'),tilt=new FakeNode('tilt'),
+    perspective=new FakeNode('perspective'),
     closeButton=new FakeNode('close'),before=new FakeNode('before');
+  tilt.parentElement=perspective;
   const background=new FakeNode('background');
   phone.children=[background];
   const swipeCalls=[];
@@ -108,7 +110,7 @@ function viewerRuntime(){
   runInNewContext(source('src/scripts/card-viewer.js'),{
     window,document,clearTimeout,setTimeout
   });
-  return {window,phone,tilt,closeButton,before,listeners,background,swipeCalls,document};
+  return {window,phone,tilt,perspective,closeButton,before,listeners,background,swipeCalls,document};
 }
 
 test('3D viewer limits rotations and safely resets on pointer release',()=>{
@@ -144,6 +146,26 @@ test('3D viewer limits rotations and safely resets on pointer release',()=>{
   assert.deepEqual(swipeCalls,[true,false]);
   assert.equal(before.focused,true);
 });
+test('Desktop hover follows stationary area and resets only when cursor leaves wrapper',()=>{
+  const {window,tilt,perspective}=viewerRuntime();
+  const card={title:'Die Lit',artist:'Playboi Carti',rarity:'mythic'};
+  window.FLIPCardViewer.open(card);
+  assert.equal(typeof perspective.listeners.mousemove,'function');
+  assert.equal(typeof perspective.listeners.mouseleave,'function');
+  perspective.listeners.mousemove({type:'mousemove',clientX:190,clientY:30});
+  assert.equal(tilt.vars['--flip-rotate-y'],'8.10deg');
+  assert.equal(tilt.vars['--flip-rotate-x'],'6.30deg');
+  assert.equal(tilt.classList.contains('is-active'),true);
+  perspective.listeners.mousemove({type:'mousemove',clientX:20,clientY:130});
+  assert.equal(tilt.vars['--flip-rotate-y'],'-7.20deg');
+  // No rotating child listener may reset the hover before wrapper exit.
+  assert.equal(typeof tilt.listeners.pointerleave,'undefined');
+  perspective.listeners.mouseleave();
+  assert.equal(tilt.vars['--flip-rotate-y'],'0deg');
+  assert.equal(tilt.classList.contains('is-active'),false);
+  window.FLIPCardViewer.close(true);
+});
+
 test('Viewer escapes untrusted labels and does not accept remote image URLs',()=>{
   const {window,phone}=viewerRuntime();
   window.FLIPCardViewer.open({title:'<img src=x onerror=alert(1)>',
@@ -158,7 +180,7 @@ test('Viewer escapes untrusted labels and does not accept remote image URLs',()=
 test('3D viewer is registered before the application and no viewport zoom lock is introduced',()=>{
   const index=source('index.html'),css=source('src/styles/card-viewer.css');
   assert.ok(index.indexOf('card-viewer.js')<index.indexOf('scripts/app.js'));
-  assert.match(index,/card-viewer\.css\?v=0\.9\.1/);
+  assert.match(index,/card-viewer\.css\?v=0\.9\.1\.1/);
   assert.match(css,/prefers-reduced-motion/);
   assert.match(css,/touch-action:none/);
   assert.match(css,/flip-viewer-wave/);
