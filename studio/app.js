@@ -339,8 +339,8 @@ function team(){
     '<select class="input" id="invite-role"><option value="editor">Editor — черновики и изображения</option>'+
     '<option value="admin">Admin — также публикация</option></select></div>'+
     '<button class="button primary full" data-action="invite-send" style="margin-top:17px">'+
-    ico('plus')+' Отправить приглашение</button>'+
-    '<p class="hint">Для писем понадобится настроенный SMTP в Supabase Auth. Право Owner нельзя выдать обычным приглашением.</p></section>'+
+    ico('plus')+' Создать ссылку-приглашение</button>'+
+    '<p class="hint">Письмо не требуется. Ссылка создаётся сервером только для Owner. Отправь её сотруднику лично — любой, кто получит ссылку, сможет войти под приглашённым аккаунтом. Право Owner через приглашение не выдаётся.</p></section>'+
     '<section class="panel"><div class="panel-title"><h3>Участники</h3>'+
     '<button class="button sm ghost" data-action="team-refresh">Обновить</button></div>'+
     '<div id="team-members">'+loadingMarkup('Загружаем список команды…')+'</div></section></div>';
@@ -838,12 +838,37 @@ async function bulkUpload(files){
 }
 async function inviteMember(){
  const email=String($('#invite-email')?.value||'').trim(),role=$('#invite-role')?.value||'editor';
- if(!email||!window.confirm('Пригласить '+email+' с ролью '+role+'?'))return;
+ if(!email||!window.confirm('Создать одноразовую ссылку для '+email+' с ролью '+role+'?'))return;
+ const btn=$('[data-action="invite-send"]');
+ if(btn){btn.disabled=true;btn.textContent='Создаём ссылку…'}
  try{
   const result=await invoke('manage',{action:'invite',email,role});
-  notice(result.invited?'Приглашение отправлено на '+email:'Сотрудник добавлен: '+email);
+  if(!result?.url||result.delivery!=='copy_link')throw new Error('INVITE_LINK_UNAVAILABLE');
+  // Link is a bearer credential. Keep only in this transient modal, never
+  // persist it to localStorage, URL parameters, database logs or history.
+  const ticket=result.url;
+  modal('Ссылка для участника',
+   '<p class="hint">Ссылка подготовлена для <strong>'+esc(result.email)+
+   '</strong> с ролью <strong>'+esc(result.role.toUpperCase())+
+   '</strong>. Она одноразовая и действует ограниченное время. Отправь её только этому человеку.</p>'+
+   '<div class="field"><label>ССЫЛКА-ПРИГЛАШЕНИЕ</label>'+
+   '<input id="studio-team-invite-url" class="input" type="password" readonly value="'+esc(ticket)+'"></div>'+
+   '<p class="hint">Никакое письмо от Supabase не отправлялось. После перехода участник автоматически войдёт в STUDIO.</p>',
+   '<button class="button primary" data-action="invite-copy">'+ico('copy')+' Скопировать ссылку</button>');
+  notice('Ссылка-приглашение готова. Отправь её сотруднику.');
   refreshTeam();
- }catch(e){notice(formatError(e),true)}
+ }catch(e){notice('Не удалось создать приглашение: '+formatError(e),true)}
+ finally{if(btn?.isConnected){btn.disabled=false;btn.innerHTML=ico('plus')+' Создать ссылку-приглашение'}}
+}
+async function copyInviteLink(){
+ const field=$('#studio-team-invite-url');if(!field?.value)return;
+ try{
+  await navigator.clipboard.writeText(field.value);
+  notice('Ссылка скопирована. Отправь её только приглашённому сотруднику.');
+ }catch(e){
+  field.type='text';field.select();
+  notice('Автоматическое копирование недоступно. Скопируй выделенную ссылку вручную.');
+ }
 }
 async function refreshTeam(){
  if(s.member?.role!=='owner')return;
@@ -900,6 +925,7 @@ document.addEventListener('click',async event=>{
   case 'crop-cancel':cancelCrop();break;
   case 'crop-save':await saveCrop();break;
   case 'invite-send':await inviteMember();break;
+  case 'invite-copy':await copyInviteLink();break;
   case 'team-refresh':await refreshTeam();break;
  }
 });
