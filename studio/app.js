@@ -424,11 +424,10 @@ async function refreshIdentity(){
  render();
 }
 async function signIn(){
- // Both the form's Enter event and the button click can fire within a
- // single interaction. Guard before the first await to prevent a second OTP.
+ // Lock synchronously before awaiting Supabase to prevent a duplicate OTP.
  if(emailRequestPending)return;
  if(Date.now()<emailCooldownUntil){
-  notice('Письмо уже запрошено. Проверь почту и «Спам» перед повторной отправкой.');
+  notice('Повторная отправка пока недоступна. Проверь почту и «Спам».');
   return;
  }
  const email=String($('#auth-email')?.value||'').trim();
@@ -438,43 +437,48 @@ async function signIn(){
  emailRequestPending=true;
  const button=$('[data-action="auth-email"]');
  if(button){button.disabled=true;button.textContent='Отправляем письмо…'}
+ let feedback='';
  try{
   const {error}=await s.db.auth.signInWithOtp({email,options:{
     emailRedirectTo:window.location.origin,shouldCreateUser:true
   }});
   if(error)throw error;
-  // Supabase may throttle a rapid second request even after the first
-  // succeeded. Keep the result visible instead of showing contradictory
-  // success and error banners in the same form.
   emailCooldownUntil=Date.now()+30000;
-  authScreen('Запрос на отправку письма принят. Проверь входящие, «Спам» и «Промоакции».');
-  notice('Проверь почту: ссылка для входа запрошена.');
-  clearTimeout(emailUnlockTimer);
-  emailUnlockTimer=setTimeout(()=>{
-    if(!s.user&&$('#auth-email')&&!emailRequestPending){
-      const retryButton=$('[data-action="auth-email"]');
-      if(retryButton){retryButton.disabled=false;
-        retryButton.innerHTML=ico('arrow-right')+' Отправить ещё раз'}
-    }
-  },30100);
+  feedback='Запрос принят. Проверь входящие, «Спам» и «Промоакции». Новое письмо пока запрашивать не нужно.';
+  notice('Письмо для входа запрошено. Проверь почту.');
  }catch(e){
   const message=String(e?.message||'');
   if(/only request this after|rate limit|too many requests/i.test(message)){
-    // A prior request may have succeeded. Never claim it definitely failed.
-    emailCooldownUntil=Date.now()+10000;
-    authScreen('Повторный запрос временно ограничен. Возможно, первое письмо уже отправлено — проверь почту.');
-    clearTimeout(emailUnlockTimer);
+   // Previous OTP can still be valid. Never label it a failed delivery.
+   emailCooldownUntil=Date.now()+30000;
+   feedback='Supabase временно ограничил повторную отправку. Возможно, первое письмо уже пришло. Проверь почту.';
+   notice('Слишком частые запросы: проверь первое письмо или повтори позже.',true);
+  }else{
+   feedback='Не удалось запросить письмо: '+formatError(e);
+   notice(feedback,true);
+  }
+ }finally{
+  // Reset state BEFORE rebuilding the form; otherwise the button remains in
+  // an infinite "Отправляем письмо…" state even after Supabase responds.
+  emailRequestPending=false;
+  if(!s.user){
+   authScreen(feedback);
+   const input=$('#auth-email');
+   if(input)input.value=email;
+   clearTimeout(emailUnlockTimer);
+   const remaining=Math.max(0,emailCooldownUntil-Date.now());
+   if(remaining>0){
     emailUnlockTimer=setTimeout(()=>{
-      if(!s.user&&$('#auth-email')){
-        const retryButton=$('[data-action="auth-email"]');
-        if(retryButton){retryButton.disabled=false;
-          retryButton.innerHTML=ico('arrow-right')+' Отправить ещё раз'}
-      }
-    },10100);
-  }else if(button){button.disabled=false;
-    button.innerHTML=ico('arrow-right')+' Продолжить с email'}
-  notice('Вход по email: '+formatError(e),true);
- }finally{emailRequestPending=false}
+     if(s.user||emailRequestPending)return;
+     const retryButton=$('[data-action="auth-email"]');
+     if(retryButton){
+      retryButton.disabled=false;
+      retryButton.innerHTML=ico('arrow-right')+' Отправить ещё раз';
+     }
+    },remaining+100);
+   }
+  }
+ }
 }
 async function claimOwner(){
  const ticket=String($('#owner-claim-code')?.value||'').trim()||s.ownerTicket;
