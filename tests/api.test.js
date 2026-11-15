@@ -56,6 +56,7 @@ test('Authenticated GET and POST forward only the validated Telegram ID to the s
     calls.push({url:String(url),payload:JSON.parse(options.body),auth:options.headers.apikey});
     const state={balance:0,xp:0,level:1,xp_to_next:100,inventory:[],discovered:[]};
     if(String(url).endsWith('flip_bootstrap'))return new Response(JSON.stringify(state),{status:200});
+    if(String(url).endsWith('flip_public_catalog'))return new Response(JSON.stringify({artists:[],releases:[],cards:[]}),{status:200});
     if(String(url).endsWith('flip_open_drop'))return new Response(JSON.stringify({card_id:'carti/die-lit/common',state}),{status:200});
     return new Response(JSON.stringify({error:'unexpected rpc'}),{status:500});
   };
@@ -68,9 +69,9 @@ test('Authenticated GET and POST forward only the validated Telegram ID to the s
     const open=await handleRequest(new Request('https://flip.example.com/api/flip',{method:'POST',headers:{'x-telegram-init-data':initData},body:JSON.stringify({action:'drop',requestId:'11111111-2222-4333-8444-555555555555'})}));
     assert.equal(open.status,200);
     assert.equal((await open.json()).card_id,'carti/die-lit/common');
-    assert.equal(calls[1].payload.p_telegram_id,58321);
-    assert.equal(calls[1].payload.p_request_id,'11111111-2222-4333-8444-555555555555');
-    assert.equal(calls[1].auth,'sb_secret_for_test');
+    assert.equal(calls[2].payload.p_telegram_id,58321);
+    assert.equal(calls[2].payload.p_request_id,'11111111-2222-4333-8444-555555555555');
+    assert.equal(calls[2].auth,'sb_secret_for_test');
     assert.equal(calls[0].url,'https://example.supabase.co/rest/v1/rpc/flip_bootstrap');
   }finally{process.env=originalEnv;globalThis.fetch=originalFetch;}
 });
@@ -116,6 +117,6 @@ test('Server profile fallback tag stable for no username and photo never written
     assert.match(a.profile.handle,/^FLIP#[0-9A-F]{10}$/);
     assert.equal(a.profile.handle,b.profile.handle);
     assert.equal(a.profile.avatar_url,'https://t.me/i/userpic/photo.jpg');
-    assert.deepEqual(calls,[{telegram_id:987654,username:'',first_name:'First'},{telegram_id:987654,username:'',first_name:'First'}]);
+    assert.deepEqual(calls.filter(x=>x.telegram_id),[{telegram_id:987654,username:'',first_name:'First'},{telegram_id:987654,username:'',first_name:'First'}]);
   }finally{process.env=env;globalThis.fetch=orig;}
 });
