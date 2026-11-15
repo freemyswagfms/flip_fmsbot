@@ -166,7 +166,7 @@ test('An Owner can replace a live Carti image without changing any card ID',asyn
    if(u.pathname.endsWith('/flip_studio_audit'))return Response.json([{}]);
    return null;
  });
- assert.equal(r.status,200);
+ assert.equal(r.status,200,JSON.stringify(r.body));
  assert.equal(r.body.cardId,cardId);
  assert.equal(downloaded,true);
  assert.equal(uploaded,true);
