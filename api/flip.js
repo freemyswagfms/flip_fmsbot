@@ -92,6 +92,11 @@ export async function handleRequest(request,env=undefined){
     const raw=request.headers.get('x-telegram-init-data');
     const user=validateTelegramInitData(raw,process.env.TELEGRAM_BOT_TOKEN);
     const db=settings();
+    // Minimal authenticated database probe for the UI status dot. No player writes.
+    if(request.method==='GET' && u.searchParams.get('probe')==='1'){
+      await rpc('flip_task_snapshot',{p_telegram_id:user.telegram_id},db);
+      return json({ok:true});
+    }
     if(request.method==='GET'){
       // The database only accepts identity fields. Do not persist optional profile-photo URLs.
       const [state,catalog,tasks]=await Promise.all([
