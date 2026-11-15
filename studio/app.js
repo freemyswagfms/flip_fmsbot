@@ -47,11 +47,11 @@ const ico=(name,size=18)=>'<svg width="'+size+'" height="'+size+'" viewBox="0 0 
 const nav=[
  ['dashboard','layout-dashboard','Обзор'],['artists','users','Артисты'],
  ['releases','disc','Релизы'],['import','search','Music Importer'],
- ['editor','image','Artwork Studio'],['team','shield','Команда'],
+ ['editor','image','Artwork Studio'],['tasks','check','Задания'],['team','shield','Команда'],
  ['activity','history','История']
 ];
 const s={db:null,user:null,member:null,artists:[],releases:[],variants:[],audit:[],
- current:'dashboard',selectedRelease:null,artistFilter:null,q:'',filter:'all',busy:false,
+ taskSlots:[],current:'dashboard',selectedRelease:null,artistFilter:null,q:'',filter:'all',busy:false,
  editorMode:'draft',selectedPublished:null,publishedCatalog:{artists:[],releases:[],cards:[]},
  importQ:'',importArtists:[],importArtist:null,importReleases:[],importSelected:new Set(),
  importPage:0,importCount:0,importError:'',crop:null,
@@ -85,7 +85,12 @@ function formatError(e){
  'ARTWORK_DOWNLOAD_FAILED':'Не удалось прочитать загруженную обложку.',
  'INVALID_ARTWORK_FORMAT':'Обложка должна быть в формате WebP.',
  'ARTWORK_PUBLICATION_FAILED':'Не удалось обновить опубликованную обложку.',
- 'CARD_NOT_FOUND':'Карточка отсутствует в опубликованном каталоге.'
+ 'CARD_NOT_FOUND':'Карточка отсутствует в опубликованном каталоге.',
+  'BOT_NOT_ADMIN':'Добавь бота FLIP администратором канала.',
+  'NOT_A_CHANNEL':'Указанный адрес не является каналом.',
+  'CHANNEL_MISMATCH':'Ссылка и ID канала не совпадают.',
+  'TELEGRAM_CHECK_FAILED':'Telegram не отвечает, попробуй позже.',
+  'BOT_NOT_CONFIGURED':'Токен FLIP Bot не настроен на сервере.'
  };
  if(/only request this after|rate limit|too many requests/i.test(msg))
   return 'Слишком частая отправка. Подожди немного и проверь, не пришло ли первое письмо.';
@@ -120,7 +125,7 @@ function button(label,act,primary=false){
  return '<button type="button" class="button '+(primary?'primary':'')+'" data-action="'+esc(act)+'">'+label+'</button>'}
 function layout(content){
  const role=s.member?.role||'editor';
- const visibleNav=nav.filter(x=>x[0]!=='team'||role==='owner');
+ const visibleNav=nav.filter(x=>!['team','tasks'].includes(x[0])||role==='owner');
  const item=nav.find(x=>x[0]===s.current);
  const buttons=visibleNav.map(([id,icon,label])=>
   '<button type="button" class="nav-btn '+(s.current===id?'active':'')+
@@ -137,7 +142,7 @@ function layout(content){
   '<main class="canvas view-enter">'+content+
   '<div class="footer-note">FLIP STUDIO © 2026 · CONTENT OPERATIONS · YOUR COLLECTION, YOUR RULES</div></main></div>'+
   '</div><nav class="mobile-menu" aria-label="Навигация">'+
-  visibleNav.filter(x=>['dashboard','releases','import','editor','team'].includes(x[0]))
+  visibleNav.filter(x=>['dashboard','releases','editor','tasks','team'].includes(x[0]))
     .map(([id,icon,label])=>'<button data-nav="'+id+'" class="'+(s.current===id?'active':'')+'">'+
       ico(icon)+'<span>'+esc(label.replace('Music ','').replace('Artwork ',''))+'</span></button>').join('')+
   '</nav>';
@@ -441,6 +446,78 @@ function editor(){
   ' Кадрирование, оптимизация и формирование WebP происходят до загрузки. Исходник сохраняется отдельно.</p></section>'+
   right+'</div>';
 }
+
+const taskDefaults={
+ daily:['Открой бесплатный дроп','Получи новую карточку','Открой стандартный пак'],
+ weekly:['Открой 5 бесплатных дропов','Собери 5 новых карточек','Открой 3 стандартных пака']
+};
+function taskEditor(){
+ if(s.member?.role!=='owner')return dashboard();
+ const rows=(scope)=>[1,2,3].map(slot=>{
+  const t=s.taskSlots.find(x=>x.scope===scope&&x.slot===slot),custom=t?.kind==='subscription';
+  return '<div class="member-row"><div class="member-info" style="flex:1;min-width:0">'+
+   '<small>СЛОТ '+slot+' · '+(custom?'ПОДПИСКА НА КАНАЛ':'СТАНДАРТНОЕ')+'</small>'+
+   '<strong>'+esc(custom?t.title:taskDefaults[scope][slot-1])+'</strong>'+
+   '<small>'+esc(custom?t.channel_url:'Задание FLIP')+'</small></div>'+
+   '<span class="tag">+'+(custom?t.reward_f:scope==='daily'?30:100)+' F</span>'+
+   '<div class="team-actions"><button class="button sm" data-task-edit="'+scope+':'+slot+'">'+
+   (custom?'Изменить':'Заменить')+'</button>'+
+   (custom?'<button class="button sm ghost" data-task-reset="'+scope+':'+slot+
+     '">Вернуть обычное</button>':'')+'</div></div>';
+ }).join('');
+ return pageHead('TASKS / OWNER','Задания',
+   'Три ежедневных и три еженедельных задания. Стандартные слоты можно заменить проверкой подписки на Telegram-канал.')+
+  ['daily','weekly'].map(scope=>'<section class="panel" style="margin-top:17px">'+
+    '<div class="panel-title"><h3>'+(scope==='daily'?'Ежедневные':'Еженедельные')+' · 3</h3>'+
+    '<small>OWNER ONLY</small></div>'+rows(scope)+'</section>').join('')+
+  '<p class="hint">Бот FLIP должен быть администратором канала. За один слот награда выдаётся '+
+  'только один раз за период, даже если задание поменялось.</p>';
+}
+async function loadTaskSlots(){
+ if(s.member?.role!=='owner')return;
+ try{const data=await invoke('tasks');s.taskSlots=data.slots||[];if(s.current==='tasks')render();}
+ catch(e){notice('Ошибка загрузки заданий: '+formatError(e),true)}
+}
+function openTaskEditor(scope,slot){
+ if(s.member?.role!=='owner')return;
+ const t=s.taskSlots.find(x=>x.scope===scope&&x.slot===slot);
+ const custom=t?.kind==='subscription',v=x=>esc(String(x??''));
+ const field=(id,label,value,placeholder='')=>'<div class="field" style="margin-top:12px">'+
+   '<label>'+label+'</label><input class="input" id="'+id+'" value="'+v(value)+
+   '" placeholder="'+placeholder+'"></div>';
+ modal('Заменить задание · слот '+slot,
+   '<p class="hint">Задание заменит стандартное. Количество слотов не изменится.</p>'+
+   field('task-name','Название',custom?t.title:'','Подпишись на LOWFREQ')+
+   field('task-description','Описание',custom?t.description:'','Проверь подписку')+
+   field('task-url','Ссылка Telegram',custom?t.channel_url:'','https://t.me/yourchannel')+
+   field('task-channel','ID канала (для публичного необязательно)',custom?t.channel_id:'','@channel или -100…')+
+   '<div class="grid-2">'+field('task-f','Награда F (0–1000)',custom?t.reward_f:scope==='daily'?30:100)+
+   field('task-xp','Награда XP (0–300)',custom?t.reward_xp:scope==='daily'?20:60)+'</div>'+
+   '<div class="field" style="margin-top:12px"><label>Срок (необязательно)</label>'+
+   '<input type="datetime-local" class="input" id="task-until"></div>'+
+   '<p class="hint">Бот FLIP должен быть администратором канала. Сервер проверит права при публикации.</p>',
+   '<button class="button primary" data-task-save="'+scope+':'+slot+'">Опубликовать</button>');
+}
+async function saveTaskSlot(scope,slot,kind){
+ if(s.member?.role!=='owner')return;
+ let body={scope,slot,kind};
+ if(kind==='subscription'){
+   const val=id=>$('#'+id)?.value?.trim()||'';
+   const f=Number(val('task-f')),xp=Number(val('task-xp'));
+   if(!val('task-name')||!val('task-url')||!Number.isInteger(f)||!Number.isInteger(xp))
+     return notice('Заполни название, ссылку и награды.',true);
+   const end=val('task-until');
+   body={...body,title:val('task-name'),description:val('task-description'),
+     url:val('task-url'),channelId:val('task-channel'),rewardF:f,rewardXp:xp,
+     endsAt:end?new Date(end).toISOString():null};
+ }else if(!window.confirm('Вернуть стандартное задание?'))return;
+ try{
+   await invoke('tasks',body);
+   if(kind==='subscription')closeModal();
+   await loadTaskSlots();
+   notice(kind==='subscription'?'Задание опубликовано в FLIP.':'Обычное задание восстановлено.');
+ }catch(e){notice('Не удалось сохранить: '+formatError(e),true)}
+}
 function team(){
  if(s.member.role!=='owner')return dashboard();
  return pageHead('ACCESS / 006','Команда',
@@ -467,7 +544,7 @@ function activity(){
  ico('history')+'</span><div style="flex:1;min-width:0"><strong>'+
  esc({publish:'Релиз опубликован',owner_activated:'Владелец активирован',
  invite_or_change_role:'Приглашение в команду',member_updated:'Изменены права сотрудника',
- replace_artwork:'Заменена опубликованная обложка'}[a.action]||a.action)+'</strong><p class="hint">'+
+ replace_artwork:'Заменена опубликованная обложка',task_slot_updated:'Изменено задание'}[a.action]||a.action)+'</strong><p class="hint">'+
  esc(a.entity)+' · '+esc(JSON.stringify(a.detail||{}).slice(0,175))+'</p></div>'+
  '<span class="time">'+date(a.created_at)+'</span></div>').join(''):
  '<div class="empty">'+ico('history')+'<strong>История пока пустая</strong>'+
@@ -477,7 +554,7 @@ function render(){
  if(!s.user){authScreen();return;}
  if(!s.member){awaitingAccess();return;}
  const pages={dashboard,artists:artistGrid,releases:releaseGrid,import:importer,editor,
-  team,activity};
+  tasks:taskEditor,team,activity};
  app.innerHTML=layout((pages[s.current]||dashboard)());
  if(s.current==='editor'&&s.editorMode==='draft')populateThumbnails();
  if(s.current==='team')refreshTeam();
@@ -654,9 +731,10 @@ async function claimOwner(){
 }
 function go(page){
  if(!nav.some(x=>x[0]===page))return;
- if(page==='team'&&s.member?.role!=='owner')return;
+ if(['team','tasks'].includes(page)&&s.member?.role!=='owner')return;
  if(page==='releases')s.artistFilter=null;
  s.q='';s.filter='all';s.current=page;
+  if(page==='tasks')loadTaskSlots();
  render();
  window.scrollTo({top:0,behavior:'instant'});
 }
@@ -1226,6 +1304,12 @@ document.addEventListener('paste',event=>{
  openCrop(file,rarity);
 });
 document.addEventListener('click',async event=>{
+  const taskSave=event.target.closest('[data-task-save]');
+  if(taskSave){const [scope,slot]=taskSave.dataset.taskSave.split(':');await saveTaskSlot(scope,Number(slot),'subscription');return;}
+  const taskReset=event.target.closest('[data-task-reset]');
+  if(taskReset){const [scope,slot]=taskReset.dataset.taskReset.split(':');await saveTaskSlot(scope,Number(slot),'default');return;}
+  const taskEdit=event.target.closest('[data-task-edit]');
+  if(taskEdit){const [scope,slot]=taskEdit.dataset.taskEdit.split(':');openTaskEditor(scope,Number(slot));return;}
  const roleSave=event.target.closest('[data-team-save]');
  if(roleSave){await saveMemberRole(roleSave.dataset.teamSave);return;}
  const roleToggle=event.target.closest('[data-team-toggle]');

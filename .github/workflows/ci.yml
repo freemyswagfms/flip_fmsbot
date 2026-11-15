@@ -5,6 +5,7 @@ on:
       - main
       - 'feat/**'
       - 'fix/**'
+      - 'feature/**'
   pull_request:
 permissions:
   contents: read
@@ -20,6 +21,9 @@ jobs:
       - name: Validate application scripts
         run: |
           node --check api/studio.js
+          node --check api/flip.js
+          node --check api/task-bot.js
+          node --check studio/api/tasks.js
           node --check api/admin.js
           node --check src/scripts/app.js
           node --check src/scripts/server.js
@@ -42,6 +46,7 @@ jobs:
           node --check app.js
           node --check api/owner.js
           node --check api/manage.js
+          node --check api/tasks.js
           node --check api/music.js
           node --check lib/shared.js
       - name: Install dependencies

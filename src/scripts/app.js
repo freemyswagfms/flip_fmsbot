@@ -73,8 +73,31 @@ function home(){return `<div class="hero-intro">
 <div class="quick-nav"><button class="quick" data-action="store"><span>◈</span> ТЕМАТИЧЕСКИЕ НАБОРЫ ↗</button><button class="quick" data-action="profile"><span>☆</span> МОЙ ПРОФИЛЬ ↗</button></div>
 <div class="note">FLIP · ${live()?'Серверный тест: карточки и награды привязаны к аккаунту Telegram. Некоторые разделы пока демонстрационные.':'Локальное демо: карточки не переносятся на сервер и не имеют игровой ценности.'}</div>`}
 const taskDefs=[{title:'Открой бесплатный дроп',detail:'0 / 1 · Ежедневное задание',reward:'30 F'},{title:'Получи новую карточку',detail:'0 / 1 · Коллекция',reward:'30 F'},{title:'Открой стандартный пак',detail:'0 / 1 · Активность',reward:'30 F'}];
-function taskRow(i,compact=false){let t=taskDefs[i],done=state.claimedTasks.includes(i);return `<div class="task"><button class="taskbutton" data-task="${i}" ${done?'disabled':''}><div class="task-check ${done?'completed':''}">${done?'✓':'↗'}</div><div class="task-text"><h4>${t.title}</h4><p>${done?'ВЫПОЛНЕНО':t.detail}</p></div><span class="reward">${done?'✓':t.reward}</span><span class="task-arrow">›</span></button></div>`}
-function uniqueKey(c){return c.id||`${c.artist||''}|${c.title||''}|${c.rarity||''}`}
+function gameTaskRow(t){
+ const complete=t.claimed,custom=t.type==='subscription';
+ const status=complete?'ВЫПОЛНЕНО':custom?'Подпишись на канал, затем проверь подписку':
+   Math.min(t.progress,t.target)+' / '+t.target+' · '+t.description;
+ const id='data-task-scope="'+escapeHtml(t.scope)+'" data-task-slot="'+Number(t.slot)+'"';
+ return '<div class="task flip-real-task"><div class="task-text" style="flex:1;min-width:0">'+
+   '<h4>'+escapeHtml(t.title)+'</h4><p>'+escapeHtml(status)+'</p></div>'+
+   '<span class="reward">+'+Number(t.reward_f)+' F</span><div class="flip-task-controls">'+
+   (complete?'<span class="pill">✓ ПОЛУЧЕНО</span>':custom?
+     '<button type="button" class="outlinebtn" data-task-action="open" '+id+'>ПЕРЕЙТИ ↗</button>'+
+     '<button type="button" class="outlinebtn" data-task-action="claim" '+id+'>ПРОВЕРИТЬ</button>':
+     '<button type="button" class="outlinebtn" data-task-action="claim" '+id+
+       (t.ready?'':' disabled')+'>'+(t.ready?'ЗАБРАТЬ':'В ПРОЦЕССЕ')+'</button>')+
+   '</div></div>';
+}
+function taskRow(i,compact=false){
+ const t=live()?bridge?.tasks?.daily?.[i]:null;
+ if(t)return gameTaskRow(t);
+ const task=taskDefs[i],done=state.claimedTasks.includes(i);
+ return '<div class="task"><button class="taskbutton" data-task="'+i+'" '+(done?'disabled':'')+
+   '><div class="task-check '+(done?'completed':'')+'">'+(done?'✓':'↗')+'</div>'+
+   '<div class="task-text"><h4>'+task.title+'</h4><p>'+(done?'ВЫПОЛНЕНО':task.detail)+
+   '</p></div><span class="reward">'+(done?'✓':task.reward)+
+   '</span><span class="task-arrow">›</span></button></div>';
+}
 function collection(){return window.FLIPCollection.home(state)}
 function collectionArtist(){return window.FLIPCollection.artist(state,collectionArtistId)}
 function collectionRelease(){return window.FLIPCollection.release(state,collectionArtistId,collectionReleaseId)}
@@ -119,7 +142,20 @@ function playerAvatar(){
   return `<div class="flip-player-avatar"><span class="flip-player-initials">${escapeHtml(initial.toUpperCase())}</span>${photo}</div>`;
 }
 function profile(){return `<div class="panel"><span class="eyebrow">PERSONAL SPACE / 005</span><h2>ПРОФИЛЬ<span style="color:var(--lime)">.</span></h2><div class="content-card"><div class="flip-player-row">${playerAvatar()}<div class="flip-player-meta"><h3>${escapeHtml(live()?(state.telegramName||'FLIP PLAYER'):'FLIP PLAYER')}</h3><p class="flip-player-handle">${escapeHtml(live()?(state.telegramHandle||'FLIP PLAYER'):'FLIP / DEMO')}</p><span class="pill">LVL ${state.level} · ${state.xp} XP</span></div></div><div class="progress" style="--p:${Math.min(100,100*state.xp/(state.xpToNext||100))}%;margin-top:19px"><i></i></div><p>Следующий уровень · базовая награда 30 F</p></div><div class="content-card"><h3>ВИТРИНА КАРТОЧЕК <span style="color:#8fa68d">0/3</span></h3><div class="square-grid">${[0,1,2].map(()=>`<div class="sq-card" style="border-style:dashed;background:#171f18;border-color:#3f5740"><span style="color:#516b55;font-size:24px">+</span></div>`).join('')}</div><p>Сюда можно закреплять до трёх любимых карточек, включая Hidden.</p></div><div class="content-card"><h3>ДОСТИЖЕНИЯ</h3><p>31 достижение · 3 избранных слота · секретные награды</p><button class="outlinebtn" data-action="achievements">ПОСМОТРЕТЬ ↗</button></div><div class="content-card"><h3>${live()?'ПОДКЛЮЧЕНИЕ К TELEGRAM':blocked()?'СЕРВЕР НЕ ПОДКЛЮЧЕН':'НАСТРОЙКИ ДЕМО'}</h3><p>${live()?'Прогресс сохраняется на сервере и не сбрасывается из приложения. Локальные демо-награды не перенесены.':blocked()?'Подключение не установлено. Локальные награды не отображаются и не выдаются.':'Очистить состояние локального прототипа и снова сделать дроп доступным.'}</p>${live()?'<span class="pill">● SERVER CONNECTED</span>':blocked()?'<span class="pill">● OFFLINE</span>':'<button class="outlinebtn" id="resetBtn">СБРОСИТЬ ДЕМО</button>'}</div></div>`}
-function tasks(){return `<div class="panel"><button class="link" data-action="home">← НА ГЛАВНУЮ</button><h2>ЗАДАНИЯ<span style="color:var(--lime)">.</span></h2><p class="desc">Три ежедневных и три еженедельных испытания. Сброс в 00:00 по Москве.</p><div class="section-head"><span class="section-title">DAILY TASKS</span><span class="section-sub">30 F + 20 XP / КАЖДОЕ</span></div><div class="task-list">${taskRow(0)}${taskRow(1)}${taskRow(2)}</div><div class="content-card"><h3>WEEKLY TASKS</h3>${['Открой 15 бесплатных дропов','Собери 5 новых карточек','Достигни следующего уровня'].map((x,i)=>`<div class="menu-row"><div><strong>${x}</strong><br><small>Еженедельное задание</small></div><span class="reward">100 F</span></div>`).join('')}<p>Бонус за все три: +50 F</p></div></div>`}
+function tasks(){
+ const daily=live()?bridge?.tasks?.daily:null,weekly=live()?bridge?.tasks?.weekly:null;
+ return '<div class="panel"><button class="link" data-action="home">← НА ГЛАВНУЮ</button>'+
+ '<h2>ЗАДАНИЯ<span style="color:var(--lime)">.</span></h2>'+
+ '<p class="desc">Всегда по три задания в каждом разделе. Сброс по Москве.</p>'+
+ '<div class="section-head"><span class="section-title">DAILY TASKS · 3</span>'+
+ '<span class="section-sub">ЕЖЕДНЕВНО · 00:00</span></div><div class="task-list">'+
+ (daily?.length===3?daily.map(gameTaskRow).join(''):[0,1,2].map(i=>taskRow(i)).join(''))+'</div>'+
+ '<div class="section-head" style="margin-top:24px"><span class="section-title">WEEKLY TASKS · 3</span>'+
+ '<span class="section-sub">ПОНЕДЕЛЬНИК · 00:00</span></div><div class="task-list">'+
+ (weekly?.length===3?weekly.map(gameTaskRow).join(''):'<p>Загрузка еженедельных заданий…</p>')+
+ '</div><p class="note">За все три недельных задания: дополнительно +50 F.</p></div>';
+}
+
 function rankingProfile(){return live()?'<div class="content-card"><span class="eyebrow">COLLECTION POINTS</span><h3 style="margin-top:9px;font-size:15px">ТВОЙ РЕЙТИНГ</h3><div class="kpi">'+Number(state.cp||0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' CP</div><p>Рейтинговые экземпляры, включая карточки из обменов и рейтинговые выдачи администрации. Тестовые карточки не учитываются.</p><button type="button" class="outlinebtn" data-action="leaderboard">ОТКРЫТЬ ОБЩИЙ ТОП ↗</button></div>':''}
 function adminProfile(){
   const id=window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
@@ -414,8 +450,37 @@ document.addEventListener('change',e=>{
 // touch-action: manipulation is the main iOS fix; this is a second guard for WebViews
 // that still emit dblclick on static regions. No viewport zoom lock: pinch zoom remains allowed.
 document.addEventListener('dblclick',e=>{if(e.target.closest('.phone'))e.preventDefault()},{passive:false});
+async function handleGameTask(button){
+ if(!live()||serverBusy)return;
+ const scope=button.dataset.taskScope,slot=Number(button.dataset.taskSlot);
+ const task=bridge?.tasks?.[scope]?.find(t=>t.slot===slot);
+ if(!task||task.claimed)return;
+ if(button.dataset.taskAction==='open'){
+   if(task.type==='subscription'&&/^https:\/\/t\.me\/[A-Za-z0-9_+-]+$/.test(task.url||'')){
+     const tg=window.Telegram?.WebApp;
+     if(tg?.openTelegramLink)tg.openTelegramLink(task.url);
+     else window.open(task.url,'_blank','noopener,noreferrer');
+   }return;
+ }
+ serverBusy=true;button.disabled=true;
+ try{
+   const result=await bridge.claimTask(scope,slot,task.version);
+   applyServerState(result.state);
+   toast('Получено +'+result.earned_f+' F и +'+result.earned_xp+' XP');
+   render(current);
+ }catch(error){
+   const messages={TASK_NOT_SUBSCRIBED:'Подписка не найдена. Подпишись и повтори.',
+     TELEGRAM_CHECK_FAILED:'Ошибка Telegram. Проверь подписку позже.',
+     TASK_INCOMPLETE:'Задание ещё не выполнено.',TASK_CHANGED:'Задание изменилось.',
+     TASK_ALREADY_CLAIMED:'Награда уже получена.',TASK_NOT_VERIFIED:'Подписка не подтверждена.'};
+   toast(messages[error.message]||serverError(error));
+   try{await bridge.refreshTasks();render(current);}catch{}
+ }finally{serverBusy=false;}
+}
 function handleTask(i){if(state.claimedTasks.includes(i))return;modal(`<span class="eyebrow">DAILY TASK</span><h3>${taskDefs[i].title}</h3><p>Это макет задания. В реальной игре выполнение определяется сервером автоматически, без ручного начисления.</p><button class="bigbtn" id="closeReveal">ПОНЯТНО</button>`)}
 document.addEventListener('click',e=>{
+  const taskAction=e.target.closest('[data-task-action]');
+  if(taskAction){handleGameTask(taskAction);return;}
   const galleryFilter=e.target.closest('[data-collection-gallery-filter]');
   if(galleryFilter){
     document.querySelectorAll('#screen [data-collection-gallery-filter]').forEach(button=>
@@ -436,7 +501,7 @@ document.addEventListener('click',e=>{
   if(historyCardTarget){showOwnedCard(historyCardTarget.dataset.historyCard,true);return}
   const hiddenTarget=e.target.closest('[data-hidden-card]');
   if(hiddenTarget){showHiddenCard(hiddenTarget.dataset.hiddenCard);return;}
-  const tab=e.target.closest('[data-tab]');if(tab){render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks'].includes(a))render(a);else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogArtist||'carti',b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn'))previewRoulette();if(e.target.closest('#buyPackBtn'))doPack();if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))render('store');if(e.target.closest('#bellBtn'))$('#notifications').classList.toggle('show');if(e.target.closest('#closeNotifications'))$('#notifications').classList.remove('show');if(e.target.closest('#resetBtn')){if(live()||blocked())return;localStorage.removeItem('flip_demo');localStorage.removeItem('flip20_demo');Object.assign(state,{...initial,dropReadyAt:Date.now(),received:[],discovered:[],claimedTasks:[]});save();render('profile');toast('Демо сброшено — бесплатный дроп доступен')};const t=e.target.closest('[data-task]');if(t)handleTask(+t.dataset.task);if(e.target.closest('#levelQuick'))render('profile')});
+  const tab=e.target.closest('[data-tab]');if(tab){render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks'].includes(a)){render(a);if(a==='tasks'&&live())bridge.refreshTasks?.().then(()=>{if(current==='tasks')render('tasks')}).catch(()=>{});}else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogArtist||'carti',b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn'))previewRoulette();if(e.target.closest('#buyPackBtn'))doPack();if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))render('store');if(e.target.closest('#bellBtn'))$('#notifications').classList.toggle('show');if(e.target.closest('#closeNotifications'))$('#notifications').classList.remove('show');if(e.target.closest('#resetBtn')){if(live()||blocked())return;localStorage.removeItem('flip_demo');localStorage.removeItem('flip20_demo');Object.assign(state,{...initial,dropReadyAt:Date.now(),received:[],discovered:[],claimedTasks:[]});save();render('profile');toast('Демо сброшено — бесплатный дроп доступен')};const t=e.target.closest('[data-task]');if(t)handleTask(+t.dataset.task);if(e.target.closest('#levelQuick'))render('profile')});
 $('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#notifications').classList.remove('show')}});window.addEventListener('flip-trade-completed',async()=>{
   if(!live())return;
   try{

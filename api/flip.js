@@ -2,6 +2,7 @@
  *  Only server has Supabase secret key. There is no public write API for player state.
  */
 import { createHmac, createHash, timingSafeEqual } from 'node:crypto';
+import {verifySubscription} from './task-bot.js';
 
 const MAX_AGE_SECONDS = 24 * 60 * 60;
 const MAX_INIT_DATA_LENGTH = 8192;
@@ -72,7 +73,7 @@ async function rpc(name,payload,db){
   const body=await response.text();
   if (!response.ok) {
     // Return known error codes only. Never forward database internals to the client.
-    const code=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT','ACCOUNT_NOT_FOUND','DUPLICATE_REQUEST_ACTION'].find(s=>body.includes(s));
+    const code=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT','ACCOUNT_NOT_FOUND','DUPLICATE_REQUEST_ACTION','TASK_INCOMPLETE','TASK_CHANGED','TASK_ALREADY_CLAIMED','TASK_NOT_VERIFIED','BAD_TASK'].find(s=>body.includes(s));
     const error=new Error(code||'DATABASE_REQUEST_FAILED');error.status=code?409:502;throw error;
   }
   try{return JSON.parse(body);}catch{throw new Error('DATABASE_RESPONSE_FAILED');}
@@ -93,15 +94,16 @@ export async function handleRequest(request,env=undefined){
     const db=settings();
     if(request.method==='GET'){
       // The database only accepts identity fields. Do not persist optional profile-photo URLs.
-      const [state,catalog]=await Promise.all([
+      const [state,catalog,tasks]=await Promise.all([
         rpc('flip_bootstrap',{
           telegram_id:user.telegram_id, username:user.username, first_name:user.first_name
         },db),
-        rpc('flip_public_catalog',{},db)
+        rpc('flip_public_catalog',{},db),
+        rpc('flip_task_snapshot',{p_telegram_id:user.telegram_id},db)
       ]);
       const displayName=[user.first_name,user.last_name].filter(Boolean).join(' ').trim()
         || user.username || 'FLIP PLAYER';
-      return json({state,catalog, mode:'server', admin:isFlipAdmin(user.telegram_id), profile:{
+      return json({state,catalog,tasks, mode:'server', admin:isFlipAdmin(user.telegram_id), profile:{
         display_name:displayName,
         handle:user.username ? `@${user.username}` : publicPlayerTag(user.telegram_id),
         avatar_url:user.photo_url
@@ -111,18 +113,48 @@ export async function handleRequest(request,env=undefined){
     const rawBody=await request.text();
     if(rawBody.length>MAX_BODY_LENGTH) return json({error:'BAD_REQUEST'},400);
     let body; try{body=JSON.parse(rawBody)}catch{return json({error:'BAD_REQUEST'},400)}
-    if(!body || !['drop','pack'].includes(body.action) ||
+    if(!body || !['drop','pack','claim_task'].includes(body.action) ||
       typeof body.requestId!=='string' ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.requestId))
       return json({error:'BAD_REQUEST'},400);
+    if(body.action==='claim_task'){
+      const scope=body.scope,slot=body.slot,version=body.version;
+      if(!['daily','weekly'].includes(scope)||![1,2,3].includes(slot)||
+         typeof version!=='string'||!/^[0-9a-f-]{36}$/i.test(version))
+        return json({error:'BAD_REQUEST'},400);
+      const tasks=await rpc('flip_task_snapshot',{p_telegram_id:user.telegram_id},db);
+      const task=tasks[scope]?.find(item=>item.slot===slot);
+      if(!task||task.version!==version)return json({error:'TASK_CHANGED'},409);
+      if(task.claimed)return json({error:'TASK_ALREADY_CLAIMED'},409);
+      let verified=false;
+      if(task.type==='subscription'){
+        // Never trust a client-provided Telegram channel.
+        const res=await fetch(db.origin+'/rest/v1/flip_task_slots?scope=eq.'+scope+
+          '&slot=eq.'+slot+'&select=kind,channel_id,version&limit=1',{
+          headers:{apikey:db.key,accept:'application/json'},cache:'no-store',
+          signal:AbortSignal.timeout(10000)
+        });
+        if(!res.ok)throw new Error('DATABASE_REQUEST_FAILED');
+        const [record]=await res.json();
+        if(record?.version!==version||record?.kind!=='subscription'||!record.channel_id)
+          return json({error:'TASK_CHANGED'},409);
+        verified=await verifySubscription(record.channel_id,user.telegram_id);
+        if(!verified)return json({error:'TASK_NOT_SUBSCRIBED'},409);
+      }
+      return json(await rpc('flip_claim_task',{p_telegram_id:user.telegram_id,
+        p_scope:scope,p_slot:slot,p_version:version,p_verified:verified},db));
+    }
     const func=body.action==='drop'?'flip_open_drop':'flip_buy_pack';
-    const result=await rpc(func,{p_telegram_id:user.telegram_id,p_request_id:body.requestId},db);
-    return json(result);
+    return json(await rpc(func,{p_telegram_id:user.telegram_id,p_request_id:body.requestId},db));
   }catch(e){
     const code=String(e.message||'UNKNOWN_ERROR');
     const auth=['INVALID_TELEGRAM_SESSION','EXPIRED_TELEGRAM_SESSION'].includes(code);
-    const known=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT','ACCOUNT_NOT_FOUND','DUPLICATE_REQUEST_ACTION'].includes(code);
-    return json({error:auth||known?code:'SERVER_ERROR'},auth?401:known?409:500);
+    const known=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT','ACCOUNT_NOT_FOUND',
+      'DUPLICATE_REQUEST_ACTION','TASK_INCOMPLETE','TASK_CHANGED','TASK_ALREADY_CLAIMED',
+      'TASK_NOT_VERIFIED','TASK_NOT_SUBSCRIBED','BAD_TASK'].includes(code);
+    const unavailable=['TELEGRAM_CHECK_FAILED','BOT_NOT_CONFIGURED'].includes(code);
+    return json({error:auth||known||unavailable?code:'SERVER_ERROR'},
+      auth?401:known?409:unavailable?503:500);
   }
 }
 export default {fetch:handleRequest};

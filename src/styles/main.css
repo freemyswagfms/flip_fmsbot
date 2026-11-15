@@ -66,3 +66,12 @@
 
 /* v0.8 — connection badge; no changes to the approved mobile layout. */
 .flip-server-indicator{color:#9cbaa0;font:700 9px/1.5 'Manrope',sans-serif;letter-spacing:.8px;margin:0 0 10px;padding:0 3px;text-transform:uppercase}
+
+/* FLIP v0.9.0 verified tasks: keep CTA controls tappable on narrow Telegram screens. */
+.flip-real-task{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px 12px;align-items:center}
+.flip-real-task .task-text{grid-column:1}
+.flip-real-task .reward{grid-column:2}
+.flip-task-controls{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.flip-task-controls .outlinebtn{padding:8px 12px;font:700 10px 'Space Grotesk',sans-serif;min-height:36px}
+.flip-task-controls .outlinebtn:disabled{opacity:.48}
+.flip-real-task .pill{padding:8px 0;color:var(--lime)}
