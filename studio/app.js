@@ -51,7 +51,8 @@ const nav=[
  ['activity','history','История']
 ];
 const s={db:null,user:null,member:null,artists:[],releases:[],variants:[],audit:[],
- current:'dashboard',selectedRelease:null,q:'',filter:'all',busy:false,
+ current:'dashboard',selectedRelease:null,artistFilter:null,q:'',filter:'all',busy:false,
+ editorMode:'draft',selectedPublished:null,publishedCatalog:{artists:[],releases:[],cards:[]},
  importQ:'',importArtists:[],importArtist:null,importReleases:[],importSelected:new Set(),
  importPage:0,importCount:0,importError:'',crop:null,
  thumbs:new Map(),ownerTicket:(()=>{try{return localStorage.getItem('flip_studio_claim')||''}catch{return ''}})()};
@@ -193,11 +194,17 @@ function releaseRow(r){
   ' · '+total+'/5 обложек</small></span>'+tag(r.status)+ico('chevron-right')+'</button>';
 }
 function releaseGrid(){
- const rows=s.releases.filter(r=>(s.filter==='all'||r.status===s.filter) &&
+ const chosen=s.artists.find(a=>a.id===s.artistFilter);
+ const rows=s.releases.filter(r=>(!chosen||r.artist_id===chosen.id)&&
+  (s.filter==='all'||r.status===s.filter) &&
   (!s.q||[r.title,artistName(r.artist_id)].join(' ').toLowerCase().includes(s.q.toLowerCase())));
- return pageHead('LIBRARY / 003','Релизы',
+ return pageHead('LIBRARY / 003',chosen?'Релизы: '+chosen.name:'Релизы',
+  chosen?'Показаны релизы только выбранного артиста. Можно вернуться к общему списку.':
   'Управляй альбомами, EP, микстейпами и синглами. Публикуются только полностью готовые наборы.',
   button(ico('plus')+' Новый релиз','create-release',true))+
+  (chosen?'<div class="artist-filter-bar">'+ico('users')+
+  '<strong>'+esc(chosen.name)+'</strong><span>'+rows.length+' релизов</span>'+
+  '<button class="button sm ghost" data-action="reset-artist-filter">Показать всех артистов '+ico('x')+'</button></div>':'')+
   '<section class="panel"><div class="toolbar"><div class="search-wrap">'+ico('search')+
   '<input class="input search" id="global-search" value="'+esc(s.q)+'" placeholder="Артист или название…" autocomplete="off"></div>'+
   '<select class="input small-input" id="release-status"><option value="all">Все статусы</option>'+
@@ -555,6 +562,7 @@ async function claimOwner(){
 function go(page){
  if(!nav.some(x=>x[0]===page))return;
  if(page==='team'&&s.member?.role!=='owner')return;
+ if(page==='releases')s.artistFilter=null;
  s.q='';s.filter='all';s.current=page;
  render();
  window.scrollTo({top:0,behavior:'instant'});
@@ -1066,8 +1074,8 @@ document.addEventListener('click',async event=>{
  }
  const artist=event.target.closest('[data-artist-view]');
  if(artist){
-  s.q='';s.current='releases';s.releases=s.releases.sort((a,b)=>
-   (a.artist_id===artist.dataset.artistView?0:1)-(b.artist_id===artist.dataset.artistView?0:1));
+  s.artistFilter=artist.dataset.artistView;
+  s.q='';s.filter='all';s.current='releases';
   render();return;
  }
  const release=event.target.closest('[data-edit-release]');
@@ -1090,6 +1098,7 @@ document.addEventListener('click',async event=>{
   case 'claim-owner':await claimOwner();break;
   case 'access-refresh':try{await refreshIdentity();notice('Права обновлены.')}catch(e){notice(formatError(e),true)}break;
   case 'logout':await s.db?.auth.signOut();s.user=null;s.member=null;render();break;
+  case 'reset-artist-filter':s.artistFilter=null;s.q='';render();break;
   case 'create-artist':openCreateArtist();break;
   case 'create-release':openCreateRelease();break;
   case 'create-artist-save':await createArtist();break;
