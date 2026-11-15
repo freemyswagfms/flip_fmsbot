@@ -17,7 +17,7 @@ export default async function handler(req){
      path='release-group?artist='+encodeURIComponent(id)+'&fmt=json&limit=100&offset='+(page*100);
    }else return response({error:'BAD_REQUEST'},400);
    const upstream=await fetch('https://musicbrainz.org/ws/2/'+path,{
-     headers:{'User-Agent':'FLIPStudio/0.9.0 (https://flip-studio.vercel.app)','Accept':'application/json'},
+     headers:{'User-Agent':'FLIPStudio/0.9.0 (https://flip-studio-six.vercel.app)','Accept':'application/json'},
      signal:AbortSignal.timeout(12000)
    });
    if(!upstream.ok)return response({error:'MUSIC_CATALOG_UNAVAILABLE'},502);
