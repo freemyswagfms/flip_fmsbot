@@ -56,6 +56,8 @@ test('Authenticated GET and POST forward only the validated Telegram ID to the s
     calls.push({url:String(url),payload:JSON.parse(options.body),auth:options.headers.apikey});
     const state={balance:0,xp:0,level:1,xp_to_next:100,inventory:[],discovered:[]};
     if(String(url).endsWith('flip_bootstrap'))return new Response(JSON.stringify(state),{status:200});
+    if(String(url).endsWith('flip_streak_touch'))return new Response(JSON.stringify({days:1,unclaimed:0}),{status:200});
+    if(String(url).endsWith('flip_snapshot'))return new Response(JSON.stringify(state),{status:200});
     if(String(url).endsWith('flip_public_catalog'))return new Response(JSON.stringify({artists:[],releases:[],cards:[]}),{status:200});
     if(String(url).endsWith('flip_task_snapshot'))return new Response(JSON.stringify({daily:[],weekly:[]}),{status:200});
     if(String(url).endsWith('flip_open_drop'))return new Response(JSON.stringify({card_id:'carti/die-lit/common',state}),{status:200});
