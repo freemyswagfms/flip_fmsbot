@@ -855,19 +855,48 @@ async function uploadImage(file,rarity,opts={zoom:1,x:0,y:0,mode:'contain'}){
   {path:folder+'-1024.webp',data:processed,contentType:'image/webp'},
   {path:folder+'-thumb.webp',data:thumb,contentType:'image/webp'}
  ];
- for(const obj of parts){
-  const {error}=await s.db.storage.from('flip-studio-drafts').upload(obj.path,obj.data,{
-   contentType:obj.contentType,cacheControl:'3600',upsert:false
-  });
-  if(error)throw error;
+ const uploaded=[];
+ try{
+  for(const obj of parts){
+   const {error}=await s.db.storage.from('flip-studio-drafts').upload(obj.path,obj.data,{
+    contentType:obj.contentType,cacheControl:'3600',upsert:false
+   });
+   if(error)throw error;
+   uploaded.push(obj.path);
+  }
+  // A generic UPSERT attempts UPDATE on release_id / rarity / public_url.
+  // Those columns are intentionally immutable and ungrantable to editors.
+  // Use a restricted INSERT or targeted UPDATE instead of weakening RLS.
+  const variantTable=s.db.from('flip_studio_variants');
+  const {data:existing,error:lookupError}=await variantTable.select('release_id')
+    .eq('release_id',r.id).eq('rarity',rarity).maybeSingle();
+  if(lookupError)throw lookupError;
+  const fields={
+   original_path:parts[0].path,
+   processed_path:parts[1].path,
+   thumbnail_path:parts[2].path,
+   uploaded_by:s.user.id,
+   updated_at:new Date().toISOString()
+  };
+  const updateExisting=()=>s.db.from('flip_studio_variants').update(fields)
+    .eq('release_id',r.id).eq('rarity',rarity).select('release_id');
+  let result=existing?await updateExisting():
+    await s.db.from('flip_studio_variants').insert({
+      release_id:r.id,rarity,...fields
+    }).select('release_id');
+  // Concurrent editors may create the first variant at the same time.
+  if(!existing&&result.error?.code==='23505')result=await updateExisting();
+  if(result.error)throw result.error;
+  if(result.data?.length!==1)
+    throw new Error('Карточку не удалось сохранить: релиз изменён или уже опубликован.');
+  s.thumbs.delete(parts[2].path);
+ }catch(error){
+  // Failed DB writes should not leave extra unreferenced image uploads.
+  if(uploaded.length){
+   try{await s.db.storage.from('flip-studio-drafts').remove(uploaded)}catch{}
+  }
+  throw error;
  }
- const {error:saveError}=await s.db.from('flip_studio_variants').upsert({
-  release_id:r.id,rarity,original_path:parts[0].path,
-  processed_path:parts[1].path,thumbnail_path:parts[2].path,
-  public_url:null,uploaded_by:s.user.id,updated_at:new Date().toISOString()
- },{onConflict:'release_id,rarity'});
- if(saveError)throw saveError;
- s.thumbs.delete(parts[2].path);
 }
 async function saveCrop(){
  if(!uploadFile||!uploadRarity||s.busy)return;
