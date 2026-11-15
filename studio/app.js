@@ -479,7 +479,7 @@ function render(){
  const pages={dashboard,artists:artistGrid,releases:releaseGrid,import:importer,editor,
   team,activity};
  app.innerHTML=layout((pages[s.current]||dashboard)());
- if(s.current==='editor')populateThumbnails();
+ if(s.current==='editor'&&s.editorMode==='draft')populateThumbnails();
  if(s.current==='team')refreshTeam();
 }
 function authScreen(message=''){
@@ -536,6 +536,14 @@ async function loadData(){
  ]);
  for(const q of queries)if(q.error)throw q.error;
  [s.artists,s.releases,s.variants,s.audit]=queries.map(q=>q.data||[]);
+ try{
+  const result=await invoke('manage?view=catalog');
+  if(result.catalog&&Array.isArray(result.catalog.releases))
+   s.publishedCatalog=result.catalog;
+ }catch(e){
+  if(!s.publishedCatalog.releases?.length)
+   notice('Не удалось получить опубликованный каталог: '+formatError(e),true);
+ }
 }
 async function refreshIdentity(){
  const {data:{user}}=await s.db.auth.getUser();
@@ -834,7 +842,11 @@ async function publishRelease(){
  try{
   const result=await invoke('manage',{action:'publish',releaseId:r.id});
   if(!result.ok)throw new Error('PUBLISH_FAILED');
-  await loadData();render();notice('Релиз опубликован в FLIP!');
+  const artist=s.artists.find(x=>x.id===r.artist_id);
+  await loadData();
+  s.selectedPublished=artist?.slug+'/'+r.slug;
+  s.editorMode='published';
+  render();notice('Релиз опубликован в FLIP!');
  }catch(e){notice(formatError(e),true)}
  finally{s.busy=false;render()}
 }
@@ -949,7 +961,29 @@ async function canvasBlob(canvas,quality=.9){
  if(!blob||blob.type!=='image/webp')throw new Error('Этот браузер не поддерживает WebP. Обнови Safari/Chrome.');
  return blob;
 }
+async function uploadPublishedImage(file,rarity,opts){
+ if(!['owner','admin'].includes(s.member?.role))
+   throw new Error('FORBIDDEN');
+ const cardId=s.selectedPublished+'/'+rarity;
+ const card=publishedCard(cardId);
+ if(!card)throw new Error('CARD_NOT_FOUND');
+ if(!imageBitmap)imageBitmap=await imageToBitmap(file);
+ crop=opts;
+ const processed=await canvasBlob(croppingCanvas(1024),.91);
+ if(processed.size>5*1024*1024)throw new Error('ARTWORK_TOO_LARGE');
+ const [artist,release]=s.selectedPublished.split('/');
+ const prefix=s.user.id+'/published/'+artist+'/'+release+'/'+rarity+'/'+crypto.randomUUID();
+ const processedPath=prefix+'-1024.webp';
+ const {error}=await s.db.storage.from('flip-studio-drafts').upload(processedPath,processed,{
+  contentType:'image/webp',cacheControl:'3600',upsert:false
+ });
+ if(error)throw error;
+ // A server-verified transaction promotes only an existing game card image.
+ // The card ID, inventory and historical original files never change.
+ await invoke('manage',{action:'replace_artwork',cardId,processedPath});
+}
 async function uploadImage(file,rarity,opts={zoom:1,x:0,y:0,mode:'contain'}){
+ if(s.editorMode==='published')return uploadPublishedImage(file,rarity,opts);
  if(!s.selectedRelease)throw new Error('Выбери релиз');
  const r=s.releases.find(x=>x.id===s.selectedRelease);
  if(!r||r.status==='published')throw new Error('Опубликованный релиз недоступен для замены');
@@ -1015,7 +1049,10 @@ async function saveCrop(){
  const btn=$('#crop-save');if(btn){btn.disabled=true;btn.textContent='Сохраняем файлы…'}
  try{
   await uploadImage(file,rarity,options);
-  cancelCrop();await loadData();render();notice('Обложка '+rarity+' сохранена в 1024 × 1024.');
+  cancelCrop();await loadData();render();
+  notice(s.editorMode==='published'?
+   'Опубликованная обложка '+rarity+' заменена. Перезапусти FLIP для обновления.':
+   'Обложка '+rarity+' сохранена в 1024 × 1024.');
  }catch(e){notice('Ошибка загрузки: '+formatError(e),true)}
  finally{s.busy=false}
 }
@@ -1140,10 +1177,16 @@ function pasteImageFile(data){
 }
 function setClipboardTarget(rarity){
  if(!rarities.some(x=>x.id===rarity)||s.current!=='editor')return;
- const release=s.releases.find(r=>r.id===s.selectedRelease);
- if(!release||release.status==='published')return;
+ if(s.editorMode==='published'){
+  if(!['owner','admin'].includes(s.member?.role))return;
+  if(!publishedCard(s.selectedPublished+'/'+rarity))return;
+  clipboardRelease='published:'+s.selectedPublished;
+ }else{
+  const release=s.releases.find(r=>r.id===s.selectedRelease);
+  if(!release||release.status==='published')return;
+  clipboardRelease=release.id;
+ }
  clipboardRarity=rarity;
- clipboardRelease=release.id;
  document.querySelectorAll('[data-art-slot]').forEach(slot=>{
    const active=slot.dataset.artSlot===rarity;
    slot.classList.toggle('paste-selected',active);
@@ -1162,11 +1205,15 @@ document.addEventListener('paste',event=>{
  if(isTextPasteTarget(event.target))return; // preserve text fields & OTP
  const file=pasteImageFile(event.clipboardData);
  if(!file)return; // allow normal paste if clipboard has text, not an image
- const release=s.releases.find(r=>r.id===s.selectedRelease);
- if(!release||release.status==='published')return;
+ const published=s.editorMode==='published';
+ const release=published?null:s.releases.find(r=>r.id===s.selectedRelease);
+ if(published&&!['owner','admin'].includes(s.member.role))return;
+ if(!published&&(!release||release.status==='published'))return;
  event.preventDefault();
- const rarity=clipboardRelease===release.id&&rarities.some(r=>r.id===clipboardRarity)?
-  clipboardRarity:mainRarities.find(r=>!releaseVariants(release.id).some(v=>v.rarity===r))||'common';
+ const key=published?'published:'+s.selectedPublished:release.id;
+ const rarity=clipboardRelease===key&&rarities.some(r=>r.id===clipboardRarity)?
+  clipboardRarity:(published?'common':mainRarities.find(r=>!releaseVariants(release.id).some(v=>v.rarity===r))||'common');
+ if(published&&!publishedCard(s.selectedPublished+'/'+rarity))return;
  if(!['image/png','image/jpeg','image/webp'].includes(file.type)){
    notice('Этот формат картинки не поддерживается. Скопируй PNG, JPG или WebP.',true);
    return;
@@ -1201,13 +1248,25 @@ document.addEventListener('click',async event=>{
   render();return;
  }
  const release=event.target.closest('[data-edit-release]');
- if(release){s.selectedRelease=release.dataset.editRelease;go('editor');return;}
+ if(release){
+  const item=s.releases.find(r=>r.id===release.dataset.editRelease);
+  if(item?.status==='published'){
+   const artist=s.artists.find(a=>a.id===item.artist_id);
+   s.selectedPublished=artist?.slug+'/'+item.slug;
+   s.editorMode='published';
+  }else{
+   s.selectedRelease=release.dataset.editRelease;
+   s.editorMode='draft';
+  }
+  go('editor');return;
+ }
  const pasteSlot=event.target.closest('[data-paste-rarity]');
  if(pasteSlot){setClipboardTarget(pasteSlot.dataset.pasteRarity);return;}
  const upload=event.target.closest('[data-upload-rarity]');
  if(upload){
   uploadRarity=upload.dataset.uploadRarity;
-  clipboardRarity=uploadRarity;clipboardRelease=s.selectedRelease;
+  clipboardRarity=uploadRarity;
+  clipboardRelease=s.editorMode==='published'?'published:'+s.selectedPublished:s.selectedRelease;
   $('#single-upload').value='';$('#single-upload').click();return;
  }
  const act=event.target.closest('[data-action]')?.dataset.action;
@@ -1221,6 +1280,8 @@ document.addEventListener('click',async event=>{
   case 'access-refresh':try{await refreshIdentity();notice('Права обновлены.')}catch(e){notice(formatError(e),true)}break;
   case 'logout':await s.db?.auth.signOut();s.user=null;s.member=null;render();break;
   case 'reset-artist-filter':s.artistFilter=null;s.q='';render();break;
+  case 'editor-drafts':s.editorMode='draft';render();break;
+  case 'editor-published':s.editorMode='published';render();break;
   case 'create-artist':openCreateArtist();break;
   case 'create-release':openCreateRelease();break;
   case 'create-artist-save':await createArtist();break;
@@ -1246,6 +1307,7 @@ document.addEventListener('change',event=>{
  const el=event.target;
  if(el.id==='release-status'){s.filter=el.value;render()}
  if(el.id==='editor-release'){s.selectedRelease=el.value;render()}
+ if(el.id==='editor-published-release'){s.selectedPublished=el.value;render()}
  if(el.hasAttribute('data-import-id')){
   if(el.checked)s.importSelected.add(el.dataset.importId);
   else s.importSelected.delete(el.dataset.importId);
