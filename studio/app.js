@@ -747,7 +747,7 @@ function renderThumbnailDOM(id){
    '" alt="'+esc(v.rarity)+'" loading="lazy"><span class="tag published">✓ WEBP</span>';
  }
 }
-let imageBitmap=null,uploadRarity=null,uploadFile=null,crop={zoom:1,x:0,y:0};
+let imageBitmap=null,uploadRarity=null,uploadFile=null,crop={zoom:1,x:0,y:0,mode:'contain'};
 async function imageToBitmap(file){
  if(typeof createImageBitmap==='function')return createImageBitmap(file);
  const url=URL.createObjectURL(file);
@@ -762,13 +762,22 @@ function croppingCanvas(size=1024){
  const ctx=canvas.getContext('2d',{alpha:false});
  if(!ctx||!imageBitmap)throw new Error('Canvas недоступен');
  const w=imageBitmap.width,h=imageBitmap.height;
- const source=Math.min(w,h)/crop.zoom;
- const sx=(w-source)*clamp01(.5+crop.x/200);
- const sy=(h-source)*clamp01(.5+crop.y/200);
- ctx.drawImage(imageBitmap,sx,sy,source,source,0,0,size,size);
+ // "Contain" is the default: all of a non-square original remains visible.
+ // "Cover" is optional for artists who want edge-to-edge square artwork.
+ const fit=crop.mode==='cover'?Math.max(size/w,size/h):Math.min(size/w,size/h);
+ const scale=fit*Math.max(1,Number(crop.zoom)||1);
+ const drawW=w*scale,drawH=h*scale;
+ const overflowX=Math.max(0,(drawW-size)/2);
+ const overflowY=Math.max(0,(drawH-size)/2);
+ const dx=(size-drawW)/2-overflowX*Math.max(-1,Math.min(1,crop.x/100));
+ const dy=(size-drawH)/2-overflowY*Math.max(-1,Math.min(1,crop.y/100));
+ // Neutral borders are explicit and identical in the preview and final WebP.
+ ctx.fillStyle='#0b0d0c';
+ ctx.fillRect(0,0,size,size);
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ ctx.drawImage(imageBitmap,dx,dy,drawW,drawH);
  return canvas;
 }
-const clamp01=n=>Math.max(0,Math.min(1,n));
 function paintCrop(){
  const display=$('#crop-preview');
  if(!display||!imageBitmap)return;
@@ -779,20 +788,24 @@ function openCrop(file,rarity){
  if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type))
   return notice('Разрешены только PNG, JPG, WebP.',true);
  if(file.size>15*1024*1024)return notice('Максимальный исходный файл — 15 МБ.',true);
- uploadFile=file;uploadRarity=rarity;crop={zoom:1,x:0,y:0};
+ uploadFile=file;uploadRarity=rarity;crop={zoom:1,x:0,y:0,mode:'contain'};
  const overlay=document.createElement('div');
  overlay.className='crop-overlay';overlay.id='crop-overlay';
  overlay.innerHTML='<div class="crop-dialog"><div class="panel-title"><div><div class="page-kicker">'+
   'ARTWORK PIPELINE / 1024</div><h2 style="margin-top:8px">Кадрирование · '+esc(rarity)+
   '</h2></div><button class="button sm ghost" data-action="crop-cancel">'+ico('x')+'</button></div>'+
   '<div class="crop-body"><div class="crop-frame" id="crop-frame"><canvas id="crop-preview" width="420" height="420"></canvas></div>'+
-  '<div class="crop-control"><div class="field"><label>Масштаб</label>'+
+  '<div class="crop-control"><div class="field"><label>Кадрирование</label>'+
+  '<select class="input" id="crop-fit-mode">'+
+  '<option value="contain">Вписать целиком (без обрезки)</option>'+
+  '<option value="cover">Заполнить квадрат (обрезать края)</option></select></div>'+
+  '<div class="field"><label>Масштаб</label>'+
   '<input type="range" id="crop-zoom" min="1" max="3" step=".02" value="1"></div>'+
   '<div class="field"><label>Положение X</label>'+
   '<input type="range" id="crop-x" min="-100" max="100" value="0"></div>'+
   '<div class="field"><label>Положение Y</label>'+
   '<input type="range" id="crop-y" min="-100" max="100" value="0"></div>'+
-  '<p class="hint">Перетащи изображение в квадрате. Готовый файл: 1024 × 1024 WebP. Оригинал тоже сохранится.</p>'+
+  '<p class="hint">По умолчанию виден весь оригинал; у прямоугольных изображений остаются тёмные поля. Режим «Заполнить квадрат» кадрирует края. Выход: 1024 × 1024 WebP, исходник сохраняется.</p>'+
   '<div class="tag">SOURCE · '+esc(file.name)+' · '+Math.round(file.size/1024)+' KB</div></div></div>'+
   '<div class="crop-actions"><button class="button ghost" data-action="crop-cancel">Отмена</button>'+
   '<button class="button primary" id="crop-save" data-action="crop-save">'+
@@ -827,7 +840,7 @@ async function canvasBlob(canvas,quality=.9){
  if(!blob||blob.type!=='image/webp')throw new Error('Этот браузер не поддерживает WebP. Обнови Safari/Chrome.');
  return blob;
 }
-async function uploadImage(file,rarity,opts={zoom:1,x:0,y:0}){
+async function uploadImage(file,rarity,opts={zoom:1,x:0,y:0,mode:'contain'}){
  if(!s.selectedRelease)throw new Error('Выбери релиз');
  const r=s.releases.find(x=>x.id===s.selectedRelease);
  if(!r||r.status==='published')throw new Error('Опубликованный релиз недоступен для замены');
@@ -842,19 +855,48 @@ async function uploadImage(file,rarity,opts={zoom:1,x:0,y:0}){
   {path:folder+'-1024.webp',data:processed,contentType:'image/webp'},
   {path:folder+'-thumb.webp',data:thumb,contentType:'image/webp'}
  ];
- for(const obj of parts){
-  const {error}=await s.db.storage.from('flip-studio-drafts').upload(obj.path,obj.data,{
-   contentType:obj.contentType,cacheControl:'3600',upsert:false
-  });
-  if(error)throw error;
+ const uploaded=[];
+ try{
+  for(const obj of parts){
+   const {error}=await s.db.storage.from('flip-studio-drafts').upload(obj.path,obj.data,{
+    contentType:obj.contentType,cacheControl:'3600',upsert:false
+   });
+   if(error)throw error;
+   uploaded.push(obj.path);
+  }
+  // A generic UPSERT attempts UPDATE on release_id / rarity / public_url.
+  // Those columns are intentionally immutable and ungrantable to editors.
+  // Use a restricted INSERT or targeted UPDATE instead of weakening RLS.
+  const variantTable=s.db.from('flip_studio_variants');
+  const {data:existing,error:lookupError}=await variantTable.select('release_id')
+    .eq('release_id',r.id).eq('rarity',rarity).maybeSingle();
+  if(lookupError)throw lookupError;
+  const fields={
+   original_path:parts[0].path,
+   processed_path:parts[1].path,
+   thumbnail_path:parts[2].path,
+   uploaded_by:s.user.id,
+   updated_at:new Date().toISOString()
+  };
+  const updateExisting=()=>s.db.from('flip_studio_variants').update(fields)
+    .eq('release_id',r.id).eq('rarity',rarity).select('release_id');
+  let result=existing?await updateExisting():
+    await s.db.from('flip_studio_variants').insert({
+      release_id:r.id,rarity,...fields
+    }).select('release_id');
+  // Concurrent editors may create the first variant at the same time.
+  if(!existing&&result.error?.code==='23505')result=await updateExisting();
+  if(result.error)throw result.error;
+  if(result.data?.length!==1)
+    throw new Error('Карточку не удалось сохранить: релиз изменён или уже опубликован.');
+  s.thumbs.delete(parts[2].path);
+ }catch(error){
+  // Failed DB writes should not leave extra unreferenced image uploads.
+  if(uploaded.length){
+   try{await s.db.storage.from('flip-studio-drafts').remove(uploaded)}catch{}
+  }
+  throw error;
  }
- const {error:saveError}=await s.db.from('flip_studio_variants').upsert({
-  release_id:r.id,rarity,original_path:parts[0].path,
-  processed_path:parts[1].path,thumbnail_path:parts[2].path,
-  public_url:null,uploaded_by:s.user.id,updated_at:new Date().toISOString()
- },{onConflict:'release_id,rarity'});
- if(saveError)throw saveError;
- s.thumbs.delete(parts[2].path);
 }
 async function saveCrop(){
  if(!uploadFile||!uploadRarity||s.busy)return;
@@ -873,7 +915,7 @@ async function bulkUpload(files){
  if(files.length>5)return notice('Пакетная загрузка поддерживает до 5 файлов.',true);
  const list=mainRarities.slice(0,files.length);
  if(!window.confirm('Файлы будут загружены по порядку: '+list.join(' → ')+
-   '. Неквадратные изображения обрежутся по центру. Продолжить?'))return;
+   '. Неквадратные изображения будут вписаны целиком с тёмными полями (без обрезки). Продолжить?'))return;
  s.busy=true;render();
  let done=0;
  try{
@@ -1005,6 +1047,12 @@ document.addEventListener('change',event=>{
   const b=$('[data-action="import-selected"]');
   if(b){b.disabled=!s.importSelected.size;b.innerHTML=ico('upload')+
     ' Импортировать ('+s.importSelected.size+')'}
+ }
+ if(el.id==='crop-fit-mode'){
+  crop.mode=el.value==='cover'?'cover':'contain';
+  crop.zoom=1;crop.x=0;crop.y=0;
+  $('#crop-zoom').value='1';$('#crop-x').value='0';$('#crop-y').value='0';
+  paintCrop();
  }
  if(el.id==='single-upload'&&el.files?.length)openCrop(el.files[0],uploadRarity);
  if(el.id==='bulk-upload'&&el.files?.length)bulkUpload(Array.from(el.files));
