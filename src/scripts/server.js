@@ -5,11 +5,11 @@
   const initData = telegram?.initData || '';
   const telegramClient=window.FLIPViewport?.isTelegram || !!initData;
   const api='/api/flip';
-  const bridge={mode:'loading',error:null,connectedUser:null,profile:null,isAdmin:false};
-  async function request(action,requestId){
+  const bridge={mode:'loading',error:null,connectedUser:null,profile:null,isAdmin:false,tasks:null};
+  async function request(action,requestId,payload={}){
     const headers={'x-telegram-init-data':initData};
     const options={method:action?'POST':'GET',headers,cache:'no-store'};
-    if(action){headers['content-type']='application/json';options.body=JSON.stringify({action,requestId});}
+    if(action){headers['content-type']='application/json';options.body=JSON.stringify({action,requestId,...payload});}
     const response=await fetch(api,options);
     let data;try{data=await response.json()}catch{data={error:'INVALID_RESPONSE'}};
     if(!response.ok){const error=new Error(data.error||'SERVER_ERROR');error.status=response.status;throw error;}
@@ -42,7 +42,7 @@
   }
   bridge.connect=async()=>{
     if(!initData){bridge.mode=telegramClient?'blocked':'demo';bridge.error=telegramClient?'NO_TELEGRAM_AUTH':'OUTSIDE_TELEGRAM';return null;}
-    try{const data=await request();if(data.catalog)window.FLIPCatalog?.importServerCatalog?.(data.catalog);bridge.mode='server';bridge.error=null;bridge.profile=data.profile||null;bridge.isAdmin=data.admin===true;return makeState(data.state);}
+    try{const data=await request();if(data.catalog)window.FLIPCatalog?.importServerCatalog?.(data.catalog);bridge.mode='server';bridge.error=null;bridge.profile=data.profile||null;bridge.isAdmin=data.admin===true;bridge.tasks=data.tasks||null;return makeState(data.state);}
     catch(error){
       // Never switch an authenticated Telegram user back to writable browser currency.
       bridge.mode='blocked';bridge.error=error.message;return null;
@@ -82,5 +82,17 @@
   }
   bridge.drop=id=>perform('drop',id);
   bridge.pack=id=>perform('pack',id);
+   bridge.refreshTasks=async()=>{
+     if(bridge.mode!=='server')return null;
+     const data=await request();
+     bridge.tasks=data.tasks||null;
+     return bridge.tasks;
+   };
+   bridge.claimTask=async(scope,slot,version)=>{
+     if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+     const result=await request('claim_task',crypto.randomUUID(),{scope,slot,version});
+     bridge.tasks=result.tasks||bridge.tasks;
+     return {...result,state:makeState(result.state)};
+   };
   window.FLIPServer=bridge;
 })();
