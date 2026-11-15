@@ -250,6 +250,14 @@
     mode=options.mode||'owned';
     playlist=normalizeCards(card,options);
     activeIndex=Math.max(0,playlist.findIndex(item=>key(item)===key(card)));
+    // Preserve explicit details supplied by older callers without mutating the
+    // inventory objects used by collection/leaderboard calculations.
+    if(options.count!==undefined||options.testCount!==undefined){
+      const selected=playlist[activeIndex];
+      playlist[activeIndex]={...selected,
+        count:options.count??selected.count,
+        testCount:options.testCount??selected.testCount};
+    }
     lastFocused=document.activeElement;
     const node=document.createElement('div');
     node.className='flip-viewer';
