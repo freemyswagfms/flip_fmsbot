@@ -14,6 +14,7 @@ create table if not exists public.flip_task_templates (
 );
 insert into public.flip_task_templates(task_key,scope,slot,title,description,metric,target,min_level,max_level) values
  ('d_simple_any_1','daily',1,'Открой дроп','Подойдёт и приветственный дроп','all_drops',1,1,null),
+ ('d_simple_cards_1','daily',1,'Получи карточку','Любая карточка из дропа или пака','all_cards',1,1,null),
  ('d_simple_free_1','daily',1,'Открой бесплатный дроп','Открой обычный дроп после таймера','free_drops',1,2,null),
  ('d_simple_free_2','daily',1,'Открой 2 бесплатных дропа','Открой два обычных дропа за день','free_drops',2,5,null),
  ('d_collect_new_1','daily',2,'Получи новую карточку','Открой разновидность впервые','new_cards',1,1,15),
