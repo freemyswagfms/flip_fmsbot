@@ -1,4 +1,4 @@
-import {response,authenticateUser,dbFetch,verifyPair,issueError} from './_shared.js';
+import {response,authenticateUser,dbFetch,verifyPair,issueError} from '../lib/shared.js';
 export default async function handler(req){
  if(req.method!=='POST')return response({error:'METHOD_NOT_ALLOWED'},405);
  try{
