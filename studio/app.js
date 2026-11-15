@@ -231,7 +231,7 @@ function importer(){
    esc(item.date||'Дата неизвестна')+' · '+esc(item.type.toUpperCase())+'</small></span>'+
    '<span class="tag">'+esc(item.type.toUpperCase())+'</span></label>').join('')+'</div>'+
    '<div class="import-toolbar" style="margin-top:17px"><div>'+
-   (s.importReleases.length>=100?button('Показать больше','import-more'):'')+'</div>'+
+   (s.importReleases.length>=100&&s.importSource!=='iTunes'&&s.importPage*100<s.importCount?button('Показать больше','import-more'):'')+'</div>'+
    '<button class="button primary" data-action="import-selected" '+(!s.importSelected.size||s.busy?'disabled':'')+'>'+
    ico('upload')+' Импортировать ('+s.importSelected.size+')</button></div>':
    '<div class="empty">Найденных релизов пока нет. Попробуй обновить поиск.</div>');
@@ -380,19 +380,22 @@ function authScreen(message=''){
   '<div class="hint">PRIVATE WORKSPACE · SUPABASE AUTH · VERCEL</div></div>'+
   '<div class="auth-right"><div class="auth-box"><div class="page-kicker">SECURE ACCESS</div>'+
   '<h2>Вход в FLIP STUDIO</h2>'+
-  '<p>Если тебя пригласили в команду, вставь код, полученный от владельца. Письмо и SMTP для этого не нужны.</p>'+
-  '<label class="field"><span class="hint">EMAIL</span><input id="auth-email" class="input" type="email" autocomplete="email" placeholder="you@example.com"></label>'+
-  '<button class="button primary full" data-action="auth-email" '+(!s.db||emailRequestPending||Date.now()<emailCooldownUntil?'disabled':'')+'>'+ico('arrow-right')+
-  (emailRequestPending?' Отправляем письмо…':Date.now()<emailCooldownUntil?' Письмо запрошено':' Продолжить с email')+'</button>'+
+  '<p>Получил приглашение от владельца? Вставь одноразовый код. Email и SMTP не потребуются.</p>'+
+  '<label class="field"><span class="hint">КОД ПРИГЛАШЕНИЯ</span>'+
+  '<input id="studio-invite-code" type="password" class="input" autocomplete="off" '+
+  'placeholder="Вставь код от владельца FLIP STUDIO"></label>'+
+  '<button class="button primary full" data-action="auth-invite-code" '+(!s.db||inviteCodePending?'disabled':'')+'>'+
+  ico('shield')+' Войти по приглашению</button>'+
+  '<div style="border-top:1px solid #3b513d;margin-top:23px;padding-top:20px" class="field">'+
+  '<label>ВХОД ПО EMAIL · ТРЕБУЕТ РАБОТАЮЩЕЙ ПОЧТЫ</label>'+
+  '<input id="auth-email" class="input" type="email" autocomplete="email" placeholder="you@example.com">'+
+  '<button class="button full ghost" data-action="auth-email" '+(!s.db||emailRequestPending||Date.now()<emailCooldownUntil?'disabled':'')+'>'+
+  ico('arrow-right')+
+  (emailRequestPending?' Отправляем письмо…':Date.now()<emailCooldownUntil?' Письмо запрошено':' Запросить письмо')+
+  '</button><p class="hint">Для приглашённых участников рекомендуем код выше. Почтовый вход ограничен Supabase.</p></div>'+
   (message?'<p style="color:var(--warning)">'+esc(message)+'</p>':'')+
   (!s.db?'<button class="button full ghost" data-action="boot-retry" style="margin-top:10px">'+
   ico('history')+' Повторить подключение</button>':'')+
-  '<div style="border-top:1px solid #3b513d;margin-top:22px;padding-top:20px" class="field">'+
-  '<label>КОД ПРИГЛАШЕНИЯ</label><input id="studio-invite-code" type="password" class="input" autocomplete="off" '+
-  'placeholder="Вставь код от владельца FLIP STUDIO">'+
-  '<button class="button full" data-action="auth-invite-code" '+(!s.db||inviteCodePending?'disabled':'')+'>'+
-  ico('shield')+' Войти по приглашению</button>'+
-  '<p class="hint">Не нажимай «Продолжить с email», если получил код. Код одноразовый и заменяет письмо.</p></div>'+
   '<p class="hint" style="margin-top:19px">Доступ разрешён только участникам с активной ролью. Игровой администратор FLIP остаётся отдельным.</p>'+
   '</div></div></div>';
 }
