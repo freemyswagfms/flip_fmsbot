@@ -104,5 +104,7 @@ test('Hidden edge glitch is available in reward, gallery, inspect and future sho
   assert.match(viewer,/\.col-gallery-tile\.col-hidden \.col-gallery-cover::after/);
   assert.match(viewer,/\.sq-card\.hidden::after/);
   assert.match(viewer,/\.flip-hidden-frame::after/);
-  assert.match(reveal,/data-phase="result"\] \.flip-face-front\{/);
+  assert.match(reveal,/data-rarity="hidden"\] \.flip-face-front::after\{/);
+  assert.match(reveal,/data-phase="result"\] \.flip-face-back\{/);
+  assert.match(reveal,/visibility:hidden/);
 });
