@@ -6,7 +6,7 @@ import music from '../studio/api/music.js';
 import owner from '../studio/api/owner.js';
 import manage from '../studio/api/manage.js';
 
-const STUDIO_ORIGIN='https://flip-studio.vercel.app';
+const STUDIO_ORIGIN='https://flip-studio-six.vercel.app';
 const routes={music,owner,manage};
 function corsHeaders(){
   return {'Access-Control-Allow-Origin':STUDIO_ORIGIN,'Access-Control-Allow-Headers':
