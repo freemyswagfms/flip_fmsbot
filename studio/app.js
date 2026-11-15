@@ -286,11 +286,88 @@ async function variantPreview(v){
  s.thumbs.set(v.thumbnail_path,data.signedUrl);
  return data.signedUrl;
 }
+function publishedGroups(){
+ const cat=s.publishedCatalog;
+ const artists=new Map((cat.artists||[]).map(a=>[a.id,a]));
+ return (cat.releases||[]).filter(release=>{
+   const artist=artists.get(release.artist_id);
+   return artist?.active!==false&&release.active!==false&&
+     (cat.cards||[]).some(card=>card.artist_id===release.artist_id&&
+      card.release_id===release.id&&card.active!==false);
+ }).map(release=>({
+  key:release.artist_id+'/'+release.id,
+  artist:artists.get(release.artist_id)?.name||release.artist_id,
+  release
+ })).sort((a,b)=>a.artist.localeCompare(b.artist,'ru')||
+   a.release.title.localeCompare(b.release.title,'ru'));
+}
+function publishedCard(cardId){
+ return (s.publishedCatalog.cards||[]).find(x=>x.id===cardId&&x.active!==false);
+}
+function editorTabs(){
+ const published=publishedGroups().length;
+ return '<div class="studio-tabs">'+
+  '<button type="button" class="button '+(s.editorMode==='draft'?'primary':'ghost')+
+  '" data-action="editor-drafts">'+ico('image')+' Черновики</button>'+
+  '<button type="button" class="button '+(s.editorMode==='published'?'primary':'ghost')+
+  '" data-action="editor-published">'+ico('check')+' Опубликованные ('+published+')</button></div>';
+}
+function publishedEditor(){
+ const groups=publishedGroups();
+ if(!groups.length)return pageHead('ARTWORK / 005','Опубликованные обложки',
+   'В опубликованном игровом каталоге пока нет карточек.')+
+   editorTabs()+'<div class="empty">'+ico('image')+'<strong>Нет опубликованных карточек</strong></div>';
+ if(!groups.some(x=>x.key===s.selectedPublished))s.selectedPublished=groups[0].key;
+ const group=groups.find(x=>x.key===s.selectedPublished);
+ const editable=['owner','admin'].includes(s.member.role);
+ const releaseKey='published:'+group.key;
+ if(clipboardRelease!==releaseKey||!rarities.some(x=>x.id===clipboardRarity)){
+  clipboardRelease=releaseKey;
+  clipboardRarity='common';
+ }
+ const art=rarities.map(r=>{
+  const card=publishedCard(group.key+'/'+r.id);
+  if(!card)return '';
+  // Old Carti artwork is still shipped with the game. Show it as fallback
+  // until the owner publishes an override in Supabase.
+  const url=card.art_url||('https://flip-fmsbot.vercel.app/src/assets/'+card.id+'.webp');
+  return '<div data-art-slot="'+r.id+'" class="art-slot has-art '+
+   (clipboardRarity===r.id?'paste-selected':'')+'">'+
+   '<div class="art-preview"><img src="'+esc(url)+'" loading="lazy" alt="'+
+   esc(group.artist+' — '+group.release.title+', '+r.label)+'"></div>'+
+   '<div class="art-slot-name">'+esc(r.label)+'</div>'+
+   '<div class="art-slot-note">'+esc(r.desc)+'</div>'+
+   (editable?'<button class="button" data-upload-rarity="'+r.id+'">'+ico('image')+
+     ' Заменить обложку</button>'+
+     '<button class="button ghost paste-select" data-paste-rarity="'+r.id+'" aria-pressed="'+
+     (clipboardRarity===r.id?'true':'false')+'">'+ico('copy')+
+     (clipboardRarity===r.id?' Выбрано · Ctrl+V':' Вставить · Ctrl+V')+'</button>':
+     '<p class="hint">Просмотр · для замены нужен Admin или Owner</p>')+
+   '</div>';
+ }).join('');
+ return pageHead('ARTWORK / 005','Опубликованные обложки',
+  'Меняй оформление карточек уже в игре. Редкость, ID и коллекции игроков остаются прежними.')+
+  editorTabs()+
+  '<div class="toolbar"><select class="input" id="editor-published-release" style="max-width:min(680px,100%)">'+
+   groups.map(g=>'<option value="'+esc(g.key)+'" '+(g.key===group.key?'selected':'')+'>'+
+    esc(g.artist+' — '+g.release.title)+'</option>').join('')+'</select></div>'+
+  '<p class="paste-instructions">'+ico('info',15)+
+   ' Замена обновляет изображение для всех игроков после перезапуска мини-аппа. '+
+   'Старые файлы не удаляются. Проверь изображение перед подтверждением.</p>'+
+  (editable?'<p class="paste-instructions">'+ico('copy',15)+
+   ' Выбери редкость и вставь изображение Ctrl+V (Mac: Cmd+V), либо нажми «Заменить обложку». '+
+   'Сейчас: <strong id="paste-target-label">'+
+   esc(rarities.find(x=>x.id===clipboardRarity)?.label||'Common')+'</strong>.</p>':'')+
+  '<section class="panel"><div class="panel-title"><h3>'+esc(group.artist+' — '+group.release.title)+
+   '</h3><span class="tag published">В ИГРЕ</span></div>'+
+   '<div class="editor-options">'+art+'</div></section>';
+}
 function editor(){
- const release=s.releases.find(r=>r.id===s.selectedRelease)||
-  s.releases.find(r=>r.status!=='published')||s.releases[0];
+ if(s.editorMode==='published')return publishedEditor();
+ const drafts=s.releases.filter(r=>r.status!=='published');
+ const release=drafts.find(r=>r.id===s.selectedRelease)||drafts[0];
  if(!release)return pageHead('ARTWORK / 005','Artwork Studio','Подготовка коллекционных обложек.')+
- '<div class="empty">'+ico('image')+'<strong>Пока нет релизов</strong><p>Сначала добавь релиз, затем загрузи обложки.</p>'+
+ editorTabs()+'<div class="empty">'+ico('image')+'<strong>Пока нет релизов</strong><p>Сначала добавь релиз, затем загрузи обложки.</p>'+
  button('Music Importer','nav-import',true)+'</div>';
  s.selectedRelease=release.id;
  const own=releaseVariants(release.id);
@@ -346,8 +423,9 @@ function editor(){
    '</aside>';
  return pageHead('ARTWORK / 005','Artwork Studio',
   'Один релиз — пять оформлений. Загружай изображения, кадрируй до 1024 × 1024 и просматривай перед публикацией.')+
+  editorTabs()+
   '<div class="toolbar"><select class="input" id="editor-release" style="max-width:min(620px,100%)">'+
-  s.releases.map(r=>'<option value="'+esc(r.id)+'" '+(release.id===r.id?'selected':'')+'>'+
+  drafts.map(r=>'<option value="'+esc(r.id)+'" '+(release.id===r.id?'selected':'')+'>'+
     esc(artistName(r.artist_id)+' — '+r.title)+'</option>').join('')+'</select>'+
   (release.status!=='published'?'<button class="button" data-action="bulk-start">'+ico('upload')+
     ' Пакетная загрузка 5 файлов</button>':'')+'</div>'+
