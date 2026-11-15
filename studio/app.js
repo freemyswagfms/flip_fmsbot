@@ -1,7 +1,7 @@
 import './styles.css';
 import {createClient} from '@supabase/supabase-js';
 
-/* FLIP STUDIO v0.9.0 — creative workspace. All privileged writes use RLS or
+/* FLIP STUDIO v0.9.1 — creative workspace. All privileged writes use RLS or
    authenticated server functions; no secret/service-role keys in this bundle. */
 const $=selector=>document.querySelector(selector);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -51,7 +51,8 @@ const nav=[
  ['activity','history','История']
 ];
 const s={db:null,user:null,member:null,artists:[],releases:[],variants:[],audit:[],
- current:'dashboard',selectedRelease:null,q:'',filter:'all',busy:false,
+ current:'dashboard',selectedRelease:null,artistFilter:null,q:'',filter:'all',busy:false,
+ editorMode:'draft',selectedPublished:null,publishedCatalog:{artists:[],releases:[],cards:[]},
  importQ:'',importArtists:[],importArtist:null,importReleases:[],importSelected:new Set(),
  importPage:0,importCount:0,importError:'',crop:null,
  thumbs:new Map(),ownerTicket:(()=>{try{return localStorage.getItem('flip_studio_claim')||''}catch{return ''}})()};
@@ -78,7 +79,13 @@ function formatError(e){
   'ALREADY_CLAIMED':'Ссылка уже использована. Получи новую в FLIP.',
   'STUDIO_CONFIG_MISSING':'Сайт ещё не настроен. Требуется подключение Supabase.',
   'EMAIL_DELIVERY_UNAVAILABLE':'Встроенная отправка почты ограничена. Используй код приглашения.',
- 'INVITE_LINK_UNAVAILABLE':'Не удалось создать код приглашения. Проверь доступ и попробуй ещё раз.'
+ 'INVITE_LINK_UNAVAILABLE':'Не удалось создать код приглашения. Проверь доступ и попробуй ещё раз.',
+ 'MEMBER_NOT_EDITABLE':'Права этого участника менять нельзя. Обнови список команды.',
+ 'BAD_IMAGE_REFERENCE':'Изображение не принадлежит текущему редактору.',
+ 'ARTWORK_DOWNLOAD_FAILED':'Не удалось прочитать загруженную обложку.',
+ 'INVALID_ARTWORK_FORMAT':'Обложка должна быть в формате WebP.',
+ 'ARTWORK_PUBLICATION_FAILED':'Не удалось обновить опубликованную обложку.',
+ 'CARD_NOT_FOUND':'Карточка отсутствует в опубликованном каталоге.'
  };
  if(/only request this after|rate limit|too many requests/i.test(msg))
   return 'Слишком частая отправка. Подожди немного и проверь, не пришло ли первое письмо.';
@@ -193,11 +200,17 @@ function releaseRow(r){
   ' · '+total+'/5 обложек</small></span>'+tag(r.status)+ico('chevron-right')+'</button>';
 }
 function releaseGrid(){
- const rows=s.releases.filter(r=>(s.filter==='all'||r.status===s.filter) &&
+ const chosen=s.artists.find(a=>a.id===s.artistFilter);
+ const rows=s.releases.filter(r=>(!chosen||r.artist_id===chosen.id)&&
+  (s.filter==='all'||r.status===s.filter) &&
   (!s.q||[r.title,artistName(r.artist_id)].join(' ').toLowerCase().includes(s.q.toLowerCase())));
- return pageHead('LIBRARY / 003','Релизы',
+ return pageHead('LIBRARY / 003',chosen?'Релизы: '+chosen.name:'Релизы',
+  chosen?'Показаны релизы только выбранного артиста. Можно вернуться к общему списку.':
   'Управляй альбомами, EP, микстейпами и синглами. Публикуются только полностью готовые наборы.',
   button(ico('plus')+' Новый релиз','create-release',true))+
+  (chosen?'<div class="artist-filter-bar">'+ico('users')+
+  '<strong>'+esc(chosen.name)+'</strong><span>'+rows.length+' релизов</span>'+
+  '<button class="button sm ghost" data-action="reset-artist-filter">Показать всех артистов '+ico('x')+'</button></div>':'')+
   '<section class="panel"><div class="toolbar"><div class="search-wrap">'+ico('search')+
   '<input class="input search" id="global-search" value="'+esc(s.q)+'" placeholder="Артист или название…" autocomplete="off"></div>'+
   '<select class="input small-input" id="release-status"><option value="all">Все статусы</option>'+
@@ -273,11 +286,88 @@ async function variantPreview(v){
  s.thumbs.set(v.thumbnail_path,data.signedUrl);
  return data.signedUrl;
 }
+function publishedGroups(){
+ const cat=s.publishedCatalog;
+ const artists=new Map((cat.artists||[]).map(a=>[a.id,a]));
+ return (cat.releases||[]).filter(release=>{
+   const artist=artists.get(release.artist_id);
+   return artist?.active!==false&&release.active!==false&&
+     (cat.cards||[]).some(card=>card.artist_id===release.artist_id&&
+      card.release_id===release.id&&card.active!==false);
+ }).map(release=>({
+  key:release.artist_id+'/'+release.id,
+  artist:artists.get(release.artist_id)?.name||release.artist_id,
+  release
+ })).sort((a,b)=>a.artist.localeCompare(b.artist,'ru')||
+   a.release.title.localeCompare(b.release.title,'ru'));
+}
+function publishedCard(cardId){
+ return (s.publishedCatalog.cards||[]).find(x=>x.id===cardId&&x.active!==false);
+}
+function editorTabs(){
+ const published=publishedGroups().length;
+ return '<div class="studio-tabs">'+
+  '<button type="button" class="button '+(s.editorMode==='draft'?'primary':'ghost')+
+  '" data-action="editor-drafts">'+ico('image')+' Черновики</button>'+
+  '<button type="button" class="button '+(s.editorMode==='published'?'primary':'ghost')+
+  '" data-action="editor-published">'+ico('check')+' Опубликованные ('+published+')</button></div>';
+}
+function publishedEditor(){
+ const groups=publishedGroups();
+ if(!groups.length)return pageHead('ARTWORK / 005','Опубликованные обложки',
+   'В опубликованном игровом каталоге пока нет карточек.')+
+   editorTabs()+'<div class="empty">'+ico('image')+'<strong>Нет опубликованных карточек</strong></div>';
+ if(!groups.some(x=>x.key===s.selectedPublished))s.selectedPublished=groups[0].key;
+ const group=groups.find(x=>x.key===s.selectedPublished);
+ const editable=['owner','admin'].includes(s.member.role);
+ const releaseKey='published:'+group.key;
+ if(clipboardRelease!==releaseKey||!rarities.some(x=>x.id===clipboardRarity)){
+  clipboardRelease=releaseKey;
+  clipboardRarity='common';
+ }
+ const art=rarities.map(r=>{
+  const card=publishedCard(group.key+'/'+r.id);
+  if(!card)return '';
+  // Old Carti artwork is still shipped with the game. Show it as fallback
+  // until the owner publishes an override in Supabase.
+  const url=card.art_url||('https://flip-fmsbot.vercel.app/src/assets/'+card.id+'.webp');
+  return '<div data-art-slot="'+r.id+'" class="art-slot has-art '+
+   (clipboardRarity===r.id?'paste-selected':'')+'">'+
+   '<div class="art-preview"><img src="'+esc(url)+'" loading="lazy" alt="'+
+   esc(group.artist+' — '+group.release.title+', '+r.label)+'"></div>'+
+   '<div class="art-slot-name">'+esc(r.label)+'</div>'+
+   '<div class="art-slot-note">'+esc(r.desc)+'</div>'+
+   (editable?'<button class="button" data-upload-rarity="'+r.id+'">'+ico('image')+
+     ' Заменить обложку</button>'+
+     '<button class="button ghost paste-select" data-paste-rarity="'+r.id+'" aria-pressed="'+
+     (clipboardRarity===r.id?'true':'false')+'">'+ico('copy')+
+     (clipboardRarity===r.id?' Выбрано · Ctrl+V':' Вставить · Ctrl+V')+'</button>':
+     '<p class="hint">Просмотр · для замены нужен Admin или Owner</p>')+
+   '</div>';
+ }).join('');
+ return pageHead('ARTWORK / 005','Опубликованные обложки',
+  'Меняй оформление карточек уже в игре. Редкость, ID и коллекции игроков остаются прежними.')+
+  editorTabs()+
+  '<div class="toolbar"><select class="input" id="editor-published-release" style="max-width:min(680px,100%)">'+
+   groups.map(g=>'<option value="'+esc(g.key)+'" '+(g.key===group.key?'selected':'')+'>'+
+    esc(g.artist+' — '+g.release.title)+'</option>').join('')+'</select></div>'+
+  '<p class="paste-instructions">'+ico('info',15)+
+   ' Замена обновляет изображение для всех игроков после перезапуска мини-аппа. '+
+   'Старые файлы не удаляются. Проверь изображение перед подтверждением.</p>'+
+  (editable?'<p class="paste-instructions">'+ico('copy',15)+
+   ' Выбери редкость и вставь изображение Ctrl+V (Mac: Cmd+V), либо нажми «Заменить обложку». '+
+   'Сейчас: <strong id="paste-target-label">'+
+   esc(rarities.find(x=>x.id===clipboardRarity)?.label||'Common')+'</strong>.</p>':'')+
+  '<section class="panel"><div class="panel-title"><h3>'+esc(group.artist+' — '+group.release.title)+
+   '</h3><span class="tag published">В ИГРЕ</span></div>'+
+   '<div class="editor-options">'+art+'</div></section>';
+}
 function editor(){
- const release=s.releases.find(r=>r.id===s.selectedRelease)||
-  s.releases.find(r=>r.status!=='published')||s.releases[0];
+ if(s.editorMode==='published')return publishedEditor();
+ const drafts=s.releases.filter(r=>r.status!=='published');
+ const release=drafts.find(r=>r.id===s.selectedRelease)||drafts[0];
  if(!release)return pageHead('ARTWORK / 005','Artwork Studio','Подготовка коллекционных обложек.')+
- '<div class="empty">'+ico('image')+'<strong>Пока нет релизов</strong><p>Сначала добавь релиз, затем загрузи обложки.</p>'+
+ editorTabs()+'<div class="empty">'+ico('image')+'<strong>Пока нет релизов</strong><p>Сначала добавь релиз, затем загрузи обложки.</p>'+
  button('Music Importer','nav-import',true)+'</div>';
  s.selectedRelease=release.id;
  const own=releaseVariants(release.id);
@@ -333,8 +423,9 @@ function editor(){
    '</aside>';
  return pageHead('ARTWORK / 005','Artwork Studio',
   'Один релиз — пять оформлений. Загружай изображения, кадрируй до 1024 × 1024 и просматривай перед публикацией.')+
+  editorTabs()+
   '<div class="toolbar"><select class="input" id="editor-release" style="max-width:min(620px,100%)">'+
-  s.releases.map(r=>'<option value="'+esc(r.id)+'" '+(release.id===r.id?'selected':'')+'>'+
+  drafts.map(r=>'<option value="'+esc(r.id)+'" '+(release.id===r.id?'selected':'')+'>'+
     esc(artistName(r.artist_id)+' — '+r.title)+'</option>').join('')+'</select>'+
   (release.status!=='published'?'<button class="button" data-action="bulk-start">'+ico('upload')+
     ' Пакетная загрузка 5 файлов</button>':'')+'</div>'+
@@ -375,7 +466,8 @@ function activity(){
  (s.audit.length?s.audit.map(a=>'<div class="activity-row"><span class="quick-icon">'+
  ico('history')+'</span><div style="flex:1;min-width:0"><strong>'+
  esc({publish:'Релиз опубликован',owner_activated:'Владелец активирован',
- invite_or_change_role:'Изменены права сотрудника'}[a.action]||a.action)+'</strong><p class="hint">'+
+ invite_or_change_role:'Приглашение в команду',member_updated:'Изменены права сотрудника',
+ replace_artwork:'Заменена опубликованная обложка'}[a.action]||a.action)+'</strong><p class="hint">'+
  esc(a.entity)+' · '+esc(JSON.stringify(a.detail||{}).slice(0,175))+'</p></div>'+
  '<span class="time">'+date(a.created_at)+'</span></div>').join(''):
  '<div class="empty">'+ico('history')+'<strong>История пока пустая</strong>'+
@@ -387,7 +479,7 @@ function render(){
  const pages={dashboard,artists:artistGrid,releases:releaseGrid,import:importer,editor,
   team,activity};
  app.innerHTML=layout((pages[s.current]||dashboard)());
- if(s.current==='editor')populateThumbnails();
+ if(s.current==='editor'&&s.editorMode==='draft')populateThumbnails();
  if(s.current==='team')refreshTeam();
 }
 function authScreen(message=''){
@@ -444,6 +536,14 @@ async function loadData(){
  ]);
  for(const q of queries)if(q.error)throw q.error;
  [s.artists,s.releases,s.variants,s.audit]=queries.map(q=>q.data||[]);
+ try{
+  const result=await invoke('manage?view=catalog');
+  if(result.catalog&&Array.isArray(result.catalog.releases))
+   s.publishedCatalog=result.catalog;
+ }catch(e){
+  if(!s.publishedCatalog.releases?.length)
+   notice('Не удалось получить опубликованный каталог: '+formatError(e),true);
+ }
 }
 async function refreshIdentity(){
  const {data:{user}}=await s.db.auth.getUser();
@@ -555,6 +655,7 @@ async function claimOwner(){
 function go(page){
  if(!nav.some(x=>x[0]===page))return;
  if(page==='team'&&s.member?.role!=='owner')return;
+ if(page==='releases')s.artistFilter=null;
  s.q='';s.filter='all';s.current=page;
  render();
  window.scrollTo({top:0,behavior:'instant'});
@@ -741,7 +842,11 @@ async function publishRelease(){
  try{
   const result=await invoke('manage',{action:'publish',releaseId:r.id});
   if(!result.ok)throw new Error('PUBLISH_FAILED');
-  await loadData();render();notice('Релиз опубликован в FLIP!');
+  const artist=s.artists.find(x=>x.id===r.artist_id);
+  await loadData();
+  s.selectedPublished=artist?.slug+'/'+r.slug;
+  s.editorMode='published';
+  render();notice('Релиз опубликован в FLIP!');
  }catch(e){notice(formatError(e),true)}
  finally{s.busy=false;render()}
 }
@@ -749,7 +854,7 @@ async function populateThumbnails(){
  const id=s.selectedRelease;
  const current=releaseVariants(id).filter(v=>!v.public_url&&!s.thumbs.has(v.thumbnail_path));
  await Promise.all(current.map(async v=>{try{await variantPreview(v)}catch{}}));
- if(s.current==='editor'&&s.selectedRelease===id)renderThumbnailDOM(id);
+ if(s.current==='editor'&&s.editorMode==='draft'&&s.selectedRelease===id)renderThumbnailDOM(id);
 }
 function renderThumbnailDOM(id){
  for(const v of releaseVariants(id)){
@@ -856,7 +961,29 @@ async function canvasBlob(canvas,quality=.9){
  if(!blob||blob.type!=='image/webp')throw new Error('Этот браузер не поддерживает WebP. Обнови Safari/Chrome.');
  return blob;
 }
+async function uploadPublishedImage(file,rarity,opts){
+ if(!['owner','admin'].includes(s.member?.role))
+   throw new Error('FORBIDDEN');
+ const cardId=s.selectedPublished+'/'+rarity;
+ const card=publishedCard(cardId);
+ if(!card)throw new Error('CARD_NOT_FOUND');
+ if(!imageBitmap)imageBitmap=await imageToBitmap(file);
+ crop=opts;
+ const processed=await canvasBlob(croppingCanvas(1024),.91);
+ if(processed.size>5*1024*1024)throw new Error('ARTWORK_TOO_LARGE');
+ const [artist,release]=s.selectedPublished.split('/');
+ const prefix=s.user.id+'/published/'+artist+'/'+release+'/'+rarity+'/'+crypto.randomUUID();
+ const processedPath=prefix+'-1024.webp';
+ const {error}=await s.db.storage.from('flip-studio-drafts').upload(processedPath,processed,{
+  contentType:'image/webp',cacheControl:'3600',upsert:false
+ });
+ if(error)throw error;
+ // A server-verified transaction promotes only an existing game card image.
+ // The card ID, inventory and historical original files never change.
+ await invoke('manage',{action:'replace_artwork',cardId,processedPath});
+}
 async function uploadImage(file,rarity,opts={zoom:1,x:0,y:0,mode:'contain'}){
+ if(s.editorMode==='published')return uploadPublishedImage(file,rarity,opts);
  if(!s.selectedRelease)throw new Error('Выбери релиз');
  const r=s.releases.find(x=>x.id===s.selectedRelease);
  if(!r||r.status==='published')throw new Error('Опубликованный релиз недоступен для замены');
@@ -922,7 +1049,10 @@ async function saveCrop(){
  const btn=$('#crop-save');if(btn){btn.disabled=true;btn.textContent='Сохраняем файлы…'}
  try{
   await uploadImage(file,rarity,options);
-  cancelCrop();await loadData();render();notice('Обложка '+rarity+' сохранена в 1024 × 1024.');
+  cancelCrop();await loadData();render();
+  notice(s.editorMode==='published'?
+   'Опубликованная обложка '+rarity+' заменена. Перезапусти FLIP для обновления.':
+   'Обложка '+rarity+' сохранена в 1024 × 1024.');
  }catch(e){notice('Ошибка загрузки: '+formatError(e),true)}
  finally{s.busy=false}
 }
@@ -985,17 +1115,49 @@ async function copyInviteLink(){
  }
 }
 async function refreshTeam(){
- if(s.member?.role!=='owner')return;
+ if(s.member?.role!=='owner'||s.current!=='team')return;
  try{
   const {members}=await invoke('manage');
   const node=$('#team-members');if(!node)return;
-  node.innerHTML=(members?.length?members.map(m=>
-   '<div class="member-row"><div><strong>'+esc(m.email)+'</strong><small>'+
-   date(m.created_at)+'</small></div><span class="tag">'+esc(m.role.toUpperCase())+
-   '</span><span class="tag '+(m.active?'published':'archived')+'">'+(m.active?'ACTIVE':'INACTIVE')+
-   '</span></div>').join(''):
+  node.innerHTML=(members?.length?members.map(m=>{
+   const immutable=m.role==='owner'||m.user_id===s.user.id;
+   const status='<span class="tag '+(m.active?'published':'archived')+'">'+
+     (m.active?'ACTIVE':'INACTIVE')+'</span>';
+   return '<div class="member-row" data-team-user="'+esc(m.user_id)+'">'+
+    '<div class="member-info"><strong>'+esc(m.email)+'</strong><small>'+
+    date(m.created_at)+'</small></div>'+
+    (immutable?'<span class="tag">OWNER · защищено</span>':
+     '<select class="input team-role" aria-label="Роль '+esc(m.email)+'">'+
+     '<option value="editor" '+(m.role==='editor'?'selected':'')+'>Editor</option>'+
+     '<option value="admin" '+(m.role==='admin'?'selected':'')+'>Admin</option></select>')+
+    status+(immutable?'':'<div class="team-actions">'+
+     '<button class="button sm" data-team-save="'+esc(m.user_id)+'">Сохранить роль</button>'+
+     '<button class="button sm ghost" data-team-toggle="'+esc(m.user_id)+'" data-team-active="'+
+      String(m.active)+'">'+(m.active?'Отключить':'Восстановить')+'</button></div>')+
+    '</div>';
+  }).join(''):
    '<div class="empty">Сотрудники ещё не приглашены.</div>');
  }catch(e){notice('Не удалось загрузить команду: '+formatError(e),true)}
+}
+async function saveMemberRole(userId,changeActive=null){
+ const row=Array.from(document.querySelectorAll('[data-team-user]'))
+  .find(node=>node.dataset.teamUser===userId);
+ if(!row)return;
+ const role=row.querySelector('.team-role')?.value;
+ if(!['editor','admin'].includes(role))return;
+ const currentlyActive=row.querySelector('[data-team-toggle]')?.dataset.teamActive==='true';
+ const active=typeof changeActive==='boolean'?changeActive:currentlyActive;
+ const email=row.querySelector('.member-info strong')?.textContent||'сотрудника';
+ const action=active?'сохранить роль '+role:'отключить доступ';
+ if(!window.confirm('Подтвердить: '+action+' для '+email+'?'))return;
+ const buttons=row.querySelectorAll('button');
+ buttons.forEach(button=>button.disabled=true);
+ try{
+  await invoke('manage',{action:'update_member',userId,role,active});
+  notice(active?'Права сотрудника сохранены.':'Доступ сотрудника отключён.');
+  await refreshTeam();
+ }catch(e){notice('Не удалось изменить роль: '+formatError(e),true)}
+ finally{buttons.forEach(button=>{if(button.isConnected)button.disabled=false})}
 }
 function isTextPasteTarget(target){
  return Boolean(target?.closest?.('input,textarea,select,[contenteditable="true"],[role="textbox"]'));
@@ -1015,10 +1177,16 @@ function pasteImageFile(data){
 }
 function setClipboardTarget(rarity){
  if(!rarities.some(x=>x.id===rarity)||s.current!=='editor')return;
- const release=s.releases.find(r=>r.id===s.selectedRelease);
- if(!release||release.status==='published')return;
+ if(s.editorMode==='published'){
+  if(!['owner','admin'].includes(s.member?.role))return;
+  if(!publishedCard(s.selectedPublished+'/'+rarity))return;
+  clipboardRelease='published:'+s.selectedPublished;
+ }else{
+  const release=s.releases.find(r=>r.id===s.selectedRelease);
+  if(!release||release.status==='published')return;
+  clipboardRelease=release.id;
+ }
  clipboardRarity=rarity;
- clipboardRelease=release.id;
  document.querySelectorAll('[data-art-slot]').forEach(slot=>{
    const active=slot.dataset.artSlot===rarity;
    slot.classList.toggle('paste-selected',active);
@@ -1037,11 +1205,15 @@ document.addEventListener('paste',event=>{
  if(isTextPasteTarget(event.target))return; // preserve text fields & OTP
  const file=pasteImageFile(event.clipboardData);
  if(!file)return; // allow normal paste if clipboard has text, not an image
- const release=s.releases.find(r=>r.id===s.selectedRelease);
- if(!release||release.status==='published')return;
+ const published=s.editorMode==='published';
+ const release=published?null:s.releases.find(r=>r.id===s.selectedRelease);
+ if(published&&!['owner','admin'].includes(s.member.role))return;
+ if(!published&&(!release||release.status==='published'))return;
  event.preventDefault();
- const rarity=clipboardRelease===release.id&&rarities.some(r=>r.id===clipboardRarity)?
-  clipboardRarity:mainRarities.find(r=>!releaseVariants(release.id).some(v=>v.rarity===r))||'common';
+ const key=published?'published:'+s.selectedPublished:release.id;
+ const rarity=clipboardRelease===key&&rarities.some(r=>r.id===clipboardRarity)?
+  clipboardRarity:(published?'common':mainRarities.find(r=>!releaseVariants(release.id).some(v=>v.rarity===r))||'common');
+ if(published&&!publishedCard(s.selectedPublished+'/'+rarity))return;
  if(!['image/png','image/jpeg','image/webp'].includes(file.type)){
    notice('Этот формат картинки не поддерживается. Скопируй PNG, JPG или WebP.',true);
    return;
@@ -1054,6 +1226,11 @@ document.addEventListener('paste',event=>{
  openCrop(file,rarity);
 });
 document.addEventListener('click',async event=>{
+ const roleSave=event.target.closest('[data-team-save]');
+ if(roleSave){await saveMemberRole(roleSave.dataset.teamSave);return;}
+ const roleToggle=event.target.closest('[data-team-toggle]');
+ if(roleToggle){await saveMemberRole(roleToggle.dataset.teamToggle,
+    roleToggle.dataset.teamActive!=='true');return;}
  const navTarget=event.target.closest('[data-nav]');
  if(navTarget){go(navTarget.dataset.nav);return;}
  // Artist search results are dynamically rendered. Delegate their clicks so
@@ -1066,18 +1243,30 @@ document.addEventListener('click',async event=>{
  }
  const artist=event.target.closest('[data-artist-view]');
  if(artist){
-  s.q='';s.current='releases';s.releases=s.releases.sort((a,b)=>
-   (a.artist_id===artist.dataset.artistView?0:1)-(b.artist_id===artist.dataset.artistView?0:1));
+  s.artistFilter=artist.dataset.artistView;
+  s.q='';s.filter='all';s.current='releases';
   render();return;
  }
  const release=event.target.closest('[data-edit-release]');
- if(release){s.selectedRelease=release.dataset.editRelease;go('editor');return;}
+ if(release){
+  const item=s.releases.find(r=>r.id===release.dataset.editRelease);
+  if(item?.status==='published'){
+   const artist=s.artists.find(a=>a.id===item.artist_id);
+   s.selectedPublished=artist?.slug+'/'+item.slug;
+   s.editorMode='published';
+  }else{
+   s.selectedRelease=release.dataset.editRelease;
+   s.editorMode='draft';
+  }
+  go('editor');return;
+ }
  const pasteSlot=event.target.closest('[data-paste-rarity]');
  if(pasteSlot){setClipboardTarget(pasteSlot.dataset.pasteRarity);return;}
  const upload=event.target.closest('[data-upload-rarity]');
  if(upload){
   uploadRarity=upload.dataset.uploadRarity;
-  clipboardRarity=uploadRarity;clipboardRelease=s.selectedRelease;
+  clipboardRarity=uploadRarity;
+  clipboardRelease=s.editorMode==='published'?'published:'+s.selectedPublished:s.selectedRelease;
   $('#single-upload').value='';$('#single-upload').click();return;
  }
  const act=event.target.closest('[data-action]')?.dataset.action;
@@ -1090,6 +1279,9 @@ document.addEventListener('click',async event=>{
   case 'claim-owner':await claimOwner();break;
   case 'access-refresh':try{await refreshIdentity();notice('Права обновлены.')}catch(e){notice(formatError(e),true)}break;
   case 'logout':await s.db?.auth.signOut();s.user=null;s.member=null;render();break;
+  case 'reset-artist-filter':s.artistFilter=null;s.q='';render();break;
+  case 'editor-drafts':s.editorMode='draft';render();break;
+  case 'editor-published':s.editorMode='published';render();break;
   case 'create-artist':openCreateArtist();break;
   case 'create-release':openCreateRelease();break;
   case 'create-artist-save':await createArtist();break;
@@ -1115,6 +1307,7 @@ document.addEventListener('change',event=>{
  const el=event.target;
  if(el.id==='release-status'){s.filter=el.value;render()}
  if(el.id==='editor-release'){s.selectedRelease=el.value;render()}
+ if(el.id==='editor-published-release'){s.selectedPublished=el.value;render()}
  if(el.hasAttribute('data-import-id')){
   if(el.checked)s.importSelected.add(el.dataset.importId);
   else s.importSelected.delete(el.dataset.importId);
