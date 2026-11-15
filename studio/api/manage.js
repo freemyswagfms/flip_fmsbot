@@ -101,6 +101,93 @@ async function invite(auth,email,role,request){
  return response({ok:true,email,role,delivery:'copy_code',inviteCode:
    (candidate?'magiclink':'invite')+'.'+hashedToken,url:secureLink.href});
 }
+
+const safeSlug=s=>typeof s==='string'&&/^[a-z0-9][a-z0-9-]{1,63}$/.test(s);
+const safeImageCard=s=>typeof s==='string'&&s.length<=220&&
+ /^([a-z0-9][a-z0-9-]{1,63})\/([a-z0-9][a-z0-9-]{1,63})\/(common|rare|epic|legendary|mythic|hidden)$/.test(s);
+function isWebp(buffer){
+ const b=new Uint8Array(buffer);
+ return b.length>20 && b[0]===82 && b[1]===73 && b[2]===70 && b[3]===70 &&
+   b[8]===87 && b[9]===69 && b[10]===66 && b[11]===80 &&
+   ['VP8 ','VP8L','VP8X'].includes(String.fromCharCode(...b.slice(12,16)));
+}
+async function catalog(auth){
+ const result=await dbFetch(auth.db,'rpc/flip_public_catalog',{method:'POST',body:{}});
+ return response({catalog:result});
+}
+async function updateMember(auth,body){
+ // No one can demote the owner or promote another user to owner.
+ if(auth.member.role!=='owner')return response({error:'FORBIDDEN'},403);
+ const memberId=body.userId;
+ if(!uuid(memberId)||!['admin','editor'].includes(body.role)||
+    typeof body.active!=='boolean'||memberId===auth.user.id)
+   return response({error:'BAD_REQUEST'},400);
+ const existing=await dbFetch(auth.db,'flip_studio_members?user_id=eq.'+
+   encodeURIComponent(memberId)+'&select=user_id,email,role,active&limit=1');
+ const current=existing?.[0];
+ if(!current||current.role==='owner')return response({error:'MEMBER_NOT_EDITABLE'},409);
+ const updated=await dbFetch(auth.db,'flip_studio_members?user_id=eq.'+
+   encodeURIComponent(memberId)+'&role=neq.owner',{
+    method:'PATCH',body:{role:body.role,active:body.active}
+   });
+ if(updated?.length!==1)return response({error:'MEMBER_NOT_EDITABLE'},409);
+ await dbFetch(auth.db,'flip_studio_audit',{method:'POST',body:{
+  actor:auth.user.id,action:'member_updated',entity:'member',
+  detail:{user_id:memberId,email:current.email,old_role:current.role,
+    new_role:body.role,old_active:current.active,new_active:body.active}
+ }});
+ return response({ok:true,member:updated[0]});
+}
+async function replaceArtwork(auth,body){
+ if(!['owner','admin'].includes(auth.member.role))return response({error:'FORBIDDEN'},403);
+ const cardId=body?.cardId,source=body?.processedPath;
+ if(!safeImageCard(cardId)||typeof source!=='string'||source.length>330)
+   return response({error:'BAD_REQUEST'},400);
+ const [artist,release,rarity]=cardId.split('/');
+ const prefix=auth.user.id+'/published/'+artist+'/'+release+'/'+rarity+'/';
+ if(!source.startsWith(prefix)||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-1024\.webp$/.test(source.slice(prefix.length)))
+   return response({error:'BAD_IMAGE_REFERENCE'},400);
+ // Ensure this artwork belongs to an existing game card and an active release.
+ const rows=await dbFetch(auth.db,'flip_cards?id=eq.'+encodeURIComponent(cardId)+
+    '&select=id,artist_id,release_id,rarity,active&limit=1');
+ const card=rows?.[0];
+ if(!card||!card.active||card.artist_id!==artist||card.release_id!==release||card.rarity!==rarity)
+   return response({error:'CARD_NOT_FOUND'},404);
+ const releaseRows=await dbFetch(auth.db,'flip_releases?artist_id=eq.'+
+   encodeURIComponent(artist)+'&id=eq.'+encodeURIComponent(release)+
+   '&select=active&limit=1');
+ if(!releaseRows?.[0]?.active)return response({error:'CARD_NOT_FOUND'},404);
+ const supabase=clientFor(auth.db);
+ const {data:file,error:readError}=await supabase.storage.from('flip-studio-drafts').download(source);
+ if(readError||!file)return response({error:'ARTWORK_DOWNLOAD_FAILED'},422);
+ if(file.size===0||file.size>5242880)return response({error:'ARTWORK_TOO_LARGE'},422);
+ const bytes=await file.arrayBuffer();
+ if(!isWebp(bytes))return response({error:'INVALID_ARTWORK_FORMAT'},422);
+ // The new filename is immutable so client and CDN caches cannot show stale art.
+ const publicPath=artist+'/'+release+'/revisions/'+rarity+'-'+crypto.randomUUID()+'.webp';
+ const {error:uploadError}=await supabase.storage.from('flip-artwork').upload(publicPath,bytes,{
+  contentType:'image/webp',cacheControl:'31536000',upsert:false
+ });
+ if(uploadError)return response({error:'ARTWORK_PUBLICATION_FAILED'},502);
+ const {data:pub}=supabase.storage.from('flip-artwork').getPublicUrl(publicPath);
+ if(!pub?.publicUrl)return response({error:'ARTWORK_PUBLICATION_FAILED'},502);
+ const old=await dbFetch(auth.db,'flip_artwork_overrides?card_id=eq.'+
+    encodeURIComponent(cardId)+'&select=public_url&limit=1');
+ // Only the service account can modify this table. IDs and all owned player
+ // cards remain unchanged; the game's catalogue resolves this URL on refresh.
+ await dbFetch(auth.db,'flip_artwork_overrides?on_conflict=card_id',{
+   method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},
+   body:{card_id:cardId,public_url:pub.publicUrl,updated_by:auth.user.id,
+    updated_at:new Date().toISOString()}
+ });
+ await dbFetch(auth.db,'flip_studio_audit',{method:'POST',body:{
+  actor:auth.user.id,action:'replace_artwork',entity:'card',
+  detail:{card_id:cardId,previous_url:old?.[0]?.public_url||null,
+    public_url:pub.publicUrl,source:'studio'}
+ }});
+ return response({ok:true,cardId,artUrl:pub.publicUrl});
+}
 async function team(auth){
  if(auth.member.role!=='owner')return response({error:'FORBIDDEN'},403);
  const members=await dbFetch(auth.db,'flip_studio_members?select=user_id,email,role,active,created_at&order=created_at.asc');
@@ -111,13 +198,19 @@ export default async function handler(req){
  if(!checkOrigin(req))return response({error:'FORBIDDEN'},403);
  try{
    if(req.method==='GET'){
-     const auth=await authenticate(req,'owner');return team(auth);
+     const view=new URL(req.url).searchParams.get('view');
+     if(view==='catalog')return catalog(await authenticate(req,'editor'));
+     if(!view||view==='team')return team(await authenticate(req,'owner'));
+     return response({error:'BAD_REQUEST'},400);
    }
    const body=await req.json();
    if(!body||typeof body!=='object')return response({error:'BAD_REQUEST'},400);
    const action=body.action;
-   const auth=await authenticate(req,action==='invite'?'owner':'admin');
+   const auth=await authenticate(req,
+    ['invite','update_member'].includes(action)?'owner':'admin');
    if(action==='invite')return invite(auth,String(body.email||''),body.role,req);
+   if(action==='update_member')return updateMember(auth,body);
+   if(action==='replace_artwork')return replaceArtwork(auth,body);
    if(action==='publish')return publish(auth,body.releaseId);
    return response({error:'BAD_REQUEST'},400);
  }catch(e){return issueError(e)}
