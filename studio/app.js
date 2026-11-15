@@ -54,7 +54,7 @@ const s={db:null,user:null,member:null,artists:[],releases:[],variants:[],audit:
  current:'dashboard',selectedRelease:null,q:'',filter:'all',busy:false,
  importQ:'',importArtists:[],importArtist:null,importReleases:[],importSelected:new Set(),
  importPage:0,importCount:0,importError:'',crop:null,
- thumbs:new Map(),ownerTicket:sessionStorage.getItem('flip_studio_claim')||''};
+ thumbs:new Map(),ownerTicket:localStorage.getItem('flip_studio_claim')||''};
 let toastTimer=null;
 const app=$('#app');
 
@@ -390,6 +390,9 @@ function awaitingAccess(){
  (s.ownerTicket?'<p>Ты перешёл из защищённой админки FLIP. Нажми кнопку, чтобы подтвердить права владельца.</p>'+
    '<button class="button primary full" data-action="claim-owner">'+ico('shield')+' Подтвердить владельца</button>':
    '<p>Попроси владельца пригласить тебя в разделе «Команда». Если это твоя первая настройка STUDIO, открой игровую админку FLIP и нажми «Открыть STUDIO».</p>')+
+ '<div class="field" style="margin-top:14px"><label>КОД ВЛАДЕЛЬЦА (если входишь из другого браузера)</label>'+
+ '<input id="owner-claim-code" class="input" type="password" autocomplete="off" placeholder="Вставь код из FLIP"></div>'+
+ '<button class="button primary full" data-action="claim-owner" style="margin-top:10px">'+ico('shield')+' Активировать с кодом</button>'+
  '<button class="button full ghost" style="margin-top:12px" data-action="access-refresh">'+ico('history')+' Проверить доступ</button>'+
  '<button class="button full ghost" data-action="logout" style="margin-top:8px">Выйти</button>'+
  '</div></div></div>';
@@ -427,11 +430,12 @@ async function signIn(){
  }catch(e){notice('Не удалось отправить email: '+formatError(e),true)}
 }
 async function claimOwner(){
- if(!s.ownerTicket)return;
+ const ticket=s.ownerTicket||String($('#owner-claim-code')?.value||'').trim();
+ if(!ticket)return notice('Вставь код владельца из админки FLIP.',true);
  try{
-  const r=await invoke('owner',{ticket:s.ownerTicket});
+  const r=await invoke('owner',{ticket});
   if(!r.ok)throw new Error('INVALID_OWNER_TICKET');
-  sessionStorage.removeItem('flip_studio_claim');s.ownerTicket='';
+  localStorage.removeItem('flip_studio_claim');s.ownerTicket='';
   notice('Владелец FLIP STUDIO подтверждён.');
   await refreshIdentity();
  }catch(e){notice(formatError(e),true)}
@@ -887,7 +891,7 @@ document.addEventListener('keydown',event=>{
 async function boot(){
  const url=new URL(location.href),ticket=url.searchParams.get('claim');
  if(ticket&&ticket.length<1024){
-  s.ownerTicket=ticket;sessionStorage.setItem('flip_studio_claim',ticket);
+  s.ownerTicket=ticket;localStorage.setItem('flip_studio_claim',ticket);
  }
  if(ticket){url.searchParams.delete('claim');history.replaceState(null,'',url.pathname+url.search+url.hash)}
  try{
