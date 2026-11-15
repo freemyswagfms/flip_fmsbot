@@ -79,7 +79,13 @@ function formatError(e){
   'ALREADY_CLAIMED':'Ссылка уже использована. Получи новую в FLIP.',
   'STUDIO_CONFIG_MISSING':'Сайт ещё не настроен. Требуется подключение Supabase.',
   'EMAIL_DELIVERY_UNAVAILABLE':'Встроенная отправка почты ограничена. Используй код приглашения.',
- 'INVITE_LINK_UNAVAILABLE':'Не удалось создать код приглашения. Проверь доступ и попробуй ещё раз.'
+ 'INVITE_LINK_UNAVAILABLE':'Не удалось создать код приглашения. Проверь доступ и попробуй ещё раз.',
+ 'MEMBER_NOT_EDITABLE':'Права этого участника менять нельзя. Обнови список команды.',
+ 'BAD_IMAGE_REFERENCE':'Изображение не принадлежит текущему редактору.',
+ 'ARTWORK_DOWNLOAD_FAILED':'Не удалось прочитать загруженную обложку.',
+ 'INVALID_ARTWORK_FORMAT':'Обложка должна быть в формате WebP.',
+ 'ARTWORK_PUBLICATION_FAILED':'Не удалось обновить опубликованную обложку.',
+ 'CARD_NOT_FOUND':'Карточка отсутствует в опубликованном каталоге.'
  };
  if(/only request this after|rate limit|too many requests/i.test(msg))
   return 'Слишком частая отправка. Подожди немного и проверь, не пришло ли первое письмо.';
@@ -382,7 +388,8 @@ function activity(){
  (s.audit.length?s.audit.map(a=>'<div class="activity-row"><span class="quick-icon">'+
  ico('history')+'</span><div style="flex:1;min-width:0"><strong>'+
  esc({publish:'Релиз опубликован',owner_activated:'Владелец активирован',
- invite_or_change_role:'Изменены права сотрудника'}[a.action]||a.action)+'</strong><p class="hint">'+
+ invite_or_change_role:'Приглашение в команду',member_updated:'Изменены права сотрудника',
+ replace_artwork:'Заменена опубликованная обложка'}[a.action]||a.action)+'</strong><p class="hint">'+
  esc(a.entity)+' · '+esc(JSON.stringify(a.detail||{}).slice(0,175))+'</p></div>'+
  '<span class="time">'+date(a.created_at)+'</span></div>').join(''):
  '<div class="empty">'+ico('history')+'<strong>История пока пустая</strong>'+
@@ -993,17 +1000,49 @@ async function copyInviteLink(){
  }
 }
 async function refreshTeam(){
- if(s.member?.role!=='owner')return;
+ if(s.member?.role!=='owner'||s.current!=='team')return;
  try{
   const {members}=await invoke('manage');
   const node=$('#team-members');if(!node)return;
-  node.innerHTML=(members?.length?members.map(m=>
-   '<div class="member-row"><div><strong>'+esc(m.email)+'</strong><small>'+
-   date(m.created_at)+'</small></div><span class="tag">'+esc(m.role.toUpperCase())+
-   '</span><span class="tag '+(m.active?'published':'archived')+'">'+(m.active?'ACTIVE':'INACTIVE')+
-   '</span></div>').join(''):
+  node.innerHTML=(members?.length?members.map(m=>{
+   const immutable=m.role==='owner'||m.user_id===s.user.id;
+   const status='<span class="tag '+(m.active?'published':'archived')+'">'+
+     (m.active?'ACTIVE':'INACTIVE')+'</span>';
+   return '<div class="member-row" data-team-user="'+esc(m.user_id)+'">'+
+    '<div class="member-info"><strong>'+esc(m.email)+'</strong><small>'+
+    date(m.created_at)+'</small></div>'+
+    (immutable?'<span class="tag">OWNER · защищено</span>':
+     '<select class="input team-role" aria-label="Роль '+esc(m.email)+'">'+
+     '<option value="editor" '+(m.role==='editor'?'selected':'')+'>Editor</option>'+
+     '<option value="admin" '+(m.role==='admin'?'selected':'')+'>Admin</option></select>')+
+    status+(immutable?'':'<div class="team-actions">'+
+     '<button class="button sm" data-team-save="'+esc(m.user_id)+'">Сохранить роль</button>'+
+     '<button class="button sm ghost" data-team-toggle="'+esc(m.user_id)+'" data-team-active="'+
+      String(m.active)+'">'+(m.active?'Отключить':'Восстановить')+'</button></div>')+
+    '</div>';
+  }).join(''):
    '<div class="empty">Сотрудники ещё не приглашены.</div>');
  }catch(e){notice('Не удалось загрузить команду: '+formatError(e),true)}
+}
+async function saveMemberRole(userId,changeActive=null){
+ const row=Array.from(document.querySelectorAll('[data-team-user]'))
+  .find(node=>node.dataset.teamUser===userId);
+ if(!row)return;
+ const role=row.querySelector('.team-role')?.value;
+ if(!['editor','admin'].includes(role))return;
+ const currentlyActive=row.querySelector('[data-team-toggle]')?.dataset.teamActive==='true';
+ const active=typeof changeActive==='boolean'?changeActive:currentlyActive;
+ const email=row.querySelector('.member-info strong')?.textContent||'сотрудника';
+ const action=active?'сохранить роль '+role:'отключить доступ';
+ if(!window.confirm('Подтвердить: '+action+' для '+email+'?'))return;
+ const buttons=row.querySelectorAll('button');
+ buttons.forEach(button=>button.disabled=true);
+ try{
+  await invoke('manage',{action:'update_member',userId,role,active});
+  notice(active?'Права сотрудника сохранены.':'Доступ сотрудника отключён.');
+  await refreshTeam();
+ }catch(e){notice('Не удалось изменить роль: '+formatError(e),true)}
+ finally{buttons.forEach(button=>{if(button.isConnected)button.disabled=false})}
 }
 function isTextPasteTarget(target){
  return Boolean(target?.closest?.('input,textarea,select,[contenteditable="true"],[role="textbox"]'));
@@ -1062,6 +1101,11 @@ document.addEventListener('paste',event=>{
  openCrop(file,rarity);
 });
 document.addEventListener('click',async event=>{
+ const roleSave=event.target.closest('[data-team-save]');
+ if(roleSave){await saveMemberRole(roleSave.dataset.teamSave);return;}
+ const roleToggle=event.target.closest('[data-team-toggle]');
+ if(roleToggle){await saveMemberRole(roleToggle.dataset.teamToggle,
+    roleToggle.dataset.teamActive!=='true');return;}
  const navTarget=event.target.closest('[data-nav]');
  if(navTarget){go(navTarget.dataset.nav);return;}
  // Artist search results are dynamically rendered. Delegate their clicks so
