@@ -147,8 +147,27 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{
 .activity-list{display:grid;gap:10px}
 .activity-row{border:1px solid #304135;border-radius:11px;background:#162019;padding:13px;display:flex;gap:13px;align-items:start}
 .activity-row .time{color:#8ea58b;font-size:10px;margin-left:auto;white-space:nowrap}
-.member-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:13px;border-bottom:1px solid #2e3c30;padding:14px 5px;font-size:12px}
+.member-row{display:grid;grid-template-columns:minmax(140px,1fr) 100px auto auto;align-items:center;gap:11px;border-bottom:1px solid #2e3c30;padding:14px 5px;font-size:12px}
+.member-info{min-width:0;overflow-wrap:anywhere}
+.team-role{width:100%;max-width:130px}
+.team-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.team-actions .button{font-size:10px;padding:9px 10px}
+.artist-filter-bar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;background:#1b291c;border:1px solid #527447;border-radius:12px;padding:10px 13px;margin:12px 0 16px;color:#d8f8d3}
+.artist-filter-bar>span{font-size:11px;color:#9db694;margin-right:auto}
+.studio-tabs{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0 22px}
+.studio-tabs .button{min-width:145px}
 .member-row small{display:block;color:#8d9f8b;margin-top:4px}
+@media(max-width:1050px){
+ .member-row{grid-template-columns:minmax(120px,1fr) 110px auto;row-gap:8px}
+ .team-actions{grid-column:1/-1;justify-content:flex-start}
+}
+@media(max-width:530px){
+ .member-row{grid-template-columns:minmax(0,1fr) auto;gap:9px}
+ .team-role{grid-column:1/-1;max-width:100%;font-size:13px}
+ .team-actions{grid-column:1/-1}
+ .studio-tabs .button{flex:1;min-width:0;font-size:11px}
+ .artist-filter-bar .button{width:100%}
+}
 .mobile-menu{display:none}
 .footer-note{margin-top:34px;color:#687d6c;font:700 10px "Space Grotesk";letter-spacing:.5px}
 @media(min-width:1600px){.canvas{padding-left:64px;padding-right:64px}}
