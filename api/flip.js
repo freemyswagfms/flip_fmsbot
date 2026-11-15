@@ -1,4 +1,4 @@
-/** FLIP v0.8 — Vercel Web Function; Telegram initData verified on every request.
+/** FLIP v0.9.0 — Vercel Web Function; Telegram initData verified on every request.
  *  Only server has Supabase secret key. There is no public write API for player state.
  */
 import { createHmac, createHash, timingSafeEqual } from 'node:crypto';
@@ -85,7 +85,7 @@ export async function handleRequest(request,env=undefined){
   if (!['GET','POST'].includes(request.method)) return json({error:'METHOD_NOT_ALLOWED'},405);
   const configured=!!(process.env.TELEGRAM_BOT_TOKEN&&process.env.SUPABASE_URL&&process.env.SUPABASE_SECRET_KEY);
   if(request.method==='GET' && u.searchParams.get('health')==='1')
-    return json({service:'FLIP',version:'0.8.9',configured});
+    return json({service:'FLIP',version:'0.9.0',configured});
   if(!configured)return json({error:'SERVER_NOT_CONFIGURED'},503);
   try{
     const raw=request.headers.get('x-telegram-init-data');
@@ -93,12 +93,15 @@ export async function handleRequest(request,env=undefined){
     const db=settings();
     if(request.method==='GET'){
       // The database only accepts identity fields. Do not persist optional profile-photo URLs.
-      const state=await rpc('flip_bootstrap',{
-        telegram_id:user.telegram_id, username:user.username, first_name:user.first_name
-      },db);
+      const [state,catalog]=await Promise.all([
+        rpc('flip_bootstrap',{
+          telegram_id:user.telegram_id, username:user.username, first_name:user.first_name
+        },db),
+        rpc('flip_public_catalog',{},db)
+      ]);
       const displayName=[user.first_name,user.last_name].filter(Boolean).join(' ').trim()
         || user.username || 'FLIP PLAYER';
-      return json({state, mode:'server', admin:isFlipAdmin(user.telegram_id), profile:{
+      return json({state,catalog, mode:'server', admin:isFlipAdmin(user.telegram_id), profile:{
         display_name:displayName,
         handle:user.username ? `@${user.username}` : publicPlayerTag(user.telegram_id),
         avatar_url:user.photo_url
