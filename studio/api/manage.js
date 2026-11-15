@@ -53,32 +53,47 @@ async function publish(auth,releaseId){
 }
 async function invite(auth,email,role,request){
  if(auth.member.role!=='owner')return response({error:'FORBIDDEN'},403);
+ email=String(email||'').trim().toLowerCase();
  if(!isEmail(email)||!['admin','editor'].includes(role))return response({error:'BAD_REQUEST'},400);
  const supabase=clientFor(auth.db);
  const base='https://flip-studio-six.vercel.app';
- // Adding existing verified Auth users is supported, too.
+ // The owner generates a one-time login/invitation link, without contacting
+ // Supabase SMTP or disclosing the project's service role key to browsers.
  let candidate=null;
  for(let page=1;page<=5;page++){
    const {data,error}=await supabase.auth.admin.listUsers({page,perPage:200});
    if(error)throw new Error('AUTH_LIST_FAILED');
-   candidate=(data.users||[]).find(u=>u.email?.toLowerCase()===email.toLowerCase())||null;
+   candidate=(data.users||[]).find(u=>u.email?.toLowerCase()===email)||null;
    if(candidate||(data.users||[]).length<200)break;
  }
- if(!candidate){
-   const {data,error}=await supabase.auth.admin.inviteUserByEmail(email,{redirectTo:base});
-   if(error)return response({error:'EMAIL_DELIVERY_UNAVAILABLE',
-     hint:'Настройте SMTP и разрешённый URL в Supabase Auth, затем повторите.'},502);
-   candidate=data.user;
- }
- if(!candidate?.id)return response({error:'INVITE_FAILED'},502);
- const payload={user_id:candidate.id,email:email.toLowerCase(),role,active:true};
+ // For an existing Auth account issue a fresh login link. For a new account
+ // issue an invite link. Both are single-use, and must be shared by the owner.
+ const {data,error}=await supabase.auth.admin.generateLink({
+   type:candidate?'magiclink':'invite',
+   email,
+   options:{redirectTo:base}
+ });
+ const actionLink=data?.properties?.action_link;
+ if(error||!data?.user?.id||typeof actionLink!=='string')
+   return response({error:'INVITE_LINK_UNAVAILABLE'},502);
+ let secureLink;
+ try{
+   secureLink=new URL(actionLink);
+   if(secureLink.protocol!=='https:'||secureLink.origin!==auth.db.origin||
+      secureLink.pathname!=='/auth/v1/verify'||secureLink.username||secureLink.password)
+     return response({error:'INVITE_LINK_UNAVAILABLE'},502);
+ }catch{return response({error:'INVITE_LINK_UNAVAILABLE'},502)}
+ const user=data.user;
+ if(user.email?.toLowerCase()!==email)return response({error:'INVITE_LINK_UNAVAILABLE'},502);
+ const payload={user_id:user.id,email,role,active:true};
  await dbFetch(auth.db,'flip_studio_members?on_conflict=user_id',{
- method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:payload});
+   method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:payload
+ });
  await dbFetch(auth.db,'flip_studio_audit',{method:'POST',body:{
    actor:auth.user.id,action:'invite_or_change_role',entity:'member',
-   detail:{email:email.toLowerCase(),role}
+   detail:{email,role,delivery:'manual_link'}
  }});
- return response({ok:true,email,role,invited:!candidate.email_confirmed_at});
+ return response({ok:true,email,role,delivery:'copy_link',url:secureLink.href});
 }
 async function team(auth){
  if(auth.member.role!=='owner')return response({error:'FORBIDDEN'},403);
