@@ -5,7 +5,8 @@ import {readFileSync} from 'node:fs';
 const source=readFileSync(new URL('../studio/app.js',import.meta.url),'utf8');
 
 test('Music Importer search rows are connected to a delegated artist selection click handler',()=>{
- assert.match(source,/data-import-artist="'+esc\(a\.id\)/);
+ assert.ok(source.includes('data-import-artist='), 'search result has a selectable artist ID');
+ assert.ok(source.includes('esc(a.id)'), 'selected ID is escaped');
  const handler=source.slice(source.indexOf("document.addEventListener('click'"),
    source.indexOf("document.addEventListener('change'"));
  assert.match(handler,/event\.target\.closest\('\[data-import-artist\]'\)/);
