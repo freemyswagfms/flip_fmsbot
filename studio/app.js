@@ -54,7 +54,7 @@ const s={db:null,user:null,member:null,artists:[],releases:[],variants:[],audit:
  current:'dashboard',selectedRelease:null,q:'',filter:'all',busy:false,
  importQ:'',importArtists:[],importArtist:null,importReleases:[],importSelected:new Set(),
  importPage:0,importCount:0,importError:'',crop:null,
- thumbs:new Map(),ownerTicket:localStorage.getItem('flip_studio_claim')||''};
+ thumbs:new Map(),ownerTicket:(()=>{try{return localStorage.getItem('flip_studio_claim')||''}catch{return ''}})()};
 let toastTimer=null;
 const app=$('#app');
 
@@ -375,8 +375,10 @@ function authScreen(message=''){
   '<h2>Вход в FLIP STUDIO</h2>'+
   '<p>Введи email. Мы отправим защищённую ссылку для входа. Доступ к редакционным данным появится после приглашения или подтверждения владельца.</p>'+
   '<label class="field"><span class="hint">EMAIL</span><input id="auth-email" class="input" type="email" autocomplete="email" placeholder="you@example.com"></label>'+
-  '<button class="button primary full" data-action="auth-email">'+ico('arrow-right')+' Продолжить с email</button>'+
+  '<button class="button primary full" data-action="auth-email" '+(!s.db?'disabled':'')+'>'+ico('arrow-right')+' Продолжить с email</button>'+
   (message?'<p style="color:var(--warning)">'+esc(message)+'</p>':'')+
+  (!s.db?'<button class="button full ghost" data-action="boot-retry" style="margin-top:10px">'+
+  ico('history')+' Повторить подключение</button>':'')+
   '<p class="hint" style="margin-top:19px">Доступ разрешён только участникам с активной ролью. Игровой администратор FLIP остаётся отдельным.</p>'+
   '</div></div></div>';
 }
@@ -828,6 +830,7 @@ document.addEventListener('click',async event=>{
  if(act.startsWith('nav-'))return go(act.slice(4));
  switch(act){
   case 'auth-email':await signIn();break;
+  case 'boot-retry':await boot();break;
   case 'claim-owner':await claimOwner();break;
   case 'access-refresh':try{await refreshIdentity();notice('Права обновлены.')}catch(e){notice(formatError(e),true)}break;
   case 'logout':await s.db?.auth.signOut();s.user=null;s.member=null;render();break;
@@ -889,23 +892,36 @@ document.addEventListener('keydown',event=>{
  else if(event.key==='Escape'&&$('#studio-modal'))closeModal();
 });
 async function boot(){
+ app.innerHTML='<div class="boot"><span class="boot-logo">FLIP<span>.</span></span>'+
+ '<p>ПОДКЛЮЧАЕМ STUDIO</p><span class="boot-spinner"></span></div>';
  const url=new URL(location.href),ticket=url.searchParams.get('claim');
  if(ticket&&ticket.length<1024){
-  s.ownerTicket=ticket;localStorage.setItem('flip_studio_claim',ticket);
+  s.ownerTicket=ticket;
+  try{localStorage.setItem('flip_studio_claim',ticket)}catch{}
  }
  if(ticket){url.searchParams.delete('claim');history.replaceState(null,'',url.pathname+url.search+url.hash)}
  try{
-  const res=await fetch('/api/config',{cache:'no-store'}),data=await res.json();
+  const res=await fetch('/api/config',{cache:'no-store',
+   signal:AbortSignal.timeout(10000)}),data=await res.json();
   if(!res.ok)throw new Error(data.error||'STUDIO_CONFIG_MISSING');
   s.db=createClient(data.supabaseUrl,data.publishableKey,{
    auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
   });
-  const {data:sessionData}=await s.db.auth.getSession();
+  const {data:sessionData}=await Promise.race([
+   s.db.auth.getSession(),
+   new Promise((_,reject)=>setTimeout(()=>reject(new Error('SESSION_TIMEOUT')),10000))
+  ]);
   if(sessionData.session){await refreshIdentity()}else authScreen();
   s.db.auth.onAuthStateChange((event,session)=>{
    if(event==='SIGNED_IN'&&session)queueMicrotask(()=>refreshIdentity().catch(e=>notice(formatError(e),true)));
    if(event==='SIGNED_OUT'){s.user=null;s.member=null;render()}
   });
- }catch(e){authScreen('Сайт ещё настраивается: '+formatError(e))}
+ }catch(e){
+   s.db=null;
+   const details=(e?.name==='TimeoutError'||e?.name==='AbortError'||e?.message==='SESSION_TIMEOUT')?
+     'Сервер не отвечает. Попробуй повторить подключение.':
+     'Не удалось запустить STUDIO: '+formatError(e);
+   authScreen(details);
+ }
 }
 boot();
