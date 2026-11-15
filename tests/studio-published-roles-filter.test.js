@@ -134,12 +134,14 @@ test('An Owner can replace a live Carti image without changing any card ID',asyn
  const cardId='carti/die-lit/common';
  const path=ownerId+'/published/carti/die-lit/common/'+editorId+'-1024.webp';
  let downloaded=false,uploaded=false,overridden=false;
+ const requests=[];
  const bytes=new Uint8Array(32);
  bytes.set([82,73,70,70],0);bytes.set([87,69,66,80],8);
  bytes.set([86,80,56,32],12);
  const r=await call('replace_artwork','owner',{cardId,processedPath:path},
  async (url,options)=>{
    const u=new URL(url);
+   requests.push((options.method||'GET')+' '+u.pathname);
    if(u.pathname.endsWith('/flip_cards'))
     return Response.json([{id:cardId,artist_id:'carti',release_id:'die-lit',
      rarity:'common',active:true}]);
@@ -166,7 +168,7 @@ test('An Owner can replace a live Carti image without changing any card ID',asyn
    if(u.pathname.endsWith('/flip_studio_audit'))return Response.json([{}]);
    return null;
  });
- assert.equal(r.status,200,JSON.stringify(r.body));
+ assert.equal(r.status,200,JSON.stringify({body:r.body,requests}));
  assert.equal(r.body.cardId,cardId);
  assert.equal(downloaded,true);
  assert.equal(uploaded,true);
