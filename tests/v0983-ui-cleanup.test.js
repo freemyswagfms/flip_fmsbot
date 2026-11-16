@@ -53,7 +53,7 @@ test('Achievements conceal unrevealed hidden item and keep functional claims',()
  assert.doesNotMatch(initial,/SECRET \/ FLIP|FLIP ACHIEVEMENT|Условие откроется при выполнении|НАВСЕГДА/);
  assert.match(achievements.page({...hub,items:[example,{...hidden,unlocked:true}]},{online:true}),/Невозможное возможно/);
 });
-test('Trades keep important restrictions but hide idle sync HUD and internal errors',()=>{
+test('Trades preserve rules and show concise live sync without internal errors',()=>{
  const t=read('src/scripts/trades.js');
  assert.match(t,/flip-trade-rules/);
  assert.match(t,/24 часа/);
@@ -61,7 +61,8 @@ test('Trades keep important restrictions but hide idle sync HUD and internal err
  assert.match(t,/data-trade-inspect|ПРОВЕРИТЬ УСЛОВИЯ/);
  assert.doesNotMatch(t,/СИНХРОНИЗИРОВАНО|~45 С|FLIP \/ PLAYER|Повтор безопасен с теми же параметрами/);
  assert.match(t,/TRADE_CARD_UNAVAILABLE:'Карточка недоступна/);
- assert.match(t,/return s\.syncError\?/);
+ assert.match(t,/if\(s\.syncError\)return/);
+ assert.match(t,/АВТО · 15 С/);
 });
 test('Stats, rating and history are concise without revealing secret CP value',()=>{
  const activity=evaluate('src/scripts/activity.js').FLIPActivity;
