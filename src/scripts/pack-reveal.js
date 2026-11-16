@@ -63,6 +63,9 @@
       '<span>ПОКАЗАТЬ ВСЁ</span><span>↗</span></button>'+
     '<p class="flip-pack-footnote">Карточки уже сохранены в твоей коллекции</p>'+
     '</div>';
+  // Pack opening bypasses the regular app renderer, so convert its controls
+  // before displaying them instead of letting iOS render the arrow as emoji.
+  window.FLIPIcons?.render(modal);
   overlay.scrollTop=0;
   if(reduced)revealAll();
   else [350,850,1350].forEach((delay,i)=>
@@ -84,6 +87,7 @@
   if(b){
     b.dataset.flipPackSkip='done';
     b.innerHTML='<span>ЗАБРАТЬ КАРТОЧКИ</span><span>↗</span>';
+    window.FLIPIcons?.render(b);
     b.focus({preventScroll:true});
   }
  }
