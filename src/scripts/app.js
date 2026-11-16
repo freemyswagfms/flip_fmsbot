@@ -53,6 +53,7 @@ let current='home';
 let collectionArtistId=null, collectionReleaseId=null;
 let showcaseEditingSlot=1,publicProfileData=null,publicProfileLoading=false,publicProfileError='';
 let shopTab='packs',shopLoading=false,shopBusy=false,shopError='';
+let cosmeticPreview=null,profilePurchasePending=null;
 let hubLoading=false,hubError='';
 const catalog=window.FLIPCatalog;
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -179,7 +180,8 @@ function achievements(){return window.FLIPAchievements?.page(bridge?.achievement
 function leaderboard(){return '<div class="panel"><button class="link" data-action="profile">← К ПРОФИЛЮ</button><h2>РЕЙТИНГ<span style="color:var(--lime)">.</span></h2><p class="desc">CP не тратятся и не покупаются.</p><div id="flip-leaderboard-root"></div></div>'}
 function store(){
  return window.FLIPStore?.page({
-   shop:bridge?.shop,state,live:live(),demo:bridge?.mode==='demo',busy:shopBusy||serverBusy,
+   shop:bridge?.shop,cosmetics:bridge?.cosmetics,profile:bridge?.showcase,cosmeticPreview,
+   state,live:live(),demo:bridge?.mode==='demo',busy:shopBusy||serverBusy,
    tab:shopTab,loading:shopLoading,error:shopError
  })||'<div class="panel"><h2>МАГАЗИН</h2><p>Загрузка...</p></div>';
 }
@@ -188,7 +190,7 @@ async function openStore(){
  if(!live()||shopLoading||!bridge?.refreshShop)return;
  shopLoading=true;shopError='';
  render('store');
- try{await bridge.refreshShop();}
+ try{await Promise.all([bridge.refreshShop(),bridge.refreshCosmetics?.()]);}
  catch(error){shopError=error.message||'STORE_ERROR';}
  finally{shopLoading=false;if(current==='store')render('store');}
 }
@@ -205,7 +207,102 @@ function playerAvatar(){
     : '';
   return `<div class="flip-player-avatar"><span class="flip-player-initials">${escapeHtml(initial.toUpperCase())}</span>${photo}</div>`;
 }
-function profile(){return `<div class="panel"><h2>ПРОФИЛЬ<span style="color:var(--lime)">.</span></h2><div class="content-card"><div class="flip-player-row">${playerAvatar()}<div class="flip-player-meta"><h3>${escapeHtml(live()?(state.telegramName||'FLIP PLAYER'):'FLIP PLAYER')}</h3><p class="flip-player-handle">${escapeHtml(live()?(state.telegramHandle||'FLIP PLAYER'):'FLIP / DEMO')}</p><span class="pill">LVL ${state.level} · ${state.xp} XP</span></div></div><div class="progress" style="--p:${Math.min(100,100*state.xp/(state.xpToNext||100))}%;margin-top:19px"><i></i></div><p>Следующий уровень · +30 F</p></div>${window.FLIPShowcase?.own(bridge?.showcase,{online:live()})||''}${window.FLIPAchievements?.profile(bridge?.achievements,{online:live()})||''}${window.FLIPActivity?.profileStats(bridge?.hub?.stats,{online:live()})||''}${live()?'':blocked()?'<div class="content-card"><h3>НЕТ СОЕДИНЕНИЯ</h3><p>Не удалось подключиться к серверу. Проверь Telegram и открой FLIP снова.</p></div>':'<div class="content-card"><h3>ДЕМО</h3><button class="outlinebtn" id="resetBtn">СБРОСИТЬ ДЕМО</button></div>'}</div>`}
+function profile(){
+ const data=bridge?.showcase;
+ const hero=window.FLIPProfileCosmetics?.identity({
+   profile:data,name:live()?(state.telegramName||'FLIP PLAYER'):'FLIP PLAYER',
+   handle:live()?(state.telegramHandle||''):'FLIP / DEMO',
+   avatar:playerAvatar(),level:state.level,xp:state.xp,
+   xpToNext:state.xpToNext||100})||'';
+ const showcase=window.FLIPShowcase?.own(data,{online:live()})||'';
+ const featured=window.FLIPProfileCosmetics?.featuredBadges(data)||'';
+ const settings=window.FLIPProfileCosmetics?.profileSettings(
+   data,catalog?.artists,{online:live()})||'';
+ const stats='<div class="flip-profile-metrics">'+
+  '<div><small>COLLECTION POINTS</small><strong>'+
+    Number(state.cp||0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' CP</strong></div>'+
+  '<div><small>РЕЙТИНГОВЫХ</small><strong>'+
+    Number(data?.ranked_cards||0).toLocaleString('ru-RU')+'</strong></div>'+
+  '<div><small>РАЗНЫХ РЕЙТИНГОВЫХ</small><strong>'+
+    Number(data?.ranked_variants||0).toLocaleString('ru-RU')+'</strong></div></div>';
+ return '<div class="panel flip-profile-page">'+
+    hero+showcase+featured+stats+settings+
+    (window.FLIPActivity?.profileStats(bridge?.hub?.stats,{online:live()})||'')+
+    (window.FLIPAchievements?.profile(bridge?.achievements,{online:live()})||'')+
+    (live()?'':blocked()?'<div class="content-card"><h3>НЕТ СОЕДИНЕНИЯ</h3>'+
+      '<p>Перезапусти FLIP через Telegram.</p></div>':
+      '<div class="content-card"><h3>ДЕМО</h3>'+
+       '<button class="outlinebtn" id="resetBtn">СБРОСИТЬ ДЕМО</button></div>')+
+    '</div>';
+}
+function showCosmetics(){
+ shopTab='cosmetics';cosmeticPreview=null;openStore();
+}
+function profileError(error){
+ const codes={
+   INSUFFICIENT_FUNDS:'Недостаточно F.',
+   PROFILE_BAD_REQUEST:'Неверные параметры.',
+   PROFILE_SLOT_UNAVAILABLE:'Следующее место пока недоступно.',
+   PROFILE_ITEM_UNAVAILABLE:'Предмет недоступен.',
+   PROFILE_ALREADY_OWNED:'Этот предмет уже куплен.',
+   PROFILE_NOT_OWNED:'Сначала приобрети этот предмет.',
+   PROFILE_BAD_ARTIST:'Артист недоступен.',
+   PROFILE_BAD_BADGE:'Этот значок пока не получен.',
+   SHOWCASE_SLOT_LOCKED:'Сначала открой место в витрине.',
+   DUPLICATE_REQUEST_ACTION:'Повтори операцию с новыми параметрами.'
+ };
+ return codes[error?.message]||serverError(error);
+}
+function promptProfilePurchase(kind,itemId){
+ if(!live()||serverBusy||shopBusy||!bridge?.buyProfile)return;
+ const shop=bridge?.cosmetics;
+ const isSlot=kind==='buy_slot';
+ const item=isSlot?null:shop?.items?.find(x=>x.id===itemId);
+ const price=isSlot?Number(shop?.next_slot_price):
+   Number(item?.price);
+ if(!Number.isInteger(price)||price<0||(isSlot?
+   itemId!=='slot-'+(Math.min(6,Number(shop?.slot_count)||3)+1):
+   !item||!window.FLIPProfileCosmetics?.safe(item.kind,itemId)))return;
+ profilePurchasePending={kind,itemId,price};
+ modal('<div class="flip-profile-purchase-modal"><span class="eyebrow">FLIP / PURCHASE</span>'+
+  '<h3>'+(isSlot?'НОВОЕ МЕСТО В ВИТРИНЕ':escapeHtml(item.name))+'</h3>'+
+  '<p>'+ (isSlot?'Открыть навсегда. Карточки можно менять бесплатно.':
+    'Оформление останется твоим навсегда.')+'</p>'+
+  '<div class="flip-profile-purchase-price"><strong>'+money(price)+' F</strong>'+
+  '<small>НА БАЛАНСЕ '+money(Number(state.balance||0))+' F</small></div>'+
+  '<div class="flip-profile-purchase-actions"><button type="button" class="outlinebtn" id="closeReveal">НАЗАД</button>'+
+  '<button type="button" class="bigbtn" data-profile-confirm-buy '+
+   (state.balance<price?'disabled':'')+'>ПОДТВЕРДИТЬ ↗</button></div></div>');
+}
+async function confirmProfilePurchase(){
+ if(!profilePurchasePending||!live()||serverBusy||shopBusy)return;
+ const {kind,itemId}=profilePurchasePending;
+ serverBusy=true;shopBusy=true;
+ const button=$('[data-profile-confirm-buy]');if(button)button.disabled=true;
+ try{
+  const result=await bridge.buyProfile(kind,itemId);
+  if(Number.isSafeInteger(Number(result.balance)))state.balance=Number(result.balance);
+  profilePurchasePending=null;closeModal();
+  $('#balance').textContent=money(state.balance);
+  if(current==='store'||current==='profile')render(current);
+  toast(kind==='buy_slot'?'Новое место в витрине открыто!':'Оформление добавлено в коллекцию!');
+ }catch(error){toast(profileError(error));}
+ finally{serverBusy=false;shopBusy=false;if(current==='store')render('store')}
+}
+async function changeProfileDesign(action,...args){
+ if(!live()||serverBusy)return;
+ serverBusy=true;
+ try{
+  let result;
+  if(action==='equip')result=await bridge.equipProfile(args[0],args[1]);
+  else if(action==='favorite')result=await bridge.setFavoriteArtist(args[0]);
+  else if(action==='badge')result=await bridge.pinProfileBadge(args[0],args[1]);
+  if(result?.profile)bridge.showcase=result.profile;
+  if(current==='profile'||current==='store'||current==='showcaseEdit')render(current);
+  toast('Профиль обновлён.');
+ }catch(error){toast(profileError(error));if(current==='profile')render('profile');}
+ finally{serverBusy=false}
+}
 function tasks(){
  const payload=live()?bridge?.tasks:null;
  const daily=payload?.daily,weekly=payload?.weekly;
@@ -253,7 +350,7 @@ async function openPlayerProfile(publicId){
 }
 async function updateShowcase(slot,cardId){
  if(!live()||serverBusy||!bridge?.setShowcase)return;
- if(!Number.isInteger(slot)||slot<1||slot>3)return;
+ if(!Number.isInteger(slot)||slot<1||slot>Math.min(6,Math.max(3,Number(bridge?.showcase?.slot_count)||3)))return;
  serverBusy=true;
  try{
    if(cardId!==null){
@@ -731,6 +828,13 @@ function applyCollectionSearch(value){
   for(const row of rows){row.hidden=!!query&&!String(row.dataset.filterable||'').toLocaleLowerCase('ru-RU').includes(query);if(!row.hidden)found++;}
   const empty=document.querySelector('#screen .col-no-matches');if(empty)empty.hidden=found!==0;
 }
+document.addEventListener('change',e=>{
+  if(!live()||serverBusy)return;
+  const artist=e.target.closest('[data-profile-favorite]');
+  if(artist){changeProfileDesign('favorite',artist.value||null);return;}
+  const badge=e.target.closest('[data-profile-pin]');
+  if(badge){changeProfileDesign('badge',Number(badge.dataset.profilePin),badge.value||null);}
+});
 document.addEventListener('input',e=>{
   if(e.target.matches('[data-collection-search]'))applyCollectionSearch(e.target.value);
   if(e.target.matches('[data-collection-gallery-search]'))updateCollectionGallery();
@@ -842,9 +946,29 @@ document.addEventListener('click',e=>{
    }
    const shopTabButton=e.target.closest('[data-shop-tab]');
    if(shopTabButton){
-     if(!['packs','history'].includes(shopTabButton.dataset.shopTab))return;
+     if(!['packs','history','cosmetics'].includes(shopTabButton.dataset.shopTab))return;
      shopTab=shopTabButton.dataset.shopTab;
      render('store');return;
+   }
+   if(e.target.closest('[data-cosmetic-open-shop], [data-profile-open-cosmetics]')){
+     showCosmetics();return;
+   }
+   const preview=e.target.closest('[data-cosmetic-preview]');
+   if(preview){cosmeticPreview=preview.dataset.cosmeticPreview;render('store');return;}
+   if(e.target.closest('[data-cosmetic-clear-preview]')){
+     cosmeticPreview=null;render('store');return;
+   }
+   const buy=e.target.closest('[data-cosmetic-buy]');
+   if(buy){promptProfilePurchase('buy_cosmetic',buy.dataset.cosmeticBuy);return;}
+   if(e.target.closest('[data-cosmetic-buy-slot]')){
+     promptProfilePurchase('buy_slot','slot-'+(Number(bridge?.cosmetics?.slot_count||3)+1));return;
+   }
+   if(e.target.closest('[data-profile-confirm-buy]')){confirmProfilePurchase();return;}
+   const equip=e.target.closest('[data-cosmetic-equip]');
+   if(equip){
+     const item=bridge?.cosmetics?.items?.find(i=>i.id===equip.dataset.cosmeticEquip);
+     if(item)changeProfileDesign('equip',item.kind,item.id);
+     return;
    }
    const shopBuy=e.target.closest('[data-shop-buy]');
    if(shopBuy){if(!shopBuy.disabled)doPack(shopBuy.dataset.shopBuy);return;}
@@ -865,7 +989,7 @@ document.addEventListener('click',e=>{
    const profileOpen=e.target.closest('[data-open-my-profile]');
    if(profileOpen){openPlayerProfile(bridge?.showcase?.public_id);return;}
    const slot=e.target.closest('[data-showcase-slot]');
-   if(slot){showcaseEditingSlot=Math.min(3,Math.max(1,Number(slot.dataset.showcaseSlot)||1));render('showcaseEdit');return;}
+   if(slot){showcaseEditingSlot=Math.min(6,Math.max(1,Number(slot.dataset.showcaseSlot)||1));render('showcaseEdit');return;}
    const pick=e.target.closest('[data-showcase-pick]');
    if(pick){updateShowcase(showcaseEditingSlot,pick.dataset.showcasePick);return;}
    const remove=e.target.closest('[data-showcase-clear]');
