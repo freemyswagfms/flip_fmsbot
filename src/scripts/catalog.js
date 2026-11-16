@@ -3,8 +3,8 @@
 (() => {
  'use strict';
  const rarityStyles=Object.freeze({
-   common:'Мраморная скульптура',rare:'Нитки / вышивка',
-   epic:'Мозаика / витраж',legendary:'Масляные краски',mythic:'Многослойная бумага',
+   common:'Мраморный барельеф',rare:'Витраж',
+   epic:'Масляная живопись',legendary:'Вышивка / гобелен',mythic:'Многослойная бумажная скульптура',
    hidden:'Секретный вариант'
  });
  const rarityLabels=Object.freeze({common:'Common',rare:'Rare',epic:'Epic',
