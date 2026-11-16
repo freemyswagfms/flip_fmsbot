@@ -5,7 +5,7 @@
   const initData = telegram?.initData || '';
   const telegramClient=window.FLIPViewport?.isTelegram || !!initData;
   const api='/api/flip';
-  const bridge={mode:'loading',health:'connecting',error:null,connectedUser:null,profile:null,isAdmin:false,tasks:null,achievements:null,showcase:null};
+  const bridge={mode:'loading',health:'connecting',error:null,connectedUser:null,profile:null,isAdmin:false,tasks:null,achievements:null,showcase:null,shop:null};
   const setHealth=status=>{
     if(bridge.health===status)return;
     bridge.health=status;
@@ -79,27 +79,37 @@
   function remember(action,id){try{localStorage.setItem(pendingKey(action),id)}catch{}}
   function forget(action){try{localStorage.removeItem(pendingKey(action))}catch{}}
   bridge.hasPending=action=>Boolean(pending(action));
-  async function perform(action,requestId){
+  async function perform(action,requestId,payload={},pendingLabel=action){
     if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
-    const id=pending(action)||requestId;
+    const id=pending(pendingLabel)||requestId;
     if(!validId(id))throw new Error('INVALID_REQUEST_ID');
-    remember(action,id);
+    remember(pendingLabel,id);
     try{
-      const data=await request(action,id);
+      const data=await request(action,id,payload);
       const result={...data,state:makeState(data.state)};
-      forget(action);
+      forget(pendingLabel);
       return result;
     }catch(error){
       // If transport failed after the database committed, replay the SAME ID.
       // Business errors cannot have awarded a card, so allow a fresh request next time.
       const terminal=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT',
         'DUPLICATE_REQUEST_ACTION','INVALID_TELEGRAM_SESSION','EXPIRED_TELEGRAM_SESSION','BAD_REQUEST'];
-      if(terminal.includes(error.message))forget(action);
+      if(terminal.includes(error.message)||['UNKNOWN_PACK','THEME_UNAVAILABLE','PACK_GENERATION_FAILED'].includes(error.message))forget(pendingLabel);
       throw error;
     }
   }
   bridge.drop=id=>perform('drop',id);
   bridge.pack=id=>perform('pack',id);
+  bridge.themePack=(theme,id)=>{
+    if(!['archive','new-era'].includes(theme))throw new Error('UNKNOWN_PACK');
+    return perform('theme_pack',id,{theme},'theme_pack_'+theme);
+  };
+  bridge.refreshShop=async()=>{
+    if(bridge.mode!=='server')return null;
+    const data=await request(null,null,{},'?store=1');
+    bridge.shop=data;
+    return data;
+  };
    bridge.refreshTasks=async()=>{
      if(bridge.mode!=='server')return null;
      const data=await request();
