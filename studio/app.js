@@ -526,6 +526,88 @@ async function saveTaskSlot(scope,slot,kind){
    notice(kind==='subscription'?'Задание опубликовано в FLIP.':'Обычное задание восстановлено.');
  }catch(e){notice('Не удалось сохранить: '+formatError(e),true)}
 }
+function playersPage(){
+ return s.member?.role==='owner'?
+  s.selectedPlayer?playerDetailPage(s,s.publishedCatalog):playerListPage(s):dashboard();
+}
+async function loadPlayers(){
+ if(s.member?.role!=='owner'||s.playerLoading)return;
+ s.playerLoading=true;
+ try{
+  const r=await invoke('players?view=list&q='+encodeURIComponent(s.playerQuery)+
+    '&offset='+s.playerOffset);
+  s.playerList=Array.isArray(r.players)?r.players:[];
+  s.playerTotal=Number(r.total)||0;
+  s.playerListLoaded=true;
+  if(s.current==='players'&&!s.selectedPlayer){
+   const node=$('#studio-player-list');
+   if(node)node.innerHTML=playerRows(s);
+   const count=$('#players-total');
+   if(count)count.textContent='Игроков: '+s.playerTotal;
+  }
+ }catch(e){notice('Не удалось найти игроков: '+formatError(e),true)}
+ finally{s.playerLoading=false}
+}
+async function loadPlayerDetail(){
+ if(s.member?.role!=='owner'||!s.selectedPlayer||s.playerLoading)return;
+ s.playerLoading=true;
+ try{
+  const id=s.selectedPlayer,offset=s.playerCardsOffset;
+  const result=await invoke('players?view=detail&id='+encodeURIComponent(id)+
+    '&offset='+offset);
+  if(s.current==='players'&&s.selectedPlayer===id&&s.playerCardsOffset===offset){
+   s.playerDetail=result;render();
+  }
+ }catch(e){notice('Не удалось открыть профиль: '+formatError(e),true)}
+ finally{s.playerLoading=false}
+}
+function playerActionDialog(action,cardId='',kind='',max=1){
+ if(s.member?.role!=='owner'||!s.selectedPlayer||!s.playerDetail?.player)return;
+ const p=s.playerDetail.player,remove=action==='remove_card';
+ s.playerAction={action,cardId,kind,max};
+ const heading=remove?'Удаление карточек':action==='ban'?'Блокировка игрока':'Разблокировка';
+ const copy=remove?
+  '<p class="hint">'+esc(cardId)+' · '+(kind==='ranked'?'обычные':'тестовые')+
+  ' · доступно '+max+'</p><div class="field"><label>Количество</label>'+
+  '<input class="input" type="number" id="player-remove-quantity" min="1" max="'+
+   Math.min(max,100)+'" value="1"></div>':
+  '<p class="hint">'+(action==='ban'?'При бане будут отменены ожидающие обмены.':
+   'После разблокировки игрок сможет пользоваться FLIP.')+'</p>';
+ modal(heading,'<p>Игрок: <strong>'+esc(p.username?'@'+p.username:p.first_name)+
+  '</strong> · ID '+esc(p.id)+'</p>'+copy+
+  '<div class="field" style="margin-top:15px"><label>Причина '+
+  (action==='unban'?'(необязательно)':'(обязательно)')+'</label>'+
+  '<textarea class="input" id="player-action-reason" rows="3" maxlength="300" '+
+  'placeholder="Причина для журнала"></textarea></div>'+
+  '<p class="hint">Все действия записываются в журнал. Удаление копий необратимо.</p>',
+  '<button class="button '+(action==='unban'?'primary':'danger')+
+   '" data-action="player-confirm">Подтвердить</button>');
+}
+async function confirmPlayerAction(){
+ if(s.member?.role!=='owner'||!s.selectedPlayer||!s.playerAction||s.playerLoading)return;
+ const a=s.playerAction,reason=String($('#player-action-reason')?.value||'').trim();
+ const quantity=a.action==='remove_card'?Number($('#player-remove-quantity')?.value):null;
+ if(reason.length>300||(a.action!=='unban'&&reason.length<3))
+  return notice('Укажи причину (минимум 3 символа).',true);
+ if(a.action==='remove_card'&&(!Number.isSafeInteger(quantity)||quantity<1||
+   quantity>Math.min(a.max,100)))
+  return notice('Недопустимое количество копий.',true);
+ const target=s.selectedPlayer;
+ const message=a.action==='remove_card'?'Удалить '+quantity+' копий '+a.cardId+'?':
+  a.action==='ban'?'Заблокировать игрока '+target+'?':'Разблокировать игрока '+target+'?';
+ if(!window.confirm(message+'\nИзменение будет записано в журнал.'))return;
+ s.playerLoading=true;
+ const b=$('[data-action="player-confirm"]');if(b)b.disabled=true;
+ try{
+  await invoke('players',{action:a.action,playerId:target,requestId:crypto.randomUUID(),reason,
+   ...(a.action==='remove_card'?{cardId:a.cardId,kind:a.kind,quantity}:{})});
+  closeModal();s.playerAction=null;s.playerListLoaded=false;
+  s.playerLoading=false;s.playerDetail=null;
+  await loadPlayerDetail();
+  notice('Изменение выполнено и внесено в журнал.');
+ }catch(e){notice('Не удалось применить: '+formatError(e),true)}
+ finally{s.playerLoading=false;if(b?.isConnected)b.disabled=false}
+}
 function team(){
  if(s.member.role!=='owner')return dashboard();
  return pageHead('ACCESS / 006','Команда',
