@@ -68,14 +68,15 @@ test('The normal game has no internal ranked/test-copy vocabulary',()=>{
   ]){
     const text=src(path);
     // Admin-specific words are still allowed ONLY in the admin UI.
-    assert.doesNotMatch(text,/рейтингов(?:ых|ые|ую|ая|ой|ые|ого)? (?:карточ|копи|экземпляр)/i,path);
+    // Ranked counts are intentionally distinguished from all copies in v0.9.8.7.
+    assert.doesNotMatch(text,/тестовые административные копии|служебный баланс/i,path);
     assert.doesNotMatch(text,/тестов(?:ых|ые|ую|ая|ой|ого)? (?:карточ|копи|экземпляр)/i,path);
     assert.doesNotMatch(text,/тестовые административные копии/i,path);
   }
   assert.match(src('src/scripts/admin.js'),/Рейтинговых карточек/);
   assert.match(src('src/scripts/trades.js'),/flip-trade-choice-bottom/);
   assert.match(src('src/scripts/showcase.js'),/Выбери слот и карточку/);
-  assert.match(src('src/scripts/showcase.js'),/КАРТОЧЕК/);
+  assert.match(src('src/scripts/showcase.js'),/ВИТРИНА КАРТОЧЕК/);
 });
 
 test('Telegram WebView preserves cache-busting after the 0.9.4.1 hotfix',()=>{

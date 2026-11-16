@@ -92,7 +92,7 @@
   const items=[
    ['◈','ДРОПЫ',stats?.drops],['▣','НАБОРЫ',stats?.packs],
    ['⇄','ОБМЕНЫ',stats?.trades],['✦','ДОСТИЖЕНИЯ',stats?.achievements],
-   ['◇','УНИКАЛЬНЫЕ',stats?.unique_cards],['◉','В КОЛЛЕКЦИИ',stats?.owned_cards]
+   ['◇','ОТКРЫТО ВИДОВ',stats?.unique_cards],['◉','ВСЕГО ЭКЗЕМПЛЯРОВ',stats?.owned_cards]
   ];
   return '<div class="flip-stat-grid">'+items.map(([icon,label,val])=>
     '<div class="flip-stat-tile"><span class="flip-stat-symbol">'+icon+'</span>'+

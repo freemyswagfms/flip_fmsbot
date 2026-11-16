@@ -73,6 +73,7 @@ test('Signed player bootstraps before streak touch and task assignment',async()=
   if(name==='flip_streak_touch')return Response.json({days:1,unclaimed:0});
   if(name==='flip_task_snapshot')return Response.json(sampleTasks);
   if(name==='flip_showcase_own')return Response.json({public_id:'11111111-1111-4111-8111-111111111111',slots:[]});
+  if(name==='flip_profile_cosmetics_shop')return Response.json({items:[],owned:[],slot_count:3});
   if(name==='flip_achievement_snapshot')return Response.json({items:[],badges:[],total:30,completed:0,claimable:0});
   if(name==='flip_public_catalog')return Response.json({artists:[],releases:[],cards:[]});
   throw Error('Unexpected RPC: '+name);

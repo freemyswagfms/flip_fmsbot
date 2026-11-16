@@ -111,5 +111,5 @@ test('STUDIO v0.9.8.6 requires no server or game migration',()=>{
  assert.match(studio,/from '\.\/scroll-context\.js'/);
  assert.match(studio,/FLIP STUDIO 0\.9\.8\.6/);
  const mini=JSON.parse(read('package.json'));
- assert.equal(mini.version,'0.9.8.6');
+ assert.ok(mini.version.localeCompare('0.9.8.6',undefined,{numeric:true})>=0);
 });

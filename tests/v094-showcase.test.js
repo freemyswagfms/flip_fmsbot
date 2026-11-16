@@ -52,7 +52,7 @@ test('Removal uses explicit null; malformed slot and art ID never reach database
   return Response.json({ok:true,profile:{slots:[]}});
  },async()=>{
   const cases=[
-   {action:'set_showcase',slot:4,cardId:owned},
+   {action:'set_showcase',slot:7,cardId:owned},
    {action:'set_showcase',slot:0,cardId:null},
    {action:'set_showcase',slot:1,cardId:'carti/../hidden'},
    {action:'set_showcase',slot:1,cardId:'javascript:alert(1)'},

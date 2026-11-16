@@ -19,7 +19,7 @@ test('Every v0.9.6 notification and statistics glyph has a matching FLIP vector 
  assert.match(activity,/trade_counteroffer:\{icon:'⇄'/);
  assert.match(activity,/trade_declined:\{icon:'×'/);
  assert.match(activity,/pack:\{icon:'▣'/);
- assert.match(activity,/\['◇','УНИКАЛЬНЫЕ'/);
+ assert.match(activity,/\['◇','ОТКРЫТО ВИДОВ'/);
  assert.doesNotMatch(activity,/>● LIVE</);
  assert.doesNotMatch(activity,/>● FLIP</);
  assert.doesNotMatch(activity,/flip-stat-live-dot/);
@@ -79,9 +79,9 @@ test('Notifications are converted to SVG after every async refresh, not just ini
   'Convert only after the latest content is inserted');
  const html=source('index.html');
  assert.match(html,/src\/scripts\/icons\.js\?v=0\.9\.6\.2/);
- assert.ok(html.includes('src/scripts/activity.js?v=0.9.8.3'));
+ assert.ok(html.includes('src/scripts/activity.js?v=0.9.8.7'));
  assert.ok(html.includes('src/scripts/app.js?v='+JSON.parse(source('package.json')).version));
- assert.match(html,/src\/styles\/activity\.css\?v=0\.9\.6\.1/);
+ assert.match(html,/src\/styles\/activity\.css\?v=0\.9\.8\.7/);
 });
 test('Notification and statistic icon dimensions are fixed instead of relying on iOS font glyphs',()=>{
  const css=source('src/styles/activity.css');
