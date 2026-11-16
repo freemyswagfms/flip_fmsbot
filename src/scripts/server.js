@@ -5,7 +5,7 @@
   const initData = telegram?.initData || '';
   const telegramClient=window.FLIPViewport?.isTelegram || !!initData;
   const api='/api/flip';
-  const bridge={mode:'loading',health:'connecting',error:null,connectedUser:null,profile:null,isAdmin:false,tasks:null,achievements:null};
+  const bridge={mode:'loading',health:'connecting',error:null,connectedUser:null,profile:null,isAdmin:false,tasks:null,achievements:null,showcase:null};
   const setHealth=status=>{
     if(bridge.health===status)return;
     bridge.health=status;
@@ -58,7 +58,7 @@
       setHealth(telegramClient?'offline':'demo');
       return null;
     }
-    try{const data=await request();if(data.catalog)window.FLIPCatalog?.importServerCatalog?.(data.catalog);bridge.mode='server';bridge.error=null;bridge.profile=data.profile||null;bridge.isAdmin=data.admin===true;bridge.tasks=data.tasks||null;bridge.achievements=data.achievements||null;return makeState(data.state);}
+    try{const data=await request();if(data.catalog)window.FLIPCatalog?.importServerCatalog?.(data.catalog);bridge.mode='server';bridge.error=null;bridge.profile=data.profile||null;bridge.isAdmin=data.admin===true;bridge.tasks=data.tasks||null;bridge.achievements=data.achievements||null;bridge.showcase=data.showcase||null;return makeState(data.state);}
     catch(error){
       // Never switch an authenticated Telegram user back to writable browser currency.
       bridge.mode='blocked';bridge.error=error.message;setHealth('offline');return null;
@@ -115,6 +115,24 @@
      const result=await request('reroll_task',crypto.randomUUID(),{scope,slot});
      bridge.tasks=result.tasks||bridge.tasks;
      return result;
+   };
+   bridge.refreshShowcase=async()=>{
+     if(bridge.mode!=='server')return null;
+     const data=await request(null,null,{},'?showcase=1');
+     bridge.showcase=data;
+     return data;
+   };
+   bridge.setShowcase=async(slot,cardId)=>{
+     if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+     const result=await request('set_showcase',crypto.randomUUID(),{slot,cardId});
+     bridge.showcase=result.profile||bridge.showcase;
+     return bridge.showcase;
+   };
+   bridge.publicProfile=async(publicId)=>{
+     if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+     if(typeof publicId!=='string'||!/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(publicId))
+       throw new Error('BAD_PROFILE');
+     return request(null,null,{},'?profile='+encodeURIComponent(publicId));
    };
    bridge.refreshAchievements=async()=>{
      if(bridge.mode!=='server')return null;

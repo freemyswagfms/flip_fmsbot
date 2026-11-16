@@ -47,10 +47,11 @@ function name(p,prefix=''){
 }
 function serializeLeaderboard(data){
   const leaders=(data.leaders||[]).map(p=>({
-    place:p.place,name:name(p),level:p.level,cp:p.cp,
+    place:p.place,name:name(p),level:p.level,cp:p.cp,profileId:p.public_id||null,
     rankedCards:p.ranked_cards,rankedVariants:p.ranked_variants
   }));
   return {leaders,me:data.me?{place:data.me.place,cp:data.me.cp,level:data.me.level,
+    profileId:data.me.public_id||null,
     rankedCards:data.me.ranked_cards,rankedVariants:data.me.ranked_variants}:null,
     players:data.players};
 }
@@ -71,7 +72,18 @@ export async function handleSocialRequest(request){
       const view=url.searchParams.get('view')||'leaderboard';
       if(view==='leaderboard'){
         const data=await rpc('flip_cp_leaderboard',{p_viewer_id:actor,p_limit:50},db);
-        return json(serializeLeaderboard(data));
+        const ids=[...new Set((data.leaders||[]).map(p=>Number(p.telegram_id))
+          .filter(id=>Number.isSafeInteger(id)&&id>0))];
+        const directories=ids.length?await rpc('flip_profile_directory',{p_player_ids:ids},db):[];
+        const publicIds=new Map((Array.isArray(directories)?directories:[])
+          .map(p=>[String(p.telegram_id),p.public_id]));
+        const enriched={...data,
+          leaders:(data.leaders||[]).map(p=>({
+            ...p,public_id:publicIds.get(String(p.telegram_id))||null
+          })),
+          me:data.me?{...data.me,
+            public_id:publicIds.get(String(data.me.telegram_id))||null}:null};
+        return json(serializeLeaderboard(enriched));
       }
       if(view==='trades'){
         const trades=await rpc('flip_trade_list',{p_actor_id:actor,p_limit:40},db);

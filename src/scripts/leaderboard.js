@@ -26,10 +26,13 @@
         '<button type="button" class="outlinebtn" data-cp-refresh>ОБНОВИТЬ ↗</button></div>',
         '<div class="flip-leaderboard-list">',
         (data.leaders||[]).length?data.leaders.map(p=>
-          '<div class="flip-cp-player'+(p.place===me?.place?' is-me':'')+'"><span class="flip-cp-place">#'+
+          '<'+(p.profileId?'button type="button" data-player-profile="'+safe(p.profileId)+'"':'div')+
+             ' class="flip-cp-player'+(p.place===me?.place?' is-me':'')+
+             '"><span class="flip-cp-place">#'+
           safe(p.place)+'</span><div><strong>'+safe(p.name)+'</strong><small>LVL '+safe(p.level)+
           ' · '+safe(p.rankedVariants)+' уник. · '+safe(p.rankedCards)+' карт.</small></div>'+
-          '<span class="flip-cp-score">'+points(p.cp)+' CP</span></div>'
+          '<span class="flip-cp-score">'+points(p.cp)+' CP</span>'+
+           (p.profileId?'<span class="flip-cp-open-icon">↗</span></button>':'</div>')
         ).join(''):'<p class="flip-social-muted">Пока нет участников.</p>',
         '</div><p class="flip-social-muted">Показаны первые 50 игроков. Всего участников: ',
         safe(data.players),'.</p></section>',
@@ -52,7 +55,13 @@
       if(root===el)return;
       root=el;serial++;
       el.addEventListener('click',event=>{
-        if(event.target.closest('[data-cp-refresh]'))load(el);
+        if(event.target.closest('[data-cp-refresh]')){load(el);return;}
+        const target=event.target.closest('[data-player-profile]');
+        if(target){
+          const publicId=target.dataset.playerProfile;
+          if(/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(publicId||''))
+            window.dispatchEvent(new CustomEvent('flip-open-public-profile',{detail:{publicId}}));
+        }
       });
       load(el);
     }
