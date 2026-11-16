@@ -172,7 +172,7 @@ test('Cinematic gift and three-card trade queue acknowledges only after the last
  assert.equal(ui.ackCalls.length,0);
  ui.click('[data-delivery-next]');
  await new Promise(resolve=>setImmediate(resolve));
- assert.deepEqual(ui.ackCalls,[[11,12]]);
+ assert.deepEqual(ui.ackCalls.map(ids=>Array.from(ids)),[[11,12]]);
  assert.equal(ui.window.FLIPDelivery.isOpen(),false);
  assert.equal(ui.root.hidden,true);
  assert.equal(ui.scroll.attrs.has('inert'),false);
