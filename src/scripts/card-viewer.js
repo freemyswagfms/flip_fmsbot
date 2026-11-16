@@ -82,7 +82,7 @@
     const style=String(card.style||'');
     const count=Number(card.count||0);
     const tests=Number(card.testCount||0);
-    const label=mode==='catalog'?'КАТАЛОГ · ПРЕДПРОСМОТР':
+    const label=mode==='catalog'?'ПРЕДПРОСМОТР':
       mode==='history'?'ИСТОРИЯ НАХОДОК':'ТВОЯ КОЛЛЕКЦИЯ';
     const hasPrevious=activeIndex>0,hasNext=activeIndex<playlist.length-1;
     dialog.dataset.rarity=rarity;
@@ -92,8 +92,6 @@
     dialog.innerHTML=
       '<div class="flip-viewer-backdrop" data-flip-viewer-dismiss></div>'+
       '<div class="flip-viewer-content"><header class="flip-viewer-header">'+
-      '<div class="flip-viewer-kicker"><span class="flip-viewer-kicker-dot"></span>'+
-      '<span>FLIP / CARD INSPECT</span></div>'+
       '<button type="button" class="flip-viewer-close" data-flip-viewer-dismiss aria-label="Закрыть просмотр">'+
       '<span aria-hidden="true">×</span></button></header>'+
       '<div class="flip-viewer-workspace" data-flip-viewer-workspace>'+
@@ -116,13 +114,7 @@
       
       (playlist.length>1?'<div class="flip-viewer-pagination" aria-live="polite">'+
         '<span>'+String(activeIndex+1).padStart(2,'0')+' / '+String(playlist.length).padStart(2,'0')+'</span>'+
-        '<span>ЛИСТАЙ КАРТОЧКИ ← →</span></div>':'')+
-      '<p class="flip-viewer-hint">'+
-      (window.matchMedia?.('(hover: hover) and (pointer: fine)').matches?
-        (playlist.length>1?'Наведи курсор, чтобы повернуть. Клавиши ← → — следующие карточки.':
-          'Двигай курсором по обложке, чтобы увидеть эффект.'):
-        (playlist.length>1?'Короткое движение — наклон. Длинный свайп — следующая карточка.':
-          'Проведи пальцем по обложке, чтобы слегка повернуть её'))+'</p>'+
+        '</div>':'')+
       '</div></div>';
     dialog.classList.remove('flip-viewer-slide-prev','flip-viewer-slide-next');
     if(direction&& !reducedMotion()) {
