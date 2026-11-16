@@ -74,6 +74,7 @@ test('Authenticated public profile returns avatar without leaking Telegram ID or
  const hits=[];
  await env(async(url,options)=>{
    const address=String(url);
+   if(address.endsWith('/flip_public_profile_stats'))return Response.json({drops:3,packs:4});
    if(address.endsWith('/flip_public_profile'))
      return Response.json({public_id:publicId,username:'friend',level:4,slots:[],badges:[]});
    if(address.endsWith('/flip_public_avatar_target')){
@@ -100,6 +101,7 @@ test('Owner can use a signed Telegram avatar URL when available',async()=>{
   let tgCalls=0;
   await env(async(url,opts)=>{
     const address=String(url);
+    if(address.endsWith('/flip_public_profile_stats'))return Response.json({drops:3,packs:4});
     if(address.endsWith('/flip_public_profile'))
       return Response.json({public_id:publicId,username:'owner',slots:[]});
     if(address.endsWith('/flip_public_avatar_target'))return Response.json(123);
