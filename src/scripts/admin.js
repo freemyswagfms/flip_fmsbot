@@ -115,7 +115,10 @@
       '<p class="flip-admin-hint">Рейтинговых карточек пока нет.</p>';
   }
   function cooldownPanel(){
-    const cd=s.cooldowns;
+    const target=s.modeTarget||selfId();
+    const own=target===selfId();
+    const cd=own?s.cooldowns:s.targetCooldowns;
+    const label=own?'ТВОЙ АККАУНТ':(s.targetLabel||'Игрок ID '+target);
     const dropUnlimited=cd?.drop_unlimited===true;
     const packUnlimited=cd?.pack_unlimited===true;
     const dropReady=cd?.drop_ready===true;
@@ -124,7 +127,7 @@
       dropAt.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',
         timeZone:'Europe/Moscow'}):'—';
     const used=Math.min(10,Math.max(0,Number(cd?.packs_today)||0));
-    const logs=Array.isArray(cd?.history)?cd.history:[];
+    const logs=own?(Array.isArray(cd?.history)?cd.history:[]):s.targetLogs;
     const clock=when=>{
       const value=new Date(when);
       return Number.isNaN(value.valueOf())?'—':
@@ -136,13 +139,18 @@
       const verb=a.enabled===true?'Включено без ограничений':
                  a.enabled===false?'Обычный режим':'Разовый сброс';
       return '<div class="flip-admin-history-row"><strong>'+E(label)+
-        ' · '+E(verb)+'</strong><small>'+E(clock(a.created_at))+' МСК</small></div>';
+        ' · '+E(verb)+'</strong><small>'+E(clock(a.created_at))+' МСК'+(a.admin_id?' · Администратор ID '+E(a.admin_id):'')+'</small></div>';
     };
     return [
       '<section class="flip-admin-section flip-admin-cooldowns">',
       '<div class="flip-admin-section-heading"><h3>РЕЖИМЫ РАЗРАБОТЧИКА</h3>',
       '<span class="flip-admin-private-badge">ТОЛЬКО СОЗДАТЕЛЬ</span></div>',
-      '<p class="flip-admin-hint">Постоянные переключатели только для твоего аккаунта. Настройки сохраняются после перезапуска FLIP.</p>',
+      '<p class="flip-admin-hint">Выбирай, кому убрать ожидание дропа или дневной лимит наборов. Управление доступно только тебе.</p>',
+      '<div class="flip-admin-mode-target"><span>НАСТРАИВАЕМЫЙ АККАУНТ</span><strong>',E(label),'</strong><small>ID ',E(target),'</small></div>',
+      '<div class="flip-admin-mode-target-actions">',
+      '<button type="button" class="outlinebtn" data-admin-modes-recipient ',s.targetBusy?'disabled':'','>РЕЖИМЫ ВЫБРАННОГО ИГРОКА</button>',
+      '<button type="button" class="outlinebtn" data-admin-modes-self ',s.targetBusy?'disabled':'','>МОИ РЕЖИМЫ</button>',
+      '</div>',
       '<div class="flip-admin-cooldown-grid">',
       '<div class="flip-admin-cooldown-box',dropUnlimited?' is-unlimited':'','">',
       '<span>БЕСПЛАТНЫЙ ДРОП</span>',
@@ -161,7 +169,8 @@
       '</div>',
       s.cooldownMessage?'<div role="status" class="flip-admin-message '+
         (s.cooldownError?'failed':'ok')+'">'+E(s.cooldownMessage)+'</div>':'',
-      '<p class="flip-admin-hint">Без КД: новый бесплатный дроп сразу после предыдущего. Без лимита: любое количество наборов за 200 F каждый. Шансы и награды не меняются.</p>',
+      s.targetMessage?'<div role="status" class="flip-admin-message '+(s.targetError?'failed':'ok')+'">'+E(s.targetMessage)+'</div>':'',
+      '<p class="flip-admin-hint">Без КД: дропы без ожидания. Без лимита: любое количество наборов с обычной оплатой в F. Шансы и награды не меняются.</p>',
       '<details class="flip-admin-cooldown-history"><summary>ИСТОРИЯ РЕЖИМОВ (',
       logs.length,')</summary>',
       logs.length?logs.map(entry).join(''):
