@@ -505,6 +505,8 @@
     if(e.target.id==='flip-admin-amount')s.amount=e.target.value;
     if(e.target.id==='flip-admin-card-search'){
       s.cardQuery=e.target.value;
+      // Immediately invalidate any slower server response for the prior query.
+      cardSeq++;
       if(cardTimer)clearTimeout(cardTimer);
       cardTimer=setTimeout(()=>searchCards(false),250);
     }
