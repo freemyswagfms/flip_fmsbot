@@ -298,6 +298,25 @@ async function refreshHub({rerender=false}={}){
  hubLoading=true;hubError='';
  try{
    const data=await bridge.refreshHub();
+   // Admin-awarded tester modes are published through this existing private
+   // hub poll. Players see a changed cooldown without restarting FLIP.
+   const modes=data?.play_modes;
+   if(modes&&typeof modes==='object'){
+     const drop=modes.unlimited_drop===true;
+     const pack=modes.unlimited_packs===true;
+     const timestamp=Date.parse(modes.drop_ready_at);
+     const changed=state.unlimitedDrop!==drop||state.unlimitedPacks!==pack||
+       (Number.isFinite(timestamp)&&state.dropReadyAt!==timestamp);
+     state.unlimitedDrop=drop;state.unlimitedPacks=pack;
+     if(Number.isFinite(timestamp))state.dropReadyAt=timestamp;
+     if(Number.isSafeInteger(modes.packs_today))state.packsToday=modes.packs_today;
+     if(changed){
+       if(current==='home')updateTimer();
+       if(current==='store')bridge.refreshShop?.().then(()=>{
+         if(current==='store')render('store');
+       }).catch(()=>{});
+     }
+   }
    // Reuse the existing hub poll, including on Telegram launch and after
    // successful trades. Acknowledgments never alter owned inventory.
    const hasNewCards=window.FLIPDelivery?.enqueue(data?.card_deliveries,{
