@@ -25,7 +25,7 @@ async function rpc(name,payload,db){
   });
   const body=await response.text();
   if(!response.ok){
-    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT','BAD_ADMIN_COOLDOWN'];
+    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT','BAD_ADMIN_COOLDOWN','BAD_ADMIN_MODE'];
     const code=known.find(x=>body.includes(x));
     const error=new Error(code||'DATABASE_ERROR');
     error.status=code?409:502;throw error;
@@ -42,7 +42,7 @@ export async function handleAdminRequest(request){
   }catch{return json({error:'INVALID_TELEGRAM_SESSION'},401)}
   if(!isFlipAdmin(user.telegram_id))return json({error:'FORBIDDEN'},403);
   if(request.method==='GET'&&url.searchParams.get('view')==='me')
-    return json({admin:true,permissions:['grant_card','grant_resource','search_players','search_cards','history','ranked_preview','reset_cooldowns']});
+    return json({admin:true,permissions:['grant_card','grant_resource','search_players','search_cards','history','ranked_preview','reset_cooldowns','unlimited_modes']});
   try{
     const db=settings();
     if(request.method==='GET'){
@@ -112,6 +112,21 @@ export async function handleAdminRequest(request){
         return json({error:'STUDIO_LOGIN_UNAVAILABLE'},502);
       return json({url:link.href});
     }
+    if(body?.action==='set_unlimited'){
+      const allowed=['action','kind','enabled','requestId'];
+      if(!['drop','pack'].includes(body.kind)||
+         typeof body.enabled!=='boolean'||!validUuid(body.requestId)||
+         Object.keys(body).some(key=>!allowed.includes(key)))
+        return json({error:'BAD_REQUEST'},400);
+      // Both mode and target identity are verified server-side.
+      // Never accept a client-supplied recipient for developer privileges.
+      return json(await rpc('flip_admin_set_unlimited',{
+        p_admin_id:user.telegram_id,
+        p_kind:body.kind,
+        p_enabled:body.enabled,
+        p_request_id:body.requestId
+      },db));
+    }
     if(body?.action==='reset_cooldown'){
       const allowed=['action','kind','requestId'];
       if(!['drop','pack'].includes(body.kind)||
@@ -157,7 +172,7 @@ export async function handleAdminRequest(request){
     }
     return json(result);
   }catch(e){
-    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT','BAD_ADMIN_COOLDOWN'];
+    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT','BAD_ADMIN_COOLDOWN','BAD_ADMIN_MODE'];
     return json({error:known.includes(e.message)?e.message:'ADMIN_SERVER_ERROR'},e.status||500);
   }
 }
