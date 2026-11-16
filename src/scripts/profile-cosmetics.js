@@ -1,4 +1,4 @@
-/* FLIP v0.9.8.8 — curated, server-owned profile cosmetics.
+/* FLIP v0.9.8.9 — curated, server-owned profile cosmetics.
  * Artwork is CSS/SVG only. The browser never grants entitlements or F.
  */
 (()=>{
@@ -109,6 +109,9 @@
   const owned=new Set(Array.isArray(shop?.owned)?shop.owned:[]);
   const equipped=profile?.appearance||{};
   const frameColor=safeColor(profile?.appearance?.frame_color);
+  const rawAvatar=player?.telegramAvatarUrl;
+  const photo=typeof rawAvatar==='string'&&/^https:\/\/[^"'<> ]+$/.test(rawAvatar)?
+    '<img src="'+esc(rawAvatar)+'" alt="" decoding="async" referrerpolicy="no-referrer">':'F';
   const groups=types.map(type=>{
    const list=items.filter(item=>item.kind===type);
    return '<section class="flip-cosmetic-category"><div class="flip-cosmetic-category-head">'+
@@ -125,7 +128,7 @@
         '<span class="flip-cosmetic-sample flip-sample-'+esc(item.id)+
         (frameSample?' flip-frame-'+esc(item.id)+' flip-color-'+frameColor:'')+'">'+
         (frameSample?
-          '<span class="flip-frame-sample-ring"><span class="flip-frame-sample-core">F</span></span>':
+          '<span class="flip-identity-avatar flip-cosmetic-sample-avatar"><span class="flip-cosmetic-preview-avatar">'+photo+'</span></span>':
           '<span class="flip-cosmetic-sample-mark">F<span>.</span></span>')+'</span>'+
         '<span class="flip-cosmetic-name">'+esc(item.name)+'</span>'+
         '<small>'+esc(kindTag[type])+'</small></button>'+
@@ -140,9 +143,6 @@
   const trial=items.find(i=>i.id===previewId)||null;
   const balance=shop?.balance??player?.balance??0;
   const displayName=player?.telegramName||profile?.first_name||'FLIP PLAYER';
-  const rawAvatar=player?.telegramAvatarUrl;
-  const photo=typeof rawAvatar==='string'&&/^https:\/\/[^"'<> ]+$/.test(rawAvatar)?
-    '<img src="'+esc(rawAvatar)+'" alt="" decoding="async" referrerpolicy="no-referrer">':'F';
   const currentTitle=trial?.kind==='title'?trial.id:profile?.appearance?.title;
   const title=safe('title',currentTitle)?cosmeticNames[currentTitle]:'';
   const slots=Array.isArray(profile?.slots)?profile.slots.slice(0,3):[];

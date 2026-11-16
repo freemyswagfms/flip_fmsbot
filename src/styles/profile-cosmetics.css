@@ -1,4 +1,4 @@
-/* FLIP v0.9.8.7 — FLIP IDENTITY / profile cosmetics.
+/* FLIP v0.9.8.9 — FLIP IDENTITY / profile cosmetics.
    Inexpensive CSS/SVG-style effects only; fully responsive and reduced-motion aware. */
 .flip-profile-page,.flip-public-profile{display:grid;gap:15px}
 .flip-profile-page>*,.flip-public-profile>*{min-width:0}
@@ -48,31 +48,20 @@
  box-shadow:0 0 10px var(--identity-ink);transition:width .5s}
 .flip-identity-progress-caption{margin-top:7px;font-size:8px;letter-spacing:.25px}
 .flip-identity-progress-caption span:first-child{color:#e1f9d9}
-.flip-bg-acid-signal{--identity-ink:#b6ff68;--identity-edge:#a5ff6a77;
+.flip-identity.flip-bg-acid-signal{--identity-ink:#b6ff68;--identity-edge:#a5ff6a77;
  background:radial-gradient(circle at 90% 13%,#bcff6840,transparent 38%),
  repeating-linear-gradient(120deg,#162b1b 0 2px,#132216 2px 14px,#29412a 14px 15px)}
 .flip-bg-acid-signal .flip-identity-art i:nth-child(3){opacity:.65;
  background:repeating-linear-gradient(0deg,transparent 0 11px,#ceff8736 12px,#ceff8736 13px,transparent 14px 27px)}
-.flip-bg-midnight-grid{--identity-ink:#8cb7ff;--identity-edge:#8caefa66;
+.flip-identity.flip-bg-midnight-grid{--identity-ink:#8cb7ff;--identity-edge:#8caefa66;
  background:radial-gradient(circle at 80% 15%,#264e97a0,transparent 46%),
  repeating-linear-gradient(0deg,transparent 0 23px,#688cbb12 24px),
  repeating-linear-gradient(90deg,transparent 0 23px,#688cbb12 24px),#0b111f}
 .flip-bg-midnight-grid .flip-identity-art i:nth-child(2){background:radial-gradient(circle,#7098ff52,transparent 62%)}
-.flip-bg-redline{--identity-ink:#ff6f79;--identity-edge:#ff72777c;
+.flip-identity.flip-bg-redline{--identity-ink:#ff6f79;--identity-edge:#ff72777c;
  background:linear-gradient(140deg,#36191d,#160c11 64%,#290c11)}
 .flip-bg-redline .flip-identity-art i:nth-child(3){opacity:.7;background:
  repeating-linear-gradient(145deg,transparent 0 40px,#ff536a35 41px,#ff536a35 43px,transparent 44px 70px)}
-.flip-frame-neon-ring .flip-identity-avatar .flip-player-avatar{border:2px solid #cbff84;
- box-shadow:0 0 0 3px #cbff8417,0 0 24px #b6ff6855,inset 0 0 7px #b6ff6833}
-.flip-frame-liquid-chrome .flip-identity-avatar .flip-player-avatar{border:3px solid transparent;
- background:linear-gradient(#132317,#132317) padding-box,
- conic-gradient(from 45deg,#e4f2ff,#72808f,#f9faff,#424b54,#dde5ec) border-box;
- box-shadow:0 6px 18px #0008}
-.flip-frame-pulse .flip-identity-avatar .flip-player-avatar{border:2px solid #aefb7d;
- box-shadow:0 0 0 1px #baff6866,0 0 16px #aaff6d90}
-.flip-frame-pulse .flip-identity-avatar:after{content:"";position:absolute;inset:-6px;
- border-radius:25px;border:1px solid #b6ff68a0;pointer-events:none;
- animation:flipCosmeticPulse 2.8s ease-out infinite}
 .flip-profile-metrics,.flip-showcase-stats-public{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .flip-profile-metrics>div,.flip-showcase-stats-public>div{min-width:0;display:flex;flex-direction:column;
  justify-content:space-between;min-height:95px;padding:12px 9px;border-radius:14px;
@@ -206,6 +195,8 @@
  background:radial-gradient(circle at 77% 12%,#d2ff843d,transparent 55%),#202c23;
  transition:transform .25s}
 .flip-cosmetic-preview-btn:hover .flip-cosmetic-sample{transform:translateY(-2px)}
+.flip-cosmetic-sample .flip-cosmetic-sample-avatar{flex:none;max-width:calc(100% - 18px)}
+.flip-cosmetic-sample .flip-cosmetic-preview-avatar{font-size:27px}
 .flip-cosmetic-sample-mark{font:900 36px 'Space Grotesk',sans-serif;color:#f3fff0;text-shadow:0 3px 10px #0007}
 .flip-cosmetic-sample-mark span{color:#b6ff68}
 .flip-cosmetic-name{font:900 12px 'Space Grotesk',sans-serif;color:#f4ffeb;
@@ -274,9 +265,6 @@
 .flip-cosmetic-hero.flip-bg-midnight-grid{background:repeating-linear-gradient(0deg,transparent 0 24px,#567dbb2c 25px),
  repeating-linear-gradient(90deg,transparent 0 24px,#567dbb2c 25px),#102243}
 .flip-cosmetic-hero.flip-bg-redline{background:repeating-linear-gradient(150deg,#281117 0 20px,#9b33434b 21px,#2b1117 23px)}
-.flip-cosmetic-hero.flip-frame-neon-ring .flip-cosmetic-preview-avatar{border:3px solid #c2ff80;box-shadow:0 0 22px #b6ff68aa}
-.flip-cosmetic-hero.flip-frame-liquid-chrome .flip-cosmetic-preview-avatar{border:3px solid #dce4ed;box-shadow:0 0 18px #bbc7d780}
-.flip-cosmetic-hero.flip-frame-pulse .flip-cosmetic-preview-avatar{box-shadow:0 0 0 6px #b6ff6830,0 0 20px #b6ff6890}
 .flip-cosmetic-mini-showcase{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
  max-width:250px;border-radius:12px;padding:10px;background:#040b0880;border:1px solid #c2ff752c}
 .flip-cosmetic-mini-showcase>span{display:grid;place-items:center;aspect-ratio:1/1;
@@ -339,8 +327,7 @@
  animation:flipFrameNeon 2.8s ease-in-out infinite}
 .flip-frame-liquid-chrome .flip-identity-avatar::before{
  border:3px solid transparent;
- background:linear-gradient(transparent,transparent) padding-box,
- conic-gradient(from var(--flip-chrome-angle,0deg),
+ background:conic-gradient(from var(--flip-chrome-angle,0deg),
   #f7f8fc,var(--frame-color),#505c69,#f7f8fc,
   var(--frame-secondary),#25303b,#eff2f9) border-box;
  box-shadow:0 0 15px 2px var(--frame-glow);
@@ -356,25 +343,33 @@
  transform-origin:center center}
 .flip-frame-aurora-flow .flip-identity-avatar::before{
  border:3px solid transparent;
- background:linear-gradient(transparent,transparent) padding-box,
- conic-gradient(from var(--flip-chrome-angle,0deg),
+ background:conic-gradient(from var(--flip-chrome-angle,0deg),
  var(--frame-color),#f7d5ff,var(--frame-secondary),#6affd8,
  var(--frame-color),#d0b7ff) border-box;
  box-shadow:0 0 19px 3px var(--frame-glow);
  animation:flipFrameAurora 4.5s linear infinite}
-.flip-color-rgb .flip-identity-avatar::before,
-.flip-color-rgb .flip-frame-sample-ring::before{
- border:3px solid transparent;
- background:linear-gradient(transparent,transparent) padding-box,
- conic-gradient(from var(--flip-chrome-angle,0deg),
+/* Free colors change the ring tint, never the photo or the purchased effect. */
+.flip-color-rgb .flip-identity-avatar::before{
+ border-color:transparent;
+ background:conic-gradient(from var(--flip-chrome-angle,0deg),
  #ff446b,#ffbc41,#b6ff68,#4af5ff,#718cff,#ef72e7,#ff446b) border-box;
- box-shadow:0 0 17px 3px #a88eff90;
- animation:flipFrameRainbow 3.2s linear infinite}
-.flip-color-glitch .flip-identity-avatar::before,
-.flip-color-glitch .flip-frame-sample-ring::before{
- border-color:var(--frame-color);
- box-shadow:-2px 0 0 #46fff0,2px 0 0 #ff5576,0 0 12px var(--frame-glow);
+ box-shadow:0 0 17px 3px #a88eff90}
+.flip-color-glitch .flip-identity-avatar::before{
+ border-color:transparent;
+ background:conic-gradient(from 0deg,#ff668e 0deg 110deg,
+ #58e9ff 120deg 205deg,#20202b 215deg 262deg,#ff668e 277deg 360deg) border-box;
+ box-shadow:0 0 13px var(--frame-glow)}
+.flip-frame-default.flip-color-glitch .flip-identity-avatar::before{
  animation:flipFrameGlitch 3.3s steps(1,end) infinite}
+/* Transparent middle keeps the photo visible in Chrome, Aurora, RGB, Glitch. */
+.flip-frame-liquid-chrome .flip-identity-avatar::before,
+.flip-frame-aurora-flow .flip-identity-avatar::before,
+.flip-color-rgb .flip-identity-avatar::before,
+.flip-color-glitch .flip-identity-avatar::before{
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+ -webkit-mask-composite:xor;
+ mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+ mask-composite:exclude}
 /* Existing player images never inherit animation transforms: only the outer ring moves. */
 .flip-frame-neon-ring .flip-identity-avatar>.flip-player-avatar,
 .flip-frame-liquid-chrome .flip-identity-avatar>.flip-player-avatar,
@@ -385,37 +380,6 @@
 .flip-identity-avatar .flip-showcase-player-photo{border-radius:20px!important}
 .flip-cosmetic-preview-shell .flip-cosmetic-preview-avatar{
  font:900 28px/1 'Space Grotesk',sans-serif;color:#f6fff2}
-.flip-frame-sample-ring{
- position:relative;display:grid;place-items:center;
- width:76px;height:76px;flex:none;border-radius:50%;isolation:isolate}
-.flip-frame-sample-core{
- display:grid;place-items:center;width:62px;height:62px;
- padding:0;margin:0;border-radius:50%;background:#17261b;
- font:900 32px/1 'Space Grotesk',sans-serif;color:#f4fff3;
- z-index:1;position:relative;box-shadow:0 2px 10px #0006}
-.flip-frame-sample-ring::before,.flip-frame-sample-ring::after{
- position:absolute;inset:6px;border-radius:50%;content:"";z-index:2;
- box-sizing:border-box;border:3px solid var(--frame-color);
- box-shadow:0 0 12px 2px var(--frame-glow);pointer-events:none}
-.flip-frame-sample-ring::after{display:none}
-.flip-frame-neon-ring .flip-frame-sample-ring::before{
- box-shadow:0 0 0 3px #ffffff10,0 0 22px 5px var(--frame-glow);
- animation:flipFrameNeon 2.8s ease-in-out infinite}
-.flip-frame-liquid-chrome .flip-frame-sample-ring::before,
-.flip-frame-aurora-flow .flip-frame-sample-ring::before{
- border:3px solid transparent;
- background:linear-gradient(transparent,transparent) padding-box,
- conic-gradient(from var(--flip-chrome-angle,0deg),#f8f8ff,var(--frame-color),
- #607080,#f6f9ff,var(--frame-secondary),#2e3e4a,#f8f8ff) border-box;
- animation:flipFrameChrome 3.7s linear infinite}
-.flip-frame-aurora-flow .flip-frame-sample-ring::before{
- background:linear-gradient(transparent,transparent) padding-box,
- conic-gradient(from var(--flip-chrome-angle,0deg),
- var(--frame-color),#edc5ff,var(--frame-secondary),#7affde,#dab9ff) border-box;
- animation:flipFrameAurora 4.5s linear infinite}
-.flip-frame-pulse .flip-frame-sample-ring::after{
- display:block;border:2px solid var(--frame-color);
- animation:flipFramePulse 2.15s ease-out infinite}
 .flip-frame-swatch{
  position:relative;display:grid;place-items:center;min-width:0;
  aspect-ratio:1.4/1;background:#131e16;border:1px solid #435845;
@@ -452,13 +416,14 @@
  70%,100%{transform:scale(1.34);opacity:0}}
 @keyframes flipFrameRainbow{to{--flip-chrome-angle:360deg;filter:hue-rotate(360deg)}}
 @keyframes flipFrameGlitch{
- 0%,92%,96%,100%{transform:translate(0,0);filter:none}
- 93%{transform:translate(-2px,1px);filter:hue-rotate(130deg)}
- 94%{transform:translate(2px,-1px);filter:none}
- 95%{transform:translate(-1px,0);filter:hue-rotate(230deg)}}
+ 0%,91%,96%,100%{opacity:1;filter:brightness(1)}
+ 92%{opacity:.78;filter:hue-rotate(26deg)}
+ 93%{opacity:1;filter:brightness(1.5)}
+ 94%{opacity:.82;filter:brightness(.8)}
+ 95%{opacity:1;filter:brightness(1.15)}}
 
 /* Pastel-pink cosmetic editions: still contrast safe for light copy. */
-.flip-bg-pastel-dream{
+.flip-identity.flip-bg-pastel-dream{
  --identity-ink:#ffc9e9;--identity-edge:#f7b8dc88;
  background:radial-gradient(circle at 88% 7%,#ffc9e47c,transparent 45%),
  radial-gradient(circle at 8% 80%,#c8aefc66,transparent 55%),
@@ -474,6 +439,7 @@
  border-color:#dba4c2!important}
 .flip-scene-blush-gallery .flip-showcase-frame{
  box-shadow:0 0 0 1px #ffc7de88,0 8px 20px #160b1caa}
+.flip-cosmetic-hero.flip-bg-pastel-dream{background:radial-gradient(circle at 88% 7%,#ffc9e47c,transparent 45%),radial-gradient(circle at 8% 80%,#c8aefc66,transparent 55%),linear-gradient(135deg,#503a65,#704769 57%,#293a65)}
 .flip-sample-pastel-dream{background:radial-gradient(circle at 78% 8%,#ffe0ec8e,transparent 47%),
  linear-gradient(130deg,#8c6ca4,#ad77a1 56%,#5669a5)}
 .flip-sample-blush-gallery{background:radial-gradient(circle at 35% 0%,#f6b6d379,transparent 75%),
@@ -482,7 +448,7 @@
 /* Public profile: one intentionally consistent, compact stack with shared skin. */
 .flip-public-profile{gap:13px!important}
 .flip-public-profile>.flip-profile-lower{margin:0!important}
-.flip-profile-lower{--lower-panel:#19271c;--lower-edge:#46654b;
+.flip-profile-lower{background:transparent!important;--lower-panel:#19271c;--lower-edge:#46654b;
  --lower-tile:#132218;--lower-accent:#b6ff68;
  display:grid;gap:12px;min-width:0}
 .flip-profile-lower.flip-scene-glass-cabinet{
@@ -541,6 +507,5 @@
 }
 @media(prefers-reduced-motion:reduce){
  .flip-identity-avatar::before,.flip-identity-avatar::after,
- .flip-frame-sample-ring::before,.flip-frame-sample-ring::after,
  .flip-frame-swatch>span{animation:none!important;transition:none!important}
 }

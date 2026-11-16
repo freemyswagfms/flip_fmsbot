@@ -50,7 +50,7 @@ test('Four animation styles can share one free 10-color palette, including RGB a
  assert.match(x.classes(profile,{kind:'avatar_frame',id:'aurora-flow'}),/flip-frame-aurora-flow/);
  assert.match(x.classes(profile,{kind:'avatar_frame',id:'aurora-flow'}),/flip-color-pink/);
 });
-test('Shop displays 15 items with genuinely centered animated F previews and free color buttons',()=>{
+test('Shop displays 15 items with centered square avatar previews and free color buttons',()=>{
  const x=view().FLIPProfileCosmetics;
  const html=x.shop({shop:{items,owned:['pulse'],slot_count:6,balance:3000},
   player:{telegramName:'Demo'},profile,online:true,previewId:'aurora-flow'});
@@ -59,9 +59,9 @@ test('Shop displays 15 items with genuinely centered animated F previews and fre
  assert.match(html,/data-profile-frame-color="pink"[^>]+aria-label="Розовый"[^>]+aria-pressed="true"/);
  for(const id of ['neon-ring','liquid-chrome','pulse','aurora-flow'])
   assert.match(html,new RegExp('flip-frame-'+id));
- assert.match(html,/flip-frame-sample-ring/);
- assert.match(html,/flip-frame-sample-core">F<\/span>/);
- assert.doesNotMatch(html,/flip-frame-sample-core">F\./);
+ assert.equal((html.match(/flip-cosmetic-sample-avatar/g)||[]).length,4);
+ assert.match(html,/flip-cosmetic-preview-avatar">F<\/span>/);
+ assert.doesNotMatch(html,/flip-frame-sample-ring/);
  assert.match(html,/flip-cosmetic-preview-shell/);
  assert.match(html,/ЦВЕТ РАМКИ/);
  assert.match(html,/БЕСПЛАТНО/);
@@ -92,7 +92,7 @@ test('Frame overlay uses a matching 78/70 square shell, animates independently, 
  for(const effect of ['Neon','Chrome','Pulse','Aurora','Rainbow','Glitch'])
   assert.match(css,new RegExp('@keyframes flipFrame'+effect));
  assert.match(css,/\.flip-frame-pulse \.flip-identity-avatar::after/);
- assert.match(css,/\.flip-frame-pulse \.flip-frame-sample-ring::after/);
+ assert.match(css,/\.flip-cosmetic-sample-avatar/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.match(css,/\.flip-bg-pastel-dream/);
  assert.match(css,/\.flip-scene-blush-gallery\.flip-showcase-profile/);
@@ -154,11 +154,12 @@ test('Frame color request uses signed player only and rejects forged actor or in
 });
 test('Release stamps preserve the unaffected store but refresh changed assets',()=>{
  const pkg=JSON.parse(read('package.json')),index=read('index.html');
- assert.equal(pkg.version,'0.9.8.8');
- for(const filename of ['profile-cosmetics.js','showcase.js','server.js','app.js']){
+ assert.equal(pkg.version,'0.9.8.9');
+ for(const filename of ['showcase.js','server.js','app.js']){
   assert.ok(index.includes('src/scripts/'+filename+'?v=0.9.8.8'),filename);
  }
- assert.ok(index.includes('src/styles/profile-cosmetics.css?v=0.9.8.8'));
+ assert.ok(index.includes('src/scripts/profile-cosmetics.js?v=0.9.8.9'));
+ assert.ok(index.includes('src/styles/profile-cosmetics.css?v=0.9.8.9'));
  assert.ok(index.includes('src/scripts/store.js?v=0.9.8.7'));
- assert.ok(read('api/flip.js').includes("version:'0.9.8.8'"));
+ assert.ok(read('api/flip.js').includes("version:'0.9.8.9'"));
 });
