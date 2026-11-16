@@ -33,16 +33,28 @@ test('Social endpoints reject unsigned callers',withEnv(async()=>{
 }));
 test('Public leaderboard reveals names and CP, not private Telegram IDs',withEnv(async()=>{
   let body,name;
-  globalThis.fetch=async(url,options)=>{name=url;body=JSON.parse(options.body);
+  globalThis.fetch=async(url,options)=>{
+    const path=String(url),payload=JSON.parse(options.body);
+    if(path.endsWith('flip_profile_directory')){
+      assert.deepEqual(payload.p_player_ids,[123,789]);
+      return new Response(JSON.stringify([
+        {telegram_id:'123',public_id:'11111111-1111-4111-8111-111111111111'},
+        {telegram_id:'789',public_id:'22222222-2222-4222-8222-222222222222'}
+      ]),{status:200});
+    }
+    name=url;body=payload;
     return new Response(JSON.stringify({players:2,me:{telegram_id:'123',place:1,cp:125},
       leaders:[{telegram_id:'123',username:'mike',first_name:'Mike',level:3,cp:125,ranked_cards:4,ranked_variants:2},
-        {telegram_id:'789',username:'',first_name:'Player',level:1,cp:0,ranked_cards:0,ranked_variants:0}]}),{status:200});};
+        {telegram_id:'789',username:'',first_name:'Player',level:1,cp:0,ranked_cards:0,ranked_variants:0}]}),{status:200});
+  };
   const response=await handleSocialRequest(request(123));
   assert.equal(response.status,200);
   const data=await response.json();
   assert.match(name,/flip_cp_leaderboard$/);
   assert.equal(body.p_viewer_id,123);
   assert.equal(data.leaders[0].name,'@mike');
+  assert.equal(data.leaders[0].profileId,'11111111-1111-4111-8111-111111111111');
+  assert.equal(data.leaders[1].profileId,'22222222-2222-4222-8222-222222222222');
   assert.ok(!('telegram_id' in data.leaders[0]));
   assert.ok(!('telegram_id' in data.me));
   assert.match(data.leaders[1].name,/FLIP#[0-9A-F]{10}/);
