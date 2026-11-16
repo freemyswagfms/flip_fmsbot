@@ -28,7 +28,8 @@ async function withMock(fetcher,fn){
  const originalEnv=process.env,prev=globalThis.fetch;
  process.env={...originalEnv,TELEGRAM_BOT_TOKEN:token,
   SUPABASE_URL:'https://flip-test.supabase.co',SUPABASE_SECRET_KEY:'sb_secret_fake'};
- globalThis.fetch=fetcher;
+ globalThis.fetch=(url,options)=>String(url).endsWith('/rpc/flip_player_is_banned')?
+      Response.json(false):fetcher(url,options);
  try{return await fn();}finally{process.env=originalEnv;globalThis.fetch=prev;}
 }
 test('Signed gift is transferred only through the server with a scoped request ID',async()=>{
