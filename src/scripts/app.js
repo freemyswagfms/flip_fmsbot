@@ -298,6 +298,12 @@ async function refreshHub({rerender=false}={}){
  hubLoading=true;hubError='';
  try{
    const data=await bridge.refreshHub();
+   // Reuse the existing hub poll, including on Telegram launch and after
+   // successful trades. Acknowledgments never alter owned inventory.
+   window.FLIPDelivery?.enqueue(data?.card_deliveries,{
+     onAcknowledge:ids=>bridge.ackCardDeliveries(ids),
+     onRefresh:()=>refreshHub({rerender:true})
+   });
    if(rerender&&['profile','activity'].includes(current))render(current);
    updateInbox();
    return data;
@@ -847,7 +853,11 @@ window.addEventListener('flip-admin-self-changed',async()=>{
   if(!live())return;
   try{
     const snapshot=await bridge.connect();
-    if(snapshot){Object.assign(state,snapshot);$('#balance').textContent=money(state.balance);}
+    if(snapshot){
+      Object.assign(state,snapshot);
+      $('#balance').textContent=money(state.balance);
+      refreshHub({rerender:true});
+    }
   }catch(_){/* balance refresh happens on next Telegram launch */}
 });
 // Update rotating assignments if a player keeps the Mini App open past midnight MSC.
