@@ -53,6 +53,7 @@ test('Authenticated GET and POST forward only the validated Telegram ID to the s
   const calls=[];
   process.env={...originalEnv,SUPABASE_URL:'https://example.supabase.co',SUPABASE_SECRET_KEY:'sb_secret_for_test',TELEGRAM_BOT_TOKEN:key};
   globalThis.fetch=async(url,options)=>{
+    if(String(url).endsWith('/rpc/flip_player_is_banned'))return Response.json(false);
     calls.push({url:String(url),payload:JSON.parse(options.body),auth:options.headers.apikey});
     const state={balance:0,xp:0,level:1,xp_to_next:100,inventory:[],discovered:[]};
     if(String(url).endsWith('flip_bootstrap'))return new Response(JSON.stringify(state),{status:200});
@@ -69,15 +70,16 @@ test('Authenticated GET and POST forward only the validated Telegram ID to the s
     const initData=signedData({id:58321,username:'SomeFan'});
     const boot=await handleRequest(new Request('https://flip.example.com/api/flip',{headers:{'x-telegram-init-data':initData}}));
     assert.equal(boot.status,200);
-    assert.equal(calls[0].payload.telegram_id,58321);
-    assert.equal(calls[0].payload.username,'SomeFan');
+    assert.equal(calls.find(x=>x.url.endsWith('flip_bootstrap')).payload.telegram_id,58321);
+    assert.equal(calls.find(x=>x.url.endsWith('flip_bootstrap')).payload.username,'SomeFan');
     const open=await handleRequest(new Request('https://flip.example.com/api/flip',{method:'POST',headers:{'x-telegram-init-data':initData},body:JSON.stringify({action:'drop',requestId:'11111111-2222-4333-8444-555555555555'})}));
     assert.equal(open.status,200);
     assert.equal((await open.json()).card_id,'carti/die-lit/common');
     assert.equal(calls.find(x=>x.url.endsWith('flip_open_drop')).payload.p_telegram_id,58321);
     assert.equal(calls.find(x=>x.url.endsWith('flip_open_drop')).payload.p_request_id,'11111111-2222-4333-8444-555555555555');
     assert.equal(calls.find(x=>x.url.endsWith('flip_open_drop')).auth,'sb_secret_for_test');
-    assert.equal(calls[0].url,'https://example.supabase.co/rest/v1/rpc/flip_bootstrap');
+    assert.ok(calls.some(x=>x.url==='https://example.supabase.co/rest/v1/rpc/flip_bootstrap'));
+    // Ban denial is validated separately in v0.9.8.4 security tests.
   }finally{process.env=originalEnv;globalThis.fetch=originalFetch;}
 });
 
@@ -110,7 +112,8 @@ test('Server profile fallback tag stable for no username and photo never written
   const env=process.env, orig=globalThis.fetch;
   process.env={...env,SUPABASE_URL:'https://example.supabase.co',SUPABASE_SECRET_KEY:'sb_secret_fake',TELEGRAM_BOT_TOKEN:key};
   const calls=[];
-  globalThis.fetch=async(url,options)=>{calls.push(JSON.parse(options.body));return new Response(
+  globalThis.fetch=async(url,options)=>{
+    if(String(url).endsWith('/rpc/flip_player_is_banned'))return Response.json(false);calls.push(JSON.parse(options.body));return new Response(
     JSON.stringify({balance:0,xp:0,level:1,inventory:[],discovered:[],first_name:'First',username:''}),{status:200}
   );};
   try{

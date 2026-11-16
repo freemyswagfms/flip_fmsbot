@@ -15,7 +15,7 @@ test('Studio public config uses a named GET handler returning a real response',a
     assert.deepEqual(await result.json(),{
       supabaseUrl:'https://example.supabase.co',
       publishableKey:'sb_publishable_test',
-      version:'0.9.1'
+      version:'0.9.8.4'
     });
     assert.equal(POST().status,405);
     delete process.env.SUPABASE_PUBLISHABLE_KEY;

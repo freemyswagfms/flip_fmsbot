@@ -64,7 +64,7 @@ test('No accidental cleanup outside home and reveal, versioned assets refreshed'
  assert.ok(html.includes('src/scripts/reveal.js?v=0.9.8.1'));
  assert.ok(html.includes('src/styles/home.css?v=0.9.8.1'));
  assert.ok(html.includes('src/styles/reveal.css?v=0.9.8.2'));
- assert.ok(html.includes('src/scripts/trades.js?v='+pkg.version));
+ assert.ok(html.includes('src/scripts/trades.js?v=0.9.8.3'));
  assert.ok(html.includes('src/scripts/delivery-reveal.js?v=0.9.8'));
  assert.ok(html.includes('src/scripts/admin.js?v=0.9.6.4'));
  assert.ok(read('api/flip.js').includes("version:'"+pkg.version+"'"));

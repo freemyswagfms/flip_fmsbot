@@ -1,5 +1,6 @@
 import './styles.css';
 import {createClient} from '@supabase/supabase-js';
+import {playerListPage,playerDetailPage,playerRows} from './player-desk.js';
 
 /* FLIP STUDIO v0.9.1 — creative workspace. All privileged writes use RLS or
    authenticated server functions; no secret/service-role keys in this bundle. */
@@ -45,13 +46,15 @@ const iPaths={
 };
 const ico=(name,size=18)=>'<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" aria-hidden="true">'+(iPaths[name]||iPaths.circle)+'</svg>';
 const nav=[
- ['dashboard','layout-dashboard','Обзор'],['artists','users','Артисты'],
+ ['dashboard','layout-dashboard','Обзор'],['players','users','Игроки'],['artists','users','Артисты'],
  ['releases','disc','Релизы'],['import','search','Music Importer'],
  ['editor','image','Artwork Studio'],['tasks','check','Задания'],['team','shield','Команда'],
  ['activity','history','История']
 ];
 const s={db:null,user:null,member:null,artists:[],releases:[],variants:[],audit:[],
  taskSlots:[],current:'dashboard',selectedRelease:null,artistFilter:null,q:'',filter:'all',busy:false,
+ playerList:[],playerTotal:0,playerQuery:'',playerOffset:0,playerListLoaded:false,
+ selectedPlayer:null,playerDetail:null,playerCardsOffset:0,playerAction:null,playerLoading:false,
  editorMode:'draft',selectedPublished:null,publishedCatalog:{artists:[],releases:[],cards:[]},
  importQ:'',importArtists:[],importArtist:null,importReleases:[],importSelected:new Set(),
  importPage:0,importCount:0,importError:'',crop:null,
@@ -86,6 +89,11 @@ function formatError(e){
  'INVALID_ARTWORK_FORMAT':'Обложка должна быть в формате WebP.',
  'ARTWORK_PUBLICATION_FAILED':'Не удалось обновить опубликованную обложку.',
  'CARD_NOT_FOUND':'Карточка отсутствует в опубликованном каталоге.',
+   'CARD_NOT_OWNED':'Игрок больше не владеет этой карточкой.',
+   'CARD_COUNT_CHANGED':'Количество копий изменилось. Обнови профиль.',
+   'PLAYER_NOT_FOUND':'Игрок не найден.',
+   'DUPLICATE_REQUEST_ACTION':'Действие уже выполнено с другими параметрами.',
+   'PLAYER_OPERATION_FAILED':'Не удалось выполнить действие. Попробуй ещё раз.',
   'BOT_NOT_ADMIN':'Добавь бота FLIP администратором канала.',
   'NOT_A_CHANNEL':'Указанный адрес не является каналом.',
   'CHANNEL_MISMATCH':'Ссылка и ID канала не совпадают.',
@@ -125,7 +133,7 @@ function button(label,act,primary=false){
  return '<button type="button" class="button '+(primary?'primary':'')+'" data-action="'+esc(act)+'">'+label+'</button>'}
 function layout(content){
  const role=s.member?.role||'editor';
- const visibleNav=nav.filter(x=>!['team','tasks'].includes(x[0])||role==='owner');
+ const visibleNav=nav.filter(x=>!['team','tasks','players'].includes(x[0])||role==='owner');
  const item=nav.find(x=>x[0]===s.current);
  const buttons=visibleNav.map(([id,icon,label])=>
   '<button type="button" class="nav-btn '+(s.current===id?'active':'')+
@@ -134,7 +142,7 @@ function layout(content){
   '<div class="wordmark">FLIP<span>.</span></div><span class="brand-sub">STUDIO / CONTENT OS</span>'+
   '</div><div class="side-label">WORKSPACE</div><nav class="nav-links">'+buttons+'</nav>'+
   '<div class="side-bottom"><div class="side-status"><span class="online-dot"></span> WORKSPACE CONNECTED</div>'+
-  '<small>FLIP STUDIO 0.9.0<br>Редакционный контент и публикации</small></div></aside>'+
+  '<small>FLIP STUDIO 0.9.8.4<br>Редакционный контент и публикации</small></div></aside>'+
   '<div class="main"><header class="topbar"><div class="crumbs"><span>STUDIO</span> / <b>'+
   esc(item?.[2]||'Обзор')+'</b></div><div class="top-right"><span class="role-pill">'+role.toUpperCase()+
   '</span><div class="avatar">'+esc((s.user.email||'F').slice(0,1).toUpperCase())+
@@ -142,7 +150,7 @@ function layout(content){
   '<main class="canvas view-enter">'+content+
   '<div class="footer-note">FLIP STUDIO © 2026 · CONTENT OPERATIONS · YOUR COLLECTION, YOUR RULES</div></main></div>'+
   '</div><nav class="mobile-menu" aria-label="Навигация">'+
-  visibleNav.filter(x=>['dashboard','releases','editor','tasks','team'].includes(x[0]))
+  visibleNav.filter(x=>['dashboard','releases','editor','tasks','team','players'].includes(x[0]))
     .map(([id,icon,label])=>'<button data-nav="'+id+'" class="'+(s.current===id?'active':'')+'">'+
       ico(icon)+'<span>'+esc(label.replace('Music ','').replace('Artwork ',''))+'</span></button>').join('')+
   '</nav>';
@@ -518,6 +526,88 @@ async function saveTaskSlot(scope,slot,kind){
    notice(kind==='subscription'?'Задание опубликовано в FLIP.':'Обычное задание восстановлено.');
  }catch(e){notice('Не удалось сохранить: '+formatError(e),true)}
 }
+function playersPage(){
+ return s.member?.role==='owner'?
+  s.selectedPlayer?playerDetailPage(s,s.publishedCatalog):playerListPage(s):dashboard();
+}
+async function loadPlayers(){
+ if(s.member?.role!=='owner'||s.playerLoading)return;
+ s.playerLoading=true;
+ try{
+  const r=await invoke('players?view=list&q='+encodeURIComponent(s.playerQuery)+
+    '&offset='+s.playerOffset);
+  s.playerList=Array.isArray(r.players)?r.players:[];
+  s.playerTotal=Number(r.total)||0;
+  s.playerListLoaded=true;
+  if(s.current==='players'&&!s.selectedPlayer){
+   const node=$('#studio-player-list');
+   if(node)node.innerHTML=playerRows(s);
+   const count=$('#players-total');
+   if(count)count.textContent='Игроков: '+s.playerTotal;
+  }
+ }catch(e){notice('Не удалось найти игроков: '+formatError(e),true)}
+ finally{s.playerLoading=false}
+}
+async function loadPlayerDetail(){
+ if(s.member?.role!=='owner'||!s.selectedPlayer||s.playerLoading)return;
+ s.playerLoading=true;
+ try{
+  const id=s.selectedPlayer,offset=s.playerCardsOffset;
+  const result=await invoke('players?view=detail&id='+encodeURIComponent(id)+
+    '&offset='+offset);
+  if(s.current==='players'&&s.selectedPlayer===id&&s.playerCardsOffset===offset){
+   s.playerDetail=result;render();
+  }
+ }catch(e){notice('Не удалось открыть профиль: '+formatError(e),true)}
+ finally{s.playerLoading=false}
+}
+function playerActionDialog(action,cardId='',kind='',max=1){
+ if(s.member?.role!=='owner'||!s.selectedPlayer||!s.playerDetail?.player)return;
+ const p=s.playerDetail.player,remove=action==='remove_card';
+ s.playerAction={action,cardId,kind,max,requestId:crypto.randomUUID()};
+ const heading=remove?'Удаление карточек':action==='ban'?'Блокировка игрока':'Разблокировка';
+ const copy=remove?
+  '<p class="hint">'+esc(cardId)+' · '+(kind==='ranked'?'обычные':'тестовые')+
+  ' · доступно '+max+'</p><div class="field"><label>Количество</label>'+
+  '<input class="input" type="number" id="player-remove-quantity" min="1" max="'+
+   Math.min(max,100)+'" value="1"></div>':
+  '<p class="hint">'+(action==='ban'?'При бане будут отменены ожидающие обмены.':
+   'После разблокировки игрок сможет пользоваться FLIP.')+'</p>';
+ modal(heading,'<p>Игрок: <strong>'+esc(p.username?'@'+p.username:p.first_name)+
+  '</strong> · ID '+esc(p.id)+'</p>'+copy+
+  '<div class="field" style="margin-top:15px"><label>Причина '+
+  (action==='unban'?'(необязательно)':'(обязательно)')+'</label>'+
+  '<textarea class="input" id="player-action-reason" rows="3" maxlength="300" '+
+  'placeholder="Причина для журнала"></textarea></div>'+
+  '<p class="hint">Все действия записываются в журнал. Удаление копий необратимо.</p>',
+  '<button class="button '+(action==='unban'?'primary':'danger')+
+   '" data-action="player-confirm">Подтвердить</button>');
+}
+async function confirmPlayerAction(){
+ if(s.member?.role!=='owner'||!s.selectedPlayer||!s.playerAction||s.playerLoading)return;
+ const a=s.playerAction,reason=String($('#player-action-reason')?.value||'').trim();
+ const quantity=a.action==='remove_card'?Number($('#player-remove-quantity')?.value):null;
+ if(reason.length>300||(a.action!=='unban'&&reason.length<3))
+  return notice('Укажи причину (минимум 3 символа).',true);
+ if(a.action==='remove_card'&&(!Number.isSafeInteger(quantity)||quantity<1||
+   quantity>Math.min(a.max,100)))
+  return notice('Недопустимое количество копий.',true);
+ const target=s.selectedPlayer;
+ const message=a.action==='remove_card'?'Удалить '+quantity+' копий '+a.cardId+'?':
+  a.action==='ban'?'Заблокировать игрока '+target+'?':'Разблокировать игрока '+target+'?';
+ if(!window.confirm(message+'\nИзменение будет записано в журнал.'))return;
+ s.playerLoading=true;
+ const b=$('[data-action="player-confirm"]');if(b)b.disabled=true;
+ try{
+  await invoke('players',{action:a.action,playerId:target,requestId:a.requestId,reason,
+   ...(a.action==='remove_card'?{cardId:a.cardId,kind:a.kind,quantity}:{})});
+  closeModal();s.playerAction=null;s.playerListLoaded=false;
+  s.playerLoading=false;s.playerDetail=null;
+  await loadPlayerDetail();
+  notice('Изменение выполнено и внесено в журнал.');
+ }catch(e){notice('Не удалось применить: '+formatError(e),true)}
+ finally{s.playerLoading=false;if(b?.isConnected)b.disabled=false}
+}
 function team(){
  if(s.member.role!=='owner')return dashboard();
  return pageHead('ACCESS / 006','Команда',
@@ -554,7 +644,7 @@ function render(){
  if(!s.user){authScreen();return;}
  if(!s.member){awaitingAccess();return;}
  const pages={dashboard,artists:artistGrid,releases:releaseGrid,import:importer,editor,
-  tasks:taskEditor,team,activity};
+  tasks:taskEditor,team,players:playersPage,activity};
  app.innerHTML=layout((pages[s.current]||dashboard)());
  if(s.current==='editor'&&s.editorMode==='draft')populateThumbnails();
  if(s.current==='team')refreshTeam();
@@ -731,10 +821,11 @@ async function claimOwner(){
 }
 function go(page){
  if(!nav.some(x=>x[0]===page))return;
- if(['team','tasks'].includes(page)&&s.member?.role!=='owner')return;
+ if(['team','tasks','players'].includes(page)&&s.member?.role!=='owner')return;
  if(page==='releases')s.artistFilter=null;
  s.q='';s.filter='all';s.current=page;
   if(page==='tasks')loadTaskSlots();
+ if(page==='players'&&!s.playerListLoaded&&!s.selectedPlayer)loadPlayers();
  render();
  window.scrollTo({top:0,behavior:'instant'});
 }
@@ -1310,6 +1401,20 @@ document.addEventListener('click',async event=>{
   if(taskReset){const [scope,slot]=taskReset.dataset.taskReset.split(':');await saveTaskSlot(scope,Number(slot),'default');return;}
   const taskEdit=event.target.closest('[data-task-edit]');
   if(taskEdit){const [scope,slot]=taskEdit.dataset.taskEdit.split(':');openTaskEditor(scope,Number(slot));return;}
+ const playerOpen=event.target.closest('[data-player-open]');
+ if(playerOpen&&s.member?.role==='owner'){
+  s.selectedPlayer=playerOpen.dataset.playerOpen;s.playerCardsOffset=0;
+  s.playerDetail=null;render();await loadPlayerDetail();return;
+ }
+ const playerBan=event.target.closest('[data-player-ban]');
+ if(playerBan&&s.member?.role==='owner'){
+  playerActionDialog(playerBan.dataset.playerBan);return;
+ }
+ const playerRemove=event.target.closest('[data-player-remove]');
+ if(playerRemove&&s.member?.role==='owner'){
+  playerActionDialog('remove_card',playerRemove.dataset.playerRemove,
+   playerRemove.dataset.kind,Number(playerRemove.dataset.max));return;
+ }
  const roleSave=event.target.closest('[data-team-save]');
  if(roleSave){await saveMemberRole(roleSave.dataset.teamSave);return;}
  const roleToggle=event.target.closest('[data-team-toggle]');
@@ -1385,6 +1490,31 @@ document.addEventListener('click',async event=>{
   case 'invite-send':await inviteMember();break;
   case 'invite-copy':await copyInviteLink();break;
   case 'team-refresh':await refreshTeam();break;
+  case 'players-search':
+   if(s.member?.role!=='owner')break;
+   s.playerQuery=String($('#studio-player-search')?.value||'').trim();
+   s.playerOffset=0;await loadPlayers();break;
+  case 'players-refresh':if(s.member?.role==='owner')await loadPlayers();break;
+  case 'players-reset':
+   if(s.member?.role!=='owner')break;
+   s.playerQuery='';s.playerOffset=0;s.playerListLoaded=false;
+   render();await loadPlayers();break;
+  case 'players-prev':case 'players-next':
+   if(s.member?.role!=='owner')break;
+   s.playerOffset=Math.max(0,s.playerOffset+(act==='players-next'?25:-25));
+   await loadPlayers();break;
+  case 'players-back':
+   if(s.member?.role!=='owner')break;
+   s.selectedPlayer=null;s.playerDetail=null;s.playerCardsOffset=0;
+   render();if(!s.playerListLoaded)await loadPlayers();break;
+  case 'player-refresh':
+   if(s.member?.role==='owner'){s.playerDetail=null;render();await loadPlayerDetail()}break;
+  case 'player-cards-prev':case 'player-cards-next':
+   if(s.member?.role!=='owner')break;
+   s.playerCardsOffset=Math.max(0,s.playerCardsOffset+
+     (act==='player-cards-next'?50:-50));
+   s.playerDetail=null;render();await loadPlayerDetail();break;
+  case 'player-confirm':await confirmPlayerAction();break;
  }
 });
 document.addEventListener('change',event=>{
@@ -1426,6 +1556,10 @@ document.addEventListener('input',event=>{
  }
 });
 document.addEventListener('keydown',event=>{
+ if(event.key==='Enter'&&event.target.id==='studio-player-search'){
+  event.preventDefault();s.playerQuery=String(event.target.value||'').trim();
+  s.playerOffset=0;loadPlayers();
+ }
  if(event.key==='Enter'&&event.target.id==='music-search'){event.preventDefault();findArtists()}
  if(event.key==='Enter'&&event.target.id==='auth-email'){event.preventDefault();signIn()}
  if(event.key==='Enter'&&event.target.id==='studio-invite-code'){event.preventDefault();acceptInviteCode()}
