@@ -735,9 +735,17 @@ document.addEventListener('click',e=>{
    if(readAll){markNotification(null);return;}
    const jump=e.target.closest('[data-event-route]');
    if(jump){
+     const route=jump.dataset.eventRoute;
+     if(!jump.hasAttribute('data-event-read')){
+       document.querySelector('#notifications')?.classList.remove('show');
+       if(route==='achievements')render('achievements');
+       else if(route==='activity')openActivity();
+       return;
+     }
      const value=Number(jump.dataset.eventRead);
      const id=Number.isSafeInteger(value)&&value>0?value:null;
-     markNotification(id,jump.dataset.eventRoute);return;
+     if(id!==null)markNotification(id,route);
+     return;
    }
    const shopTabButton=e.target.closest('[data-shop-tab]');
    if(shopTabButton){
@@ -818,6 +826,7 @@ $('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closeModa
     node.hidden=!String(node.dataset.showcaseFilter||'').toLocaleLowerCase('ru').includes(needle);
   }
 });
+window.addEventListener('flip-trade-changed',()=>{refreshHub({rerender:true});});
 window.addEventListener('flip-trade-completed',async()=>{
   if(!live())return;
   try{
