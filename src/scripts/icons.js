@@ -24,9 +24,20 @@
     '⌄': '<path d="m5 9 7 7 7-7"/>',
     '∞': '<path d="M12 12c-2.6-3.2-4.1-4.3-6-4.3a4.3 4.3 0 1 0 0 8.6c1.9 0 3.4-1.1 6-4.3Zm0 0c2.6-3.2 4.1-4.3 6-4.3a4.3 4.3 0 1 1 0 8.6c-1.9 0-3.4-1.1-6-4.3Z"/>',
     '∷': '<circle cx="8" cy="7" r="1.6" fill="currentColor" stroke="none"/><circle cx="16" cy="7" r="1.6" fill="currentColor" stroke="none"/><circle cx="8" cy="17" r="1.6" fill="currentColor" stroke="none"/><circle cx="16" cy="17" r="1.6" fill="currentColor" stroke="none"/>',
-    '●': '<circle cx="12" cy="12" r="5" fill="currentColor" stroke="none"/>'
+    '●': '<circle cx="12" cy="12" r="5" fill="currentColor" stroke="none"/>',
+    '▤': '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h10M7 12h10M7 16h10"/>',
+    '▦': '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>',
+    '▥': '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 3v18M13 3v18M18 3v18"/>',
+    '✷': '<path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9 4.9 19.1"/><circle cx="12" cy="12" r="3.1" fill="currentColor" stroke="none"/>',
+    '✸': '<path d="M12 2v6m0 8v6M2 12h6m8 0h6M4.9 4.9l4.2 4.2m5.8 5.8 4.2 4.2M19.1 4.9l-4.2 4.2m-5.8 5.8-4.2 4.2"/><circle cx="12" cy="12" r="3"/>',
+    '✹': '<circle cx="12" cy="12" r="3.5"/><path d="M12 1.5v5m0 11v5M1.5 12h5m11 0h5M4.6 4.6l3.6 3.6m7.6 7.6 3.6 3.6M19.4 4.6l-3.6 3.6m-7.6 7.6-3.6 3.6"/>',
+    '✺': '<path d="m12 2.5 2.2 5.4 5.8-1.1-2.2 5.2 4.1 4-6-.2L12 21.5l-3.9-5.7-6 .2 4.1-4L4 6.8l5.8 1.1L12 2.5Z"/><circle cx="12" cy="12" r="2"/>',
+    '♫': '<path d="M9 18V5l11-2v12M9 8l11-2"/><ellipse cx="6.2" cy="18" rx="3" ry="2"/><ellipse cx="17.2" cy="15" rx="3" ry="2"/>',
+    '⏱': '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.8 2.2M9.5 2h5M12 2v3M18.5 5.5l2-2"/>',
+    '↑': '<path d="M12 21V3M5 10l7-7 7 7"/>',
+    '☷': '<path d="M4 5.5h16M4 12h16M4 18.5h16"/>'
   };
-  const pattern = /[✳↗◷◎✦✧◈☆◆✓↔⇄×▣◇›←✕◉⌄∞∷●]/g;
+  const pattern = /[✳↗◷◎✦✧✷✸✹✺◈☆◆✓↔⇄×▣▤▥▦◇♫⏱↑☷›←✕◉⌄∞∷●]/g;
   const ns = 'http://www.w3.org/2000/svg';
   function make(glyph) {
     const svg = document.createElementNS(ns, 'svg');
