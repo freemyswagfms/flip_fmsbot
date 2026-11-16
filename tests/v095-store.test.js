@@ -103,7 +103,7 @@ test('Shop UI uses server prices, approved periods and genuine collectible artwo
  assert.match(page,/src\/assets\/carti\/music\/epic\.webp/);
  assert.doesNotMatch(page,/ПАК PLAYBOI CARTI|ARTIST PACK/i);
  assert.match(page,/Pity действует только на бесплатные дропы/);
- const disabled=store.page({shop,state:{balance:10,packsToday:10},live:true});
+ const disabled=store.page({shop:{...shop,packs_today:10},state:{balance:1000,packsToday:10},live:true});
  assert.match(disabled,/ЛИМИТ НА СЕГОДНЯ/);
  const owner=store.page({shop:{...shop,unlimited:true,packs_today:0},
    state:{balance:3000,unlimitedPacks:true},live:true});
