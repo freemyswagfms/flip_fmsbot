@@ -1,12 +1,14 @@
-/* FLIP v0.8.6 — secure 1-5 card bundle trading and counteroffers, no test copies or F. */
+/* FLIP v0.9.7 — authenticated live trade reconciliation on the existing hub cadence. */
 (() => {
 'use strict';
 const E=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const initData=window.Telegram?.WebApp?.initData||'';
 const ownId=(()=>{try{return String(JSON.parse(new URLSearchParams(initData).get('user')||'{}').id||'');}catch{return''}})();
 const s={q:'',players:[],targetId:'',targetLabel:'',their:[],give:[],take:[],
-  counterOf:'',trades:[],error:'',message:'',busy:false,loading:false,searching:false,inspectId:'',inspection:null};
-let root=null,serial=0,searchSeq=0,searchTimer=null;
+  counterOf:'',trades:[],error:'',message:'',busy:false,loading:false,searching:false,inspectId:'',inspection:null,
+  syncError:'',lastChecked:0};
+let root=null,serial=0,searchSeq=0,searchTimer=null,requestSeq=0,inFlight=null,lastHubTrades=null;
+let freshIncoming=new Set();
 const fmt=x=>Number(x||0).toLocaleString('ru-RU',{maximumFractionDigits:2});
 const signed=x=>(Number(x||0)>0?'+':'')+fmt(x)+' CP';
 const groups=()=>{
@@ -114,6 +116,13 @@ function playerResults(){
     E(p.id)+'"><strong>'+E(p.name)+'</strong><small>LVL '+E(p.level)+' · '+fmt(p.cp)+' CP</small></button>').join(''):
     '<p class="flip-social-muted">Поиск по зарегистрированным игрокам.</p>';
 }
+function statusOf(t){
+  const expires=Date.parse(t.expires_at);
+  return t.status==='pending'&&Number.isFinite(expires)&&expires<=Date.now()?'expired':t.status;
+}
+function visibleTrades(){
+  return s.trades.map(t=>statusOf(t)===t.status?t:{...t,status:'expired'});
+}
 function rowTrade(t){
   const mine=t.mine,partner=mine?t.recipient_label:t.sender_label;
   const offer=Array.isArray(t.offer_cards)?t.offer_cards:[t.offer_card_id];
@@ -125,7 +134,7 @@ function rowTrade(t){
   const profileId=typeof t.partner_public_id==='string'&&
     /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(t.partner_public_id)?
       t.partner_public_id:null;
-  return '<div class="flip-trade-offer"><div class="flip-social-heading">'+
+  return '<div class="flip-trade-offer '+(freshIncoming.has(t.id)?'is-fresh':'')+'"><div class="flip-social-heading">'+
     '<div class="flip-trade-partner"><strong>'+E(partner)+'</strong>'+
     (profileId?'<button type="button" class="flip-trade-profile-link" data-player-profile="'+
       E(profileId)+'">ПРОФИЛЬ ↗</button>':'')+'</div>'+
@@ -152,34 +161,96 @@ function section(title,items){
   return '<section class="flip-social-panel"><h3>'+title+'</h3>'+
     (items.length?items.map(rowTrade).join(''):'<p class="flip-social-muted">Предложений пока нет.</p>')+'</section>';
 }
+function liveStatus(){
+  const message=s.syncError?'НЕТ СВЯЗИ · ПОПРОБУЙ ОБНОВИТЬ':
+    s.loading?'ПРОВЕРЯЕМ ПРЕДЛОЖЕНИЯ':
+    s.lastChecked?'СИНХРОНИЗИРОВАНО · '+new Date(s.lastChecked)
+      .toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}):
+      'ОЖИДАЕМ СИНХРОНИЗАЦИИ';
+  return '<div class="flip-trade-sync '+(s.syncError?'is-error':'')+
+    '" role="status" aria-live="polite"><i aria-hidden="true"></i><span>'+
+    E(message)+'</span><small>~45 С</small></div>';
+}
+function feedMarkup(){
+  const trades=visibleTrades();
+  const incoming=trades.filter(t=>t.status==='pending'&&!t.mine);
+  const outgoing=trades.filter(t=>t.status==='pending'&&t.mine);
+  const history=trades.filter(t=>t.status!=='pending');
+  return liveStatus()+
+    '<div class="flip-social-heading flip-trade-list-heading"><h3>ТВОИ ОБМЕНЫ</h3>'+
+    '<button class="outlinebtn" type="button" data-trade-refresh '+(s.busy?'disabled':'')+
+    '>ОБНОВИТЬ ↗</button></div>'+
+    section('ВХОДЯЩИЕ · '+incoming.length,incoming)+
+    section('ИСХОДЯЩИЕ · '+outgoing.length,outgoing)+
+    section('ИСТОРИЯ',history);
+}
+function updateBadge(){
+  const count=document.querySelector('[data-tab="trades"] .count');
+  if(!count)return;
+  const incoming=s.trades.filter(t=>!t.mine&&statusOf(t)==='pending').length;
+  count.textContent=String(incoming>99?'99+':incoming);
+  count.hidden=!incoming;
+}
+function refreshFeed(){
+  const target=root?.isConnected?root.querySelector('#flip-trade-live-feed'):null;
+  if(target){
+    target.innerHTML=feedMarkup();
+    window.FLIPIcons?.render(target);
+  }
+  updateBadge();
+}
 function draw(){
   if(!root||!root.isConnected)return;
-  const incoming=s.trades.filter(t=>t.status==='pending'&&!t.mine);
-  const outgoing=s.trades.filter(t=>t.status==='pending'&&t.mine);
-  const history=s.trades.filter(t=>t.status!=='pending');
   root.innerHTML=[
     s.error?'<p class="flip-social-error">'+E(s.error)+'</p>':'',
     s.message?'<p class="flip-social-success">'+E(s.message)+'</p>':'',
     draft(),
-    '<div class="flip-social-heading flip-trade-list-heading"><h3>ТВОИ ОБМЕНЫ</h3>',
-    '<button class="outlinebtn" type="button" data-trade-refresh '+(s.busy?'disabled':'')+'>ОБНОВИТЬ ↗</button></div>',
-    section('ВХОДЯЩИЕ · '+incoming.length,incoming),
-    section('ИСХОДЯЩИЕ · '+outgoing.length,outgoing),
-    section('ИСТОРИЯ',history),
-    s.loading?'<p class="flip-social-muted">Обновляем предложения…</p>':''
+    '<div id="flip-trade-live-feed">'+feedMarkup()+'</div>'
   ].join('');
-  const count=document.querySelector('[data-tab="trades"] .count');
-  if(count){count.textContent=String(incoming.length);count.hidden=!incoming.length;}
+  updateBadge();
   window.FLIPIcons?.render(root);
 }
-async function loadTrades(){
-  const stamp=serial;
-  s.loading=true;draw();
-  try{
-    const data=await api('trades');
-    if(stamp!==serial)return;
-    s.trades=data.trades||[];s.error='';s.loading=false;draw();
-  }catch(e){if(stamp!==serial)return;s.loading=false;s.error='Не удалось получить обмены: '+e.message;draw();}
+async function loadTrades({force=false,manual=false}={}){
+  // Ignore duplicate hub ticks; an explicit post-mutation request supersedes
+  // older responses to avoid showing a stale trade after a successful action.
+  if(inFlight&&!force)return inFlight;
+  const token=++requestSeq;
+  if(manual){s.loading=true;refreshFeed();}
+  const pending=(async()=>{
+    try{
+      const data=await api('trades');
+      if(token!==requestSeq)return;
+      const next=Array.isArray(data.trades)?data.trades:[];
+      const oldIds=new Set(s.trades.filter(t=>!t.mine&&statusOf(t)==='pending').map(t=>t.id));
+      freshIncoming=new Set(next.filter(t=>!t.mine&&statusOf(t)==='pending'&&!oldIds.has(t.id)).map(t=>t.id));
+      // Initial load is not a new-offer announcement.
+      if(!s.lastChecked)freshIncoming.clear();
+      s.trades=next;
+      s.syncError='';s.lastChecked=Date.now();s.loading=false;
+      refreshFeed();
+    }catch(e){
+      if(token!==requestSeq)return;
+      s.loading=false;s.syncError='Не удалось получить обмены: '+e.message;
+      refreshFeed();
+    }
+  })();
+  inFlight=pending;
+  try{return await pending;}finally{if(inFlight===pending)inFlight=null;}
+}
+function syncHub(hub){
+  if(!initData||document.visibilityState==='hidden')return;
+  const events=Array.isArray(hub?.activity)?hub.activity:[];
+  // Only event IDs/kinds matter. Marking notifications as read must not
+  // provoke a new trade request.
+  const signature=events.filter(e=>String(e.kind||'').startsWith('trade_'))
+    .map(e=>String(e.id)+':'+e.kind).join('|');
+  const changed=lastHubTrades!==null&&lastHubTrades!==signature;
+  lastHubTrades=signature;
+  const active=!!(root&&root.isConnected);
+  const interval=active?40000:300000;
+  if(!s.lastChecked||changed||Date.now()-s.lastChecked>=interval)
+    loadTrades({force:changed});
+  else updateBadge();
 }
 async function searchPlayers(){
   const stamp=serial,seq=++searchSeq;
@@ -246,7 +317,8 @@ async function submit(payload){
     if(['create','counter'].includes(payload.action)){
       s.counterOf='';s.targetId='';s.targetLabel='';s.their=[];s.give=[];s.take=[];s.players=[];
     }
-    await loadTrades();
+    await loadTrades({force:true});
+    draw();
     window.dispatchEvent(new Event('flip-trade-changed'));
     if(payload.action==='accept')window.dispatchEvent(new Event('flip-trade-completed'));
   }catch(e){
@@ -278,7 +350,7 @@ async function act(verb,id){
 function click(e){
   const target=e.target.closest('button');
   if(!target||!root?.contains(target))return;
-  if(target.hasAttribute('data-trade-refresh')){loadTrades();return;}
+  if(target.hasAttribute('data-trade-refresh')){loadTrades({force:true,manual:true});return;}
   if(target.hasAttribute('data-trade-find')){searchPlayers();return;}
   if(target.hasAttribute('data-trade-reset-counter')){
     s.counterOf='';s.targetId='';s.targetLabel='';s.give=[];s.take=[];s.their=[];draw();return;
@@ -343,10 +415,10 @@ window.FLIPTrades={
     el.addEventListener('click',click);
     el.addEventListener('input',input);
     el.addEventListener('change',change);
-    const mine=groups();
     s.give=[];s.take=[];s.counterOf='';
-    s.error='';s.message='';s.loading=true;draw();
-    loadTrades();
-  }
+    s.error='';s.message='';s.loading=!s.lastChecked;draw();
+    if(!s.lastChecked||Date.now()-s.lastChecked>10000)loadTrades();
+  },
+  syncHub
 };
 })();
