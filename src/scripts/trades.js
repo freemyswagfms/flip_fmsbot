@@ -341,8 +341,11 @@ function giftHistory(){
   '</section>';
 }
 function section(title,items){
-  return '<section class="flip-social-panel"><h3>'+title+'</h3>'+
-    (items.length?items.map(rowTrade).join(''):'<p class="flip-social-muted">Предложений пока нет.</p>')+'</section>';
+  return '<section class="flip-social-panel flip-trade-feed-panel">'+
+    '<div class="flip-trade-feed-head"><h3>'+title+'</h3>'+
+    '<span>'+items.length+'</span></div>'+
+    (items.length?items.map(rowTrade).join(''):
+      '<div class="flip-trade-empty-state" aria-label="Нет предложений">—</div>')+'</section>';
 }
 function liveStatus(){
   return s.syncError?
@@ -355,12 +358,27 @@ function feedMarkup(){
   const outgoing=trades.filter(t=>t.status==='pending'&&t.mine);
   const history=trades.filter(t=>t.status!=='pending');
   return liveStatus()+
-    '<div class="flip-social-heading flip-trade-list-heading"><h3>ТВОИ ОБМЕНЫ</h3>'+
+    '<section class="flip-trade-feed-header"><div>'+
+    '<span class="flip-trade-kicker">02 / ИСТОРИЯ СДЕЛОК</span>'+
+    '<h3>Предложения</h3></div>'+
     '<button class="outlinebtn" type="button" data-trade-refresh '+(s.busy?'disabled':'')+
-    '>ОБНОВИТЬ ↗</button></div>'+
-    section('ВХОДЯЩИЕ · '+incoming.length,incoming)+
-    section('ИСХОДЯЩИЕ · '+outgoing.length,outgoing)+
+    '>ОБНОВИТЬ ↻</button></section>'+
+    section('ВХОДЯЩИЕ',incoming)+
+    section('ИСХОДЯЩИЕ',outgoing)+
     section('ИСТОРИЯ',history)+giftHistory();
+}
+function hero(){
+  const incoming=s.trades.filter(t=>!t.mine&&statusOf(t)==='pending').length;
+  return '<header class="flip-trade-hero"><div class="flip-trade-hero-grain" aria-hidden="true"></div>'+
+    '<div class="flip-trade-hero-top"><span>FLIP / SOCIAL</span>'+
+    '<span class="flip-trade-hero-star" aria-hidden="true">✳</span></div>'+
+    '<h2>ОБМЕНЫ<span>.</span></h2>'+
+    '<div class="flip-trade-hero-bottom"><span>ТВОЯ КОЛЛЕКЦИЯ. ТВОИ СДЕЛКИ.</span>'+
+    '<span class="flip-trade-hero-ring" aria-hidden="true">⇄</span></div>'+
+    '<div class="flip-trade-shortcuts" role="group" aria-label="Разделы обменов">'+
+    '<button type="button" data-trade-jump="flip-trade-compose">+ СОЗДАТЬ</button>'+
+    '<button type="button" data-trade-jump="flip-trade-live-feed">ПРЕДЛОЖЕНИЯ'+
+    '<b data-trade-incoming-count>'+incoming+'</b></button></div></header>';
 }
 function updateBadge(){
   const count=document.querySelector('[data-tab="trades"] .count');
@@ -376,10 +394,13 @@ function refreshFeed(){
     window.FLIPIcons?.render(target);
   }
   updateBadge();
+  const heroCount=root?.querySelector('[data-trade-incoming-count]');
+  if(heroCount)heroCount.textContent=String(s.trades.filter(t=>!t.mine&&statusOf(t)==='pending').length);
 }
 function draw(){
   if(!root||!root.isConnected)return;
   root.innerHTML=[
+    hero(),
     s.error?'<p class="flip-social-error">'+E(s.error)+'</p>':'',
     s.message?'<p class="flip-social-success">'+E(s.message)+'</p>':'',
     draft(),
