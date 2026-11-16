@@ -7,7 +7,10 @@
   let root=null,stamp=0,cardTimer=null,cardSeq=0;
   const s={players:[],cards:[],history:[],rewards:[],leaders:[],q:'',recipient:'',card:'',cardQuery:'',
     rewardKind:'card',amount:'',mode:'test',note:'',busy:false,message:'',error:false,retryId:null,retryPayload:null,
-    cooldowns:null,cooldownBusy:false,cooldownMessage:'',cooldownError:false,cooldownRetry:null};
+    cooldowns:null,cooldownBusy:false,cooldownMessage:'',cooldownError:false,cooldownRetry:null,
+    cardRarity:'',cardTotal:0,cardOffset:0,basket:[],
+    modeTarget:'',targetCooldowns:null,targetLabel:'',targetLogs:[],
+    targetBusy:false,targetMessage:'',targetError:false};
   function selfId(){
     try{const p=JSON.parse(new URLSearchParams(raw).get('user')||'null');
       return Number.isSafeInteger(p?.id)&&p.id>0?String(p.id):'';}
@@ -16,7 +19,13 @@
   async function call(view,payload){
     const url=new URL('/api/admin',location.origin);
     if(!payload){url.searchParams.set('view',view);if(view==='players'&&s.q.trim())url.searchParams.set('q',s.q.trim().replace(/^@/,''));
-      if(view==='cards'&&s.cardQuery.trim())url.searchParams.set('q',s.cardQuery.trim());}
+      if(view==='cards'&&s.cardQuery.trim())url.searchParams.set('q',s.cardQuery.trim());
+      if(view==='cards_browser'){
+        if(s.cardQuery.trim())url.searchParams.set('q',s.cardQuery.trim());
+        if(s.cardRarity)url.searchParams.set('rarity',s.cardRarity);
+        url.searchParams.set('offset',String(s.cardOffset));
+      }
+      if(view==='player_modes')url.searchParams.set('recipientId',s.modeTarget);}
     const options={method:payload?'POST':'GET',cache:'no-store',headers:{'x-telegram-init-data':raw}};
     if(payload){options.headers['content-type']='application/json';options.body=JSON.stringify(payload);}
     const res=await fetch(url,options);
@@ -47,37 +56,58 @@
       (a.note?'<small>'+E(a.note)+'</small>':'')+'</div>').join(''):
       '<p class="flip-admin-hint">Начислений пока нет.</p>';
   }
-  function cardOptions(){
-    return s.cards.length?s.cards.map(c=>'<option value="'+E(c.id)+'" '+
-      (s.card===c.id?'selected':'')+'>'+E(c.label)+'</option>').join(''):
-      '<option value="">Ничего не найдено</option>';
+  const visual=()=>window.FLIPAdminVisual;
+  const basketCount=()=>s.basket.reduce((total,item)=>total+item.quantity,0);
+  function cardGrid(){
+    return visual()?.grid(s.cards,s.basket,s.cardTotal,s.cardOffset)||
+      '<p class="flip-admin-hint">Загрузка карточек…</p>';
   }
-  function updateCardOptions(){
+  function basket(){
+    return visual()?.cart(s.basket)||'<p class="flip-admin-hint">Корзина пуста.</p>';
+  }
+  function cardHint(){
+    return 'Найдено вариантов: '+s.cardTotal+
+      ' · показано '+s.cards.length+' · максимум 20 карточек за выдачу';
+  }
+  function updateCardResults(){
     if(!root)return;
-    const select=root.querySelector('#flip-admin-card');
-    if(!select)return;
-    if(!s.cards.some(c=>c.id===s.card))s.card=s.cards[0]?.id||'';
-    select.innerHTML=cardOptions();
-    select.disabled=!s.cards.length;
+    const results=root.querySelector('#flip-admin-card-results');
+    if(results)results.innerHTML=cardGrid();
     const hint=root.querySelector('#flip-admin-card-hint');
-    if(hint)hint.textContent=s.cards.length===50?'Показаны первые 50 вариантов. Уточни поиск.':
-      'Найдено вариантов: '+s.cards.length;
+    if(hint)hint.textContent=cardHint();
+    const cart=root.querySelector('#flip-admin-basket');
+    if(cart)cart.innerHTML=basket();
+    const count=root.querySelector('#flip-admin-basket-count');
+    if(count)count.textContent=basketCount()+' / 20';
     const button=root.querySelector('[data-admin-grant]');
-    if(button)button.disabled=s.busy||(s.rewardKind==='card'&&!s.card);
+    if(button){
+      button.disabled=s.busy||(s.rewardKind==='card'&&basketCount()===0);
+      button.textContent=s.busy?'СОХРАНЕНИЕ…':
+        s.rewardKind==='card'?'ВЫДАТЬ '+basketCount()+' КАРТОЧЕК ↗':
+          'НАЧИСЛИТЬ '+s.rewardKind.toUpperCase()+' ↗';
+    }
+    window.FLIPIcons?.render(results);
+    window.FLIPIcons?.render(cart);
   }
-  async function searchCards(){
-    const job=stamp,seq=++cardSeq;
+  async function searchCards(append=false){
+    const job=stamp,seq=++cardSeq,old=append?s.cards.slice():[];
+    if(!append)s.cardOffset=0;
+    const nextOffset=append?s.cards.length:0;
     try{
-      const r=await call('cards');
+      const r=await call('cards_browser');
       if(job!==stamp||seq!==cardSeq)return;
-      s.cards=r.cards||[];
-      updateCardOptions();
+      // Keep already visible items while extending a server-paginated page.
+      s.cards=append?old.concat((r.cards||[]).filter(x=>!old.some(o=>o.id===x.id))):r.cards||[];
+      s.cardTotal=Number(r.total)||0;s.cardOffset=s.cards.length;
+      updateCardResults();
     }catch(e){
       if(job!==stamp||seq!==cardSeq)return;
+      s.cardOffset=nextOffset;
       const hint=root?.querySelector('#flip-admin-card-hint');
       if(hint)hint.textContent='Ошибка поиска: '+e.message;
     }
   }
+
   function ranking(){
     return s.leaders.length?s.leaders.slice(0,10).map((p,i)=>'<div class="flip-admin-leader"><span>'+
       E(p.place||i+1)+'.</span><strong>'+E(p.username?'@'+p.username:(p.first_name||'FLIP PLAYER'))+
@@ -85,7 +115,10 @@
       '<p class="flip-admin-hint">Рейтинговых карточек пока нет.</p>';
   }
   function cooldownPanel(){
-    const cd=s.cooldowns;
+    const target=s.modeTarget||selfId();
+    const own=target===selfId();
+    const cd=own?s.cooldowns:s.targetCooldowns;
+    const label=own?'ТВОЙ АККАУНТ':(s.targetLabel||'Игрок ID '+target);
     const dropUnlimited=cd?.drop_unlimited===true;
     const packUnlimited=cd?.pack_unlimited===true;
     const dropReady=cd?.drop_ready===true;
@@ -94,7 +127,7 @@
       dropAt.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',
         timeZone:'Europe/Moscow'}):'—';
     const used=Math.min(10,Math.max(0,Number(cd?.packs_today)||0));
-    const logs=Array.isArray(cd?.history)?cd.history:[];
+    const logs=own?(Array.isArray(cd?.history)?cd.history:[]):s.targetLogs;
     const clock=when=>{
       const value=new Date(when);
       return Number.isNaN(value.valueOf())?'—':
@@ -106,13 +139,18 @@
       const verb=a.enabled===true?'Включено без ограничений':
                  a.enabled===false?'Обычный режим':'Разовый сброс';
       return '<div class="flip-admin-history-row"><strong>'+E(label)+
-        ' · '+E(verb)+'</strong><small>'+E(clock(a.created_at))+' МСК</small></div>';
+        ' · '+E(verb)+'</strong><small>'+E(clock(a.created_at))+' МСК'+(a.admin_id?' · Администратор ID '+E(a.admin_id):'')+'</small></div>';
     };
     return [
       '<section class="flip-admin-section flip-admin-cooldowns">',
       '<div class="flip-admin-section-heading"><h3>РЕЖИМЫ РАЗРАБОТЧИКА</h3>',
       '<span class="flip-admin-private-badge">ТОЛЬКО СОЗДАТЕЛЬ</span></div>',
-      '<p class="flip-admin-hint">Постоянные переключатели только для твоего аккаунта. Настройки сохраняются после перезапуска FLIP.</p>',
+      '<p class="flip-admin-hint">Выбирай, кому убрать ожидание дропа или дневной лимит наборов. Управление доступно только тебе.</p>',
+      '<div class="flip-admin-mode-target"><span>НАСТРАИВАЕМЫЙ АККАУНТ</span><strong>',E(label),'</strong><small>ID ',E(target),'</small></div>',
+      '<div class="flip-admin-mode-target-actions">',
+      '<button type="button" class="outlinebtn" data-admin-modes-recipient ',s.targetBusy?'disabled':'','>РЕЖИМЫ ВЫБРАННОГО ИГРОКА</button>',
+      '<button type="button" class="outlinebtn" data-admin-modes-self ',s.targetBusy?'disabled':'','>МОИ РЕЖИМЫ</button>',
+      '</div>',
       '<div class="flip-admin-cooldown-grid">',
       '<div class="flip-admin-cooldown-box',dropUnlimited?' is-unlimited':'','">',
       '<span>БЕСПЛАТНЫЙ ДРОП</span>',
@@ -131,7 +169,8 @@
       '</div>',
       s.cooldownMessage?'<div role="status" class="flip-admin-message '+
         (s.cooldownError?'failed':'ok')+'">'+E(s.cooldownMessage)+'</div>':'',
-      '<p class="flip-admin-hint">Без КД: новый бесплатный дроп сразу после предыдущего. Без лимита: любое количество наборов за 200 F каждый. Шансы и награды не меняются.</p>',
+      s.targetMessage?'<div role="status" class="flip-admin-message '+(s.targetError?'failed':'ok')+'">'+E(s.targetMessage)+'</div>':'',
+      '<p class="flip-admin-hint">Без КД: дропы без ожидания. Без лимита: любое количество наборов с обычной оплатой в F. Шансы и награды не меняются.</p>',
       '<details class="flip-admin-cooldown-history"><summary>ИСТОРИЯ РЕЖИМОВ (',
       logs.length,')</summary>',
       logs.length?logs.map(entry).join(''):
@@ -165,20 +204,30 @@
         '" data-admin-kind="'+key+'">'+label+'</button>').join(''),
       '</div>',
       isCard?[
-        '<label class="flip-admin-field-label" for="flip-admin-card-search">Поиск карточки</label>',
-        '<input class="flip-admin-input" id="flip-admin-card-search" type="search" maxlength="80" autocomplete="off" placeholder="Артист, альбом, редкость или ID" value="',E(s.cardQuery),'">',
-        '<p class="flip-admin-hint" id="flip-admin-card-hint">',
-          s.cards.length===50?'Показаны первые 50 вариантов. Уточни поиск.':'Найдено вариантов: '+s.cards.length,
-        '</p>',
-        '<select class="flip-admin-input" id="flip-admin-card" ',s.cards.length?'':'disabled','>',
-          cardOptions(),'</select>',
-        '<h3 class="flip-admin-small-heading">03 / ТИП ВЫДАЧИ</h3>',
+        '<label class="flip-admin-field-label" for="flip-admin-card-search">ПОИСК КАРТОЧЕК</label>',
+        '<div class="flip-admin-card-searchbar"><span class="flip-admin-search-icon">',
+          '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg></span>',
+          '<input id="flip-admin-card-search" class="flip-admin-input" type="search" maxlength="80" autocomplete="off" placeholder="Артист, альбом или ID" value="',E(s.cardQuery),'">',
+        '</div>',
+        '<div class="flip-admin-rarity-filters" aria-label="Редкость">',
+          [['','ВСЕ'],['common','COMMON'],['rare','RARE'],['epic','EPIC'],
+           ['legendary','LEGENDARY'],['mythic','MYTHIC'],['hidden','HIDDEN']]
+            .map(([value,label])=>'<button type="button" data-admin-rarity="'+value+
+              '" class="'+(s.cardRarity===value?'active':'')+'">'+label+'</button>').join(''),
+        '</div>',
+        '<p class="flip-admin-hint" id="flip-admin-card-hint">',cardHint(),'</p>',
+        '<div id="flip-admin-card-results">',cardGrid(),'</div>',
+        '<div class="flip-admin-basket-head"><h3>03 / КОРЗИНА ВЫДАЧИ</h3>',
+          '<output id="flip-admin-basket-count">',basketCount(),' / 20</output></div>',
+        '<div id="flip-admin-basket">',basket(),'</div>',
+        '<p class="flip-admin-hint">До 20 карточек за одну выдачу. Можно добавить разные редкости и несколько копий одной карточки.</p>',
+        '<h3 class="flip-admin-small-heading">04 / ТИП ВЫДАЧИ</h3>',
         '<label class="flip-admin-mode-choice '+(s.mode==='test'?'chosen':'')+'">',
         '<input type="radio" name="flip-admin-mode" value="test" '+(s.mode==='test'?'checked':'')+'>',
-        '<span><strong>Тестовая / административная</strong><small>Пометка «ТЕСТ» в коллекции. В топе не учитывается.</small></span></label>',
+        '<span><strong>Тестовая / административная</strong><small>Не учитывается в топе CP.</small></span></label>',
         '<label class="flip-admin-mode-choice '+(s.mode==='ranked'?'chosen':'')+'">',
         '<input type="radio" name="flip-admin-mode" value="ranked" '+(s.mode==='ranked'?'checked':'')+'>',
-        '<span><strong>Рейтинговая / обычная</strong><small>Учитывается в CP наравне с карточками из дропов и паков. Источник сохраняется в журнале.</small></span></label>'
+        '<span><strong>Рейтинговая / обычная</strong><small>Учитывается в CP наравне с карточками из дропов и паков.</small></span></label>'
       ].join(''):[
         '<label class="flip-admin-field-label" for="flip-admin-amount">Сколько ',s.rewardKind==='xp'?'XP':'F',' начислить</label>',
         '<input class="flip-admin-input" id="flip-admin-amount" inputmode="numeric" type="number" min="1" max="1000000" step="1" placeholder="От 1 до 1 000 000" value="',E(s.amount),'">',
@@ -190,8 +239,8 @@
       '<label class="flip-admin-field-label" for="flip-admin-note">Причина (необязательно)</label>',
       '<input class="flip-admin-input" id="flip-admin-note" maxlength="200" placeholder="Например, компенсация или тест" value="',E(s.note),'">',
       s.message?'<div role="status" class="flip-admin-message '+(s.error?'failed':'ok')+'">'+E(s.message)+'</div>':'',
-      '<button type="button" class="bigbtn" data-admin-grant '+(s.busy||(isCard&&!s.card)?'disabled':'')+'>',
-      s.busy?'СОХРАНЕНИЕ…':isCard?'ВЫДАТЬ КАРТОЧКУ ↗':'НАЧИСЛИТЬ '+s.rewardKind.toUpperCase()+' ↗',
+      '<button type="button" class="bigbtn" data-admin-grant '+(s.busy||(isCard&&basketCount()===0)?'disabled':'')+'>',
+      s.busy?'СОХРАНЕНИЕ…':isCard?'ВЫДАТЬ '+basketCount()+' КАРТОЧЕК ↗':'НАЧИСЛИТЬ '+s.rewardKind.toUpperCase()+' ↗',
       '</button></section>',
       '<section class="flip-admin-section"><h3>ЖУРНАЛ КАРТОЧЕК</h3>',history(),'</section>',
       '<section class="flip-admin-section"><h3>ЖУРНАЛ XP И F</h3>',rewardHistory(),'</section>',
@@ -206,13 +255,13 @@
     try{
       if(part==='all'){
         const [u,c,h,r,l,cd]=await Promise.all([
-          call('players'),call('cards'),call('history'),call('rewards'),call('ranked'),
+          call('players'),call('cards_browser'),call('history'),call('rewards'),call('ranked'),
           call('cooldowns').catch(()=>({cooldowns:null}))
         ]);
         if(job!==stamp)return;
-        s.players=u.players||[];s.cards=c.cards||[];s.history=h.history||[];
+        s.players=u.players||[];s.cards=c.cards||[];s.cardTotal=Number(c.total)||0;
+        s.cardOffset=s.cards.length;s.history=h.history||[];
         s.rewards=r.rewards||[];s.leaders=l.leaders||[];s.cooldowns=cd.cooldowns||null;
-        if(!s.cards.some(x=>x.id===s.card))s.card=s.cards[0]?.id||'';
       }else if(part==='players'){
         const r=await call('players');if(job!==stamp)return;s.players=r.players||[];
       }else{
@@ -229,17 +278,18 @@
   }
   async function grant(){
     if(s.busy)return;
-    const payload={action:s.rewardKind==='card'?'grant_card':'grant_resource',
+    const payload={action:s.rewardKind==='card'?'grant_cards':'grant_resource',
       recipientId:s.recipient.trim(),note:s.note.trim()};
     if(!/^[1-9]\d{0,15}$/.test(payload.recipientId)){
       s.error=true;s.message='Выбери получателя.';draw();return;
     }
     let subject;
     if(s.rewardKind==='card'){
-      payload.cardId=s.card;payload.mode=s.mode;
-      if(!payload.cardId){s.error=true;s.message='Выбери карточку.';draw();return;}
-      const card=s.cards.find(x=>x.id===payload.cardId);
-      subject=(card?.label||payload.cardId)+' / '+(payload.mode==='test'?'ТЕСТ':'РЕЙТИНГОВАЯ');
+      payload.cards=s.basket.map(x=>({id:x.id,quantity:x.quantity}));
+      payload.mode=s.mode;
+      if(!payload.cards.length){s.error=true;s.message='Добавь карточки в корзину.';draw();return;}
+      subject=basketCount()+' карточек ('+payload.cards.length+' вариантов) / '+
+        (payload.mode==='test'?'ТЕСТ':'РЕЙТИНГОВЫЕ');
     }else{
       if(!/^[1-9]\d{0,6}$/.test(s.amount)||Number(s.amount)>1000000){
         s.error=true;s.message='Укажи целое положительное число от 1 до 1 000 000.';draw();return;
@@ -255,9 +305,11 @@
       const result=await call('',{...payload,requestId:s.retryId});
       s.retryId=null;s.retryPayload=null;s.busy=false;s.error=false;
       s.message=s.rewardKind==='card'?
-        'Карточка выдана. '+(result.mode==='test'?'Не учитывается в топе.':'Учитывается в топе.'):
+        'Выдано '+result.total+' карточек ('+payload.cards.length+
+        ' вариантов). '+(result.mode==='test'?'Не учитываются в топе.':'Учитываются в топе.'):
         'Начислено '+payload.amount+' '+payload.kind.toUpperCase()+
         '. Уровень: '+result.level+'; баланс: '+result.balance+' F.';
+      if(s.rewardKind==='card')s.basket=[];
       if(s.recipient===selfId())window.dispatchEvent(new Event('flip-admin-self-changed'));
       await load('refresh');
     }catch(e){
@@ -266,42 +318,137 @@
       draw();
     }
   }
+  async function loadTargetModes(target){
+    if(s.busy||s.targetBusy||!/^[1-9]\d{0,15}$/.test(target))return;
+    if(target===selfId()){
+      s.modeTarget=target;s.targetMessage='';s.cooldownMessage='';draw();return;
+    }
+    s.targetBusy=true;s.targetMessage='';s.targetError=false;
+    s.modeTarget=target;s.targetCooldowns=null;s.targetLogs=[];
+    draw();
+    try{
+      const result=await call('player_modes');
+      if(s.modeTarget!==target)return;
+      s.targetCooldowns=result.player?.cooldowns||null;
+      s.targetLabel=result.player?.name||'Игрок ID '+target;
+      s.targetLogs=result.player?.history||[];
+      s.targetMessage='Настройки игрока загружены.';
+    }catch(e){
+      if(s.modeTarget!==target)return;
+      s.targetError=true;s.targetMessage='Ошибка загрузки режимов: '+e.message;
+    }finally{s.targetBusy=false;draw();}
+  }
   async function setUnlimited(kind){
-    if(s.cooldownBusy||s.busy||!['drop','pack'].includes(kind)||!s.cooldowns)return;
-    const old=kind==='drop'?s.cooldowns.drop_unlimited===true:
-      s.cooldowns.pack_unlimited===true;
+    const target=s.modeTarget||selfId();
+    const own=target===selfId();
+    const cd=own?s.cooldowns:s.targetCooldowns;
+    if(s.cooldownBusy||s.busy||!['drop','pack'].includes(kind)||!cd)return;
+    const old=kind==='drop'?cd.drop_unlimited===true:cd.pack_unlimited===true;
     const enabled=!old;
     const subject=kind==='drop'?'КД бесплатного дропа':'дневной лимит наборов';
+    const person=own?'своего аккаунта':(s.targetLabel||'игрока ID '+target);
     if(!window.confirm((enabled?'Убрать ':'Вернуть ')+subject+
-      ' для своего аккаунта? Режим сохранится до следующего переключения.'))return;
+      ' для '+person+'? Режим сохранится до следующего переключения.'))return;
     const retry=s.cooldownRetry;
-    const id=retry?.kind===kind&&retry?.enabled===enabled?
+    const id=retry?.kind===kind&&retry?.enabled===enabled&&retry?.target===target?
       retry.id:crypto.randomUUID();
-    s.cooldownRetry={kind,enabled,id};
+    s.cooldownRetry={kind,enabled,id,target};
     s.cooldownBusy=true;s.cooldownMessage='';s.cooldownError=false;draw();
     try{
-      const result=await call('',{action:'set_unlimited',kind,enabled,requestId:id});
+      const payload=own?
+        {action:'set_unlimited',kind,enabled,requestId:id}:
+        {action:'set_player_unlimited',recipientId:target,kind,enabled,requestId:id};
+      const result=await call('',payload);
       s.cooldownRetry=null;
-      s.cooldowns=result.cooldowns||s.cooldowns;
+      if(own){s.cooldowns=result.cooldowns||s.cooldowns;}
+      else{
+        s.targetCooldowns=result.status?.cooldowns||s.targetCooldowns;
+        s.targetLogs=result.status?.history||s.targetLogs;
+        s.targetLabel=result.status?.name||s.targetLabel;
+      }
       s.cooldownMessage=kind==='drop'?
-        (enabled?'Режим без КД включён. Дроп доступен без ожидания.':
-                 'Обычный КД бесплатного дропа восстановлен.'):
-        (enabled?'Дневной лимит наборов отключён. Цена: 200 F за набор.':
-                 'Дневной лимит 10 наборов восстановлен.');
+        (enabled?'Бесплатный дроп без ожидания включён.':'Обычный КД дропа восстановлен.'):
+        (enabled?'Дневной лимит наборов отключён. Стоимость F сохраняется.':
+                 'Лимит 10 наборов в день восстановлен.');
       s.cooldownError=false;
-      window.dispatchEvent(new Event('flip-admin-self-changed'));
+      if(own)window.dispatchEvent(new Event('flip-admin-self-changed'));
     }catch(error){
       s.cooldownError=true;
       s.cooldownMessage='Не удалось изменить режим: '+error.message+
         '. Повтори нажатие, чтобы проверить тот же запрос.';
-    }finally{
-      s.cooldownBusy=false;draw();
+    }finally{s.cooldownBusy=false;draw();}
+  }
+  function editBasket(id,delta){
+    if(s.busy||typeof id!=='string')return;
+    const item=s.basket.find(x=>x.id===id);
+    const total=basketCount();
+    if(delta>0&&total>=20){
+      s.error=true;s.message='В одной выдаче максимум 20 карточек.';draw();return;
     }
+    if(delta>0){
+      if(item){item.quantity++;}
+      else{
+        const found=s.cards.find(x=>x.id===id);
+        if(!found)return;
+        s.basket.push({id:found.id,quantity:1,label:found.label,
+          artist:found.artist,release:found.release,rarity:found.rarity});
+      }
+    }else if(item){
+      if(delta===-999||item.quantity<=1)
+        s.basket=s.basket.filter(x=>x.id!==id);
+      else item.quantity--;
+    }
+    s.error=false;s.message='';
+    updateCardResults();
   }
   async function click(e){
     const b=e.target.closest('button');if(!b||!root.contains(b))return;
     if(b.hasAttribute('data-admin-set-unlimited')){
       setUnlimited(b.dataset.adminSetUnlimited);return;
+    }
+    if(b.hasAttribute('data-admin-modes-self')){
+      loadTargetModes(selfId());return;
+    }
+    if(b.hasAttribute('data-admin-modes-recipient')){
+      const target=s.recipient.trim();
+      if(!/^[1-9]\d{0,15}$/.test(target)){
+        s.targetMessage='Сначала выбери игрока в разделе «Получатель».';
+        s.targetError=true;draw();return;
+      }
+      loadTargetModes(target);return;
+    }
+    if(b.hasAttribute('data-admin-rarity')){
+      s.cardRarity=b.dataset.adminRarity;
+      s.cardOffset=0;s.cards=[];s.cardTotal=0;
+      draw();searchCards();return;
+    }
+    if(b.hasAttribute('data-admin-more')){
+      if(s.cardOffset<s.cardTotal)searchCards(true);return;
+    }
+    if(b.hasAttribute('data-admin-preview-card')){
+      const id=b.dataset.adminPreviewCard;
+      const source=s.cards.find(x=>x.id===id)||s.basket.find(x=>x.id===id)||id;
+      const c=visual()?.cardInfo(source);
+      if(c){
+        const original=window.FLIPCatalog?.getCard?.(...id.split('/'));
+        window.FLIPCardViewer?.open(original||{
+          id,artist:c.artist,title:c.title,rarity:c.rarity,color:c.rarity,
+          art:c.art
+        },{mode:'catalog'});
+      }
+      return;
+    }
+    if(b.hasAttribute('data-admin-add-card')){
+      editBasket(b.dataset.adminAddCard,1);return;
+    }
+    if(b.hasAttribute('data-admin-cart-plus')){
+      editBasket(b.dataset.adminCartPlus,1);return;
+    }
+    if(b.hasAttribute('data-admin-cart-minus')){
+      editBasket(b.dataset.adminCartMinus,-1);return;
+    }
+    if(b.hasAttribute('data-admin-cart-remove')){
+      editBasket(b.dataset.adminCartRemove,-999);return;
     }
     if(b.hasAttribute('data-admin-studio-login')||
        b.hasAttribute('data-admin-studio-login-copy')){
@@ -358,12 +505,13 @@
     if(e.target.id==='flip-admin-amount')s.amount=e.target.value;
     if(e.target.id==='flip-admin-card-search'){
       s.cardQuery=e.target.value;
+      // Immediately invalidate any slower server response for the prior query.
+      cardSeq++;
       if(cardTimer)clearTimeout(cardTimer);
-      cardTimer=setTimeout(()=>searchCards(),250);
+      cardTimer=setTimeout(()=>searchCards(false),250);
     }
   }
   function change(e){
-    if(e.target.id==='flip-admin-card')s.card=e.target.value;
     if(e.target.name==='flip-admin-mode'){s.mode=e.target.value;draw();}
   }
   window.FLIPAdmin={
@@ -372,6 +520,7 @@
       if(root===el)return;
       root=el;stamp++;cardSeq++;if(cardTimer)clearTimeout(cardTimer);
       s.message='';s.error=false;s.cooldownMessage='';s.cooldownError=false;
+      s.modeTarget=selfId();s.targetCooldowns=null;s.targetLabel='';s.targetLogs=[];
       el.addEventListener('click',click);
       el.addEventListener('input',input);
       el.addEventListener('change',change);

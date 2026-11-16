@@ -123,6 +123,6 @@ test('Developer cooldown controls are owner-only and preserve Moscow status',()=
  assert.match(admin,/window\.confirm/);
  assert.match(admin,/timeZone:'Europe\/Moscow'/);
  assert.doesNotMatch(app,/data-admin-set-unlimited/);
- assert.match(html,/src\/scripts\/admin\.js\?v=0\.9\.4\.4/);
+ assert.match(html,/src\/scripts\/admin\.js\?v=0\.9\.6\.4/);
  assert.match(html,/src\/styles\/admin\.css\?v=0\.9\.4\.4/);
 });

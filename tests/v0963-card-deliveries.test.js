@@ -258,10 +258,10 @@ test('Delivery styles are animated, reduced-motion friendly and iPhone-emoji ind
  assert.match(js,/document\.visibilityState==='hidden'/);
  assert.match(html,/src\/scripts\/delivery-reveal\.js\?v=0\.9\.6\.3/);
  assert.match(html,/src\/styles\/delivery-reveal\.css\?v=0\.9\.6\.3/);
- assert.match(html,/src\/scripts\/app\.js\?v=0\.9\.6\.3/);
+ assert.match(html,/src\/scripts\/app\.js\?v=0\.9\.6\.4/);
  assert.match(html,/src\/scripts\/server\.js\?v=0\.9\.6\.3/);
- assert.equal(JSON.parse(read('package.json')).version,'0.9.6.3');
- assert.match(read('api/flip.js'),/version:'0\.9\.6\.3'/);
+ assert.equal(JSON.parse(read('package.json')).version,'0.9.6.4');
+ assert.match(read('api/flip.js'),/version:'0\.9\.6\.4'/);
 });
 test('Existing hub poll is reused for receipts and no new polling interval is added',()=>{
  const app=read('src/scripts/app.js');
