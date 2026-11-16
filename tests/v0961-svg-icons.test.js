@@ -22,7 +22,7 @@ test('Every v0.9.6 notification and statistics glyph has a matching FLIP vector 
  assert.match(activity,/\['◇','УНИКАЛЬНЫЕ'/);
  assert.doesNotMatch(activity,/>● LIVE</);
  assert.doesNotMatch(activity,/>● FLIP</);
- assert.match(activity,/flip-stat-live-dot/);
+ assert.doesNotMatch(activity,/flip-stat-live-dot/);
 });
 test('Custom icon renderer actually replaces iPhone-fallback characters with vector SVG',()=>{
  const svgNodes=[];
@@ -79,7 +79,7 @@ test('Notifications are converted to SVG after every async refresh, not just ini
   'Convert only after the latest content is inserted');
  const html=source('index.html');
  assert.match(html,/src\/scripts\/icons\.js\?v=0\.9\.6\.2/);
- assert.ok(html.includes('src/scripts/activity.js?v=0.9.8'));
+ assert.ok(html.includes('src/scripts/activity.js?v=0.9.8.3'));
  assert.ok(html.includes('src/scripts/app.js?v='+JSON.parse(source('package.json')).version));
  assert.match(html,/src\/styles\/activity\.css\?v=0\.9\.6\.1/);
 });

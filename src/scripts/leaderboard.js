@@ -17,14 +17,14 @@
       if(job!==serial||el!==root||!el.isConnected)return;
       const me=data.me;
       el.innerHTML=[
-        '<section class="flip-social-panel flip-cp-summary"><div class="flip-social-eyebrow">YOUR POSITION</div>',
+        '<section class="flip-social-panel flip-cp-summary">',
         '<div class="flip-social-cp-row"><div><strong>',me?'#'+safe(me.place):'—',
         '</strong><small>Место в общем рейтинге</small></div><div><strong>',
         points(me?.cp),'<span> CP</span></strong><small>Ценность текущей коллекции</small></div></div>',
-        '<p>Собирай карточки, повышай ценность коллекции и поднимайся в топе.</p></section>',
+        '</section>',
         '<section class="flip-social-panel"><div class="flip-social-heading"><h3>ОБЩИЙ ТОП</h3>',
         '<button type="button" class="outlinebtn" data-cp-refresh>ОБНОВИТЬ ↗</button></div>',
-        '<p class="flip-social-muted flip-leaderboard-tip">Нажми на игрока, чтобы посмотреть его профиль ↗</p>',
+        '',
         '<div class="flip-leaderboard-list">',
         (data.leaders||[]).length?data.leaders.map(p=>{
           const profileId=typeof p.profileId==='string'&&
@@ -41,13 +41,13 @@
             (profileId?'<span class="flip-cp-open-icon" aria-hidden="true">↗</span>':'')+
             '</'+tag+'>';
         }).join(''):'<p class="flip-social-muted">Пока нет участников.</p>',
-        '</div><p class="flip-social-muted">Показаны первые 50 игроков. Всего участников: ',
+        '</div><p class="flip-social-muted">Игроков: ',
         safe(data.players),'.</p></section>',
-        '<section class="flip-social-panel"><h3>ПРАВИЛА CP</h3><p>Первая копия 100%, вторая 25%,',
+        '<details class="flip-social-panel flip-cp-rules"><summary>ПРАВИЛА CP</summary><p>Первая копия 100%, вторая 25%,',
         ' третья 10%, четвёртая и пятая по 5%, шестая–десятая по 1%.',
         ' После десятой копии дополнительные CP не начисляются.</p>',
-        '<p>Common — 1 · Rare — 4 · Epic — 12 · Legendary — 35 · Mythic — 90 · Hidden — 250 CP.</p>',
-        '</section>'
+        '<p>Common — 1 · Rare — 4 · Epic — 12 · Legendary — 35 · Mythic — 90 CP.</p>',
+        '</details>'
       ].join('');
       window.FLIPIcons?.render(el);
     }catch(e){

@@ -68,8 +68,8 @@
      '<div class="flip-showcase-heading"><div><span class="eyebrow">YOUR TOP 3 / FLIP</span>'+
        '<h3>ВИТРИНА КАРТОЧЕК</h3></div><strong>'+pinned+' / 3</strong></div>'+
      slotButtons(slots,online)+
-     '<p>Закрепи три любимые карточки. Игроки увидят их в твоём публичном профиле. '+
-       'Эффекты редкостей сохраняются.</p>'+
+     '<p>Закрепи до трёх карточек для публичного профиля.'+
+       '</p>'+
      (online?'<button class="outlinebtn" type="button" data-action="showcaseEdit">'+
          'РЕДАКТИРОВАТЬ ВИТРИНУ ↗</button>'+
          '<button class="flip-showcase-public-link" type="button" data-open-my-profile>'+
@@ -86,8 +86,8 @@
      '<button class="link" data-action="profile">← К ПРОФИЛЮ</button>'+
      '<span class="eyebrow">SHOWCASE / EDIT</span>'+
      '<h2>ТВОЯ ВИТРИНА<span style="color:var(--lime)">.</span></h2>'+
-     '<p class="desc">Выбери три карточки из своей коллекции. '+
-        'Для изменения нажми на нужный слот, затем на обложку.</p>'+
+     '<p class="desc">'+
+        'Выбери слот и карточку.</p>'+
      '<div class="flip-showcase-slottabs">'+[1,2,3].map(n=>
        '<button type="button" class="'+(n===slot?'is-active':'')+
        '" data-showcase-slot="'+n+'">СЛОТ '+n+'</button>').join('')+'</div>'+
@@ -129,7 +129,7 @@
      '" alt="" decoding="async" referrerpolicy="no-referrer" draggable="false">':'';
    return '<div class="panel flip-public-profile">'+
      '<button class="link" data-action="leaderboard">← К РЕЙТИНГУ</button>'+
-     '<span class="eyebrow">PLAYER PROFILE / FLIP</span>'+
+     
      '<h2>ПРОФИЛЬ<span style="color:var(--lime)">.</span></h2>'+
      '<div class="content-card flip-showcase-player"><div class="flip-showcase-player-avatar">'+
        '<span class="flip-showcase-avatar-initials">'+esc(initial)+'</span>'+photo+
@@ -145,8 +145,7 @@
        slotButtons(profile.slots,false)+'</section>'+
      '<section class="content-card"><h3>СПЕЦИАЛЬНЫЕ ЗНАЧКИ</h3>'+
        badges(profile.badges)+'</section>'+
-     '<p class="flip-showcase-info">'+
-       'Смотри любимые карточки и особые значки этого игрока.</p></div>';
+     '</div>';
  }
  window.FLIPShowcase={own,editor,publicPage,cardFromId,cardsFromState};
 })();

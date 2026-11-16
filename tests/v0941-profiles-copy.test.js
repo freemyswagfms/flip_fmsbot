@@ -38,7 +38,7 @@ test('Leaderboard paints actionable player buttons with real UUIDs',async()=>{
   assert.equal(requested,'/api/social?view=leaderboard');
   assert.match(el.innerHTML,new RegExp('data-player-profile="'+publicId+'"'));
   assert.match(el.innerHTML,/aria-label="Открыть профиль @collector"/);
-  assert.match(el.innerHTML,/Нажми на игрока, чтобы посмотреть его профиль/);
+  assert.doesNotMatch(el.innerHTML,/Нажми на игрока, чтобы посмотреть его профиль/);
   assert.equal((el.innerHTML.match(/data-player-profile=/g)||[]).length,2);
   assert.equal(typeof clickHandler,'function');
   assert.doesNotMatch(el.innerHTML,/рейтинговых экземпляр|Тестовые карточки исключены/i);
@@ -74,7 +74,7 @@ test('The normal game has no internal ranked/test-copy vocabulary',()=>{
   }
   assert.match(src('src/scripts/admin.js'),/Рейтинговых карточек/);
   assert.match(src('src/scripts/trades.js'),/Доступно для обмена:/);
-  assert.match(src('src/scripts/showcase.js'),/Выбери три карточки из своей коллекции/);
+  assert.match(src('src/scripts/showcase.js'),/Выбери слот и карточку/);
   assert.match(src('src/scripts/showcase.js'),/КАРТОЧЕК/);
 });
 
@@ -86,5 +86,5 @@ test('Telegram WebView preserves cache-busting after the 0.9.4.1 hotfix',()=>{
     assert.ok((()=>{const [major,minor,patch,hotfix=0]=version.split('.').map(Number);return major>0||(minor>9)||(minor===9&&(patch>4||(patch===4&&hotfix>=1)));})(),name+' needs v0.9.4.1 or newer');
   }
   const current=JSON.parse(src('package.json')).version;
-  assert.ok(html.includes('FLIP v'+current+' · TELEGRAM GAME'));
+  assert.ok(html.includes('● FLIP · TELEGRAM GAME'));
 });

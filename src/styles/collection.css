@@ -127,3 +127,10 @@
 .col-page .col-title-group h2{margin-top:0}
 .col-page .col-section-head h3{margin-top:0}
 .col-v087 .col-gallery-title{margin-bottom:12px}
+
+/* v0.9.8.3 — catalog totals are equivalent facts, not selectable tabs. */
+.catalog-stats{gap:9px;margin:14px 0 20px}
+.catalog-stats .catalog-stat{display:inline-flex;align-items:center;justify-content:center;
+ background:#1d2922;border:1px solid #3e5243;color:#c9d8cb;border-radius:100px;
+ padding:10px 14px;font:800 11px 'Space Grotesk',sans-serif;letter-spacing:.3px;
+ cursor:default;user-select:text}

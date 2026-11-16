@@ -122,11 +122,11 @@ test('Failure keeps last known trades and successful subsequent event can recove
  rt.trades.syncHub({activity:[{id:3,kind:'trade_offer'},{id:2,kind:'trade_offer'}]});
  await flush();
  assert.equal(rt.count.textContent,'1');
- assert.match(rt.feed.innerHTML,/НЕТ СВЯЗИ/);
+ assert.match(rt.feed.innerHTML,/НЕТ СОЕДИНЕНИЯ/);
  rt.trades.syncHub({activity:[{id:4,kind:'trade_offer'},{id:3,kind:'trade_offer'}]});
  await flush();
  assert.equal(rt.count.textContent,'1');
- assert.doesNotMatch(rt.feed.innerHTML,/НЕТ СВЯЗИ/);
+ assert.doesNotMatch(rt.feed.innerHTML,/НЕТ СОЕДИНЕНИЯ/);
 });
 test('v0.9.7 reuses only existing hub polling and busts Telegram cache',()=>{
  const app=read('src/scripts/app.js'),script=read('src/scripts/trades.js'),

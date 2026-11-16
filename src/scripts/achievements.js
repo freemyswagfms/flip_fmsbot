@@ -25,9 +25,8 @@
    return '<section class="content-card flip-ach-profile">'+
      '<div class="flip-ach-profile-title"><h3>ДОСТИЖЕНИЯ</h3>'+
        '<strong>'+completed+' / '+total+'</strong></div>'+
-     '<p>'+(online?(ready>0?ready+' наград доступно к получению.':
-       'Коллекционируй, обменивайся, выполняй задания и открывай секреты.'):
-       'Достижения и награды доступны после входа через Telegram.')+'</p>'+
+     (online?(ready>0?'<p>'+ready+' наград доступно к получению.</p>':''):
+       '<p>Достижения доступны после входа через Telegram.</p>')+
      badgeRow(data?.badges)+
      '<button class="outlinebtn" type="button" data-action="achievements">'+
        'ОТКРЫТЬ ДОСТИЖЕНИЯ ↗</button></section>';
@@ -49,7 +48,7 @@
        '" data-achievement-stage="'+stage+'">ЗАБРАТЬ +'+count(a.reward_f)+' F ↗</button>':
      '<span class="flip-ach-reward '+(completed?'is-claimed':'')+'">'+
        (completed?'✓ ПОЛУЧЕНО':'+'+count(a.reward_f)+' F')+'</span>';
-   const progressInfo=locked?'Условие откроется при выполнении':
+   const progressInfo=locked?'':
      completed?'Все этапы завершены':
        count(current)+' / '+count(goal);
    const extra=stages>1?
@@ -60,22 +59,19 @@
    return '<article class="flip-ach-card '+(ready?'is-ready ':completed?'is-completed ':'')+
       (locked?'is-secret ':'')+'" data-achievement-id="'+esc(a.code)+'">'+
       '<div class="flip-ach-card-top"><div class="flip-ach-symbol" aria-hidden="true">'+
-        esc(a.symbol)+'</div><div class="flip-ach-card-copy"><span class="flip-ach-micro">'+
-        (a.category==='staged'?'МНОГОСТУПЕНЧАТОЕ · '+stage+'/'+stages:
-         a.category==='secret'||a.category==='hidden'?'SECRET / FLIP':'FLIP ACHIEVEMENT')+
-        '</span><h3>'+esc(a.title)+'</h3><p>'+esc(a.description)+'</p></div></div>'+
+        esc(a.symbol)+'</div><div class="flip-ach-card-copy"><h3>'+esc(a.title)+
+        '</h3>'+(locked?'':'<p>'+esc(a.description)+'</p>')+'</div></div>'+ 
       extra+
       '<div class="flip-ach-progress"><div class="flip-ach-progress-track">'+
         '<i style="width:'+percent.toFixed(1)+'%"></i></div>'+
         '<div class="flip-ach-progress-meta"><span>'+esc(status)+'</span>'+
-        '<b>'+esc(progressInfo)+'</b></div></div>'+
+        (progressInfo?'<b>'+esc(progressInfo)+'</b>':'')+'</div></div>'+
       '<div class="flip-ach-card-bottom">'+
-        (a.badge&&!locked?'<span class="flip-ach-badge-note">✧ ЗНАЧОК</span>':
-          '<span class="flip-ach-meta">'+(completed?'НАВСЕГДА':'НАГРАДА')+'</span>')+
+        (a.badge&&!locked?'<span class="flip-ach-badge-note">✧ ЗНАЧОК</span>':'')+
         action+'</div></article>';
  }
  function page(data,{online=false}={}){
-   const all=online&&Array.isArray(data?.items)?data.items:[];
+   const all=(online&&Array.isArray(data?.items)?data.items:[]).filter(a=>a.category!=='hidden'||a.unlocked===true);
    const visible=all.filter(a=>selected==='all'||type(a)===selected);
    const total=online?Number(data.total||30):30;
    const done=online?Number(data.completed||0):0;
@@ -86,13 +82,12 @@
      '<div><span>ЗНАЧКИ</span><strong>'+Number(data?.badges?.length||0)+'</strong></div></div>';
    return '<div class="panel flip-ach-page">'+
      '<button class="link" type="button" data-action="profile">← К ПРОФИЛЮ</button>'+
-     '<span class="eyebrow">COLLECT / ACHIEVE / FLIP</span>'+
+     
      '<h2>ДОСТИЖЕНИЯ<span style="color:var(--lime)">.</span></h2>'+
-     '<p class="desc">Открывай музыку, выполняй задания и получай F. '+
-       'Прогресс считается сервером, даже за действия до обновления.</p>'+
+     
      summary+
      '<div class="flip-ach-section-heading"><strong>ТВОИ ЗНАЧКИ</strong>'+
-       '<span>СПЕЦИАЛЬНЫЕ НАГРАДЫ</span></div>'+
+       '</div>'+
      badgeRow(data?.badges)+
      '<div class="flip-ach-filters" aria-label="Категории достижений">'+
        Object.entries(labels).map(([key,value])=>
@@ -102,8 +97,7 @@
        'прогресс и получить награды.</div>':
        visible.length?'<div class="flip-ach-list">'+visible.map(achievementCard).join('')+'</div>':
        '<p class="flip-ach-empty">В этой категории пока ничего нет.</p>')+
-     '<p class="flip-ach-footer">Три секретных достижения скрывают условия. '+
-       'Особое достижение за Hidden невидимо до настоящего выпадения.</p></div>';
+     '</div>';
  }
  window.FLIPAchievements={page,profile,filter,getFilter:()=>selected};
 })();

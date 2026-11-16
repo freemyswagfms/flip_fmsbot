@@ -106,5 +106,5 @@ test('Owner UI toggles and game state reflect permanent mode, with cache busting
  assert.ok(html.includes('src/scripts/app.js?v='+JSON.parse(src('package.json')).version));
  assert.ok(html.includes('src/scripts/server.js?v=0.9.6.3'));
  assert.ok(html.includes('src/styles/admin.css?v=0.9.4.4'));
- assert.ok(html.includes('FLIP v'+JSON.parse(src('package.json')).version+' · TELEGRAM GAME'));
+ assert.ok(html.includes('● FLIP · TELEGRAM GAME'));
 });

@@ -142,7 +142,7 @@ test('The inbox renders safely, handles unread badges and links to actual destin
  assert.doesNotMatch(html,/<script>/);
  assert.match(html,/&lt;script&gt;/);
  assert.match(ui.profileStats(hub.stats,{online:true}),/ИСТОРИЯ АКТИВНОСТИ/);
- assert.match(ui.activityPage(hub,{online:true}),/Твои открытия/);
+ assert.match(ui.activityPage(hub,{online:true}),/Эту историю видишь только ты/);
  assert.match(ui.notifications(null,{online:false}),/входа через Telegram/);
 });
 test('Event ledger is private, backfills history as read and supports real database triggers',()=>{

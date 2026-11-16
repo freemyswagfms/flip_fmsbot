@@ -183,3 +183,10 @@
   animation:none!important}
  .flip-delivery-card,.flip-delivery-meta,.flip-delivery-card-shell:before{transition:none!important}
 }
+
+/* v0.9.8.3 — nontechnical feedback while delivery acknowledgement is pending. */
+.flip-delivery-loading.is-working{display:flex;justify-content:center;align-items:center;min-height:18px}
+.flip-delivery-loading.is-working::before{content:'';width:12px;height:12px;border:2px solid #a4d0ae66;
+ border-top-color:#baff67;border-radius:50%;animation:flipDeliveryWait 760ms linear infinite}
+@keyframes flipDeliveryWait{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.flip-delivery-loading.is-working::before{animation:none}}

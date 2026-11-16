@@ -159,10 +159,11 @@ test('New global SVG engine does not modify game economy or trade refresh logic'
  const reveal=source('src/scripts/pack-reveal.js');
  assert.ok(packageVersion.localeCompare('0.9.6.4',undefined,{numeric:true})>=0);
  assert.ok(api.includes("version:'"+packageVersion+"'"));
- for(const asset of ['icons.js','store.js','pack-reveal.js'])
-   assert.ok(html.includes('src/scripts/'+asset+'?v=0.9.6.2'));
+ assert.ok(html.includes('src/scripts/icons.js?v=0.9.6.2'));
+ for(const asset of ['store.js','pack-reveal.js'])
+   assert.ok(html.includes('src/scripts/'+asset+'?v='+packageVersion));
  assert.ok(html.includes('src/styles/store.css?v=0.9.6.2'));
- assert.ok(html.includes('FLIP v'+packageVersion+' · TELEGRAM GAME'));
+ assert.ok(html.includes('● FLIP · TELEGRAM GAME'));
  assert.match(app,/45000/);
  assert.match(reveal,/window\.FLIPIcons\?\.render\(modal\)/);
  assert.match(reveal,/window\.FLIPIcons\?\.render\(b\)/);

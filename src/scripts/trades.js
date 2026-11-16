@@ -101,7 +101,7 @@ function draft(){
     mode==='gift'?'ОТПРАВИТЬ ПОДАРОК':mode==='currency'?'КАРТОЧКИ ЗА F':
     'НОВОЕ ПРЕДЛОЖЕНИЕ';
   const out=['<section class="flip-social-panel" id="flip-trade-compose">',
-    '<div class="flip-social-heading"><h3>'+heading+'</h3><span class="pill">FLIP / PLAYER</span></div>'];
+    '<div class="flip-social-heading"><h3>'+heading+'</h3></div>'];
   if(!locked){
     out.push('<div class="flip-trade-modes" role="group" aria-label="Тип операции">');
     for(const [id,label] of [['cards','КАРТОЧКИ'],['currency','ЗА F'],['gift','ПОДАРОК']]){
@@ -145,8 +145,7 @@ function draft(){
         (s.currencySide==='sell'?'СКОЛЬКО F ПОЛУЧИШЬ':'СКОЛЬКО F ОТДАШЬ')+'</label>',
         '<input id="flip-trade-amount" class="flip-social-input" type="number" inputmode="numeric" '+
         'min="1" max="10000" step="1" placeholder="От 1 до 10 000 F" value="'+E(s.amount)+'">',
-        '<p class="flip-social-muted">F и карточки передаются вместе при принятии. '+
-        'XP за сделки с F не начисляется.</p>');
+        '');
     }
     if(good){
       const myDelta=delta(mine,giving,taking),theirDelta=delta(theirs,taking,giving);
@@ -167,18 +166,19 @@ function draft(){
     out.push('<button type="button" class="bigbtn" data-trade-create '+
       (!good||s.busy?'disabled':'')+'>'+label+'</button>');
   }
-  out.push('<p class="flip-social-muted">'+(mode==='gift'?
-    'Подарок передаётся сразу без принятия. До 10 подарков за 24 часа.':
-    'Предложение действует 72 часа. F и карточки не резервируются.')+
-    ' Для подарков и сделок за F действует '+
-    '24-часовая защита свежих карт из дропов.</p></section>');
+  const rules=mode==='gift'?
+    'Подарок передаётся сразу. До 10 подарков за 24 часа. Защита новых карточек — 24 часа.':
+    mode==='currency'?
+      'Предложение действует 72 часа. Карточки и F переходят при принятии, без резервирования. Защита новых карточек — 24 часа. XP за сделки с F не начисляется.':
+      'Предложение действует 72 часа. Карточки не резервируются.';
+  out.push('<details class="flip-trade-rules"><summary>ПРАВИЛА</summary><p>'+rules+'</p></details></section>');
   return out.join('');
 }
 function playerResults(){
   if(s.searching)return '<p class="flip-social-muted">Ищем игроков…</p>';
   return s.players.length?s.players.map(p=>'<button type="button" class="flip-trade-player" data-trade-select="'+
     E(p.id)+'"><strong>'+E(p.name)+'</strong><small>LVL '+E(p.level)+' · '+fmt(p.cp)+' CP</small></button>').join(''):
-    '<p class="flip-social-muted">Поиск по зарегистрированным игрокам.</p>';
+    '';
 }
 function statusOf(t){
   const expires=Date.parse(t.expires_at);
@@ -245,14 +245,9 @@ function section(title,items){
     (items.length?items.map(rowTrade).join(''):'<p class="flip-social-muted">Предложений пока нет.</p>')+'</section>';
 }
 function liveStatus(){
-  const message=s.syncError?'НЕТ СВЯЗИ · ПОПРОБУЙ ОБНОВИТЬ':
-    s.loading?'ПРОВЕРЯЕМ ПРЕДЛОЖЕНИЯ':
-    s.lastChecked?'СИНХРОНИЗИРОВАНО · '+new Date(s.lastChecked)
-      .toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}):
-      'ОЖИДАЕМ СИНХРОНИЗАЦИИ';
-  return '<div class="flip-trade-sync '+(s.syncError?'is-error':'')+
-    '" role="status" aria-live="polite"><i aria-hidden="true"></i><span>'+
-    E(message)+'</span><small>~45 С</small></div>';
+  return s.syncError?
+    '<div class="flip-trade-sync is-error" role="alert"><i aria-hidden="true"></i>'+
+    '<span>НЕТ СОЕДИНЕНИЯ · НАЖМИ «ОБНОВИТЬ»</span></div>':'';
 }
 function feedMarkup(){
   const trades=visibleTrades();
@@ -313,7 +308,7 @@ async function loadTrades({force=false,manual=false}={}){
       refreshFeed();
     }catch(e){
       if(token!==requestSeq)return;
-      s.loading=false;s.syncError='Не удалось получить обмены: '+e.message;
+      s.loading=false;s.syncError='NO_CONNECTION';
       refreshFeed();
     }
   })();
@@ -371,7 +366,7 @@ async function choosePlayer(id,label,preset=null){
     s.take=s.take.filter(key=>s.their.some(c=>c.id===key));
     draw();
     if(preset)root?.querySelector('#flip-trade-compose')?.scrollIntoView({block:'start',behavior:'smooth'});
-  }catch(e){if(stamp!==serial)return;s.error='Не удалось загрузить карточки: '+e.message;draw();}
+  }catch(e){if(stamp!==serial)return;s.error='Не удалось загрузить карточки игрока.';draw();}
 }
 const pendingKey='flip_v085_social_'+ownId;
 function remember(payload){
@@ -384,6 +379,25 @@ function remember(payload){
   return id;
 }
 function clearPending(){try{localStorage.removeItem(pendingKey);}catch{}}
+function tradeError(code){
+ const errors={
+  BAD_TRADE:'Проверь условия обмена.',
+  BAD_GIFT:'Проверь выбранную карточку.',
+  TRADE_CARD_UNAVAILABLE:'Карточка недоступна или действует защита после выпадения.',
+  TRADE_EXPIRED:'Срок предложения истёк.',
+  TRADE_NOT_FOUND:'Предложение не найдено.',
+  TRADE_ALREADY_CLOSED:'Предложение уже закрыто.',
+  PLAYER_NOT_FOUND:'Игрок не найден.',
+  TRADE_FORBIDDEN:'Это действие недоступно.',
+  TRADE_PENDING_LIMIT:'Достигнут лимит открытых предложений.',
+  INSUFFICIENT_FUNDS:'Недостаточно F.',
+  GIFT_DAILY_LIMIT:'Достигнут лимит подарков.',
+  DUPLICATE_TRADE_REQUEST:'Этот запрос уже использован.',
+  CARD_NOT_FOUND:'Карточка не найдена.',
+  BAD_REQUEST:'Проверь введённые данные.'
+ };
+ return errors[code]||'Не удалось выполнить действие. Попробуй ещё раз.';
+}
 async function submit(payload){
   if(s.busy)return;
   const requestId=remember(payload);
@@ -413,7 +427,7 @@ async function submit(payload){
     if(['accept','accept_f','gift'].includes(payload.action))
       window.dispatchEvent(new Event('flip-trade-completed'));
   }catch(e){
-    s.busy=false;s.error='Ошибка операции: '+e.message+'. Повтор безопасен с теми же параметрами.';
+    s.busy=false;s.error=tradeError(e.message);
     if(['BAD_TRADE','BAD_GIFT','TRADE_CARD_UNAVAILABLE','TRADE_EXPIRED','TRADE_NOT_FOUND',
       'TRADE_ALREADY_CLOSED','PLAYER_NOT_FOUND','TRADE_FORBIDDEN','TRADE_PENDING_LIMIT',
       'INSUFFICIENT_FUNDS','GIFT_DAILY_LIMIT'].includes(e.message))
@@ -426,7 +440,7 @@ async function inspect(id){
     const selected=s.trades.find(t=>t.id===id);
     const result=await api(selected?.type==='currency'?'currency_preview':'preview',{tradeId:id});
     s.inspectId=id;s.inspection=result.preview;s.error='';draw();
-  }catch(e){s.error='Ошибка проверки CP: '+e.message;draw();}
+  }catch(e){s.error='Не удалось проверить условия сделки.';draw();}
 }
 async function act(verb,id){
   if(s.busy)return;
@@ -436,7 +450,7 @@ async function act(verb,id){
   if(verb==='accept'){
     let preview;
     try{preview=(await api(currency?'currency_preview':'preview',{tradeId:id})).preview;}
-    catch(e){s.error='Не удалось проверить обмен: '+e.message;draw();return;}
+    catch(e){s.error='Не удалось проверить обмен.';draw();return;}
     if(!preview?.available){s.error='Недоступно: нет карточек, баланса F или ещё действует защита 24 часа.';draw();return;}
     const extra=currency?'\nТвои F: '+(preview.recipient_f_delta>=0?'+':'')+
         fmt(preview.recipient_f_delta)+' F':'';
