@@ -25,7 +25,7 @@ async function rpc(name,payload,db){
   });
   const body=await response.text();
   if(!response.ok){
-    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT','BAD_ADMIN_COOLDOWN','BAD_ADMIN_MODE'];
+    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT','BAD_ADMIN_COOLDOWN','BAD_ADMIN_MODE','BAD_ADMIN_BATCH'];
     const code=known.find(x=>body.includes(x));
     const error=new Error(code||'DATABASE_ERROR');
     error.status=code?409:502;throw error;
@@ -42,11 +42,29 @@ export async function handleAdminRequest(request){
   }catch{return json({error:'INVALID_TELEGRAM_SESSION'},401)}
   if(!isFlipAdmin(user.telegram_id))return json({error:'FORBIDDEN'},403);
   if(request.method==='GET'&&url.searchParams.get('view')==='me')
-    return json({admin:true,permissions:['grant_card','grant_resource','search_players','search_cards','history','ranked_preview','reset_cooldowns','unlimited_modes']});
+    return json({admin:true,permissions:['grant_card','grant_resource','search_players','search_cards','history','ranked_preview','reset_cooldowns','unlimited_modes','grant_cards','player_modes','cards_browser']});
   try{
     const db=settings();
     if(request.method==='GET'){
       const view=url.searchParams.get('view')||'players';
+      if(view==='player_modes'){
+        const target=url.searchParams.get('recipientId');
+        if(!validId(target))return json({error:'BAD_REQUEST'},400);
+        return json({player:await rpc('flip_admin_player_mode_status',{
+          p_admin_id:user.telegram_id,p_target_id:Number(target)
+        },db)});
+      }
+      if(view==='cards_browser'){
+        const q=(url.searchParams.get('q')||'').trim();
+        const rarity=url.searchParams.get('rarity')||'';
+        const offset=Number(url.searchParams.get('offset')||0);
+        if(q.length>80||!['','common','rare','epic','legendary','mythic','hidden'].includes(rarity)||
+           !Number.isSafeInteger(offset)||offset<0||offset>10000)
+          return json({error:'BAD_REQUEST'},400);
+        return json(await rpc('flip_admin_card_browser',{
+          p_query:q,p_rarity:rarity,p_limit:24,p_offset:offset
+        },db));
+      }
       if(view==='cooldowns')
         return json({cooldowns:await rpc('flip_admin_cooldown_status',{
           p_admin_id:user.telegram_id
@@ -77,9 +95,9 @@ export async function handleAdminRequest(request){
       if(view==='ranked'){const data=await rpc('flip_cp_leaderboard',{p_viewer_id:user.telegram_id,p_limit:20},db);return json({leaders:data.leaders||[]});}
       return json({error:'BAD_REQUEST'},400);
     }
-    if(Number(request.headers.get('content-length')||0)>1500)return json({error:'BAD_REQUEST'},400);
+    if(Number(request.headers.get('content-length')||0)>6000)return json({error:'BAD_REQUEST'},400);
     const bodyText=await request.text();
-    if(bodyText.length>1500)return json({error:'BAD_REQUEST'},400);
+    if(bodyText.length>6000)return json({error:'BAD_REQUEST'},400);
     let body;try{body=JSON.parse(bodyText)}catch{return json({error:'BAD_REQUEST'},400)}
     if(body?.action==='studio_login'){
       // Only an authenticated FLIP Telegram owner can request a login link.
@@ -111,6 +129,44 @@ export async function handleAdminRequest(request){
          !link.pathname.startsWith('/auth/v1/verify'))
         return json({error:'STUDIO_LOGIN_UNAVAILABLE'},502);
       return json({url:link.href});
+    }
+    if(body?.action==='set_player_unlimited'){
+      const allowed=['action','recipientId','kind','enabled','requestId'];
+      if(!validId(body.recipientId)||!['drop','pack'].includes(body.kind)||
+        typeof body.enabled!=='boolean'||!validUuid(body.requestId)||
+        Object.keys(body).some(key=>!allowed.includes(key)))
+        return json({error:'BAD_REQUEST'},400);
+      // Creator HMAC is verified above. This named recipient is a registered
+      // player, not a new admin; only creator can assign/revoke their bypass.
+      return json(await rpc('flip_admin_set_player_mode',{
+        p_admin_id:user.telegram_id,p_target_id:Number(body.recipientId),
+        p_kind:body.kind,p_enabled:body.enabled,p_request_id:body.requestId
+      },db));
+    }
+    if(body?.action==='grant_cards'){
+      const allowed=['action','recipientId','cards','mode','note','requestId'];
+      if(!validId(body.recipientId)||!validUuid(body.requestId)||
+         !['test','ranked'].includes(body.mode)||
+         typeof body.note!=='string'||body.note.length>200||
+         !Array.isArray(body.cards)||body.cards.length<1||body.cards.length>20||
+         Object.keys(body).some(key=>!allowed.includes(key)))
+         return json({error:'BAD_REQUEST'},400);
+      const seen=new Set();let total=0;
+      for(const entry of body.cards){
+        if(!entry||typeof entry!=='object'||Array.isArray(entry)||
+           Object.keys(entry).length!==2||!('id' in entry)||!('quantity' in entry)||
+           typeof entry.id!=='string'||entry.id.length>160||
+           !/^[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+$/i.test(entry.id)||
+           !Number.isSafeInteger(entry.quantity)||entry.quantity<1||entry.quantity>20||
+           seen.has(entry.id))return json({error:'BAD_REQUEST'},400);
+        seen.add(entry.id);total+=entry.quantity;
+      }
+      if(total>20)return json({error:'BAD_REQUEST'},400);
+      return json(await rpc('flip_admin_grant_batch',{
+        p_admin_id:user.telegram_id,p_recipient_id:Number(body.recipientId),
+        p_cards:body.cards,p_mode:body.mode,p_note:body.note.trim(),
+        p_request_id:body.requestId
+      },db));
     }
     if(body?.action==='set_unlimited'){
       const allowed=['action','kind','enabled','requestId'];
@@ -172,7 +228,7 @@ export async function handleAdminRequest(request){
     }
     return json(result);
   }catch(e){
-    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT','BAD_ADMIN_COOLDOWN','BAD_ADMIN_MODE'];
+    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT','BAD_ADMIN_COOLDOWN','BAD_ADMIN_MODE','BAD_ADMIN_BATCH'];
     return json({error:known.includes(e.message)?e.message:'ADMIN_SERVER_ERROR'},e.status||500);
   }
 }
