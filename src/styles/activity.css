@@ -55,3 +55,13 @@
 @media(max-width:360px){.flip-stat-grid{gap:5px}.flip-stat-tile{min-height:83px;padding:8px 6px}
  .flip-stat-tile strong{font-size:18px}.flip-stat-label{font-size:7px}
  .flip-event{padding:9px 7px;gap:8px}.flip-event-icon{width:32px;height:32px}}
+
+/* FLIP v0.9.6.1 — explicit SVG sizing prevents iOS emoji fallback and layout shifts. */
+.flip-event-icon .flip-svg{display:block;width:21px;height:21px;stroke-width:2}
+.flip-stat-symbol .flip-svg{display:block;width:22px;height:22px;stroke-width:1.85}
+.flip-event-open .flip-svg{width:17px;height:17px;stroke-width:2.1;vertical-align:middle}
+.flip-event-reward .flip-svg{width:15px;height:15px;vertical-align:-.15em}
+.flip-event-bottom .flip-svg,.flip-event-profile .flip-svg{width:13px;height:13px;vertical-align:-.18em}
+.flip-activity-page>.link .flip-svg{width:13px;height:13px}
+.notif-sheet .flip-event-copy p{border:0;padding:0;margin:5px 0!important}
+.notif-sheet .flip-event-empty{border:1px dashed #3f5840;padding:16px 12px}
