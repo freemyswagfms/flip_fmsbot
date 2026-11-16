@@ -195,7 +195,7 @@
   const all=root.querySelector('[data-delivery-all]');
   if(button)button.disabled=true;if(all)all.disabled=true;
   const status=root.querySelector('.flip-delivery-loading');
-  if(status){status.textContent='';status.classList.add('is-working');}
+  if(status){status.textContent='';status.classList?.add?.('is-working');}
   const ids=active.map(x=>x.id);
   try{
     if(typeof acknowledge!=='function')throw new Error('OFFLINE');
@@ -207,7 +207,7 @@
   }catch{
     working=false;
     if(button)button.disabled=false;if(all)all.disabled=false;
-    if(status){status.classList.remove('is-working');status.textContent='Не удалось подтвердить. Повтори попытку.';}
+    if(status){status.classList?.remove?.('is-working');status.textContent='Не удалось подтвердить. Повтори попытку.';}
   }
  }
  function next(){
