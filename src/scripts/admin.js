@@ -255,13 +255,13 @@
     try{
       if(part==='all'){
         const [u,c,h,r,l,cd]=await Promise.all([
-          call('players'),call('cards'),call('history'),call('rewards'),call('ranked'),
+          call('players'),call('cards_browser'),call('history'),call('rewards'),call('ranked'),
           call('cooldowns').catch(()=>({cooldowns:null}))
         ]);
         if(job!==stamp)return;
-        s.players=u.players||[];s.cards=c.cards||[];s.history=h.history||[];
+        s.players=u.players||[];s.cards=c.cards||[];s.cardTotal=Number(c.total)||0;
+        s.cardOffset=s.cards.length;s.history=h.history||[];
         s.rewards=r.rewards||[];s.leaders=l.leaders||[];s.cooldowns=cd.cooldowns||null;
-        if(!s.cards.some(x=>x.id===s.card))s.card=s.cards[0]?.id||'';
       }else if(part==='players'){
         const r=await call('players');if(job!==stamp)return;s.players=r.players||[];
       }else{
@@ -278,17 +278,18 @@
   }
   async function grant(){
     if(s.busy)return;
-    const payload={action:s.rewardKind==='card'?'grant_card':'grant_resource',
+    const payload={action:s.rewardKind==='card'?'grant_cards':'grant_resource',
       recipientId:s.recipient.trim(),note:s.note.trim()};
     if(!/^[1-9]\d{0,15}$/.test(payload.recipientId)){
       s.error=true;s.message='Выбери получателя.';draw();return;
     }
     let subject;
     if(s.rewardKind==='card'){
-      payload.cardId=s.card;payload.mode=s.mode;
-      if(!payload.cardId){s.error=true;s.message='Выбери карточку.';draw();return;}
-      const card=s.cards.find(x=>x.id===payload.cardId);
-      subject=(card?.label||payload.cardId)+' / '+(payload.mode==='test'?'ТЕСТ':'РЕЙТИНГОВАЯ');
+      payload.cards=s.basket.map(x=>({id:x.id,quantity:x.quantity}));
+      payload.mode=s.mode;
+      if(!payload.cards.length){s.error=true;s.message='Добавь карточки в корзину.';draw();return;}
+      subject=basketCount()+' карточек ('+payload.cards.length+' вариантов) / '+
+        (payload.mode==='test'?'ТЕСТ':'РЕЙТИНГОВЫЕ');
     }else{
       if(!/^[1-9]\d{0,6}$/.test(s.amount)||Number(s.amount)>1000000){
         s.error=true;s.message='Укажи целое положительное число от 1 до 1 000 000.';draw();return;
@@ -304,9 +305,11 @@
       const result=await call('',{...payload,requestId:s.retryId});
       s.retryId=null;s.retryPayload=null;s.busy=false;s.error=false;
       s.message=s.rewardKind==='card'?
-        'Карточка выдана. '+(result.mode==='test'?'Не учитывается в топе.':'Учитывается в топе.'):
+        'Выдано '+result.total+' карточек ('+payload.cards.length+
+        ' вариантов). '+(result.mode==='test'?'Не учитываются в топе.':'Учитываются в топе.'):
         'Начислено '+payload.amount+' '+payload.kind.toUpperCase()+
         '. Уровень: '+result.level+'; баланс: '+result.balance+' F.';
+      if(s.rewardKind==='card')s.basket=[];
       if(s.recipient===selfId())window.dispatchEvent(new Event('flip-admin-self-changed'));
       await load('refresh');
     }catch(e){
