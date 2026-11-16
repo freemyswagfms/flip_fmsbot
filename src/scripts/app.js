@@ -251,13 +251,13 @@ async function updateShowcase(slot,cardId){
    toast(cardId===null?'Карточка убрана из витрины.':'Витрина обновлена!');
  }catch(error){
    const text=error.message==='SHOWCASE_NOT_OWNED'?
-     'Этой рейтинговой карточки больше нет в коллекции.':
+     'Этой карточки больше нет в коллекции.':
      'Не удалось сохранить витрину. Попробуй снова.';
    toast(text);
    try{await bridge.refreshShowcase();render(current)}catch{}
  }finally{serverBusy=false}
 }
-function rankingProfile(){return live()?'<div class="content-card"><span class="eyebrow">COLLECTION POINTS</span><h3 style="margin-top:9px;font-size:15px">ТВОЙ РЕЙТИНГ</h3><div class="kpi">'+Number(state.cp||0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' CP</div><p>Рейтинговые экземпляры, включая карточки из обменов и рейтинговые выдачи администрации. Тестовые карточки не учитываются.</p><button type="button" class="outlinebtn" data-action="leaderboard">ОТКРЫТЬ ОБЩИЙ ТОП ↗</button></div>':''}
+function rankingProfile(){return live()?'<div class="content-card"><span class="eyebrow">COLLECTION POINTS</span><h3 style="margin-top:9px;font-size:15px">ТВОЙ РЕЙТИНГ</h3><div class="kpi">'+Number(state.cp||0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' CP</div><p>Твой результат зависит от ценности собранной коллекции.</p><button type="button" class="outlinebtn" data-action="leaderboard">ОТКРЫТЬ ОБЩИЙ ТОП ↗</button></div>':''}
 function adminProfile(){
   const id=window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
   const idInfo=live()&&Number.isSafeInteger(id)&&id>0?
@@ -649,6 +649,14 @@ async function claimAchievement(button){
 }
 function handleTask(i){if(state.claimedTasks.includes(i))return;modal(`<span class="eyebrow">DAILY TASK</span><h3>${taskDefs[i].title}</h3><p>Это макет задания. В реальной игре выполнение определяется сервером автоматически, без ручного начисления.</p><button class="bigbtn" id="closeReveal">ПОНЯТНО</button>`)}
 document.addEventListener('click',e=>{
+   // One click path for every leaderboard player. Works after async list updates
+   // and doesn't depend on a CustomEvent dispatched from another script.
+   const player=e.target.closest('[data-player-profile]');
+   if(player){
+     e.preventDefault();
+     openPlayerProfile(player.dataset.playerProfile);
+     return;
+   }
    const profileOpen=e.target.closest('[data-open-my-profile]');
    if(profileOpen){openPlayerProfile(bridge?.showcase?.public_id);return;}
    const slot=e.target.closest('[data-showcase-slot]');
@@ -701,9 +709,6 @@ $('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closeModa
   for(const node of document.querySelectorAll('[data-showcase-filter]')){
     node.hidden=!String(node.dataset.showcaseFilter||'').toLocaleLowerCase('ru').includes(needle);
   }
-});
-window.addEventListener('flip-open-public-profile',event=>{
-  openPlayerProfile(event.detail?.publicId);
 });
 window.addEventListener('flip-trade-completed',async()=>{
   if(!live())return;
