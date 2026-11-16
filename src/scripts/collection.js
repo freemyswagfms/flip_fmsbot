@@ -37,7 +37,7 @@
   }
   function stageHeader(kicker,title,desc,back) {
     return `${back ? `<button type="button" class="col-back" data-collection-back="${esc(back)}">← НАЗАД</button>` : ''}
-    <div class="col-title-group"><span class="eyebrow">${esc(kicker)}</span><h2>${esc(title)}<span class="col-dot">.</span></h2><p class="desc">${esc(desc)}</p></div>`;
+    <div class="col-title-group">${kicker?`<span class="eyebrow">${esc(kicker)}</span>`:""}<h2>${esc(title)}<span class="col-dot">.</span></h2>${desc?`<p class="desc">${esc(desc)}</p>`:""}</div>`;
   }
   function formatCounts(n) {
     return `${n} ${n%10===1&&n%100!==11?'карточка':n%10>1&&n%10<5&&(n%100<11||n%100>14)?'карточки':'карточек'}`;
@@ -90,7 +90,7 @@
       galleryRarityCounts[key]=(galleryRarityCounts[key]||0)+1;
     }
     return '<div class="panel col-page col-v087">'+
-      stageHeader('THE ARCHIVE / 087','МОЯ КОЛЛЕКЦИЯ','Личная галерея музыкальных обложек. Каждая находка — часть твоей истории.')+
+      stageHeader('','МОЯ КОЛЛЕКЦИЯ','')+
       '<div class="col-statboard col-statboard-v087"><div class="col-stat-main">'+
       '<span class="col-micro">УНИКАЛЬНЫХ КАРТОЧЕК</span><strong>'+all.length+
       '<em> / '+total+'</em></strong><div class="col-progress" role="progressbar" aria-valuenow="'+
@@ -153,7 +153,7 @@
     if (!a) return home(state);
     const data=inventory(state), mine=getArtistCards(data.owned,a.id);
     const releases=a.releases.map(release=>({release,cards:mine.filter(c=>c.releaseId===release.id)})).filter(item=>item.cards.length);
-    return `<div class="panel col-page">${stageHeader('ARTIST COLLECTION',a.name,'Только релизы, которые ты действительно открыл. Неизвестные обложки пока скрыты.','collection')}
+    return `<div class="panel col-page">${stageHeader('',a.name,'','collection')}
       <div class="col-stats-line"><span><b>${releases.length}</b> релизов</span><span><b>${mine.length}</b> разновидностей</span><span><b>${mine.reduce((n,c)=>n+c.count,0)}</b> экземпляров</span></div>
       <div class="col-section-head"><div><span class="col-micro">RELEASE ARCHIVE</span><h3>ОТКРЫТЫЕ РЕЛИЗЫ</h3></div></div>
       <label class="col-search-label"><span>⌕</span><input type="search" autocomplete="off" placeholder="Найти релиз" aria-label="Поиск по полученным релизам" data-collection-search></label>
@@ -172,7 +172,7 @@
     const visible=mine.filter(c=>data.owned.has(c.id));
     if(!visible.length) return artist(state,artistId);
     const featured=data.owned.get(visible[0].id);
-    return `<div class="panel col-page">${stageHeader('RELEASE COLLECTION',r.title,`${a.name} · ${r.year || 'Архив'} · ${visible.length} из 5 редкостей`,'artist')}
+    return `<div class="panel col-page">${stageHeader('',r.title,`${a.name} · ${r.year || 'Архив'} · ${visible.length} из 5 редкостей`,'artist')}
       <div class="col-release-hero"><button type="button" class="col-release-hero-image col-release-hero-open" data-owned-card="${esc(featured.id)}" aria-label="Рассмотреть ${esc(r.title)}">${art(featured)}</button><div class="col-release-hero-copy"><span class="col-micro">ALBUM ARTWORK</span><strong>${esc(r.title)}</strong><span>${esc(a.name)}</span><small>${visible.length}/5 СОБРАНО</small></div></div>
       <div class="col-section-head"><div><span class="col-micro">RARITY VARIANTS</span><h3>ПЯТЬ РЕДКОСТЕЙ</h3></div><span class="col-count">${visible.length}/5</span></div>
       <div class="col-rarity-grid">${mine.map(c=>{
@@ -196,7 +196,7 @@
     }
     data.owned.forEach(c=>{if(!seen.has(c.id)){list.unshift(c);seen.add(c.id)}});
     data.hidden.forEach(c=>{if(!seen.has(c.id)){list.unshift(c);seen.add(c.id)}});
-    return `<div class="panel col-page">${stageHeader('DISCOVERIES / ARCHIVE','ИСТОРИЯ НАХОДОК','Все разновидности, которые когда-либо попадали в твою коллекцию. Сохраняются даже после будущих обменов.','collection')}
+    return `<div class="panel col-page">${stageHeader('','ИСТОРИЯ НАХОДОК','','collection')}
       <div class="col-stats-line"><span><b>${list.length}</b> открыто</span><span><b>${data.owned.size}</b> сейчас в коллекции</span></div>
       ${list.length?`<label class="col-search-label"><span>⌕</span><input type="search" placeholder="Найти находку" autocomplete="off" aria-label="Поиск по истории находок" data-collection-search></label>
       <div class="col-release-list">${list.map(c=>{
