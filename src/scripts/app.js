@@ -52,6 +52,7 @@ for(const oldCard of state.received){if(oldCard?.id && !previousDiscoveries.has(
 let current='home';
 let collectionArtistId=null, collectionReleaseId=null;
 let showcaseEditingSlot=1,publicProfileData=null,publicProfileLoading=false,publicProfileError='';
+let shopTab='packs',shopLoading=false,shopBusy=false,shopError='';
 const catalog=window.FLIPCatalog;
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const artCards=catalog.rarities.map((rarity,i)=>catalog.getCard('carti',catalog.artists[0].releases[i%5].id,rarity));
@@ -177,7 +178,21 @@ function catalogView(){
 function trades(){return '<div class="panel"><span class="eyebrow">PLAYER TO PLAYER / 003</span><h2>ОБМЕНЫ<span style="color:var(--lime)">.</span></h2><p class="desc">Реальные обмены от 1 до 5 карточек с каждой стороны, встречные предложения и предварительный расчёт CP.</p><div id="flip-trades-root"></div></div>'}
 function achievements(){return window.FLIPAchievements?.page(bridge?.achievements,{online:live()})||'<div class="panel"><h2>ДОСТИЖЕНИЯ</h2><p>Загрузка…</p></div>'}
 function leaderboard(){return '<div class="panel"><button class="link" data-action="profile">← К ПРОФИЛЮ</button><span class="eyebrow">FLIP / LEADERBOARD</span><h2>РЕЙТИНГ<span style="color:var(--lime)">.</span></h2><p class="desc">Соревнуйся ценностью своей текущей коллекции. CP не тратятся и не покупаются.</p><div id="flip-leaderboard-root"></div></div>'}
-function store(){return `<div class="panel"><span class="eyebrow">COLLECT MORE / 004</span><h2>МАГАЗИН<span style="color:var(--lime)">.</span></h2><p class="desc">Стандартные паки и особые тематические коллекции. Цены показаны согласно выбранной базовой экономике.</p><div class="content-card"><span class="pill">◆ STANDARD PACK</span><h3 style="font-size:20px;margin-top:9px">3 СЛУЧАЙНЫЕ КАРТОЧКИ</h3><p>Три разные разновидности, гарантированно хотя бы одна Rare+. Без pity.</p><div class="square-grid" style="margin:17px 0">${[0,1,2].map(()=>`<div class="sq-card" style="background:linear-gradient(135deg,#344d2b,#132318)"><span class="sq-art" style="color:var(--lime)">FLIP</span></div>`).join('')}</div><div class="menu-row"><strong>200 F</strong><small id="packCounter">${live()&&state.unlimitedPacks?'БЕЗ ЛИМИТА · РЕЖИМ СОЗДАТЕЛЯ':`ЛИМИТ: ${state.packsToday}/10 СЕГОДНЯ`}</small></div><button class="bigbtn" id="buyPackBtn">КУПИТЬ ПАК · 200 F ↗</button></div><div class="content-card"><span class="pill">✦ SPECIAL COLLECTION</span><h3 style="font-size:21px;margin-top:10px">GTA / ALTERNATE</h3><p>Демонстрационная тематическая коллекция · 5 квадратных карточек · набор приобретается целиком.</p><div class="square-grid">${artCards.slice(0,3).map(sq).join('')}</div><div class="menu-row"><strong>5 000 F</strong><small>РОТАЦИЯ: РАЗ В МЕСЯЦ</small></div><button class="outlinebtn" style="margin-top:10px;width:100%" data-action="special">ПОДРОБНОСТИ ↗</button></div></div>`}
+function store(){
+ return window.FLIPStore?.page({
+   shop:bridge?.shop,state,live:live(),demo:bridge?.mode==='demo',busy:shopBusy||serverBusy,
+   tab:shopTab,loading:shopLoading,error:shopError
+ })||'<div class="panel"><h2>МАГАЗИН</h2><p>Загрузка...</p></div>';
+}
+async function openStore(){
+ render('store');
+ if(!live()||shopLoading||!bridge?.refreshShop)return;
+ shopLoading=true;shopError='';
+ render('store');
+ try{await bridge.refreshShop();}
+ catch(error){shopError=error.message||'STORE_ERROR';}
+ finally{shopLoading=false;if(current==='store')render('store');}
+}
 // Render a profile photo only after the server has verified the Telegram launch.
 function playerAvatar(){
   const name=live()?state.telegramName||'FLIP PLAYER':'FLIP PLAYER';
@@ -272,7 +287,10 @@ function adminPage(){return live()&&bridge?.isAdmin?
   '<div class="panel"><h2>ДОСТУП ЗАКРЫТ</h2></div>';}
 const render=(view=current)=>{current=view;$('#screen').innerHTML=({home,collection,collectionArtist,collectionRelease,collectionHistory,catalog:catalogView,trades,leaderboard,store,profile:adminProfile,admin:adminPage,tasks,achievements,showcaseEdit,publicProfile}[view]||home)();document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===(['catalog','collectionArtist','collectionRelease','collectionHistory'].includes(view)?'collection':['achievements','showcaseEdit','publicProfile'].includes(view)?'profile':view)));$('#balance').textContent=money(state.balance);$('#scroll').scrollTop=0;updateTimer();window.FLIPIcons?.render($('#screen'));if(view==='admin'&&bridge?.isAdmin)window.FLIPAdmin?.mount($('#flip-admin-root'));if(view==='trades')window.FLIPTrades?.mount($('#flip-trades-root'));if(view==='leaderboard')window.FLIPLeaderboard?.mount($('#flip-leaderboard-root'));const photo=$('#flipPlayerPhoto');if(photo)photo.addEventListener('error',()=>photo.remove(),{once:true});const publicPhoto=$('.flip-showcase-player-photo');if(publicPhoto){const reveal=()=>publicPhoto.classList.add('is-loaded');if(publicPhoto.complete&&publicPhoto.naturalWidth>0)reveal();else{publicPhoto.addEventListener('load',reveal,{once:true});publicPhoto.addEventListener('error',()=>publicPhoto.remove(),{once:true});}}};
 let toastTid;const toast=msg=>{const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTid);toastTid=setTimeout(()=>el.classList.remove('show'),3000)};
-const closeModal=()=>$('#overlay').classList.remove('show');
+const closeModal=()=>{
+ if(window.FLIPPackReveal?.isOpen?.())window.FLIPPackReveal.close();
+ else $('#overlay').classList.remove('show');
+};
 function modal(html){$('#modal').innerHTML=html;window.FLIPIcons?.render($('#modal'));$('#overlay').classList.add('show')}
 function updateTimer(){
   if(current!=='home')return;
@@ -352,7 +370,7 @@ function gain(card,source){
 }
 function cardReveal(card,label){modal(`<span class="eyebrow">${escapeHtml(label)}</span><h3>НОВАЯ КАРТОЧКА!</h3>${sq(card)}<div class="pill">✦ ${escapeHtml(card.rarity.toUpperCase())}</div><p>Карточка добавлена в демо-коллекцию.</p><button class="bigbtn" id="closeReveal">ПРОДОЛЖИТЬ ↗</button>`)}
 function serverError(error){
-  const reasons={DROP_COOLDOWN:'Дроп ещё перезаряжается',INSUFFICIENT_FUNDS:'Недостаточно F',DAILY_PACK_LIMIT:'Лимит: 10 паков за день',EXPIRED_TELEGRAM_SESSION:'Перезапусти FLIP через Telegram',INVALID_TELEGRAM_SESSION:'Ошибка Telegram: перезапусти приложение'};
+  const reasons={DROP_COOLDOWN:'Дроп ещё перезаряжается',INSUFFICIENT_FUNDS:'Недостаточно F',DAILY_PACK_LIMIT:'Лимит: 10 паков за день',THEME_UNAVAILABLE:'Этот тематический набор пока недоступен',UNKNOWN_PACK:'Такой набор не найден',PACK_GENERATION_FAILED:'Не удалось сформировать набор. Попробуй ещё раз.',EXPIRED_TELEGRAM_SESSION:'Перезапусти FLIP через Telegram',INVALID_TELEGRAM_SESSION:'Ошибка Telegram: перезапусти приложение'};
   return reasons[error?.message]||'Не удалось связаться с сервером. Повтори попытку.';
 }
 function cardById(id){
@@ -410,23 +428,44 @@ function previewRoulette(){
   if(window.FLIPReveal)window.FLIPReveal.open(card,{preview:true});
   else toast('Рулетка пока не загрузилась. Попробуй ещё раз.');
 }
-async function doPack(){
-  if(serverBusy)return;
-  if(blocked()){toast('Нет подключения к серверу Telegram');return;}
-  if(live()){
-    serverBusy=true;
-    try{
-      const result=await bridge.pack(crypto.randomUUID());
-      applyServerState(result.state);render('store');
-      bridge.refreshTasks?.().catch(()=>{});
-      bridge.refreshAchievements?.().catch(()=>{});
-      const pack=(result.card_ids||[]).map(cardById).filter(Boolean);
-      modal(`<span class="eyebrow">STANDARD PACK / SERVER</span><h3>ТВОЙ ПАК</h3><div class="square-grid pack-open-grid">${pack.map(sq).join('')}</div><p>Три карточки сохранены на сервере. Минимум одна Rare+.</p><button class="bigbtn" id="closeReveal">ЗАБРАТЬ КАРТОЧКИ ↗</button>`);
-    }catch(error){toast(serverError(error));}
-    finally{serverBusy=false;}
-    return;
-  }
-  doPackDemo();
+async function doPack(packType='standard'){
+ if(serverBusy||shopBusy)return;
+ if(blocked()){toast('Нет подключения к серверу Telegram');return;}
+ if(!['standard','archive','new-era'].includes(packType))return;
+ if(live()){
+   serverBusy=true;shopBusy=true;
+   if(current==='store')render('store');
+   try{
+     const result=packType==='standard'?
+       await bridge.pack(crypto.randomUUID()):
+       await bridge.themePack(packType,crypto.randomUUID());
+     applyServerState(result.state);
+     bridge.refreshTasks?.().catch(()=>{});
+     bridge.refreshAchievements?.().catch(()=>{});
+     bridge.refreshShop?.().then(()=>{
+       if(current==='store')render('store');
+     }).catch(()=>{});
+     const pack=(result.card_ids||[]).map(cardById).filter(Boolean);
+     const actualType=result.pack_type||packType;
+     const price=Number(result.price)||(actualType==='standard'?200:250);
+     if(pack.length===3){
+       if(!window.FLIPPackReveal?.open?.(pack,{type:actualType,price})){
+         modal('<h3>ТВОЙ НАБОР</h3><div class="square-grid pack-open-grid">'+
+           pack.map(sq).join('')+'</div>'+
+           '<p>Три карточки сохранены в коллекции.</p>'+
+           '<button class="bigbtn" id="closeReveal">ПРОДОЛЖИТЬ ↗</button>');
+       }
+     }else{
+       toast('Набор сохранён. Проверь коллекцию — не все изображения доступны.');
+     }
+   }catch(error){toast(serverError(error));}
+   finally{
+     serverBusy=false;shopBusy=false;
+     if(current==='store')render('store');
+   }
+   return;
+ }
+ if(packType==='standard')doPackDemo();
 }
 function doPackDemo(){
   const day=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Moscow'});
@@ -446,7 +485,8 @@ function doPackDemo(){
   state.xp+=30;
   while(state.xp>=100){state.xp-=100;state.level++;state.balance+=30}
   save();render('store');
-  modal(`<span class="eyebrow">STANDARD PACK / OPENED</span><h3>ТВОЙ ПАК</h3><div class="square-grid pack-open-grid" aria-label="Три полученные карточки">${pack.map(sq).join('')}</div><p>Три разные карточки, минимум одна Rare+. Награды и вероятности пока демонстрационные, не серверные.</p><button class="bigbtn" id="closeReveal">ЗАБРАТЬ КАРТОЧКИ ↗</button>`);
+  if(!window.FLIPPackReveal?.open?.(pack,{type:'standard',price:200}))
+    modal(`<h3>ТВОЙ ПАК</h3><div class="square-grid pack-open-grid">${pack.map(sq).join('')}</div><p>Демо-коллекция обновлена локально.</p><button class="bigbtn" id="closeReveal">ПРОДОЛЖИТЬ ↗</button>`);
 }
 // FLIP v0.8.9: construct navigation sets exclusively from visible/owned
 // collection entries. Catalog previews are deliberately kept separate.
@@ -652,6 +692,20 @@ async function claimAchievement(button){
 }
 function handleTask(i){if(state.claimedTasks.includes(i))return;modal(`<span class="eyebrow">DAILY TASK</span><h3>${taskDefs[i].title}</h3><p>Это макет задания. В реальной игре выполнение определяется сервером автоматически, без ручного начисления.</p><button class="bigbtn" id="closeReveal">ПОНЯТНО</button>`)}
 document.addEventListener('click',e=>{
+   const shopTabButton=e.target.closest('[data-shop-tab]');
+   if(shopTabButton){
+     if(!['packs','history'].includes(shopTabButton.dataset.shopTab))return;
+     shopTab=shopTabButton.dataset.shopTab;
+     render('store');return;
+   }
+   const shopBuy=e.target.closest('[data-shop-buy]');
+   if(shopBuy){if(!shopBuy.disabled)doPack(shopBuy.dataset.shopBuy);return;}
+   const shopInspect=e.target.closest('[data-shop-inspect]');
+   if(shopInspect){
+     const card=window.FLIPStore?.cardFromId(shopInspect.dataset.shopInspect);
+     if(card)window.FLIPCardViewer?.open(card,{mode:'catalog',cards:[card]});
+     return;
+   }
    // One click path for every leaderboard player. Works after async list updates
    // and doesn't depend on a CustomEvent dispatched from another script.
    const player=e.target.closest('[data-player-profile]');
@@ -704,7 +758,7 @@ document.addEventListener('click',e=>{
   if(historyCardTarget){showOwnedCard(historyCardTarget.dataset.historyCard,true);return}
   const hiddenTarget=e.target.closest('[data-hidden-card]');
   if(hiddenTarget){showHiddenCard(hiddenTarget.dataset.hiddenCard);return;}
-  const tab=e.target.closest('[data-tab]');if(tab){render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks','achievements','showcaseEdit'].includes(a)){render(a);if(a==='tasks'&&live())bridge.refreshTasks?.().then(()=>{if(current==='tasks')render('tasks')}).catch(()=>{});if(a==='achievements'&&live())bridge.refreshAchievements?.().then(()=>{if(current==='achievements')render('achievements')}).catch(()=>{});}else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogArtist||'carti',b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn')&&live()&&bridge?.isAdmin===true)previewRoulette();if(e.target.closest('#buyPackBtn'))doPack();if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))render('store');if(e.target.closest('#bellBtn'))$('#notifications').classList.toggle('show');if(e.target.closest('#closeNotifications'))$('#notifications').classList.remove('show');if(e.target.closest('#resetBtn')){if(live()||blocked())return;localStorage.removeItem('flip_demo');localStorage.removeItem('flip20_demo');Object.assign(state,{...initial,dropReadyAt:Date.now(),received:[],discovered:[],claimedTasks:[]});save();render('profile');toast('Демо сброшено — бесплатный дроп доступен')};const t=e.target.closest('[data-task]');if(t)handleTask(+t.dataset.task);if(e.target.closest('#levelQuick'))render('profile')});
+  const tab=e.target.closest('[data-tab]');if(tab){if(tab.dataset.tab==='store')openStore();else render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks','achievements','showcaseEdit'].includes(a)){if(a==='store')openStore();else render(a);if(a==='tasks'&&live())bridge.refreshTasks?.().then(()=>{if(current==='tasks')render('tasks')}).catch(()=>{});if(a==='achievements'&&live())bridge.refreshAchievements?.().then(()=>{if(current==='achievements')render('achievements')}).catch(()=>{});}else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogArtist||'carti',b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn')&&live()&&bridge?.isAdmin===true)previewRoulette();if(e.target.closest('#buyPackBtn'))doPack('standard');if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))openStore();if(e.target.closest('#bellBtn'))$('#notifications').classList.toggle('show');if(e.target.closest('#closeNotifications'))$('#notifications').classList.remove('show');if(e.target.closest('#resetBtn')){if(live()||blocked())return;localStorage.removeItem('flip_demo');localStorage.removeItem('flip20_demo');Object.assign(state,{...initial,dropReadyAt:Date.now(),received:[],discovered:[],claimedTasks:[]});save();render('profile');toast('Демо сброшено — бесплатный дроп доступен')};const t=e.target.closest('[data-task]');if(t)handleTask(+t.dataset.task);if(e.target.closest('#levelQuick'))render('profile')});
 $('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#notifications').classList.remove('show')}});document.addEventListener('input',e=>{
   const input=e.target.closest('[data-showcase-search]');
   if(!input)return;
