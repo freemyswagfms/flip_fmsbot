@@ -25,7 +25,7 @@ async function rpc(name,payload,db){
   });
   const body=await response.text();
   if(!response.ok){
-    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT'];
+    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT','BAD_ADMIN_COOLDOWN'];
     const code=known.find(x=>body.includes(x));
     const error=new Error(code||'DATABASE_ERROR');
     error.status=code?409:502;throw error;
@@ -42,11 +42,15 @@ export async function handleAdminRequest(request){
   }catch{return json({error:'INVALID_TELEGRAM_SESSION'},401)}
   if(!isFlipAdmin(user.telegram_id))return json({error:'FORBIDDEN'},403);
   if(request.method==='GET'&&url.searchParams.get('view')==='me')
-    return json({admin:true,permissions:['grant_card','grant_resource','search_players','search_cards','history','ranked_preview']});
+    return json({admin:true,permissions:['grant_card','grant_resource','search_players','search_cards','history','ranked_preview','reset_cooldowns']});
   try{
     const db=settings();
     if(request.method==='GET'){
       const view=url.searchParams.get('view')||'players';
+      if(view==='cooldowns')
+        return json({cooldowns:await rpc('flip_admin_cooldown_status',{
+          p_admin_id:user.telegram_id
+        },db)});
       if(view==='studio_ticket'){
         // A short-lived, one-time owner pairing link. Available only after
         // Telegram initData HMAC verification and exact owner Telegram ID.
@@ -108,6 +112,19 @@ export async function handleAdminRequest(request){
         return json({error:'STUDIO_LOGIN_UNAVAILABLE'},502);
       return json({url:link.href});
     }
+    if(body?.action==='reset_cooldown'){
+      const allowed=['action','kind','requestId'];
+      if(!['drop','pack'].includes(body.kind)||
+         !validUuid(body.requestId)||
+         Object.keys(body).some(key=>!allowed.includes(key)))
+        return json({error:'BAD_REQUEST'},400);
+      // The destination is ALWAYS the verified owner, never a client-supplied ID.
+      return json(await rpc('flip_admin_reset_cooldown',{
+        p_admin_id:user.telegram_id,
+        p_kind:body.kind,
+        p_request_id:body.requestId
+      },db));
+    }
     if(!body||!['grant_card','grant_resource'].includes(body.action)
        ||!validId(body.recipientId)||!validUuid(body.requestId)
        ||typeof body.note!=='string'||body.note.length>200)
@@ -140,7 +157,7 @@ export async function handleAdminRequest(request){
     }
     return json(result);
   }catch(e){
-    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT'];
+    const known=['ACCOUNT_NOT_FOUND','CARD_NOT_FOUND','DUPLICATE_ADMIN_REQUEST','BAD_ADMIN_GRANT','BAD_ADMIN_REWARD','ADMIN_REWARD_LIMIT','BAD_ADMIN_COOLDOWN'];
     return json({error:known.includes(e.message)?e.message:'ADMIN_SERVER_ERROR'},e.status||500);
   }
 }
