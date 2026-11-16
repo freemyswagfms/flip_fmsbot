@@ -1,0 +1,136 @@
+/* FLIP v0.9.3 — Achievement Archive */
+.flip-ach-page{padding-bottom:42px}
+.flip-ach-page>.eyebrow{display:block;margin-top:22px}
+.flip-ach-page h2{margin:9px 0 12px}
+.flip-ach-summary{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;
+ margin:14px 0 22px
+}
+.flip-ach-summary>div{
+ display:flex;flex-direction:column;justify-content:space-between;gap:10px;
+ background:#151e18;border:1px solid #364639;border-radius:13px;
+ padding:14px 10px 12px;min-height:88px
+}
+.flip-ach-summary span{font:800 9px 'Space Grotesk',sans-serif;letter-spacing:.7px;color:#899d8d}
+.flip-ach-summary strong{font:900 22px/1 'Space Grotesk',sans-serif;color:#c0ff6c}
+.flip-ach-summary i{font-size:11px;color:#8ba48e;font-style:normal}
+.flip-ach-section-heading{display:flex;align-items:center;justify-content:space-between;gap:9px;margin:19px 0 11px}
+.flip-ach-section-heading strong{font:900 11px 'Space Grotesk',sans-serif;letter-spacing:1px}
+.flip-ach-section-heading span{font:700 9px 'Space Grotesk',sans-serif;color:#748d7b}
+.flip-ach-badge-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.flip-ach-badge{
+ border:1px solid #4a6744;border-radius:11px;min-width:0;padding:10px 5px;
+ display:flex;align-items:center;flex-direction:column;gap:6px;
+ background:radial-gradient(circle at 50% -15%,#c8ff7223,transparent 70%),#131e16
+}
+.flip-ach-badge b{font:900 23px/1 'Space Grotesk',sans-serif;color:#d1ff9e;text-shadow:0 0 18px #c5fa734b}
+.flip-ach-badge small{
+ text-align:center;color:#d0e8ce;font:700 9px/1.3 'Manrope',sans-serif;
+ overflow-wrap:anywhere
+}
+.flip-ach-no-badges{padding:13px;border:1px dashed #394b3a;border-radius:11px;color:#899a8d;font:600 10px/1.6 'Manrope',sans-serif}
+.flip-ach-profile{background:linear-gradient(130deg,#182618,#121a15)}
+.flip-ach-profile-title{display:flex;justify-content:space-between;align-items:center}
+.flip-ach-profile-title h3{margin:0}
+.flip-ach-profile-title strong{color:#baff67;font:800 14px 'Space Grotesk',sans-serif}
+.flip-ach-profile .flip-ach-badge-row{margin:14px 0}
+.flip-ach-profile .flip-ach-no-badges{margin:12px 0}
+.flip-ach-profile .outlinebtn{width:100%;margin-top:9px}
+.flip-ach-filters{
+ display:flex;gap:7px;overflow:auto;scrollbar-width:none;
+ margin:23px -1px 15px;padding:1px 1px 4px
+}
+.flip-ach-filters::-webkit-scrollbar{display:none}
+.flip-ach-filters button{
+ flex-shrink:0;border:1px solid #405342;border-radius:22px;
+ background:#19241d;color:#a6b7a9;padding:9px 12px;
+ font:800 10px 'Space Grotesk',sans-serif
+}
+.flip-ach-filters button[aria-pressed="true"]{
+ background:#baff67;border-color:#baff67;color:#15220d
+}
+.flip-ach-list{display:flex;flex-direction:column;gap:12px}
+.flip-ach-card{
+ border:1px solid #314338;border-radius:15px;
+ background:linear-gradient(135deg,#172019,#101715);
+ padding:14px 13px;overflow:hidden
+}
+.flip-ach-card.is-ready{
+ border-color:#92c75a;box-shadow:inset 0 0 22px #baff670b,0 0 11px #baff6711
+}
+.flip-ach-card.is-completed{border-color:#49634a}
+.flip-ach-card.is-secret:not(.is-ready):not(.is-completed){
+ background:linear-gradient(125deg,#161b1b,#0d1315);border-color:#394747
+}
+.flip-ach-card-top{display:flex;gap:12px;align-items:flex-start}
+.flip-ach-symbol{
+ flex:none;display:grid;place-items:center;border-radius:11px;
+ height:44px;width:44px;border:1px solid #54714b;
+ background:#24351d;color:#baff67;
+ font:900 23px 'Space Grotesk',sans-serif
+}
+.flip-ach-card.is-secret .flip-ach-symbol{
+ background:#28292f;color:#d9c9df;border-color:#5a5261
+}
+.flip-ach-card-copy{flex:1;min-width:0}
+.flip-ach-micro{
+ color:#819a85;letter-spacing:.9px;
+ font:800 8px 'Space Grotesk',sans-serif
+}
+.flip-ach-card-copy h3{
+ margin:5px 0!important;color:#f1f8eb;
+ font:900 14px/1.2 'Golos Text',sans-serif!important
+}
+.flip-ach-card-copy p{
+ color:#96a99a!important;font:500 10px/1.55 'Manrope',sans-serif!important;
+ margin:0!important
+}
+.flip-ach-stages{display:flex;align-items:center;gap:5px;margin:13px 0 4px}
+.flip-ach-stages>span{
+ display:grid;place-items:center;flex:none;width:26px;height:26px;
+ background:#17231a;border:1px solid #3a4c3b;border-radius:7px;
+ color:#758b78;font:800 9px 'Space Grotesk',sans-serif
+}
+.flip-ach-stages>span.is-done{background:#baff67;color:#1a270f;border-color:#baff67}
+.flip-ach-stages>span.is-current{color:#c3ff82;border-color:#a1d86e}
+.flip-ach-stages small{margin-left:auto;font:800 8px 'Space Grotesk',sans-serif;color:#829786}
+.flip-ach-progress{margin-top:14px}
+.flip-ach-progress-track{height:5px;border-radius:12px;background:#344337;overflow:hidden}
+.flip-ach-progress-track i{
+ display:block;height:100%;width:0;background:linear-gradient(90deg,#82b957,#baff67);
+ border-radius:12px;transition:width .25s ease
+}
+.flip-ach-progress-meta{margin-top:7px;display:flex;justify-content:space-between;gap:9px}
+.flip-ach-progress-meta span{font:700 9px 'Space Grotesk',sans-serif;color:#9bb29d}
+.flip-ach-progress-meta b{color:#e4eee3;font:700 10px 'Space Grotesk',sans-serif}
+.flip-ach-card-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:16px}
+.flip-ach-badge-note,.flip-ach-meta{font:800 9px 'Space Grotesk',sans-serif;color:#89ae76}
+.flip-ach-reward{
+ color:#bbff6c;border:1px solid #42643b;background:#192b1c;
+ border-radius:8px;padding:9px 10px;white-space:nowrap;
+ font:800 10px 'Space Grotesk',sans-serif
+}
+.flip-ach-reward.is-claimed{background:#1d2c1c;color:#92d48b}
+.flip-ach-claim{
+ border:0;background:#baff67;color:#16240b;border-radius:9px;
+ font:900 10px 'Space Grotesk',sans-serif;padding:10px 12px;
+ white-space:nowrap;cursor:pointer
+}
+.flip-ach-claim:disabled{opacity:.6}
+.flip-ach-footer{color:#829586;font:500 10px/1.55 'Manrope',sans-serif;margin:25px 0}
+.flip-ach-empty,.flip-ach-offline{
+ border:1px dashed #405043;border-radius:14px;padding:25px 15px;
+ font:600 11px/1.6 'Manrope',sans-serif;text-align:center;color:#9aaca0
+}
+@media(max-width:360px){
+ .flip-ach-summary{gap:6px}
+ .flip-ach-summary>div{padding:13px 8px}
+ .flip-ach-card{padding:12px 10px}
+ .flip-ach-card-top{gap:9px}
+ .flip-ach-symbol{height:39px;width:39px}
+ .flip-ach-stages>span{width:23px;height:23px}
+ .flip-ach-claim{padding:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ .flip-ach-progress-track i{transition:none}
+}
