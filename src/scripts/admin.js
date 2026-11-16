@@ -318,37 +318,88 @@
       draw();
     }
   }
+  async function loadTargetModes(target){
+    if(s.busy||s.targetBusy||!/^[1-9]\d{0,15}$/.test(target))return;
+    if(target===selfId()){
+      s.modeTarget=target;s.targetMessage='';s.cooldownMessage='';draw();return;
+    }
+    s.targetBusy=true;s.targetMessage='';s.targetError=false;
+    s.modeTarget=target;s.targetCooldowns=null;s.targetLogs=[];
+    draw();
+    try{
+      const result=await call('player_modes');
+      if(s.modeTarget!==target)return;
+      s.targetCooldowns=result.player?.cooldowns||null;
+      s.targetLabel=result.player?.name||'Игрок ID '+target;
+      s.targetLogs=result.player?.history||[];
+      s.targetMessage='Настройки игрока загружены.';
+    }catch(e){
+      if(s.modeTarget!==target)return;
+      s.targetError=true;s.targetMessage='Ошибка загрузки режимов: '+e.message;
+    }finally{s.targetBusy=false;draw();}
+  }
   async function setUnlimited(kind){
-    if(s.cooldownBusy||s.busy||!['drop','pack'].includes(kind)||!s.cooldowns)return;
-    const old=kind==='drop'?s.cooldowns.drop_unlimited===true:
-      s.cooldowns.pack_unlimited===true;
+    const target=s.modeTarget||selfId();
+    const own=target===selfId();
+    const cd=own?s.cooldowns:s.targetCooldowns;
+    if(s.cooldownBusy||s.busy||!['drop','pack'].includes(kind)||!cd)return;
+    const old=kind==='drop'?cd.drop_unlimited===true:cd.pack_unlimited===true;
     const enabled=!old;
     const subject=kind==='drop'?'КД бесплатного дропа':'дневной лимит наборов';
+    const person=own?'своего аккаунта':(s.targetLabel||'игрока ID '+target);
     if(!window.confirm((enabled?'Убрать ':'Вернуть ')+subject+
-      ' для своего аккаунта? Режим сохранится до следующего переключения.'))return;
+      ' для '+person+'? Режим сохранится до следующего переключения.'))return;
     const retry=s.cooldownRetry;
-    const id=retry?.kind===kind&&retry?.enabled===enabled?
+    const id=retry?.kind===kind&&retry?.enabled===enabled&&retry?.target===target?
       retry.id:crypto.randomUUID();
-    s.cooldownRetry={kind,enabled,id};
+    s.cooldownRetry={kind,enabled,id,target};
     s.cooldownBusy=true;s.cooldownMessage='';s.cooldownError=false;draw();
     try{
-      const result=await call('',{action:'set_unlimited',kind,enabled,requestId:id});
+      const payload=own?
+        {action:'set_unlimited',kind,enabled,requestId:id}:
+        {action:'set_player_unlimited',recipientId:target,kind,enabled,requestId:id};
+      const result=await call('',payload);
       s.cooldownRetry=null;
-      s.cooldowns=result.cooldowns||s.cooldowns;
+      if(own){s.cooldowns=result.cooldowns||s.cooldowns;}
+      else{
+        s.targetCooldowns=result.status?.cooldowns||s.targetCooldowns;
+        s.targetLogs=result.status?.history||s.targetLogs;
+        s.targetLabel=result.status?.name||s.targetLabel;
+      }
       s.cooldownMessage=kind==='drop'?
-        (enabled?'Режим без КД включён. Дроп доступен без ожидания.':
-                 'Обычный КД бесплатного дропа восстановлен.'):
-        (enabled?'Дневной лимит наборов отключён. Цена: 200 F за набор.':
-                 'Дневной лимит 10 наборов восстановлен.');
+        (enabled?'Бесплатный дроп без ожидания включён.':'Обычный КД дропа восстановлен.'):
+        (enabled?'Дневной лимит наборов отключён. Стоимость F сохраняется.':
+                 'Лимит 10 наборов в день восстановлен.');
       s.cooldownError=false;
-      window.dispatchEvent(new Event('flip-admin-self-changed'));
+      if(own)window.dispatchEvent(new Event('flip-admin-self-changed'));
     }catch(error){
       s.cooldownError=true;
       s.cooldownMessage='Не удалось изменить режим: '+error.message+
         '. Повтори нажатие, чтобы проверить тот же запрос.';
-    }finally{
-      s.cooldownBusy=false;draw();
+    }finally{s.cooldownBusy=false;draw();}
+  }
+  function editBasket(id,delta){
+    if(s.busy||typeof id!=='string')return;
+    const item=s.basket.find(x=>x.id===id);
+    const total=basketCount();
+    if(delta>0&&total>=20){
+      s.error=true;s.message='В одной выдаче максимум 20 карточек.';draw();return;
     }
+    if(delta>0){
+      if(item){item.quantity++;}
+      else{
+        const found=s.cards.find(x=>x.id===id);
+        if(!found)return;
+        s.basket.push({id:found.id,quantity:1,label:found.label,
+          artist:found.artist,release:found.release,rarity:found.rarity});
+      }
+    }else if(item){
+      if(delta===-999||item.quantity<=1)
+        s.basket=s.basket.filter(x=>x.id!==id);
+      else item.quantity--;
+    }
+    s.error=false;s.message='';
+    updateCardResults();
   }
   async function click(e){
     const b=e.target.closest('button');if(!b||!root.contains(b))return;
