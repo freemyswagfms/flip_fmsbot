@@ -291,25 +291,29 @@ function rowTrade(t){
   const takeF=Number(mine?t.want_f:t.offer_f)||0;
   const statusNames={pending:'ОЖИДАЕТ',accepted:'ПРИНЯТ',declined:'ОТКЛОНЁН',
     cancelled:'ОТМЕНЁН',expired:'ИСТЁК',countered:'ВСТРЕЧНОЕ'};
-  const itemList=(items,f)=>{
-    const content=[...items.map(id=>'<li>'+E(card(id).title)+'</li>')];
-    if(f>0)content.push('<li class="flip-trade-money">'+fmt(f)+' F</li>');
-    return '<ul class="flip-trade-offer-list">'+content.join('')+'</ul>';
-  };
   const profileId=typeof t.partner_public_id==='string'&&
-    /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(t.partner_public_id)?
+    /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(t.partner_public_id)?
       t.partner_public_id:null;
-  return '<div class="flip-trade-offer '+(freshIncoming.has(t.id)?'is-fresh':'')+'"><div class="flip-social-heading">'+
+  const offerSide=(ids,f,label)=>'<div class="flip-trade-offer-side">'+
+    '<div class="flip-trade-side-top"><small>'+label+'</small>'+
+    '<b>'+(ids.length?ids.length+' КАРТ.':'')+(ids.length&&f>0?' + ':'')+
+      (f>0?fmt(f)+' F':'')+(!ids.length&&!f?'—':'')+'</b></div>'+
+    '<div class="flip-trade-offer-strip">'+ids.map(id=>previewCard(id,'offer')).join('')+
+    (f>0?'<span class="flip-trade-currency-token"><b>'+fmt(f)+'</b><span>F</span></span>':'')+
+    (!ids.length&&!f?'<span class="flip-trade-summary-empty">—</span>':'')+'</div></div>';
+  return '<article class="flip-trade-offer '+(freshIncoming.has(t.id)?'is-fresh':'')+'">'+
+    '<div class="flip-social-heading flip-trade-offer-heading">'+
     '<div class="flip-trade-partner"><strong>'+E(partner)+'</strong>'+
     (currency?'<small class="flip-trade-kind">КАРТОЧКИ ↔ F</small>':'')+
     (profileId?'<button type="button" class="flip-trade-profile-link" data-player-profile="'+
       E(profileId)+'">ПРОФИЛЬ ↗</button>':'')+'</div>'+
     '<span class="flip-trade-status '+E(t.status)+'">'+E(statusNames[t.status]||t.status)+'</span></div>'+
-    '<div class="flip-trade-cards"><div><small>ТЫ ОТДАЁШЬ</small>'+itemList(give,giveF)+'</div>'+
-    '<div><small>ТЫ ПОЛУЧАЕШЬ</small>'+itemList(take,takeF)+'</div></div>'+
-    '<small class="flip-social-muted">'+
+    '<div class="flip-trade-cards">'+offerSide(give,giveF,'ОТДАЁШЬ')+
+      '<span class="flip-trade-offer-transfer" aria-hidden="true">⇄</span>'+
+      offerSide(take,takeF,'ПОЛУЧАЕШЬ')+'</div>'+
+    '<div class="flip-trade-offer-footer"><small>'+
     E(new Date(t.created_at).toLocaleDateString('ru-RU'))+' · №'+E(t.id.slice(0,8))+
-    (t.parent_trade_id?' · ВСТРЕЧНОЕ':'')+'</small>'+
+    (t.parent_trade_id?' · ВСТРЕЧНОЕ':'')+'</small></div>'+
     (t.status==='pending'?'<div class="flip-trade-actions">'+
       '<button type="button" class="outlinebtn" data-trade-inspect="'+E(t.id)+'">ПРОВЕРИТЬ УСЛОВИЯ</button>'+
       (mine?'<button type="button" class="outlinebtn" data-trade-verb="cancel" data-trade-id="'+E(t.id)+'">ОТМЕНИТЬ</button>':
@@ -317,21 +321,23 @@ function rowTrade(t){
        (currency?'':'<button type="button" class="outlinebtn" data-trade-counter="'+E(t.id)+'">ВСТРЕЧНОЕ</button>')+
        '<button type="button" class="bigbtn" data-trade-verb="accept" data-trade-id="'+E(t.id)+'">ПРИНЯТЬ</button>')+
     '</div>':'')+
-    (s.inspectId===t.id&&s.inspection?'<div class="flip-social-preview">'+
+    (s.inspectId===t.id&&s.inspection?'<div class="flip-social-preview flip-trade-inspection">'+
       '<div><small>ТВОЙ CP</small><strong>'+signed(mine?s.inspection.sender_delta:s.inspection.recipient_delta)+'</strong></div>'+
       '<div><small>CP ПАРТНЁРА</small><strong>'+signed(mine?s.inspection.recipient_delta:s.inspection.sender_delta)+'</strong></div></div>'+
       (s.inspection.available?'':'<p class="flip-social-error">Недостаточно доступных карточек/F или предложение уже закрыто.</p>'):'')+
-    '</div>';
+    '</article>';
 }
 function giftHistory(){
   const list=s.gifts||[];
   if(!list.length)return '';
-  return '<section class="flip-social-panel"><h3>ПОДАРКИ · ПОСЛЕДНИЕ '+list.length+'</h3>'+
-    list.slice(0,20).map(g=>'<div class="flip-trade-gift-row"><span class="flip-trade-gift-icon">'+
-      (g.mine?'↗':'↙')+'</span><div><strong>'+
-      E(g.mine?'ТЫ ПОДАРИЛ':'ТЕБЕ ПОДАРИЛИ')+'</strong><p>'+
-      E(card(g.card_id).title)+'</p><small>'+E(g.partner_label)+
-      ' · '+E(new Date(g.created_at).toLocaleDateString('ru-RU'))+'</small></div></div>').join('')+
+  return '<section class="flip-social-panel flip-trade-feed-panel"><div class="flip-trade-feed-head">'+
+    '<h3>ПОДАРКИ</h3><span>'+list.length+'</span></div>'+
+    list.slice(0,20).map(g=>'<div class="flip-trade-gift-row">'+
+      '<span class="flip-trade-gift-icon">'+(g.mine?'↗':'↙')+'</span>'+
+      previewCard(g.card_id,'gift')+
+      '<div><strong>'+E(g.mine?'ОТПРАВЛЕНО':'ПОЛУЧЕНО')+'</strong>'+
+      '<small>'+E(g.partner_label)+' · '+
+      E(new Date(g.created_at).toLocaleDateString('ru-RU'))+'</small></div></div>').join('')+
   '</section>';
 }
 function section(title,items){
