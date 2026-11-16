@@ -142,7 +142,7 @@ function layout(content){
   '<div class="wordmark">FLIP<span>.</span></div><span class="brand-sub">STUDIO / CONTENT OS</span>'+
   '</div><div class="side-label">WORKSPACE</div><nav class="nav-links">'+buttons+'</nav>'+
   '<div class="side-bottom"><div class="side-status"><span class="online-dot"></span> WORKSPACE CONNECTED</div>'+
-  '<small>FLIP STUDIO 0.9.0<br>Редакционный контент и публикации</small></div></aside>'+
+  '<small>FLIP STUDIO 0.9.8.4<br>Редакционный контент и публикации</small></div></aside>'+
   '<div class="main"><header class="topbar"><div class="crumbs"><span>STUDIO</span> / <b>'+
   esc(item?.[2]||'Обзор')+'</b></div><div class="top-right"><span class="role-pill">'+role.toUpperCase()+
   '</span><div class="avatar">'+esc((s.user.email||'F').slice(0,1).toUpperCase())+
