@@ -140,7 +140,7 @@
       '</details>';
    }).join('')+'</div>';
  }
- function page({shop,state,live=false,demo=false,busy=false,tab='packs',loading=false,error='' }={}){
+ function page({shop,cosmetics,profile,cosmeticPreview,state,live=false,demo=false,busy=false,tab='packs',loading=false,error='' }={}){
   const packs=Array.isArray(shop?.packs)?shop.packs: packsFallback();
   const byId=id=>packs.find(x=>x.id===id)||packsFallback().find(x=>x.id===id);
   const used=Math.max(0,Number(shop?.packs_today??state?.packsToday)||0);
@@ -159,8 +159,11 @@
     '<div class="flip-shop-tabs"><button type="button" data-shop-tab="packs" '+
       (tab==='packs'?'aria-current="page"':'')+'>НАБОРЫ</button>'+
       '<button type="button" data-shop-tab="history" '+
-      (tab==='history'?'aria-current="page"':'')+'>ИСТОРИЯ</button></div>'+
-    (tab==='history'?
+      (tab==='history'?'aria-current="page"':'')+'>ИСТОРИЯ</button>'+
+      '<button type="button" data-shop-tab="cosmetics" '+
+      (tab==='cosmetics'?'aria-current="page"':'')+'>КОСМЕТИКА</button></div>'+
+    (tab==='cosmetics'?(window.FLIPProfileCosmetics?.shop({shop:cosmetics,profile,online:live,busy,previewId:cosmeticPreview})||''):
+     tab==='history'?
       '<section class="flip-shop-history"><h3>ТВОИ ПОКУПКИ<span>.</span></h3>'+
       
       (!live?'<div class="flip-shop-history-empty">История доступна после входа через Telegram.</div>':
