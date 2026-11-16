@@ -125,3 +125,15 @@
 .flip-trade-gift-row p{margin:4px 0!important;color:#d3e5d0!important;overflow-wrap:anywhere}
 .flip-trade-gift-row small{font:600 9px 'Manrope',sans-serif;color:#91a891}
 @media(max-width:355px){.flip-trade-modes button{font-size:8px}}
+
+/* v0.9.8.3 — optional terms with accessible native disclosure. */
+.flip-trade-rules{margin:14px 0 3px;border-top:1px solid #344736;padding:11px 0 0;color:#b8cbb6}
+.flip-trade-rules summary{cursor:pointer;list-style:none;font:800 10px 'Space Grotesk',sans-serif;letter-spacing:.5px}
+.flip-trade-rules summary::after{content:'⌄';margin-left:9px;color:#baff67}
+.flip-trade-rules[open] summary::after{content:'⌃'}
+.flip-trade-rules p{font:500 11px/1.6 'Manrope',sans-serif;color:#a4b9a7;margin:9px 0 2px}
+.flip-cp-rules{padding:15px}
+.flip-cp-rules summary{list-style:none;cursor:pointer;font:900 12px 'Space Grotesk',sans-serif;color:#d9efda}
+.flip-cp-rules summary::after{content:'⌄';color:#baff67;float:right}
+.flip-cp-rules[open] summary::after{content:'⌃'}
+.flip-cp-rules p{margin:12px 0 0!important;color:#b7c7b7;font:500 11px/1.55 'Manrope',sans-serif}
