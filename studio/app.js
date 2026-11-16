@@ -1,8 +1,9 @@
 import './styles.css';
 import {createClient} from '@supabase/supabase-js';
 import {playerListPage,playerDetailPage,playerRows} from './player-desk.js';
+import {captureStudioPosition,restoreStudioPosition} from './scroll-context.js';
 
-/* FLIP STUDIO v0.9.1 — creative workspace. All privileged writes use RLS or
+/* FLIP STUDIO v0.9.8.6 — creative workspace. All privileged writes use RLS or
    authenticated server functions; no secret/service-role keys in this bundle. */
 const $=selector=>document.querySelector(selector);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -142,7 +143,7 @@ function layout(content){
   '<div class="wordmark">FLIP<span>.</span></div><span class="brand-sub">STUDIO / CONTENT OS</span>'+
   '</div><div class="side-label">WORKSPACE</div><nav class="nav-links">'+buttons+'</nav>'+
   '<div class="side-bottom"><div class="side-status"><span class="online-dot"></span> WORKSPACE CONNECTED</div>'+
-  '<small>FLIP STUDIO 0.9.8.4<br>Редакционный контент и публикации</small></div></aside>'+
+  '<small>FLIP STUDIO 0.9.8.6<br>Редакционный контент и публикации</small></div></aside>'+
   '<div class="main"><header class="topbar"><div class="crumbs"><span>STUDIO</span> / <b>'+
   esc(item?.[2]||'Обзор')+'</b></div><div class="top-right"><span class="role-pill">'+role.toUpperCase()+
   '</span><div class="avatar">'+esc((s.user.email||'F').slice(0,1).toUpperCase())+
@@ -251,7 +252,7 @@ function importer(){
    '<div style="display:flex;gap:8px">'+
    '<button class="button sm ghost" data-action="import-all">Выбрать все</button>'+
    '<button class="button sm ghost" data-action="import-clear">Снять выбор</button></div></div>'+
-   '<div class="importer-card" style="max-height:430px;overflow:auto">'+
+   '<div class="importer-card" data-studio-scroll-key="import-releases" style="max-height:430px;overflow:auto">'+
    s.importReleases.map(item=>'<label class="check-row"><input type="checkbox" data-import-id="'+
    esc(item.id)+'" '+(s.importSelected.has(item.id)?'checked':'')+'>'+
    '<span style="flex:1;min-width:0"><strong>'+esc(item.title)+'</strong><small>'+
@@ -640,15 +641,45 @@ function activity(){
  '<div class="empty">'+ico('history')+'<strong>История пока пустая</strong>'+
  '<p>Опубликованные релизы и приглашения будут здесь.</p></div>')+'</div></section>';
 }
-function render(){
- if(!s.user){authScreen();return;}
- if(!s.member){awaitingAccess();return;}
+// Preserve position for same-page edits and explicit Back, but not new navigation.
+const studioScrollPositions=new Map();
+let renderedViewKey=null;
+function scrollViewKey(){
+ if(s.current==='import')return 'import:'+String(s.importArtist?.id||'search');
+ if(s.current==='players')return 'players:'+(s.selectedPlayer?'detail:'+s.selectedPlayer:'list');
+ // Selecting another release inside the editor shouldn't scroll to the top.
+ if(s.current==='editor')return 'editor:'+s.editorMode;
+ if(s.current==='releases')return 'releases:'+(s.artistFilter||'all');
+ return s.current;
+}
+function render({restore=false,reset=false}={}){
+ if(!s.user){renderedViewKey=null;studioScrollPositions.clear();authScreen();return;}
+ if(!s.member){renderedViewKey=null;studioScrollPositions.clear();awaitingAccess();return;}
+ const existing=app.querySelector?.('.shell');
+ const old=renderedViewKey&&existing?captureStudioPosition(existing,window,document):null;
+ if(old)studioScrollPositions.set(renderedViewKey,old);
+ const nextKey=scrollViewKey();
+ const snapshot=!reset?(nextKey===renderedViewKey?old:
+   restore?studioScrollPositions.get(nextKey):null):null;
  const pages={dashboard,artists:artistGrid,releases:releaseGrid,import:importer,editor,
   tasks:taskEditor,team,players:playersPage,activity};
- app.innerHTML=layout((pages[s.current]||dashboard)());
+ const content=(pages[s.current]||dashboard)();
+ const editorBack=s.current==='editor'?
+  '<div class="studio-editor-return"><button class="button sm ghost" type="button" '+
+  'data-action="editor-back">'+ico('chevron-left')+' Вернуться к релизам</button></div>':'';
+ app.innerHTML=layout(editorBack+content);
+ renderedViewKey=nextKey;
+ if(snapshot){
+  // Avoid replaying the page-entry transform animation on every checkbox click.
+  app.querySelector?.('.canvas')?.classList?.remove('view-enter');
+  restoreStudioPosition(app.querySelector('.shell'),snapshot,window);
+ }else if(existing){
+  try{window.scrollTo({top:0,left:0,behavior:'instant'})}catch{window.scrollTo(0,0)}
+ }
  if(s.current==='editor'&&s.editorMode==='draft')populateThumbnails();
  if(s.current==='team')refreshTeam();
 }
+
 function authScreen(message=''){
  app.innerHTML='<div class="auth-layout"><div class="auth-left">'+
   '<div class="wordmark">FLIP<span>.</span><span class="brand-sub">STUDIO / CONTENT OPERATIONS</span></div>'+
@@ -819,16 +850,17 @@ async function claimOwner(){
   await refreshIdentity();
  }catch(e){notice(formatError(e),true)}
 }
-function go(page){
+function go(page,{restore=false,keepFilters=false}={}){
  if(!nav.some(x=>x[0]===page))return;
  if(['team','tasks','players'].includes(page)&&s.member?.role!=='owner')return;
- if(page==='releases')s.artistFilter=null;
- s.q='';s.filter='all';s.current=page;
-  if(page==='tasks')loadTaskSlots();
+ if(page==='releases'&&!restore)s.artistFilter=null;
+ if(!keepFilters){s.q='';s.filter='all'}
+ s.current=page;
+ if(page==='tasks')loadTaskSlots();
  if(page==='players'&&!s.playerListLoaded&&!s.selectedPlayer)loadPlayers();
- render();
- window.scrollTo({top:0,behavior:'instant'});
+ render({restore,reset:!restore});
 }
+
 function modal(title,body,footer=''){
  const old=$('#studio-modal');if(old)old.remove();
  const node=document.createElement('div');node.id='studio-modal';node.className='crop-overlay';
@@ -1447,7 +1479,7 @@ document.addEventListener('click',async event=>{
    s.selectedRelease=release.dataset.editRelease;
    s.editorMode='draft';
   }
-  go('editor');return;
+  go('editor',{keepFilters:true});return;
  }
  const pasteSlot=event.target.closest('[data-paste-rarity]');
  if(pasteSlot){setClipboardTarget(pasteSlot.dataset.pasteRarity);return;}
@@ -1468,6 +1500,7 @@ document.addEventListener('click',async event=>{
   case 'claim-owner':await claimOwner();break;
   case 'access-refresh':try{await refreshIdentity();notice('Права обновлены.')}catch(e){notice(formatError(e),true)}break;
   case 'logout':await s.db?.auth.signOut();s.user=null;s.member=null;render();break;
+  case 'editor-back':go('releases',{restore:true,keepFilters:true});break;
   case 'reset-artist-filter':s.artistFilter=null;s.q='';render();break;
   case 'editor-drafts':s.editorMode='draft';render();break;
   case 'editor-published':s.editorMode='published';render();break;
@@ -1477,7 +1510,7 @@ document.addEventListener('click',async event=>{
   case 'create-release-save':await createRelease();break;
   case 'modal-close':closeModal();break;
   case 'import-find':await findArtists();break;
-  case 'import-reset':s.importArtist=null;s.importReleases=[];s.importSelected.clear();render();break;
+  case 'import-reset':s.importArtist=null;s.importReleases=[];s.importSelected.clear();render({restore:true});break;
   case 'import-all':s.importSelected=new Set(s.importReleases.map(x=>x.id));render();break;
   case 'import-clear':s.importSelected.clear();render();break;
   case 'import-more':await fetchReleases(true);break;
@@ -1506,7 +1539,7 @@ document.addEventListener('click',async event=>{
   case 'players-back':
    if(s.member?.role!=='owner')break;
    s.selectedPlayer=null;s.playerDetail=null;s.playerCardsOffset=0;
-   render();if(!s.playerListLoaded)await loadPlayers();break;
+   render({restore:true});if(!s.playerListLoaded)await loadPlayers();break;
   case 'player-refresh':
    if(s.member?.role==='owner'){s.playerDetail=null;render();await loadPlayerDetail()}break;
   case 'player-cards-prev':case 'player-cards-next':

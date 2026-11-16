@@ -228,3 +228,8 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{
  .player-pager{font-size:11px}
  .player-owner-head h2{font-size:18px}
 }
+
+/* STUDIO v0.9.8.6 — quick return from the editor to the original release list. */
+.studio-editor-return{display:flex;align-items:center;margin:0 0 15px}
+.studio-editor-return .button{min-height:38px}
+@media(max-width:700px){.studio-editor-return{margin-bottom:17px}}
