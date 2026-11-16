@@ -25,23 +25,23 @@ grant select,insert,update on public.flip_user_events to service_role;
 
 create or replace function public.flip_event_on_trade()
 returns trigger language plpgsql security invoker set search_path = '' as $trade$
-declare kind text;
+declare v_kind text;
 begin
   if tg_op='INSERT' then
     if new.status='pending' then
-      kind:=case when new.parent_trade_id is null
+      v_kind:=case when new.parent_trade_id is null
         then 'trade_offer' else 'trade_counteroffer' end;
       insert into public.flip_user_events
         (telegram_id,event_key,kind,actor_id,trade_id,is_notification,created_at)
-      values(new.recipient_id,'trade:'||new.id::text||':'||kind||':'||
-        new.recipient_id::text,kind,new.sender_id,new.id,true,new.created_at)
+      values(new.recipient_id,'trade:'||new.id::text||':'||v_kind||':'||
+        new.recipient_id::text,v_kind,new.sender_id,new.id,true,new.created_at)
       on conflict(event_key) do nothing;
     end if;
   else
     if new.status is distinct from old.status then
       -- An old pending offer is no longer actionable.
-      update public.flip_user_events set read_at=coalesce(read_at,now())
-      where trade_id=new.id and kind in ('trade_offer','trade_counteroffer');
+      update public.flip_user_events e set read_at=coalesce(e.read_at,now())
+      where e.trade_id=new.id and e.kind in ('trade_offer','trade_counteroffer');
 
       if new.status='accepted' then
         insert into public.flip_user_events
