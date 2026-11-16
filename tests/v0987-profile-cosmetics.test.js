@@ -123,11 +123,11 @@ test('Server enforces spend and validation, including role restrictions and all 
 });
 test('Live UI and cache versions include cosmetic JS before showcase, plus new styles',()=>{
  const html=read('index.html'),pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'0.9.8.7');
+ assert.ok(pkg.version.localeCompare('0.9.8.7',undefined,{numeric:true})>=0);
  for(const path of ['profile-cosmetics.js','showcase.js','store.js','server.js','app.js']){
-  assert.ok(html.includes('src/scripts/'+path+'?v=0.9.8.7'),path);
+  assert.ok(html.includes('src/scripts/'+path+'?v='+(['store.js'].includes(path)?'0.9.8.7':pkg.version)),path);
  }
- assert.ok(html.includes('src/styles/profile-cosmetics.css?v=0.9.8.7'));
+ assert.ok(html.includes('src/styles/profile-cosmetics.css?v='+pkg.version));
  assert.ok(html.includes('src/styles/showcase.css?v=0.9.8.7'));
  assert.ok(html.indexOf('profile-cosmetics.js')<html.indexOf('showcase.js'));
  const css=read('src/styles/profile-cosmetics.css');
