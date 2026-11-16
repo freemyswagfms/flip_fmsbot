@@ -86,7 +86,7 @@
     '<div class="flip-profile-featured-badge"><b>'+esc(b.symbol||'✦')+'</b>'+
     '<span>'+esc(b.title)+'</span></div>').join('')+'</div></section>';
  }
- function shop({shop,profile,online=false,busy=false,previewId=null}={}){
+ function shop({shop,profile,player,online=false,busy=false,previewId=null}={}){
   const items=(Array.isArray(shop?.items)?shop.items:[]).filter(item=>safe(item.kind,item.id));
   const owned=new Set(Array.isArray(shop?.owned)?shop.owned:[]);
   const equipped=profile?.appearance||{};
@@ -113,21 +113,35 @@
    }).join('')+'</div></section>';
   }).join('');
   const trial=items.find(i=>i.id===previewId)||null;
-  const balance=shop?.balance??0;
+  const balance=shop?.balance??player?.balance??0;
+  const displayName=player?.telegramName||profile?.first_name||'FLIP PLAYER';
+  const rawAvatar=player?.telegramAvatarUrl;
+  const photo=typeof rawAvatar==='string'&&/^https:\/\/[^"'<> ]+$/.test(rawAvatar)?
+    '<img src="'+esc(rawAvatar)+'" alt="" decoding="async" referrerpolicy="no-referrer">':'F';
+  const currentTitle=trial?.kind==='title'?trial.id:profile?.appearance?.title;
+  const title=safe('title',currentTitle)?cosmeticNames[currentTitle]:'';
+  const slots=Array.isArray(profile?.slots)?profile.slots.slice(0,3):[];
+  const thumbs=slots.map(slot=>{
+    const parts=String(slot.card_id||'').split('/');
+    const data=parts.length===3?window.FLIPCatalog?.getCard(...parts):null;
+    return data?.art?'<span><img src="'+esc(data.art)+'" alt="" loading="lazy"></span>':
+      '<span class="flip-cosmetic-mini-empty">+</span>';
+  }).join('');
   return '<div class="flip-cosmetic-store">'+
    '<section class="flip-cosmetic-hero '+esc(classes(profile,trial))+'">'+
     '<div class="flip-cosmetic-hero-head"><span>FLIP / IDENTITY</span>'+
     '<span>COLLECT YOUR LOOK</span></div>'+
-    '<div class="flip-cosmetic-hero-preview"><span class="flip-cosmetic-preview-avatar">F<span>.</span></span>'+
-    '<div><small>ПРИМЕРКА</small><strong>'+esc(trial?.name||'ТВОЙ СТИЛЬ')+'</strong>'+
-    '<span>'+fmt(balance)+' F НА БАЛАНСЕ</span></div></div>'+
+    '<div class="flip-cosmetic-hero-preview"><span class="flip-cosmetic-preview-avatar">'+photo+'</span>'+
+    '<div><small>ПРИМЕРКА НА ПРОФИЛЕ</small><strong>'+esc(displayName)+'</strong>'+
+    '<span>'+esc(title||trial?.name||'ТВОЙ СТИЛЬ')+'</span></div></div>'+
+    '<div class="flip-cosmetic-mini-showcase">'+thumbs+'</div>'+
     '<div class="flip-cosmetic-hero-bottom"><span>12 ОБЪЕКТОВ · 4 КАТЕГОРИИ</span>'+
     (trial?'<button type="button" data-cosmetic-clear-preview>СБРОСИТЬ ПРИМЕРКУ ✕</button>':'')+
     '</div></section>'+
     '<section class="flip-cosmetic-slot-panel"><div class="flip-cosmetic-slot-icon">▦</div>'+
     '<div class="flip-cosmetic-slot-copy"><strong>РАСШИРЬ ВИТРИНУ</strong>'+
     '<small>'+Math.max(3,Number(shop?.slot_count)||3)+' / 6 МЕСТ ОТКРЫТО</small></div>'+
-    (Number(shop?.slot_count)<6?'<button data-cosmetic-buy-slot type="button" '+
+    (Math.min(6,Math.max(3,Number(shop?.slot_count)||3))<6?'<button data-cosmetic-buy-slot type="button" '+
       (!online||busy?'disabled':'')+'>'+fmt(shop?.next_slot_price)+' F ↗</button>':
       '<span class="flip-cosmetic-slot-max">МАКСИМУМ ✓</span>')+'</section>'+
     groups+'</div>';
