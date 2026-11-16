@@ -84,3 +84,10 @@
 .flip-trade-status.countered{background:#24354d;color:#9fc9ff}
 .flip-trade-actions .outlinebtn{flex:0 1 auto}
 #flip-trade-compose{scroll-margin-top:14px}
+
+/* FLIP v0.9.6 — tap through to the partner's public profile. */
+.flip-trade-partner{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0;flex:1}
+.flip-trade-partner strong{overflow-wrap:anywhere;max-width:100%}
+.flip-trade-profile-link{padding:3px 0;border:0;background:transparent;color:#baff67;
+ font:900 9px 'Space Grotesk',sans-serif;letter-spacing:.5px}
+.flip-trade-profile-link:focus-visible{outline:2px solid #baff67;outline-offset:3px}

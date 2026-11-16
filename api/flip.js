@@ -87,7 +87,7 @@ export async function handleRequest(request,env=undefined){
   if (!['GET','POST'].includes(request.method)) return json({error:'METHOD_NOT_ALLOWED'},405);
   const configured=!!(process.env.TELEGRAM_BOT_TOKEN&&process.env.SUPABASE_URL&&process.env.SUPABASE_SECRET_KEY);
   if(request.method==='GET' && u.searchParams.get('health')==='1')
-    return json({service:'FLIP',version:'0.9.5',configured});
+    return json({service:'FLIP',version:'0.9.6',configured});
   if(!configured)return json({error:'SERVER_NOT_CONFIGURED'},503);
   try{
     const raw=request.headers.get('x-telegram-init-data');
@@ -97,6 +97,10 @@ export async function handleRequest(request,env=undefined){
     if(request.method==='GET' && u.searchParams.get('probe')==='1'){
       await rpc('flip_snapshot',{p_telegram_id:user.telegram_id},db);
       return json({ok:true});
+    }
+    if(request.method==='GET' && u.searchParams.get('hub')==='1'){
+      // Owner-only notification/activity feed (never accept an account ID).
+      return json(await rpc('flip_event_snapshot',{p_telegram_id:user.telegram_id},db));
     }
     if(request.method==='GET' && u.searchParams.get('store')==='1'){
       // Server-derived pack prices and private purchase history. Identity
@@ -110,7 +114,10 @@ export async function handleRequest(request,env=undefined){
       const publicId=u.searchParams.get('profile');
       if(!/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(publicId||''))
         return json({error:'BAD_REQUEST'},400);
-      const profile=await rpc('flip_public_profile',{p_public_id:publicId},db);
+      const [profile,stats]=await Promise.all([
+        rpc('flip_public_profile',{p_public_id:publicId},db),
+        rpc('flip_public_profile_stats',{p_public_id:publicId},db)
+      ]);
       let avatar_data=null;
       try{
         // Resolving a numeric Telegram ID is permitted only in this trusted
@@ -125,7 +132,7 @@ export async function handleRequest(request,env=undefined){
       }catch{
         // A private or unavailable photo is not a profile loading error.
       }
-      return json({...profile,avatar_data});
+      return json({...profile,avatar_data,stats});
     }
     if(request.method==='GET' && u.searchParams.get('achievements')==='1'){
       return json(await rpc('flip_achievement_snapshot',{p_telegram_id:user.telegram_id},db));
@@ -157,10 +164,22 @@ export async function handleRequest(request,env=undefined){
     const rawBody=await request.text();
     if(rawBody.length>MAX_BODY_LENGTH) return json({error:'BAD_REQUEST'},400);
     let body; try{body=JSON.parse(rawBody)}catch{return json({error:'BAD_REQUEST'},400)}
-    if(!body || !['drop','pack','theme_pack','claim_task','reroll_task','claim_streak','claim_achievement','set_showcase'].includes(body.action) ||
+    if(!body || !['drop','pack','theme_pack','claim_task','reroll_task','claim_streak','claim_achievement','set_showcase','mark_events_read'].includes(body.action) ||
       typeof body.requestId!=='string' ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.requestId))
       return json({error:'BAD_REQUEST'},400);
+    if(body.action==='mark_events_read'){
+      const fields=Object.keys(body);
+      const all=body.all===true;
+      const itemId=body.eventId;
+      if(fields.some(key=>!['action','requestId','all','eventId'].includes(key))||
+         (all && itemId!=null)||
+         (!all && (!Number.isSafeInteger(itemId)||itemId<=0)))
+        return json({error:'BAD_REQUEST'},400);
+      return json(await rpc('flip_event_mark_read',{
+        p_telegram_id:user.telegram_id,p_event_id:all?null:itemId
+      },db));
+    }
     if(body.action==='theme_pack'){
       const allowed=['action','theme','requestId'];
       if(!['archive','new-era'].includes(body.theme)||
