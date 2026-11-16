@@ -3,7 +3,7 @@ import {createClient} from '@supabase/supabase-js';
 import {playerListPage,playerDetailPage,playerRows} from './player-desk.js';
 import {captureStudioPosition,restoreStudioPosition} from './scroll-context.js';
 
-/* FLIP STUDIO v0.9.1 — creative workspace. All privileged writes use RLS or
+/* FLIP STUDIO v0.9.8.6 — creative workspace. All privileged writes use RLS or
    authenticated server functions; no secret/service-role keys in this bundle. */
 const $=selector=>document.querySelector(selector);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -143,7 +143,7 @@ function layout(content){
   '<div class="wordmark">FLIP<span>.</span></div><span class="brand-sub">STUDIO / CONTENT OS</span>'+
   '</div><div class="side-label">WORKSPACE</div><nav class="nav-links">'+buttons+'</nav>'+
   '<div class="side-bottom"><div class="side-status"><span class="online-dot"></span> WORKSPACE CONNECTED</div>'+
-  '<small>FLIP STUDIO 0.9.8.4<br>Редакционный контент и публикации</small></div></aside>'+
+  '<small>FLIP STUDIO 0.9.8.6<br>Редакционный контент и публикации</small></div></aside>'+
   '<div class="main"><header class="topbar"><div class="crumbs"><span>STUDIO</span> / <b>'+
   esc(item?.[2]||'Обзор')+'</b></div><div class="top-right"><span class="role-pill">'+role.toUpperCase()+
   '</span><div class="avatar">'+esc((s.user.email||'F').slice(0,1).toUpperCase())+
