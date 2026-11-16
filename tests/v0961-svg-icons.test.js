@@ -96,10 +96,10 @@ test('v0.9.6.1 remains a pure icon hotfix and preserves signed notification APIs
  const bridge=source('src/scripts/server.js');
  const api=source('api/flip.js');
  const packageVersion=JSON.parse(source('package.json')).version;
- assert.equal(packageVersion,'0.9.6.3');
+ assert.equal(packageVersion,'0.9.6.4');
  assert.match(app,/45000/);
  assert.match(app,/bridge\.markEventsRead/);
  assert.match(bridge,/bridge\.refreshHub=async/);
- assert.match(api,/version:'0\.9\.6\.3'/);
+ assert.match(api,/version:'0\.9\.6\.4'/);
  assert.match(api,/validateTelegramInitData/);
 });
