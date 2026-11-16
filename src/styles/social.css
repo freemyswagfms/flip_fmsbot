@@ -105,3 +105,23 @@
  animation:flipTradeFresh 1.2s ease-out both}
 @keyframes flipTradeFresh{0%{background:#6ba73b38}100%{background:transparent}}
 @media (prefers-reduced-motion:reduce){.flip-trade-offer.is-fresh{animation:none}}
+
+/* FLIP v0.9.8 — gift, standard and F-for-card composer modes. */
+.flip-trade-modes{display:flex;gap:5px;background:#101b14;border:1px solid #344b36;
+  padding:5px;border-radius:12px;margin:10px 0 17px}
+.flip-trade-modes button{flex:1;min-width:0;background:transparent;border:1px solid transparent;
+  border-radius:8px;color:#a8bca6;padding:10px 5px;font:900 9px 'Space Grotesk',sans-serif;
+  letter-spacing:.2px;cursor:pointer}
+.flip-trade-modes button.active{background:#baff67;color:#162210;border-color:#cafa82;
+  box-shadow:0 3px 15px #baff6720}
+.flip-trade-direction button{font-size:8px;padding:10px 3px}
+.flip-trade-kind{display:block;color:#b7f278!important;letter-spacing:.7px;font:800 9px 'Space Grotesk',sans-serif}
+.flip-trade-money{color:#baff67!important;font:900 13px 'Space Grotesk',sans-serif!important}
+.flip-trade-gift-row{display:flex;align-items:flex-start;gap:11px;padding:12px 0;
+  border-top:1px solid #344736}
+.flip-trade-gift-icon{color:#baff67;font:900 18px 'Space Grotesk',sans-serif}
+.flip-trade-gift-row>div{min-width:0;flex:1}
+.flip-trade-gift-row strong{color:#e4f6df;font:800 10px 'Space Grotesk',sans-serif}
+.flip-trade-gift-row p{margin:4px 0!important;color:#d3e5d0!important;overflow-wrap:anywhere}
+.flip-trade-gift-row small{font:600 9px 'Manrope',sans-serif;color:#91a891}
+@media(max-width:355px){.flip-trade-modes button{font-size:8px}}
