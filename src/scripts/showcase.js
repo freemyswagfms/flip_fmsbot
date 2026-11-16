@@ -121,12 +121,19 @@
    const name=profile.username?'@'+profile.username:
      (profile.first_name||'FLIP PLAYER');
    const initial=String(profile.username||profile.first_name||'F').slice(0,2).toUpperCase();
+   const avatar=typeof profile.avatar_data==='string'&&
+     (/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/.test(profile.avatar_data)||
+       /^https:\/\/[A-Za-z0-9.-]+(?:\/[A-Za-z0-9_./%?&=+-]*)?$/.test(profile.avatar_data))?
+     profile.avatar_data:'';
+   const photo=avatar?'<img class="flip-showcase-player-photo" src="'+esc(avatar)+
+     '" alt="" decoding="async" referrerpolicy="no-referrer" draggable="false">':'';
    return '<div class="panel flip-public-profile">'+
      '<button class="link" data-action="leaderboard">← К РЕЙТИНГУ</button>'+
      '<span class="eyebrow">PLAYER PROFILE / FLIP</span>'+
      '<h2>ПРОФИЛЬ<span style="color:var(--lime)">.</span></h2>'+
      '<div class="content-card flip-showcase-player"><div class="flip-showcase-player-avatar">'+
-       esc(initial)+'</div><div><h3>'+esc(name)+'</h3>'+
+       '<span class="flip-showcase-avatar-initials">'+esc(initial)+'</span>'+photo+
+       '</div><div><h3>'+esc(name)+'</h3>'+
        '<span class="pill">LVL '+fmt(profile.level)+'</span></div></div>'+
      '<div class="flip-showcase-stats">'+
        '<div><small>COLLECTION POINTS</small><strong>'+fmt(profile.cp)+' CP</strong></div>'+

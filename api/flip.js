@@ -3,6 +3,7 @@
  */
 import { createHmac, createHash, timingSafeEqual } from 'node:crypto';
 import {verifySubscription} from './task-bot.js';
+import {getPublicAvatarData} from './profile-avatar.js';
 
 const MAX_AGE_SECONDS = 24 * 60 * 60;
 const MAX_INIT_DATA_LENGTH = 8192;
@@ -86,7 +87,7 @@ export async function handleRequest(request,env=undefined){
   if (!['GET','POST'].includes(request.method)) return json({error:'METHOD_NOT_ALLOWED'},405);
   const configured=!!(process.env.TELEGRAM_BOT_TOKEN&&process.env.SUPABASE_URL&&process.env.SUPABASE_SECRET_KEY);
   if(request.method==='GET' && u.searchParams.get('health')==='1')
-    return json({service:'FLIP',version:'0.9.4',configured});
+    return json({service:'FLIP',version:'0.9.4.2',configured});
   if(!configured)return json({error:'SERVER_NOT_CONFIGURED'},503);
   try{
     const raw=request.headers.get('x-telegram-init-data');
@@ -104,7 +105,22 @@ export async function handleRequest(request,env=undefined){
       const publicId=u.searchParams.get('profile');
       if(!/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(publicId||''))
         return json({error:'BAD_REQUEST'},400);
-      return json(await rpc('flip_public_profile',{p_public_id:publicId},db));
+      const profile=await rpc('flip_public_profile',{p_public_id:publicId},db);
+      let avatar_data=null;
+      try{
+        // Resolving a numeric Telegram ID is permitted only in this trusted
+        // server handler. It must never be included in the JSON response.
+        const id=await rpc('flip_public_avatar_target',{p_public_id:publicId},db);
+        const targetId=Number(id);
+        if(Number.isSafeInteger(targetId)&&targetId>0){
+          avatar_data=targetId===user.telegram_id&&user.photo_url?
+            user.photo_url:
+            await getPublicAvatarData(targetId,process.env.TELEGRAM_BOT_TOKEN);
+        }
+      }catch{
+        // A private or unavailable photo is not a profile loading error.
+      }
+      return json({...profile,avatar_data});
     }
     if(request.method==='GET' && u.searchParams.get('achievements')==='1'){
       return json(await rpc('flip_achievement_snapshot',{p_telegram_id:user.telegram_id},db));

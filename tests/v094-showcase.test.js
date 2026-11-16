@@ -80,7 +80,9 @@ test('Unsigned requests cannot read public profiles or manipulate showcase',asyn
 test('Public profile read is UUID-scoped and does not return wallet state',async()=>{
  const calls=[];
  await withEnv(async(url,options)=>{
-  calls.push({name:String(url).split('/').at(-1),body:JSON.parse(options.body)});
+  const name=String(url).split('/').at(-1);
+  calls.push({name,body:JSON.parse(options.body)});
+  if(name==='flip_public_avatar_target')return Response.json(null);
   return Response.json({public_id:publicId,level:4,cp:55,slots:[],badges:[]});
  },async()=>{
   const r=await handleRequest(new Request('https://flip.test/api/flip?profile='+publicId,{
@@ -89,7 +91,8 @@ test('Public profile read is UUID-scoped and does not return wallet state',async
   const json=await r.json();
   assert.equal(json.public_id,publicId);
   assert.ok(!('balance' in json));
-  assert.deepEqual(calls,[{name:'flip_public_profile',body:{p_public_id:publicId}}]);
+  assert.deepEqual(calls,[{name:'flip_public_profile',body:{p_public_id:publicId}},
+    {name:'flip_public_avatar_target',body:{p_public_id:publicId}}]);
  });
 });
 test('Showcase model only offers ranked copies and renders unique Hidden frame',()=>{
