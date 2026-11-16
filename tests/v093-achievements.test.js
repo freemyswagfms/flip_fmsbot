@@ -28,7 +28,8 @@ async function mockServer(fetcher,fn){
  const prev=process.env,old=globalThis.fetch;
  process.env={...prev,SUPABASE_URL:'https://flip-test.supabase.co',
    SUPABASE_SECRET_KEY:'sb_secret_mock',TELEGRAM_BOT_TOKEN:token};
- globalThis.fetch=fetcher;
+ globalThis.fetch=(url,options)=>String(url).endsWith('/rpc/flip_player_is_banned')?
+      Response.json(false):fetcher(url,options);
  try{return await fn();}finally{process.env=prev;globalThis.fetch=old}
 }
 const post=(action,id,args={})=>new Request('https://flip.app/api/flip',{
