@@ -238,7 +238,8 @@ export async function handleRequest(request,env=undefined){
       'TASK_REROLL_FORBIDDEN','TASK_REROLL_UNAVAILABLE','STREAK_NOT_READY',
       'BAD_ACHIEVEMENT','ACHIEVEMENT_ALREADY_CLAIMED','ACHIEVEMENT_STAGE_ORDER',
       'ACHIEVEMENT_NOT_READY','SHOWCASE_BAD_SLOT','SHOWCASE_BAD_CARD',
-      'SHOWCASE_NOT_OWNED','PLAYER_NOT_FOUND'].includes(code);
+      'SHOWCASE_NOT_OWNED','PLAYER_NOT_FOUND','UNKNOWN_PACK',
+      'THEME_UNAVAILABLE','PACK_GENERATION_FAILED'].includes(code);
     const unavailable=['TELEGRAM_CHECK_FAILED','BOT_NOT_CONFIGURED'].includes(code);
     return json({error:auth||known||unavailable?code:'SERVER_ERROR'},
       auth?401:known?409:unavailable?503:500);
