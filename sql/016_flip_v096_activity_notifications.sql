@@ -64,12 +64,8 @@ begin
         values(new.recipient_id,'trade:'||new.id::text||':cancelled:'||new.recipient_id::text,
           'trade_cancelled',new.sender_id,new.id,true)
         on conflict(event_key) do nothing;
-      elsif new.status='countered' then
-        insert into public.flip_user_events
-          (telegram_id,event_key,kind,actor_id,trade_id,is_notification)
-        values(new.sender_id,'trade:'||new.id::text||':countered:'||new.sender_id::text,
-          'trade_countered',new.recipient_id,new.id,true)
-        on conflict(event_key) do nothing;
+      -- Counter-offer creates its own pending trade event for the original
+      -- sender; do not notify them twice for one counteroffer.
       end if;
     end if;
   end if;
