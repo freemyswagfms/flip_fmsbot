@@ -113,16 +113,16 @@ test('Reset is idempotent and never awards cards, currency, or welcome drops',()
  assert.doesNotMatch(sql,/bonus_packs\s*=/);
  assert.doesNotMatch(sql,/welcome_remaining\s*=/);
 });
-test('Only admin UI has controls, with both cooldown actions and Moscow day status',()=>{
+test('Developer cooldown controls are owner-only and preserve Moscow status',()=>{
  const html=src('index.html'),admin=src('src/scripts/admin.js'),app=src('src/scripts/app.js');
- assert.match(admin,/data-admin-reset-cooldown="drop"/);
- assert.match(admin,/data-admin-reset-cooldown="pack"/);
+ assert.match(admin,/data-admin-set-unlimited="drop"/);
+ assert.match(admin,/data-admin-set-unlimited="pack"/);
  assert.match(admin,/call\('cooldowns'\)/);
- assert.match(admin,/action:'reset_cooldown',kind,requestId:id/);
+ assert.match(admin,/action:'set_unlimited',kind,enabled,requestId:id/);
  assert.match(admin,/flip-admin-self-changed/);
  assert.match(admin,/window\.confirm/);
  assert.match(admin,/timeZone:'Europe\/Moscow'/);
- assert.doesNotMatch(app,/data-admin-reset-cooldown/);
- assert.match(html,/src\/scripts\/admin\.js\?v=0\.9\.4\.3/);
- assert.match(html,/src\/styles\/admin\.css\?v=0\.9\.4\.3/);
+ assert.doesNotMatch(app,/data-admin-set-unlimited/);
+ assert.match(html,/src\/scripts\/admin\.js\?v=0\.9\.4\.4/);
+ assert.match(html,/src\/styles\/admin\.css\?v=0\.9\.4\.4/);
 });
