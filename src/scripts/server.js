@@ -5,18 +5,18 @@
   const initData = telegram?.initData || '';
   const telegramClient=window.FLIPViewport?.isTelegram || !!initData;
   const api='/api/flip';
-  const bridge={mode:'loading',health:'connecting',error:null,connectedUser:null,profile:null,isAdmin:false,tasks:null};
+  const bridge={mode:'loading',health:'connecting',error:null,connectedUser:null,profile:null,isAdmin:false,tasks:null,achievements:null};
   const setHealth=status=>{
     if(bridge.health===status)return;
     bridge.health=status;
     window.dispatchEvent(new CustomEvent('flip-server-status',{detail:{status}}));
   };
-  async function request(action,requestId,payload={}){
+  async function request(action,requestId,payload={},query=''){
     const headers={'x-telegram-init-data':initData};
     const options={method:action?'POST':'GET',headers,cache:'no-store'};
     if(action){headers['content-type']='application/json';options.body=JSON.stringify({action,requestId,...payload});}
     let response;
-    try{response=await fetch(api,options);}
+    try{response=await fetch(api+query,options);}
     catch(error){setHealth('offline');throw error;}
     let data;try{data=await response.json()}catch{data={error:'INVALID_RESPONSE'}};
     if(!response.ok){
@@ -58,7 +58,7 @@
       setHealth(telegramClient?'offline':'demo');
       return null;
     }
-    try{const data=await request();if(data.catalog)window.FLIPCatalog?.importServerCatalog?.(data.catalog);bridge.mode='server';bridge.error=null;bridge.profile=data.profile||null;bridge.isAdmin=data.admin===true;bridge.tasks=data.tasks||null;return makeState(data.state);}
+    try{const data=await request();if(data.catalog)window.FLIPCatalog?.importServerCatalog?.(data.catalog);bridge.mode='server';bridge.error=null;bridge.profile=data.profile||null;bridge.isAdmin=data.admin===true;bridge.tasks=data.tasks||null;bridge.achievements=data.achievements||null;return makeState(data.state);}
     catch(error){
       // Never switch an authenticated Telegram user back to writable browser currency.
       bridge.mode='blocked';bridge.error=error.message;setHealth('offline');return null;
@@ -115,6 +115,18 @@
      const result=await request('reroll_task',crypto.randomUUID(),{scope,slot});
      bridge.tasks=result.tasks||bridge.tasks;
      return result;
+   };
+   bridge.refreshAchievements=async()=>{
+     if(bridge.mode!=='server')return null;
+     const result=await request(null,null,{},'?achievements=1');
+     bridge.achievements=result;
+     return result;
+   };
+   bridge.claimAchievement=async(code,stage)=>{
+     if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+     const result=await request('claim_achievement',crypto.randomUUID(),{code,stage});
+     bridge.achievements=result.achievements||bridge.achievements;
+     return {...result,state:makeState(result.state)};
    };
    bridge.claimStreak=async()=>{
      if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
