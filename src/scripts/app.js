@@ -352,10 +352,10 @@ async function markNotification(eventId=null,route=null){
    else if(['trades','achievements','collection','profile'].includes(route))render(route);
  }
 }
-function rankingProfile(){return live()?'<div class="content-card"><span class="eyebrow">COLLECTION POINTS</span><h3 style="margin-top:9px;font-size:15px">ТВОЙ РЕЙТИНГ</h3><div class="kpi">'+Number(state.cp||0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' CP</div><p>Твой результат зависит от ценности собранной коллекции.</p><button type="button" class="outlinebtn" data-action="leaderboard">ОТКРЫТЬ ОБЩИЙ ТОП ↗</button></div>':''}
+function rankingProfile(){return live()?'<div class="content-card"><h3 style="margin-top:9px;font-size:15px">ТВОЙ РЕЙТИНГ</h3><div class="kpi">'+Number(state.cp||0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' CP</div><button type="button" class="outlinebtn" data-action="leaderboard">ОТКРЫТЬ ОБЩИЙ ТОП ↗</button></div>':''}
 function adminProfile(){
   const id=window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
-  const idInfo=live()&&Number.isSafeInteger(id)&&id>0?
+  const idInfo=live()&&bridge?.isAdmin===true&&Number.isSafeInteger(id)&&id>0?
     '<div class="content-card"><p>Твой Telegram ID: <strong>'+id+'</strong></p><p class="muted">Используется для настройки административного доступа. Не является паролем.</p></div>':'';
   return profile()+rankingProfile()+idInfo+(live()&&bridge?.isAdmin?
     '<div class="content-card flip-admin-entry"><button type="button" class="outlinebtn" data-action="admin">◆ ОТКРЫТЬ АДМИН-ПАНЕЛЬ ↗</button></div>':'');
