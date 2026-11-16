@@ -161,7 +161,7 @@ test('New global SVG engine does not modify game economy or trade refresh logic'
  assert.ok(api.includes("version:'"+packageVersion+"'"));
  assert.ok(html.includes('src/scripts/icons.js?v=0.9.6.2'));
  assert.ok(html.includes('src/scripts/store.js?v=0.9.8.7'));
- assert.ok(html.includes('src/scripts/pack-reveal.js?v=0.9.8.3'));
+ assert.ok(html.includes('src/scripts/pack-reveal.js?v='+packageVersion));
 
  assert.ok(html.includes('src/styles/store.css?v=0.9.6.2'));
  assert.ok(html.includes('● FLIP · TELEGRAM GAME'));
