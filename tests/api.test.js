@@ -60,6 +60,7 @@ test('Authenticated GET and POST forward only the validated Telegram ID to the s
     if(String(url).endsWith('flip_snapshot'))return new Response(JSON.stringify(state),{status:200});
     if(String(url).endsWith('flip_public_catalog'))return new Response(JSON.stringify({artists:[],releases:[],cards:[]}),{status:200});
     if(String(url).endsWith('flip_task_snapshot'))return new Response(JSON.stringify({daily:[],weekly:[]}),{status:200});
+    if(String(url).endsWith('flip_achievement_snapshot'))return new Response(JSON.stringify({items:[],badges:[],total:30,completed:0,claimable:0}),{status:200});
     if(String(url).endsWith('flip_open_drop'))return new Response(JSON.stringify({card_id:'carti/die-lit/common',state}),{status:200});
     return new Response(JSON.stringify({error:'unexpected rpc'}),{status:500});
   };

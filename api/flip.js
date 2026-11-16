@@ -73,7 +73,7 @@ async function rpc(name,payload,db){
   const body=await response.text();
   if (!response.ok) {
     // Return known error codes only. Never forward database internals to the client.
-    const code=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT','ACCOUNT_NOT_FOUND','DUPLICATE_REQUEST_ACTION','TASK_INCOMPLETE','TASK_CHANGED','TASK_ALREADY_CLAIMED','TASK_NOT_VERIFIED','BAD_TASK','TASK_REROLL_USED','TASK_REROLL_FORBIDDEN','TASK_REROLL_UNAVAILABLE','STREAK_NOT_READY'].find(s=>body.includes(s));
+    const code=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT','ACCOUNT_NOT_FOUND','DUPLICATE_REQUEST_ACTION','TASK_INCOMPLETE','TASK_CHANGED','TASK_ALREADY_CLAIMED','TASK_NOT_VERIFIED','BAD_TASK','TASK_REROLL_USED','TASK_REROLL_FORBIDDEN','TASK_REROLL_UNAVAILABLE','STREAK_NOT_READY','BAD_ACHIEVEMENT','ACHIEVEMENT_ALREADY_CLAIMED','ACHIEVEMENT_STAGE_ORDER','ACHIEVEMENT_NOT_READY'].find(s=>body.includes(s));
     const error=new Error(code||'DATABASE_REQUEST_FAILED');error.status=code?409:502;throw error;
   }
   try{return JSON.parse(body);}catch{throw new Error('DATABASE_RESPONSE_FAILED');}
@@ -86,7 +86,7 @@ export async function handleRequest(request,env=undefined){
   if (!['GET','POST'].includes(request.method)) return json({error:'METHOD_NOT_ALLOWED'},405);
   const configured=!!(process.env.TELEGRAM_BOT_TOKEN&&process.env.SUPABASE_URL&&process.env.SUPABASE_SECRET_KEY);
   if(request.method==='GET' && u.searchParams.get('health')==='1')
-    return json({service:'FLIP',version:'0.9.2',configured});
+    return json({service:'FLIP',version:'0.9.3',configured});
   if(!configured)return json({error:'SERVER_NOT_CONFIGURED'},503);
   try{
     const raw=request.headers.get('x-telegram-init-data');
@@ -97,6 +97,9 @@ export async function handleRequest(request,env=undefined){
       await rpc('flip_snapshot',{p_telegram_id:user.telegram_id},db);
       return json({ok:true});
     }
+    if(request.method==='GET' && u.searchParams.get('achievements')==='1'){
+      return json(await rpc('flip_achievement_snapshot',{p_telegram_id:user.telegram_id},db));
+    }
     if(request.method==='GET'){
       // The database only accepts identity fields. Do not persist optional profile-photo URLs.
       // Bootstrap before assigning quests (new accounts do not yet have a player row).
@@ -105,14 +108,15 @@ export async function handleRequest(request,env=undefined){
         telegram_id:user.telegram_id, username:user.username, first_name:user.first_name
       },db);
       await rpc('flip_streak_touch',{p_telegram_id:user.telegram_id},db);
-      const [state,catalog,tasks]=await Promise.all([
+      const [state,catalog,tasks,achievements]=await Promise.all([
         rpc('flip_snapshot',{p_telegram_id:user.telegram_id},db),
         rpc('flip_public_catalog',{},db),
-        rpc('flip_task_snapshot',{p_telegram_id:user.telegram_id},db)
+        rpc('flip_task_snapshot',{p_telegram_id:user.telegram_id},db),
+        rpc('flip_achievement_snapshot',{p_telegram_id:user.telegram_id},db)
       ]);
       const displayName=[user.first_name,user.last_name].filter(Boolean).join(' ').trim()
         || user.username || 'FLIP PLAYER';
-      return json({state,catalog,tasks, mode:'server', admin:isFlipAdmin(user.telegram_id), profile:{
+      return json({state,catalog,tasks,achievements, mode:'server', admin:isFlipAdmin(user.telegram_id), profile:{
         display_name:displayName,
         handle:user.username ? `@${user.username}` : publicPlayerTag(user.telegram_id),
         avatar_url:user.photo_url
@@ -122,10 +126,19 @@ export async function handleRequest(request,env=undefined){
     const rawBody=await request.text();
     if(rawBody.length>MAX_BODY_LENGTH) return json({error:'BAD_REQUEST'},400);
     let body; try{body=JSON.parse(rawBody)}catch{return json({error:'BAD_REQUEST'},400)}
-    if(!body || !['drop','pack','claim_task','reroll_task','claim_streak'].includes(body.action) ||
+    if(!body || !['drop','pack','claim_task','reroll_task','claim_streak','claim_achievement'].includes(body.action) ||
       typeof body.requestId!=='string' ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.requestId))
       return json({error:'BAD_REQUEST'},400);
+    if(body.action==='claim_achievement'){
+      const code=body.code,stage=body.stage;
+      if(typeof code!=='string'||!/^[a-z][a-z0-9_]{2,47}$/.test(code)||
+         !Number.isInteger(stage)||stage<1||stage>5)
+        return json({error:'BAD_REQUEST'},400);
+      return json(await rpc('flip_claim_achievement',{
+        p_telegram_id:user.telegram_id,p_code:code,p_stage:stage
+      },db));
+    }
     if(body.action==='reroll_task'){
       if(!['daily','weekly'].includes(body.scope)||![1,2,3].includes(body.slot))
         return json({error:'BAD_REQUEST'},400);
@@ -171,7 +184,9 @@ export async function handleRequest(request,env=undefined){
     const known=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT','ACCOUNT_NOT_FOUND',
       'DUPLICATE_REQUEST_ACTION','TASK_INCOMPLETE','TASK_CHANGED','TASK_ALREADY_CLAIMED',
       'TASK_NOT_VERIFIED','TASK_NOT_SUBSCRIBED','BAD_TASK','TASK_REROLL_USED',
-      'TASK_REROLL_FORBIDDEN','TASK_REROLL_UNAVAILABLE','STREAK_NOT_READY'].includes(code);
+      'TASK_REROLL_FORBIDDEN','TASK_REROLL_UNAVAILABLE','STREAK_NOT_READY',
+      'BAD_ACHIEVEMENT','ACHIEVEMENT_ALREADY_CLAIMED','ACHIEVEMENT_STAGE_ORDER',
+      'ACHIEVEMENT_NOT_READY'].includes(code);
     const unavailable=['TELEGRAM_CHECK_FAILED','BOT_NOT_CONFIGURED'].includes(code);
     return json({error:auth||known||unavailable?code:'SERVER_ERROR'},
       auth?401:known?409:unavailable?503:500);
