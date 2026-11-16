@@ -35,7 +35,7 @@ test('Profile only shows troubleshooting while offline and admin ID only for adm
  const prof=app.slice(app.indexOf('function profile(){'),app.indexOf('function tasks(){'));
  assert.doesNotMatch(prof,/SERVER CONNECTED|Локальные демо-награды не перенесены|ПОДКЛЮЧЕНИЕ К TELEGRAM/);
  assert.match(prof,/НЕТ СОЕДИНЕНИЯ|СБРОСИТЬ ДЕМО/);
- assert.match(app,/СЛЕДУЮЩИЙ УРОВЕНЬ · \+30 F|next-level/i);
+ assert.match(read('src/scripts/profile-cosmetics.js'),/СЛЕДУЮЩИЙ УРОВЕНЬ · \+30 F/);
  assert.match(app,/const idInfo=live\(\)&&bridge\?\.isAdmin===true/);
 });
 test('Achievements conceal unrevealed hidden item and keep functional claims',()=>{
