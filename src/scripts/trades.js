@@ -1,4 +1,4 @@
-/* FLIP v0.9.8 — player gifts and card/F trades, plus live existing trades. */
+/* FLIP v0.9.8.5 — gallery-first trades; original signed transactions unchanged. */
 (() => {
 'use strict';
 const E=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -7,7 +7,8 @@ const ownId=(()=>{try{return String(JSON.parse(new URLSearchParams(initData).get
 const s={q:'',players:[],targetId:'',targetLabel:'',their:[],give:[],take:[],
   mode:'cards',currencySide:'sell',amount:'',gifts:[],
   counterOf:'',trades:[],error:'',message:'',busy:false,loading:false,searching:false,inspectId:'',inspection:null,
-  syncError:'',lastChecked:0};
+  syncError:'',lastChecked:0,
+  cardQuery:{give:'',take:''},rarityFilter:{give:'all',take:'all'}};
 let root=null,serial=0,searchSeq=0,searchTimer=null,requestSeq=0,inFlight=null,lastHubTrades=null;
 let freshIncoming=new Set();
 const fmt=x=>Number(x||0).toLocaleString('ru-RU',{maximumFractionDigits:2});
@@ -22,14 +23,56 @@ const groups=()=>{
   }
   return [...m.values()].sort((a,b)=>a.id.localeCompare(b.id));
 };
+const safeId=id=>typeof id==='string'&&id.length<=160&&
+  /^[a-z0-9-]+\/[a-z0-9-]+\/(?:common|rare|epic|legendary|mythic|hidden)$/.test(id);
+const rarityLabels={common:'COMMON',rare:'RARE',epic:'EPIC',
+  legendary:'LEGENDARY',mythic:'MYTHIC',hidden:'HIDDEN'};
+const rarityName=rarityLabels;
+function artUrl(src,id){
+  if(typeof src==='string'&&
+     /^\.\/src\/assets\/[a-zA-Z0-9/_-]+\.webp$/.test(src))return src;
+  if(typeof src==='string'&&
+     /^https:\/\/sodhvekjhlmbhnrkmkzb\.supabase\.co\/storage\/v1\/object\/public\/flip-artwork\/[a-zA-Z0-9/_-]+\.webp$/.test(src))return src;
+  return safeId(id)?'./src/assets/'+id+'.webp':'';
+}
 function card(id){
-  if(!id)return{id:'',title:'—',rarity:'common'};
-  if(id==='demo/hidden/archive-001')return{id,title:'ARCHIVE 001',rarity:'hidden'};
+  if(!id)return{id:'',artist:'FLIP',name:'—',title:'—',rarity:'common',art:''};
+  if(id==='demo/hidden/archive-001')return{id,artist:'FLIP',name:'ARCHIVE 001',
+    title:'ARCHIVE 001',rarity:'hidden',art:''};
   const parts=String(id).split('/');
   let data=null;
   try{if(parts.length===3)data=window.FLIPCatalog?.getCard(...parts);}catch{}
-  return data?{id,title:data.artist+' · '+data.title+' · '+data.rarity,rarity:String(data.rarity).toLowerCase()}:
-    {id,title:id,rarity:parts[2]||'common'};
+  const rarity=String(data?.color||data?.rarity||parts[2]||'common').toLowerCase();
+  const artist=String(data?.artist||parts[0]||'FLIP');
+  const name=String(data?.title||parts[1]||'Карточка');
+  const title=data?artist+' · '+name+' · '+String(data.rarity||rarity):String(id);
+  return {id,artist,name,title,rarity,style:String(data?.style||''),
+    art:artUrl(data?.art,id)};
+}
+function artMarkup(detail){
+  return '<span class="flip-trade-art" data-rarity="'+E(detail.rarity)+'">'+
+    (detail.art?'<img loading="lazy" decoding="async" src="'+E(detail.art)+
+      '" alt="'+E(detail.artist+' — '+detail.name)+'">':'')+
+    '<span class="flip-trade-art-fallback" aria-hidden="true">F<span>.</span></span>'+
+    '</span>';
+}
+function previewCard(id,variant='mini'){
+  const c=card(id);
+  return '<button type="button" class="flip-trade-preview-card '+E(variant)+
+    '" data-trade-preview-card="'+E(id)+'" aria-label="Просмотреть '+E(c.artist+' — '+c.name)+
+    '">'+artMarkup(c)+'<span class="flip-trade-preview-caption">'+
+    '<strong>'+E(c.name)+'</strong><small>'+E(c.artist)+'</small></span></button>';
+}
+function summarySide(ids,amount,label){
+  return '<div class="flip-trade-summary-side"><div class="flip-trade-side-top">'+
+    '<small>'+E(label)+'</small><b>'+((ids.length||amount>0)?(ids.length?
+      ids.length+' КАРТ.':'')+(ids.length&&amount>0?' + ':'')+
+      (amount>0?fmt(amount)+' F':''):'0')+'</b></div>'+
+    '<div class="flip-trade-summary-items">'+
+    (ids.length?ids.map(id=>previewCard(id,'small')).join(''):'')+
+    (amount>0?'<span class="flip-trade-currency-token"><b>'+fmt(amount)+'</b><span>F</span></span>':'')+
+    (!ids.length&&amount<=0?'<span class="flip-trade-summary-empty">—</span>':'')+
+    '</div></div>';
 }
 const base={common:1,rare:4,epic:12,legendary:35,mythic:90,hidden:250};
 function points(rarity,count){
