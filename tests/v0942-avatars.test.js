@@ -24,7 +24,8 @@ async function env(fetcher,fn){
   const oldEnv=process.env,oldFetch=globalThis.fetch;
   process.env={...oldEnv,TELEGRAM_BOT_TOKEN:token,
     SUPABASE_URL:'https://flip-test.supabase.co',SUPABASE_SECRET_KEY:'sb_secret_mock'};
-  globalThis.fetch=fetcher;
+  globalThis.fetch=(url,options)=>String(url).endsWith('/rpc/flip_player_is_banned')?
+      Response.json(false):fetcher(url,options);
   try{return await fn();}finally{process.env=oldEnv;globalThis.fetch=oldFetch}
 }
 function mockTelegram(hits){
