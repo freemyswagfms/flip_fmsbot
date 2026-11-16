@@ -190,6 +190,26 @@ test('Later/dismiss leaves receipt pending and it can reappear on a fresh launch
  next.enqueue([gift]);next.flush();
  assert.equal(next.window.FLIPDelivery.isOpen(),true,'Unacknowledged gift appears after restart');
 });
+test('Fresh gifts can reconcile inventory without restarting or touching other accounts',async()=>{
+ const calls=[];
+ await withEnv(async(url,opts)=>{
+   calls.push({name:String(url).split('/').at(-1),payload:JSON.parse(opts.body)});
+   return Response.json({inventory:[],discovered:[],balance:40,level:3});
+ },async()=>{
+   const req=new Request('https://flip.test/api/flip?inventory=1&telegram_id=999',{
+     headers:{'x-telegram-init-data':signed(4567)}});
+   const res=await handleRequest(req);
+   assert.equal(res.status,200);
+   assert.equal((await res.json()).balance,40);
+   assert.deepEqual(calls,[{name:'flip_snapshot',payload:{p_telegram_id:4567}}]);
+ });
+ const app=read('src/scripts/app.js'),server=read('src/scripts/server.js');
+ assert.match(app,/if\(hasNewCards&&bridge\?\.refreshInventory\)/);
+ assert.match(app,/bridge\.refreshInventory\(\)\.then\(snapshot=>/);
+ assert.match(server,/bridge\.refreshInventory=async\(\)=>/);
+ assert.match(server,/\?inventory=1/);
+});
+
 test('The receipt layer is independent from the existing roulette and pack reveal',()=>{
  const ui=deliveryRuntime();
  assert.equal(ui.window.FLIPDelivery.isOpen(),false);
