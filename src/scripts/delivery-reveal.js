@@ -33,7 +33,7 @@
  }
  function normalize(raw){
   if(!raw||!Number.isSafeInteger(raw.id)||raw.id<=0||
-    !['admin','trade'].includes(raw.source)||
+    !['admin','trade','gift'].includes(raw.source)||
     !Array.isArray(raw.card_ids)||raw.card_ids.length<1||raw.card_ids.length>5)
     return null;
   if(!raw.card_ids.every(x=>typeof x==='string'&&x.length<=160))return null;
@@ -121,7 +121,8 @@
   return true;
  }
  function textOf(frame){
-  return frame.source==='admin'?'ПОДАРОК ОТ АДМИНИСТРАЦИИ':'ПОЛУЧЕНО В ОБМЕНЕ';
+  return frame.source==='admin'?'ПОДАРОК ОТ АДМИНИСТРАЦИИ':
+    frame.source==='gift'?'ПОДАРОК ОТ ИГРОКА':'ПОЛУЧЕНО В ОБМЕНЕ';
  }
  function render(){
   if(!active||!root)return;
@@ -129,7 +130,7 @@
   root.style.setProperty('--delivery-accent',colour);
   root.dataset.rarity=frame.rarity;
   const total=frames.length,many=total>1;
-  const headline=frame.source==='admin'?'ТЕБЕ ПОДАРИЛИ':'ОБМЕН ЗАВЕРШЁН';
+  const headline=frame.source==='trade'?'ОБМЕН ЗАВЕРШЁН':'ТЕБЕ ПОДАРИЛИ';
   const art=frame.art?'<img class="flip-delivery-art-image" src="'+E(frame.art)+
     '" alt="'+E(frame.title)+'" draggable="false" decoding="async">':
     '<div class="flip-delivery-art-fallback">FLIP<span>.</span></div>';
@@ -143,7 +144,7 @@
     '<p class="flip-delivery-kicker">'+E(textOf(frame))+'</p>'+
     '<h2>'+E(headline)+'<span>.</span></h2>'+
     '<p class="flip-delivery-hint">'+(frame.source==='admin'?
-       'Особенный подарок для твоей коллекции.':'Твоя новая карточка уже в коллекции.')+'</p>'+
+       'Особенный подарок для твоей коллекции.':frame.source==='gift'?'Игрок отправил тебе новую карточку.':'Твоя новая карточка уже в коллекции.')+'</p>'+
     '<div class="flip-delivery-stage"><div class="flip-delivery-particles" aria-hidden="true">'+
     Array.from({length:12},(_,i)=>'<i style="--i:'+i+'"></i>').join('')+'</div>'+
     '<div class="flip-delivery-card-shell"><div class="flip-delivery-card">'+
@@ -158,7 +159,7 @@
     '<div class="flip-delivery-meta"><span class="flip-delivery-rarity">'+
        E(rarityLabels[frame.rarity])+'</span>'+
      '<h3>'+E(frame.title)+'</h3><p>'+E(frame.artist)+'</p>'+
-     (frame.source==='trade'?
+     (frame.source==='trade'||frame.source==='gift'?
        '<span class="flip-delivery-sender">ОТ ИГРОКА '+E(frame.from)+'</span>':'')+
     '</div></main>'+
     '<footer class="flip-delivery-footer">'+
