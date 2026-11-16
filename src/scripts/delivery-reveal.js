@@ -143,8 +143,6 @@
     '<main class="flip-delivery-center">'+
     '<p class="flip-delivery-kicker">'+E(textOf(frame))+'</p>'+
     '<h2>'+E(headline)+'<span>.</span></h2>'+
-    '<p class="flip-delivery-hint">'+(frame.source==='admin'?
-       'Особенный подарок для твоей коллекции.':frame.source==='gift'?'Игрок отправил тебе новую карточку.':'Твоя новая карточка уже в коллекции.')+'</p>'+
     '<div class="flip-delivery-stage"><div class="flip-delivery-particles" aria-hidden="true">'+
     Array.from({length:12},(_,i)=>'<i style="--i:'+i+'"></i>').join('')+'</div>'+
     '<div class="flip-delivery-card-shell"><div class="flip-delivery-card">'+
@@ -197,7 +195,7 @@
   const all=root.querySelector('[data-delivery-all]');
   if(button)button.disabled=true;if(all)all.disabled=true;
   const status=root.querySelector('.flip-delivery-loading');
-  if(status)status.textContent='СОХРАНЯЕМ ПРОСМОТР…';
+  if(status){status.textContent='';status.classList.add('is-working');}
   const ids=active.map(x=>x.id);
   try{
     if(typeof acknowledge!=='function')throw new Error('OFFLINE');
@@ -209,7 +207,7 @@
   }catch{
     working=false;
     if(button)button.disabled=false;if(all)all.disabled=false;
-    if(status)status.textContent='НЕ УДАЛОСЬ ПОДТВЕРДИТЬ. НАЖМИ ЕЩЁ РАЗ.';
+    if(status){status.classList.remove('is-working');status.textContent='Не удалось подтвердить. Повтори попытку.';}
   }
  }
  function next(){
