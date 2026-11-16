@@ -12,6 +12,8 @@
    const id=typeof card==='string'?card:card?.id;
    if(typeof id!=='string'||!/^[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+$/i.test(id))
      return null;
+   if(id==='demo/hidden/archive-001')return {id,artist:'FLIP // SECRET',
+      title:'ARCHIVE 001',rarity:'hidden',art:'',label:'FLIP SECRET — ARCHIVE 001'};
    const p=id.split('/');
    const c=window.FLIPCatalog?.getCard?.(...p);
    return {id,artist:c?.artist||card?.artist||'FLIP',
