@@ -168,7 +168,7 @@
       frames.map((_,i)=>'<i class="'+(i===index?'active':i<index?'seen':'')+'"></i>').join('')+
       '</div>':'')+
     '<button type="button" class="flip-delivery-primary" data-delivery-next><span>'+
-      (index===total-1?'ЗАБРАТЬ КАРТОЧКИ':'ДАЛЬШЕ')+'</span>'+arrow+'</button>'+
+      'РАСКРЫТЬ КАРТОЧКУ'+'</span>'+arrow+'</button>'+
     (many?'<button type="button" class="flip-delivery-all" data-delivery-all>'+
       'ЗАБРАТЬ ВСЁ ('+total+')</button>':
       '<p class="flip-delivery-disclaimer">Карточка уже находится в твоей коллекции</p>')+
@@ -189,6 +189,8 @@
   root.classList.add('is-revealed');
   root.querySelector('.flip-delivery-card-shell')?.classList.add('is-revealed');
   root.querySelector('.flip-delivery-meta')?.classList.add('is-revealed');
+  const label=root.querySelector('[data-delivery-next] span');
+  if(label)label.textContent=index===frames.length-1?'ЗАБРАТЬ КАРТОЧКИ':'СЛЕДУЮЩАЯ КАРТОЧКА';
  }
  async function finish(){
   if(!active||working)return;
@@ -218,6 +220,7 @@
   if(index>=frames.length-1){finish();return;}
   if(animationTimer!==null){clearTimeout(animationTimer);animationTimer=null;}
   index++;
+  flipped=false;
   root.classList.remove('is-revealed');
   render();
  }
