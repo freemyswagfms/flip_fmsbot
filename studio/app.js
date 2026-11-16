@@ -1401,6 +1401,20 @@ document.addEventListener('click',async event=>{
   if(taskReset){const [scope,slot]=taskReset.dataset.taskReset.split(':');await saveTaskSlot(scope,Number(slot),'default');return;}
   const taskEdit=event.target.closest('[data-task-edit]');
   if(taskEdit){const [scope,slot]=taskEdit.dataset.taskEdit.split(':');openTaskEditor(scope,Number(slot));return;}
+ const playerOpen=event.target.closest('[data-player-open]');
+ if(playerOpen&&s.member?.role==='owner'){
+  s.selectedPlayer=playerOpen.dataset.playerOpen;s.playerCardsOffset=0;
+  s.playerDetail=null;render();await loadPlayerDetail();return;
+ }
+ const playerBan=event.target.closest('[data-player-ban]');
+ if(playerBan&&s.member?.role==='owner'){
+  playerActionDialog(playerBan.dataset.playerBan);return;
+ }
+ const playerRemove=event.target.closest('[data-player-remove]');
+ if(playerRemove&&s.member?.role==='owner'){
+  playerActionDialog('remove_card',playerRemove.dataset.playerRemove,
+   playerRemove.dataset.kind,Number(playerRemove.dataset.max));return;
+ }
  const roleSave=event.target.closest('[data-team-save]');
  if(roleSave){await saveMemberRole(roleSave.dataset.teamSave);return;}
  const roleToggle=event.target.closest('[data-team-toggle]');
@@ -1476,6 +1490,31 @@ document.addEventListener('click',async event=>{
   case 'invite-send':await inviteMember();break;
   case 'invite-copy':await copyInviteLink();break;
   case 'team-refresh':await refreshTeam();break;
+  case 'players-search':
+   if(s.member?.role!=='owner')break;
+   s.playerQuery=String($('#studio-player-search')?.value||'').trim();
+   s.playerOffset=0;await loadPlayers();break;
+  case 'players-refresh':if(s.member?.role==='owner')await loadPlayers();break;
+  case 'players-reset':
+   if(s.member?.role!=='owner')break;
+   s.playerQuery='';s.playerOffset=0;s.playerListLoaded=false;
+   render();await loadPlayers();break;
+  case 'players-prev':case 'players-next':
+   if(s.member?.role!=='owner')break;
+   s.playerOffset=Math.max(0,s.playerOffset+(act==='players-next'?25:-25));
+   await loadPlayers();break;
+  case 'players-back':
+   if(s.member?.role!=='owner')break;
+   s.selectedPlayer=null;s.playerDetail=null;s.playerCardsOffset=0;
+   render();if(!s.playerListLoaded)await loadPlayers();break;
+  case 'player-refresh':
+   if(s.member?.role==='owner'){s.playerDetail=null;render();await loadPlayerDetail()}break;
+  case 'player-cards-prev':case 'player-cards-next':
+   if(s.member?.role!=='owner')break;
+   s.playerCardsOffset=Math.max(0,s.playerCardsOffset+
+     (act==='player-cards-next'?50:-50));
+   s.playerDetail=null;render();await loadPlayerDetail();break;
+  case 'player-confirm':await confirmPlayerAction();break;
  }
 });
 document.addEventListener('change',event=>{
@@ -1517,6 +1556,10 @@ document.addEventListener('input',event=>{
  }
 });
 document.addEventListener('keydown',event=>{
+ if(event.key==='Enter'&&event.target.id==='studio-player-search'){
+  event.preventDefault();s.playerQuery=String(event.target.value||'').trim();
+  s.playerOffset=0;loadPlayers();
+ }
  if(event.key==='Enter'&&event.target.id==='music-search'){event.preventDefault();findArtists()}
  if(event.key==='Enter'&&event.target.id==='auth-email'){event.preventDefault();signIn()}
  if(event.key==='Enter'&&event.target.id==='studio-invite-code'){event.preventDefault();acceptInviteCode()}
