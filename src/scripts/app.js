@@ -63,7 +63,6 @@ const money=n=>n.toLocaleString('ru-RU');
 const sq=(c,i=0)=>`<div class="sq-card ${escapeHtml(c.color||'')}" title="${escapeHtml(c.artist||'')} · ${escapeHtml(c.title)} · ${escapeHtml(c.rarity)}">${c.art?`<img class="sq-art-image" src="${escapeHtml(c.art)}" alt="${escapeHtml(c.title)} · ${escapeHtml(c.rarity)}" loading="lazy" decoding="async">`:`<span class="sq-art">${escapeHtml(c.title||'FLIP')}</span>`}<span class="small-badge">${escapeHtml(c.rarity)}${c.count?' ×'+c.count:''}</span></div>`;
 function home(){return `<div class="hero-intro">
   <h2>Открой свой дроп.</h2>
-  <p class="hero-description">Находи редкие релизы и пополняй коллекцию.</p>
   <div class="hero-progress" id="levelQuick" role="button" tabindex="0" aria-label="Открыть прогресс уровня">
     <span>LVL ${state.level}</span><span class="progress-separator"></span><span>${state.xp}/${state.xpToNext||100} XP</span><span class="hero-progress-arrow">↗</span>
   </div>
@@ -78,7 +77,6 @@ function home(){return `<div class="hero-intro">
       <div class="deck-card main"><div class="deck-logo">FLIP</div><div class="deck-tag">+ COLLECT /<br> TRADE +</div></div>
     </div>
   </div>
-  <div class="drop-copy" id="dropCopy" hidden><h3>Открой свою карточку</h3><p id="dropSubtitle">Какая редкость выпадет на этот раз?</p></div>
   <button class="drop-cta" id="dropBtn"><span>ОТКРЫТЬ ДРОП</span><span class="drop-cta-arrow" aria-hidden="true">↗</span></button>
   <div class="drop-footer">
 ${live()&&bridge?.isAdmin===true ? `
@@ -87,14 +85,14 @@ ${live()&&bridge?.isAdmin===true ? `
       <span>ТЕСТ РУЛЕТКИ</span>
     </button>
     ` : ''}
-    <span><span id="timerLabel">Следующий через 4 часа</span> <strong id="timerValue">ГОТОВ</strong></span>
+    <span class="flip-drop-timer" id="dropTimer" hidden><strong id="timerValue">00:00:00</strong></span>
   </div>
 </section>
-<section class="content-section"><div class="section-head"><span class="section-title"><b>✳</b> НОВАЯ КОЛЛЕКЦИЯ</span><button class="link" data-action="catalog">СМОТРЕТЬ ВСЁ ↗</button></div><div class="feature"><div class="feature-copy"><span class="pill">✦ NEW ARRIVAL</span><h3>PLAYBOI<br>CARTI</h3><p>Первые пять релизов уже в каталоге FLIP. Открой свою находку.</p><button data-action="catalog">СМОТРЕТЬ РЕЛИЗЫ ↗</button></div><div class="artwork second" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/die-lit/epic.webp" alt=""></div><div class="artwork" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/whole-lotta-red/mythic.webp" alt=""></div></div></section>
+<section class="content-section"><div class="section-head"><span class="section-title"><b>✳</b> НОВАЯ КОЛЛЕКЦИЯ</span></div><div class="feature"><div class="feature-copy"><h3>PLAYBOI<br>CARTI</h3><button data-action="catalog">СМОТРЕТЬ РЕЛИЗЫ ↗</button></div><div class="artwork second" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/die-lit/epic.webp" alt=""></div><div class="artwork" aria-hidden="true"><img class="feature-cover" src="./src/assets/carti/whole-lotta-red/mythic.webp" alt=""></div></div></section>
 <section class="content-section"><div class="section-head"><span class="section-title"><b>◎</b> ЗАДАНИЯ</span><button class="link" data-action="tasks">СМОТРЕТЬ ВСЕ ↗</button></div><div class="task-list">${taskRow(0,true)}${taskRow(1,true)}${taskRow(2,true)}</div></section>
-${streakHomeTeaser()}<div class="quick-nav"><button class="quick" data-action="store"><span>◈</span> ТЕМАТИЧЕСКИЕ НАБОРЫ ↗</button><button class="quick" data-action="profile"><span>☆</span> МОЙ ПРОФИЛЬ ↗</button></div>
+${streakHomeTeaser()}
 `}
-const taskDefs=[{title:'Открой бесплатный дроп',detail:'0 / 1 · Ежедневное задание',reward:'30 F'},{title:'Получи новую карточку',detail:'0 / 1 · Коллекция',reward:'30 F'},{title:'Открой стандартный пак',detail:'0 / 1 · Активность',reward:'30 F'}];
+const taskDefs=[{title:'Открой бесплатный дроп',detail:'0 / 1',reward:'30 F'},{title:'Получи новую карточку',detail:'0 / 1',reward:'30 F'},{title:'Открой стандартный пак',detail:'0 / 1',reward:'30 F'}];
 
 function gameTaskRow(t){
  const complete=t.claimed,custom=t.type==='subscription';
@@ -120,7 +118,7 @@ function streakHomeTeaser(){
  return '<button type="button" class="flip-streak-mini" data-action="tasks">'+
    '<span>✦ СЕРИЯ АКТИВНОСТИ</span><strong>'+days+' / 7</strong>'+
    '<small>'+(Number(streak.unclaimed)>0?'Награда +100 F готова к получению ↗':
-     'За 7 активных дней +100 F · 1 пропуск')+'</small></button>';
+     '+100 F за 7 дней · 1 пропуск')+'</small></button>';
 }
 function streakPanel(){
  const streak=live()?bridge?.tasks?.streak:null;
@@ -380,26 +378,26 @@ function updateTimer(){
   const recovering=live()&&bridge?.hasPending?.('drop');
   const delta=state.dropReadyAt-Date.now();
   const ready=recovering||welcome||delta<=0;
-  const value=$('#timerValue'), badge=$('#readyBadge'), label=$('#timerLabel'), button=$('#dropBtn'), copy=$('#dropCopy');
+  const value=$('#timerValue'), timer=$('#dropTimer'), badge=$('#readyBadge'), button=$('#dropBtn');
   if(!value)return;
-  if(copy)copy.hidden=!ready;
+  if(timer)timer.hidden=ready||blocked();
   button.disabled=serverBusy||blocked()||!ready;
   if(blocked()){
-    value.textContent='—';badge.textContent='◷ ОЖИДАНИЕ СЕРВЕРА';label.textContent='';
+    value.textContent='';badge.textContent='◷ ОЖИДАНИЕ СЕРВЕРА';
     button.innerHTML='<span>ПОДКЛЮЧЕНИЕ…</span><span class="drop-cta-arrow">↗</span>';
   }else if(recovering){
-    value.textContent='';label.textContent='';badge.textContent='◷ НЕОКОНЧЕННЫЙ ЗАПРОС';
+    value.textContent='';badge.textContent='◷ НЕОКОНЧЕННЫЙ ЗАПРОС';
     button.innerHTML='<span>ВОССТАНОВИТЬ ДРОП</span><span class="drop-cta-arrow">↗</span>';
   }else if(welcome){
-    value.textContent='';label.textContent='';
+    value.textContent='';
     badge.textContent=`● ПРИВЕТСТВЕННЫЙ ДРОП · ${4-state.welcomeRemaining}/3`;
     button.innerHTML='<span>ОТКРЫТЬ ПРИВЕТСТВЕННЫЙ ДРОП</span><span class="drop-cta-arrow">↗</span>';
   }else if(ready){
-    value.textContent='';badge.textContent='● ДРОП ДОСТУПЕН';label.textContent='';
+    value.textContent='';badge.textContent='● ДРОП ДОСТУПЕН';
     button.innerHTML='<span>ОТКРЫТЬ ДРОП</span><span class="drop-cta-arrow">↗</span>';
   }else{
     const seconds=Math.ceil(delta/1000),h=String(Math.floor(seconds/3600)).padStart(2,'0'),m=String(Math.floor((seconds%3600)/60)).padStart(2,'0'),sec=String(seconds%60).padStart(2,'0');
-    value.textContent=`${h}:${m}:${sec}`;badge.textContent='◷ ДРОП ПЕРЕЗАРЯЖАЕТСЯ';label.textContent='До следующего дропа:';
+    value.textContent=`${h}:${m}:${sec}`;badge.textContent='◷ ДРОП ПЕРЕЗАРЯЖАЕТСЯ';
     button.innerHTML='<span>ДРОП НЕ ГОТОВ</span><span class="drop-cta-arrow">↗</span>';
   }
   window.FLIPIcons?.render(button);window.FLIPIcons?.render(badge);

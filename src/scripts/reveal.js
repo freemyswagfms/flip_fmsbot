@@ -28,27 +28,25 @@
   function tileMarkup(i){return `<div class="flip-roulette-tile${i===target?' is-target':''}" aria-hidden="true"><div class="flip-roulette-card">${backMarkup()}</div></div>`}
   function artworkMarkup(r){
     const label=plain(r.card.title||'UNKNOWN SIGNAL');
-    const artist=plain(r.card.artist||'FLIP DEMO');
+    const artist=plain(r.card.artist||'FLIP');
     const actualArtwork=!!r.card.art;
     const imageMarkup=actualArtwork
       ? `<div class="flip-face-art flip-face-artwork"><img class="flip-art-image" src="${plain(r.card.art)}" alt="Обложка ${artist} — ${label}" decoding="async" draggable="false"></div>`
-      : `<div class="flip-face-art flip-art-${r.rarity}"><div class="flip-art-noise"></div><div class="flip-art-orbit orbit-one"></div><div class="flip-art-orbit orbit-two"></div><div class="flip-art-emblem">${r.rarity==='hidden'?'?':'✳'}</div><div class="flip-art-artist">${artist}</div><div class="flip-art-title">${label}</div><div class="flip-art-foot">FLIP / DEMO ARTWORK</div></div>`;
+      : `<div class="flip-face-art flip-art-${r.rarity}"><div class="flip-art-noise"></div><div class="flip-art-orbit orbit-one"></div><div class="flip-art-orbit orbit-two"></div><div class="flip-art-emblem">${r.rarity==='hidden'?'?':'✳'}</div><div class="flip-art-artist">${artist}</div><div class="flip-art-title">${label}</div></div>`;
     return imageMarkup;
   }
   function layout(){
     const r=session;
     const winner=defs[r.rarity];
     const label=plain(r.card.title||'UNKNOWN SIGNAL');
-    const artist=plain(r.card.artist||'FLIP DEMO');
+    const artist=plain(r.card.artist||'FLIP');
     const isPreview=!!r.preview;
     const imageMarkup=artworkMarkup(r);
     root.innerHTML=`
       <div class="flip-reveal-aura" aria-hidden="true"></div>
-      <div class="flip-reveal-head"><span class="flip-reveal-logo">FLIP<span>.</span></span><span class="flip-reveal-headnote">${isPreview?'PREVIEW':'FREE DROP'} <span class="flip-reveal-dot"></span> ${isPreview?'DEMO':'LIVE'}</span></div>
+      <div class="flip-reveal-head"><span class="flip-reveal-logo">FLIP<span>.</span></span></div>
       <div class="flip-reveal-content">
-        <div class="flip-reveal-eyebrow">${isPreview?'ANIMATION / PREVIEW':'DROP / REVEAL'}</div>
         <h2 class="flip-reveal-title" id="flipRevealTitle">ТВОЙ ДРОП<span>.</span></h2>
-        <p class="flip-reveal-subtitle" id="flipRevealSubtitle">Что скрывается за карточкой?</p>
         <div class="flip-roulette-wrap" id="flipRouletteWrap" aria-hidden="true">
           <div class="flip-roulette-pip"></div>
           <div class="flip-roulette-window" id="flipRouletteWindow"><div class="flip-roulette-track" id="flipRouletteTrack">${Array.from({length:17},(_,i)=>tileMarkup(i)).join('')}</div></div>
@@ -66,7 +64,7 @@
           <span class="flip-rarity-chip">${winner.label} <span class="flip-rarity-dot"></span></span>
           <h3>${label}</h3>
           <p>${artist}</p>
-          <span class="flip-reveal-added">${isPreview?'ДЕМО · БЕЗ НАГРАДЫ':'✓ ДОБАВЛЕНО В КОЛЛЕКЦИЮ'}</span>
+          ${isPreview?'<span class="flip-reveal-added">ТЕСТ · БЕЗ НАГРАДЫ</span>':''}
           <button type="button" class="flip-reveal-continue" id="flipRevealContinue">ПРОДОЛЖИТЬ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19 19 5M8 5h11v11"/></svg></button>
         </div>
       </div>
@@ -97,7 +95,6 @@
     session.phase=phase;
     root.dataset.phase=phase;
     const title=root.querySelector('#flipRevealTitle');
-    const subtitle=root.querySelector('#flipRevealSubtitle');
     const hint=root.querySelector('#flipRevealHint');
     const face=root.querySelector('#flipFaceCard');
     const outcome=root.querySelector('#flipRevealOutcome');
@@ -106,12 +103,10 @@
     if(continueBtn)continueBtn.disabled=phase!=='result';
     if(phase==='intro'){
       title.innerHTML=session.preview?'ТЕСТ РУЛЕТКИ<span>.</span>':'ТВОЙ ДРОП<span>.</span>';
-      subtitle.textContent=session.preview?'Просмотр анимации без изменения коллекции.':'Что скрывается за карточкой?';
       setPosition(false);
       schedule('spin', reducedMotion?100:timings.intro);
     }else if(phase==='spin'){
       title.innerHTML='ПОЙМАЙ МОМЕНТ<span>.</span>';
-      subtitle.textContent='Карточка уже выбрана. Раскрываем результат.';
       setPosition(false);
       animationFrame=requestAnimationFrame(()=>{
         animationFrame=requestAnimationFrame(()=>{
@@ -122,11 +117,9 @@
     }else if(phase==='settle'){
       setPosition(true);
       title.innerHTML='ЭТО ОНА<span>.</span>';
-      subtitle.textContent='Редкость найдена';
       schedule('flip',reducedMotion?120:timings.settle);
     }else if(phase==='flip'){
       title.innerHTML='РАСКРЫВАЕМ<span>.</span>';
-      subtitle.textContent='';
       if(face){face.classList.remove('is-flipped','is-instant');void face.offsetHeight;}
       animationFrame=requestAnimationFrame(()=>{
         animationFrame=requestAnimationFrame(()=>{
@@ -136,7 +129,6 @@
       schedule('result',reducedMotion?80:timings.flip);
     }else if(phase==='result'){
       title.innerHTML=session.preview?'РЕЗУЛЬТАТ ДЕМО<span>.</span>':'ТВОЯ КАРТОЧКА<span>.</span>';
-      subtitle.textContent='';
       if(face){face.classList.add('is-instant','is-flipped')}
       hint.textContent='НАЖМИ, ЧТОБЫ ЗАКРЫТЬ';
       try{root.querySelector('#flipRevealContinue')?.focus({preventScroll:true})}catch{}

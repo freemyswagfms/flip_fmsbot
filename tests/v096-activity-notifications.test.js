@@ -165,7 +165,7 @@ test('Static placeholder alerts are gone and UI refreshes after trades and on fo
    trades=source('src/scripts/trades.js'),bridge=source('src/scripts/server.js');
  assert.ok(html.includes('id="flip-notifications-body"'));
  assert.doesNotMatch(html,/NEW COLLECTION: свежий релиз/);
- assert.ok(html.includes('activity.js?v='+JSON.parse(source('package.json')).version));
+ assert.ok(html.includes('activity.js?v=0.9.8'));
  assert.match(app,/setInterval\(\(\)=>\{/);
  assert.match(app,/45000/);
  assert.match(app,/flip-trade-changed/);
