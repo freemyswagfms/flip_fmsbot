@@ -5,7 +5,7 @@
   const initData = telegram?.initData || '';
   const telegramClient=window.FLIPViewport?.isTelegram || !!initData;
   const api='/api/flip';
-  const bridge={mode:'loading',health:'connecting',error:null,connectedUser:null,profile:null,isAdmin:false,tasks:null,achievements:null,showcase:null,shop:null,hub:null};
+  const bridge={mode:'loading',health:'connecting',error:null,connectedUser:null,profile:null,isAdmin:false,tasks:null,achievements:null,showcase:null,cosmetics:null,shop:null,hub:null};
   const setHealth=status=>{
     if(bridge.health===status)return;
     bridge.health=status;
@@ -60,7 +60,7 @@
       setHealth(telegramClient?'offline':'demo');
       return null;
     }
-    try{const data=await request();if(data.catalog)window.FLIPCatalog?.importServerCatalog?.(data.catalog);bridge.mode='server';bridge.error=null;bridge.profile=data.profile||null;bridge.isAdmin=data.admin===true;bridge.tasks=data.tasks||null;bridge.achievements=data.achievements||null;bridge.showcase=data.showcase||null;return makeState(data.state);}
+    try{const data=await request();if(data.catalog)window.FLIPCatalog?.importServerCatalog?.(data.catalog);bridge.mode='server';bridge.error=null;bridge.profile=data.profile||null;bridge.isAdmin=data.admin===true;bridge.tasks=data.tasks||null;bridge.achievements=data.achievements||null;bridge.showcase=data.showcase||null;bridge.cosmetics=data.cosmetics||null;return makeState(data.state);}
     catch(error){
       // Never switch an authenticated Telegram user back to writable browser currency.
       bridge.mode='blocked';bridge.error=error.message;setHealth('offline');return null;
@@ -160,6 +160,46 @@
      const data=await request(null,null,{},'?showcase=1');
      bridge.showcase=data;
      return data;
+   };
+   bridge.refreshCosmetics=async()=>{
+     if(bridge.mode!=='server')return null;
+     bridge.cosmetics=await request(null,null,{},'?cosmetics=1');
+     return bridge.cosmetics;
+   };
+   bridge.buyProfile=async(kind,itemId)=>{
+     if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+     const label='profile_'+kind+'_'+itemId;
+     const id=pending(label)||crypto.randomUUID();
+     remember(label,id);
+     try{
+       const result=await request('profile_buy',id,{kind,itemId});
+       forget(label);
+       bridge.showcase=result.profile||bridge.showcase;
+       bridge.cosmetics=result.shop||bridge.cosmetics;
+       return result;
+     }catch(error){
+       if(error.status>=400&&error.status<500&&error.status!==408&&error.status!==429)
+         forget(label);
+       throw error;
+     }
+   };
+   bridge.equipProfile=async(kind,itemId)=>{
+     if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+     const result=await request('profile_equip',crypto.randomUUID(),{kind,itemId});
+     bridge.showcase=result.profile||bridge.showcase;
+     return result;
+   };
+   bridge.setFavoriteArtist=async(artistId)=>{
+     if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+     const result=await request('profile_favorite',crypto.randomUUID(),{artistId});
+     bridge.showcase=result.profile||bridge.showcase;
+     return result;
+   };
+   bridge.pinProfileBadge=async(slot,code)=>{
+     if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+     const result=await request('profile_pin_badge',crypto.randomUUID(),{slot,code});
+     bridge.showcase=result.profile||bridge.showcase;
+     return result;
    };
    bridge.setShowcase=async(slot,cardId)=>{
      if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
