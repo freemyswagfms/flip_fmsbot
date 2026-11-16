@@ -139,6 +139,36 @@ test('Signed game and social requests both reject banned accounts before reward 
  assert.match(flip,/ACCOUNT_BANNED'\},403/);
  assert.match(social,/ACCOUNT_BANNED'\},403/);
 });
+function signedTelegram(id){
+ const params=new URLSearchParams({auth_date:String(Math.floor(Date.now()/1000)),
+  user:JSON.stringify({id,username:'tester'})});
+ const secret=createHmac('sha256','WebAppData').update(env.TELEGRAM_BOT_TOKEN).digest();
+ params.set('hash',createHmac('sha256',secret).update(
+  [...params.entries()].sort(([a],[b])=>a.localeCompare(b,'en'))
+  .map(([k,v])=>k+'='+v).join('\n')).digest('hex'));
+ return params.toString();
+}
+test('Actual signed banned account cannot read or interact through either API',async()=>{
+ const oldEnv=process.env,oldFetch=globalThis.fetch,calls=[];
+ process.env={...oldEnv,...env};
+ globalThis.fetch=async(url,opts)=>{
+  const rpc=String(url).split('/').at(-1);calls.push(rpc);
+  if(rpc==='flip_player_is_banned')return Response.json(true);
+  throw new Error('Banned player must not call '+rpc);
+ };
+ try{
+  const headers={'x-telegram-init-data':signedTelegram(54321)};
+  const home=await handleRequest(new Request('https://flip.test/api/flip',{headers}));
+  assert.equal(home.status,403);
+  assert.equal((await home.json()).error,'ACCOUNT_BANNED');
+  const trade=await handleSocialRequest(new Request('https://flip.test/api/social?view=trades',{headers}));
+  assert.equal(trade.status,403);
+  const drop=await handleRequest(new Request('https://flip.test/api/flip',{method:'POST',
+   headers,body:JSON.stringify({action:'drop',requestId:rid})}));
+  assert.equal(drop.status,403);
+  assert.deepEqual(calls,['flip_player_is_banned','flip_player_is_banned','flip_player_is_banned']);
+ }finally{process.env=oldEnv;globalThis.fetch=oldFetch}
+});
 test('SQL prevents public access, owner ban and double card deletion',()=>{
  const sql=read('sql/020_flip_v0984_owner_player_controls.sql');
  assert.match(sql,/ENABLE ROW LEVEL SECURITY/g);
@@ -155,7 +185,7 @@ test('SQL prevents public access, owner ban and double card deletion',()=>{
 test('Separate owner navigation is wired without exposing privileged operations in browser',()=>{
  const app=read('studio/app.js'),gateway=read('api/studio.js');
  assert.match(app,/['"]players['"],['"]users['"],['"]Игроки['"]/);
- assert.match(app,/!['"]owner['"]\)/);
+ assert.match(app,/role!=='owner'/);
  assert.match(app,/case 'player-confirm'/);
  assert.match(app,/requestId:a.requestId/,'retry after lost response must preserve request UUID');
  assert.match(gateway,/const routes=\{music,owner,manage,tasks,players\}/);
