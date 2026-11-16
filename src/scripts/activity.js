@@ -82,7 +82,7 @@
   return (ready?'<button type="button" class="flip-event-reward" data-event-route="achievements">'+
     '✦ '+fmt(ready)+' наград доступно в достижениях <span>↗</span></button>':'')+
    (list.length?list.slice(0,25).map(e=>eventMarkup(e,{compact:true})).join(''):
-     '<p class="flip-event-empty">Пока нет новых событий. Когда появятся обмены или награды, они будут здесь.</p>')+
+     '<p class="flip-event-empty">Пока нет уведомлений.</p>')+
     '<div class="flip-event-bottom">'+
     '<button type="button" data-event-read-all '+(!list.some(e=>e.read===false)?'disabled':'')+
       '>ПРОЧИТАТЬ ВСЁ</button>'+
@@ -101,8 +101,8 @@
  }
  function profileStats(stats,{online=false}={}){
   return '<section class="content-card flip-profile-stats"><div class="flip-stat-heading">'+
-   '<div><span class="eyebrow">PLAYER DATA / FLIP</span><h3>СТАТИСТИКА ИГРОКА</h3></div>'+
-   '<span class="flip-stat-verified"><i class="flip-stat-live-dot" aria-hidden="true"></i>LIVE</span></div>'+
+   '<div><h3>СТАТИСТИКА ИГРОКА</h3></div>'+
+   '</div>'+
    (online&&stats?statCards(stats):
      '<p class="flip-event-empty">'+(online?'Загружаем статистику…':
        'Статистика будет доступна при входе через Telegram.')+'</p>')+
@@ -114,16 +114,16 @@
   if(!stats)return '';
   return '<section class="content-card flip-profile-stats">'+
     '<div class="flip-stat-heading"><h3>СТАТИСТИКА ИГРОКА</h3>'+
-      '<span class="flip-stat-verified"><i class="flip-stat-live-dot" aria-hidden="true"></i>FLIP</span></div>'+
+      '</div>'+
     statCards(stats,{publicMode:true})+'</section>';
  }
  function activityPage(hub,{online=false,loading=false,error=''}={}){
   const events=Array.isArray(hub?.activity)?hub.activity:[];
   return '<div class="panel flip-activity-page">'+
     '<button type="button" class="link" data-action="profile">← К ПРОФИЛЮ</button>'+
-    '<span class="eyebrow">YOUR HISTORY / FLIP</span>'+
+    
     '<h2>АКТИВНОСТЬ<span style="color:var(--lime)">.</span></h2>'+
-    '<p class="desc">Твои открытия, обмены и награды. Только ты видишь эту историю.</p>'+
+    '<p class="desc">Эту историю видишь только ты.</p>'+
     (online&&hub?.stats?statCards(hub.stats):'')+
     (!online?'<p class="flip-event-empty">История доступна после входа через Telegram.</p>':
      error?'<p class="flip-event-empty">Не удалось загрузить историю. Попробуй ещё раз.</p>':
@@ -131,7 +131,7 @@
      events.length?'<div class="flip-event-feed">'+events.slice(0,60)
        .map(e=>eventMarkup(e)).join('')+'</div>':
        '<p class="flip-event-empty">Пока нет событий. Твой первый дроп появится здесь.</p>')+
-    '<p class="flip-event-footnote">Показаны последние 60 действий. События до этого обновления также учтены.</p></div>';
+    '</div>';
  }
  window.FLIPActivity={notifications,profileStats,publicStats,activityPage,eventMarkup};
 })();
