@@ -261,7 +261,7 @@ async function updateShowcase(slot,cardId){
      if(!permitted)return;
    }
    await bridge.setShowcase(slot,cardId);
-   render('profile');
+   render('profile',{returnTo:true});
    toast(cardId===null?'Карточка убрана из витрины.':'Витрина обновлена!');
  }catch(error){
    const text=error.message==='SHOWCASE_NOT_OWNED'?
@@ -281,12 +281,16 @@ function updateInbox(){
  if(dot){dot.hidden=unread===0;dot.textContent=unread>9?'9+':String(unread);}
  const body=document.querySelector('#flip-notifications-body');
  if(body){
+   const sheet=document.querySelector('#notifications');
+   const sheetScroll=sheet?.scrollTop||0;
    body.innerHTML=window.FLIPActivity?.notifications(bridge?.hub,{
      online:live(),loading:hubLoading
    })||'';
    // The inbox is replaced after each server poll; convert every new glyph
    // to the same platform-independent SVG icons as the rest of FLIP.
    window.FLIPIcons?.render(body);
+   // The inbox is reloaded by the hub poll; don't move the reader to the top.
+   if(sheet)sheet.scrollTop=sheetScroll;
  }
 }
 async function refreshHub({rerender=false}={}){
@@ -363,7 +367,54 @@ function adminProfile(){
 function adminPage(){return live()&&bridge?.isAdmin?
   '<div class="panel flip-admin-page"><button class="link" data-action="profile">← НАЗАД В ПРОФИЛЬ</button><span class="eyebrow">FLIP / PRIVATE ACCESS</span><h2>CONTROL CENTER<span style="color:var(--lime)">.</span></h2><p class="desc">Поиск игроков и карточек, выдача карт, XP и F с журналом начислений.</p><div id="flip-admin-root"></div></div>':
   '<div class="panel"><h2>ДОСТУП ЗАКРЫТ</h2></div>';}
-const render=(view=current)=>{current=view;$('#screen').innerHTML=({home,collection,collectionArtist,collectionRelease,collectionHistory,catalog:catalogView,trades,leaderboard,store,profile:adminProfile,admin:adminPage,tasks,achievements,showcaseEdit,publicProfile,activity}[view]||home)();document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===(['catalog','collectionArtist','collectionRelease','collectionHistory'].includes(view)?'collection':['achievements','showcaseEdit','publicProfile','activity'].includes(view)?'profile':view)));$('#balance').textContent=money(state.balance);$('#scroll').scrollTop=0;updateTimer();window.FLIPIcons?.render($('#screen'));if(view==='admin'&&bridge?.isAdmin)window.FLIPAdmin?.mount($('#flip-admin-root'));if(view==='trades')window.FLIPTrades?.mount($('#flip-trades-root'));if(view==='leaderboard')window.FLIPLeaderboard?.mount($('#flip-leaderboard-root'));const photo=$('#flipPlayerPhoto');if(photo)photo.addEventListener('error',()=>photo.remove(),{once:true});const publicPhoto=$('.flip-showcase-player-photo');if(publicPhoto){const reveal=()=>publicPhoto.classList.add('is-loaded');if(publicPhoto.complete&&publicPhoto.naturalWidth>0)reveal();else{publicPhoto.addEventListener('load',reveal,{once:true});publicPhoto.addEventListener('error',()=>publicPhoto.remove(),{once:true});}}};
+// Same-page refreshes must not reset the user's reading position.
+const scrollMemo=new Map();
+const scrollKey=view=>view==='collectionArtist'?view+':'+(collectionArtistId||''):
+ view==='collectionRelease'?view+':'+(collectionArtistId||'')+':'+(collectionReleaseId||''):view;
+const render=(view=current,{returnTo=false,resetScroll=false}={})=>{
+ const screen=$('#screen'),scroll=$('#scroll');
+ const tracker=window.FLIPScrollContext;
+ const prior=tracker?.capture?.(scroll,screen)||{top:scroll?.scrollTop||0};
+ const same=view===current;
+ if(!same)scrollMemo.set(scrollKey(current),prior);
+ const snapshot=resetScroll?null:(same?prior:returnTo?scrollMemo.get(scrollKey(view)):null);
+ current=view;
+ screen.innerHTML=({home,collection,collectionArtist,collectionRelease,collectionHistory,
+  catalog:catalogView,trades,leaderboard,store,profile:adminProfile,admin:adminPage,
+  tasks,achievements,showcaseEdit,publicProfile,activity}[view]||home)();
+ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',
+  x.dataset.tab===(['catalog','collectionArtist','collectionRelease','collectionHistory'].includes(view)?
+    'collection':['achievements','showcaseEdit','publicProfile','activity'].includes(view)?
+    'profile':view)));
+ $('#balance').textContent=money(state.balance);
+ updateTimer();
+ window.FLIPIcons?.render(screen);
+ if(view==='admin'&&bridge?.isAdmin)window.FLIPAdmin?.mount($('#flip-admin-root'));
+ if(view==='trades')window.FLIPTrades?.mount($('#flip-trades-root'));
+ if(view==='leaderboard')window.FLIPLeaderboard?.mount($('#flip-leaderboard-root'));
+ const photo=$('#flipPlayerPhoto');
+ if(photo)photo.addEventListener('error',()=>photo.remove(),{once:true});
+ const publicPhoto=$('.flip-showcase-player-photo');
+ if(publicPhoto){
+  const reveal=()=>publicPhoto.classList.add('is-loaded');
+  if(publicPhoto.complete&&publicPhoto.naturalWidth>0)reveal();
+  else{
+   publicPhoto.addEventListener('load',reveal,{once:true});
+   publicPhoto.addEventListener('error',()=>publicPhoto.remove(),{once:true});
+  }
+ }
+ if(!snapshot){if(scroll)scroll.scrollTop=0;return;}
+ if(tracker?.restore){
+  tracker.restore(scroll,screen,snapshot);
+  // Reapply DOM-based collection filters before anchoring to the visible card.
+  if(view==='collection')updateCollectionGallery();
+  if(view==='collectionArtist'||view==='collectionRelease'){
+   const search=screen.querySelector?.('[data-collection-search]');
+   if(search?.value)applyCollectionSearch(search.value);
+  }
+  tracker.restore(scroll,screen,snapshot);
+ }else if(scroll)scroll.scrollTop=snapshot.top;
+};
 let toastTid;const toast=msg=>{const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTid);toastTid=setTimeout(()=>el.classList.remove('show'),3000)};
 const closeModal=()=>{
  if(window.FLIPPackReveal?.isOpen?.())window.FLIPPackReveal.close();
@@ -848,14 +899,14 @@ document.addEventListener('click',e=>{
   const historyTarget=e.target.closest('[data-collection-history]');
   if(historyTarget){render('collectionHistory');return}
   const backTarget=e.target.closest('[data-collection-back]');
-  if(backTarget){render(backTarget.dataset.collectionBack==='artist'?'collectionArtist':'collection');return}
+  if(backTarget){render(backTarget.dataset.collectionBack==='artist'?'collectionArtist':'collection',{returnTo:true});return}
   const ownedTarget=e.target.closest('[data-owned-card]');
   if(ownedTarget){showOwnedCard(ownedTarget.dataset.ownedCard);return}
   const historyCardTarget=e.target.closest('[data-history-card]');
   if(historyCardTarget){showOwnedCard(historyCardTarget.dataset.historyCard,true);return}
   const hiddenTarget=e.target.closest('[data-hidden-card]');
   if(hiddenTarget){showHiddenCard(hiddenTarget.dataset.hiddenCard);return;}
-  const tab=e.target.closest('[data-tab]');if(tab){if(tab.dataset.tab==='store')openStore();else render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks','achievements','showcaseEdit','activity'].includes(a)){if(a==='store')openStore();else if(a==='activity')openActivity();else render(a);if(a==='tasks'&&live())bridge.refreshTasks?.().then(()=>{if(current==='tasks')render('tasks')}).catch(()=>{});if(a==='achievements'&&live())bridge.refreshAchievements?.().then(()=>{if(current==='achievements')render('achievements')}).catch(()=>{});}else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Открой FLIP через Telegram.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Раздел пока недоступен.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogArtist||'carti',b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn')&&live()&&bridge?.isAdmin===true)previewRoulette();if(e.target.closest('#buyPackBtn'))doPack('standard');if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))openStore();if(e.target.closest('#bellBtn')){
+  const tab=e.target.closest('[data-tab]');if(tab){if(tab.dataset.tab==='store')openStore();else render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks','achievements','showcaseEdit','activity'].includes(a)){if(a==='store')openStore();else if(a==='activity')openActivity();else render(a,{returnTo:a==='profile'&&['achievements','tasks','showcaseEdit','activity','leaderboard','publicProfile'].includes(current)});if(a==='tasks'&&live())bridge.refreshTasks?.().then(()=>{if(current==='tasks')render('tasks')}).catch(()=>{});if(a==='achievements'&&live())bridge.refreshAchievements?.().then(()=>{if(current==='achievements')render('achievements')}).catch(()=>{});}else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Открой FLIP через Telegram.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Раздел пока недоступен.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogArtist||'carti',b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn')&&live()&&bridge?.isAdmin===true)previewRoulette();if(e.target.closest('#buyPackBtn'))doPack('standard');if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))openStore();if(e.target.closest('#bellBtn')){
  const panel=$('#notifications');panel.classList.toggle('show');
  if(panel.classList.contains('show'))refreshHub();
  updateInbox();

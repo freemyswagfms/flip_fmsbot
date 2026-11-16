@@ -88,7 +88,7 @@ test('Release version and Telegram WebView cache query refer to hotfix assets',(
  assert.ok(pkg.version.localeCompare('0.9.7.1',undefined,{numeric:true})>=0);
  assert.ok(html.includes('src/scripts/app.js?v='+pkg.version));
  for(const asset of ['src/scripts/trades.js','src/scripts/delivery-reveal.js',
-   'src/styles/delivery-reveal.css'])assert.ok(html.includes(asset+'?v='+(asset==='src/scripts/trades.js'?pkg.version:'0.9.8.3')),asset);
+   'src/styles/delivery-reveal.css'])assert.ok(html.includes(asset+'?v='+(asset==='src/scripts/trades.js'?'0.9.8.5':'0.9.8.3')),asset);
  assert.ok(html.includes('● FLIP · TELEGRAM GAME'));
  assert.ok(read('api/flip.js').includes("version:'"+pkg.version+"'"));
 });
