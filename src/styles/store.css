@@ -37,7 +37,7 @@
 .flip-pack-art.mini strong{font-size:22px}
 .flip-pack-art.mini .flip-pack-art-bottom{font-size:6px}
 .flip-shop-feature-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:12px 0;border-top:1px solid #baff6636;border-bottom:1px solid #baff6636;font:900 9px 'Space Grotesk',sans-serif;letter-spacing:.3px;color:#d5e7d1}
-.flip-shop-feature-row span+span:before{content:'✳';color:#baff67;margin-right:7px;font-size:9px}
+.flip-shop-feature-row span+span:before{content:'';display:inline-block;width:8px;height:8px;background:#baff67;margin-right:7px;vertical-align:middle;clip-path:polygon(50% 0%,62% 35%,100% 50%,62% 65%,50% 100%,38% 65%,0% 50%,38% 35%)}
 .flip-shop-hero-bottom{display:grid;grid-template-columns:minmax(75px,.58fr) minmax(0,1.42fr);align-items:end;gap:10px;margin-top:14px}
 .flip-shop-hero-bottom small{display:block;color:#94b38c;font:800 8px 'Space Grotesk',sans-serif;letter-spacing:1px}
 .flip-shop-hero-bottom strong{display:block;color:#f8fff0;font:900 25px 'Space Grotesk',sans-serif;line-height:1.5;white-space:nowrap}
@@ -164,7 +164,7 @@
 .flip-pack-found-titles span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#dff1d9;font:800 9px 'Manrope',sans-serif}
 .flip-pack-scene.is-finished .flip-pack-found-titles{display:grid}
 .flip-pack-scene.is-finished .flip-pack-found-label{color:#baff67}
-.flip-pack-scene.is-finished .flip-pack-found-label:after{content:' ✓'}
+.flip-pack-scene.is-finished .flip-pack-found-label:after{content:'';display:inline-block;width:5px;height:9px;border:solid #baff67;border-width:0 2px 2px 0;margin-left:10px;transform:translateY(-2px) rotate(45deg)}
 .flip-pack-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;font:900 10px 'Space Grotesk',sans-serif;color:#cfe3c5}
 .flip-pack-bottom span:last-child{color:#baff67}
 .flip-pack-action{width:100%;min-height:55px;padding:16px 18px;border:0;background:#baff67;color:#152106;border-radius:12px;display:flex;align-items:center;justify-content:space-between;font:900 13px 'Space Grotesk',sans-serif}
@@ -179,3 +179,11 @@
  .flip-pack-flip,.flip-pack-slot.mythic .flip-pack-front:before,
  .flip-pack-slot.hidden .flip-pack-front:after{transition:none!important;animation:none!important}
 }
+
+/* v0.9.6.2 — vector controls inside shop and three-card reveal. */
+.flip-shop-chevron .flip-svg{width:17px;height:17px;vertical-align:-.2em;stroke-width:2}
+.flip-shop-theme-eyebrow .flip-svg{width:15px;height:15px;stroke-width:1.8}
+.flip-pack-art-bottom b .flip-svg{width:14px;height:14px;stroke-width:2;vertical-align:-.16em}
+.flip-shop-topbar .flip-svg{width:15px;height:15px;vertical-align:-.2em;stroke-width:2}
+.flip-shop-buy-arrow .flip-svg{width:19px;height:19px;vertical-align:middle;stroke-width:2.2}
+.flip-pack-action .flip-svg{width:21px;height:21px;stroke-width:2.25;vertical-align:middle}
