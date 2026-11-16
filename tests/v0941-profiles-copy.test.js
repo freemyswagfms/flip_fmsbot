@@ -73,7 +73,7 @@ test('The normal game has no internal ranked/test-copy vocabulary',()=>{
     assert.doesNotMatch(text,/тестовые административные копии/i,path);
   }
   assert.match(src('src/scripts/admin.js'),/Рейтинговых карточек/);
-  assert.match(src('src/scripts/trades.js'),/Доступно для обмена:/);
+  assert.match(src('src/scripts/trades.js'),/flip-trade-choice-bottom/);
   assert.match(src('src/scripts/showcase.js'),/Выбери слот и карточку/);
   assert.match(src('src/scripts/showcase.js'),/КАРТОЧЕК/);
 });
