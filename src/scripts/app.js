@@ -917,6 +917,6 @@ bridge?.connect().then(snapshot=>{
   if(snapshot){applyServerState(snapshot);refreshHub({rerender:true});}
   else if(bridge.mode==='demo')applyLocalDemoState();
   else render(current);
-  if(bridge.mode==='blocked') toast(bridge.error==='NO_TELEGRAM_AUTH'?'Открой FLIP через своего Telegram-бота':'Сервер недоступен: '+(bridge.error||'ошибка'));
+  if(bridge.mode==='blocked') toast(bridge.error==='ACCOUNT_BANNED'?'Доступ к FLIP ограничен администрацией.':bridge.error==='NO_TELEGRAM_AUTH'?'Открой FLIP через своего Telegram-бота':'Сервер недоступен: '+(bridge.error||'ошибка'));
 });
 })();
