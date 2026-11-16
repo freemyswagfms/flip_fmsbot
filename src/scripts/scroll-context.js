@@ -7,17 +7,19 @@
 const anchorAttributes=[
  ['data-achievement-id'],
  ['data-task-scope','data-task-slot'],
- ['data-gallery-item'],
+ // A gallery flag alone is shared by every tile. Pair it with the card ID.
+ ['data-owned-card','data-gallery-item'],
+ ['data-history-card','data-gallery-item'],
  ['data-collection-artist'],
  ['data-collection-release'],
  ['data-owned-card'],
  ['data-history-card'],
  ['data-hidden-card'],
- ['data-catalog-release','data-catalog-rarity'],
+ ['data-catalog-artist','data-catalog-release','data-catalog-rarity'],
  ['data-shop-inspect'],
- ['data-trade-preview-card'],
+ // The same trade card can appear in a composer and an incoming offer;
+ // keep numeric scroll rather than attaching to a different copy.
  ['data-showcase-filter'],
- ['data-showcase-slot'],
  ['data-player-profile']
 ];
 const nestedSelectors=[
