@@ -183,7 +183,7 @@ end; $$;
 -- Add mode flags only to the player's *own* authenticated snapshot,
 -- so the shop can show "Без лимита" instead of an incorrect 0/10 label.
 create or replace function public.flip_snapshot(p_telegram_id bigint)
-returns jsonb language sql stable set search_path = '' as $
+returns jsonb language sql stable set search_path = '' as $snapshot$
   select jsonb_build_object(
     'balance',p.balance,'xp',p.xp,'level',p.level,'xp_to_next',100+50*(p.level-1),
     'cp',public.flip_cp_total(p.telegram_id),
@@ -203,7 +203,7 @@ returns jsonb language sql stable set search_path = '' as $
        from public.flip_discoveries d
        where d.telegram_id=p.telegram_id),'[]'::jsonb)
   ) from public.flip_players p where p.telegram_id=p_telegram_id;
-$;
+$snapshot$;
 revoke all on function public.flip_snapshot(bigint) from public,anon,authenticated;
 grant execute on function public.flip_snapshot(bigint) to service_role;
 
