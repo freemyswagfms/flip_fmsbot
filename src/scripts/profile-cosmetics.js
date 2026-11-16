@@ -93,7 +93,8 @@
   const groups=types.map(type=>{
    const list=items.filter(item=>item.kind===type);
    return '<section class="flip-cosmetic-category"><div class="flip-cosmetic-category-head">'+
-    '<h4>'+kinds[type]+'</h4><span>'+list.length+' ПРЕДМЕТА</span></div>'+
+    '<h4>'+kinds[type]+'</h4>'+
+ (equipped[type]?'<button type="button" class="flip-cosmetic-reset" data-cosmetic-reset-kind="'+type+'">СБРОСИТЬ ✕</button>':'<span>'+list.length+' ПРЕДМЕТА</span>')+'</div>'+
     '<div class="flip-cosmetic-grid">'+list.map(item=>{
       const selected=previewId===item.id,has=owned.has(item.id);
       const active=equipped[type]===item.id;
