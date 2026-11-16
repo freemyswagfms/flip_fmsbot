@@ -430,6 +430,7 @@ async function doDrop(){
       applyServerState(result.state);
       bridge.refreshTasks?.().then(()=>{if(current==='home')render('home')}).catch(()=>{});
       bridge.refreshAchievements?.().catch(()=>{});
+       refreshHub({rerender:true});
       const card=cardById(result.card_id);
       if(card){
         if(rouletteStarted)window.FLIPReveal.resolve(card);
@@ -481,6 +482,7 @@ async function doPack(packType='standard'){
      applyServerState(result.state);
      bridge.refreshTasks?.().catch(()=>{});
      bridge.refreshAchievements?.().catch(()=>{});
+     refreshHub({rerender:true});
      bridge.refreshShop?.().then(()=>{
        if(current==='store')render('store');
      }).catch(()=>{});
@@ -713,6 +715,7 @@ async function claimAchievement(button){
  try{
    const result=await bridge.claimAchievement(code,stage);
    applyServerState(result.state);
+    refreshHub({rerender:true});
    toast('Достижение: +'+result.earned_f+' F'+(result.badge?' · значок открыт!':''));
    render('achievements');
  }catch(error){
