@@ -137,3 +137,287 @@
 .flip-cp-rules summary::after{content:'⌄';color:#baff67;float:right}
 .flip-cp-rules[open] summary::after{content:'⌃'}
 .flip-cp-rules p{margin:12px 0 0!important;color:#b7c7b7;font:500 11px/1.55 'Manrope',sans-serif}
+
+
+/* FLIP v0.9.8.5 — gallery-first swaps, standalone visual language.
+   Limited to the swaps page; leaderboard remains untouched. */
+.panel.flip-trade-page{border:0;background:none;box-shadow:none;padding:0;overflow:visible}
+#flip-trades-root{--trade-lime:#b6ff68;--trade-line:rgba(216,255,216,.12);
+  --trade-soft:#95a99a;display:grid;gap:15px;min-width:0}
+.flip-trade-hero{position:relative;isolation:isolate;overflow:hidden;min-height:192px;
+  border-radius:23px;border:1px solid #4b684b;padding:22px 21px 17px;
+  background:radial-gradient(ellipse at 91% 4%,#b6ff6840,transparent 42%),
+    radial-gradient(ellipse at 0% 100%,#436a5040,transparent 48%),
+    linear-gradient(145deg,#14251b,#0c1711 75%);box-shadow:0 18px 34px #02070330}
+.flip-trade-hero:before{content:"";position:absolute;inset:-75px -95px auto auto;
+ width:200px;height:200px;border:1px solid #b8ff6a35;border-radius:50%;box-shadow:
+ 0 0 0 38px #b8ff6a0b,0 0 0 80px #b8ff6807;z-index:-1}
+.flip-trade-hero-grain{position:absolute;inset:0;z-index:-1;opacity:.16;pointer-events:none;
+ background-image:radial-gradient(#d6ffbd70 .55px,transparent .55px);
+ background-size:9px 9px;mask-image:linear-gradient(100deg,transparent,#000)}
+.flip-trade-hero-top,.flip-trade-hero-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.flip-trade-hero-top{font:800 9px/1.1 'Space Grotesk',sans-serif;letter-spacing:2.3px;color:#b7e4ac}
+.flip-trade-hero-star{font-size:25px;line-height:1;color:#c4ff83;animation:flipTradeOrbit 18s linear infinite}
+.flip-trade-hero h2{font:900 clamp(32px,10vw,56px)/.98 'Space Grotesk',sans-serif;
+ letter-spacing:-2.4px;margin:17px 0 10px;color:#f1ffe9}
+.flip-trade-hero h2 span{color:var(--trade-lime)}
+.flip-trade-hero-bottom{font:700 9px 'Manrope',sans-serif;letter-spacing:.6px;color:#a6c6a8}
+.flip-trade-hero-ring{display:inline-grid;place-items:center;width:27px;height:27px;
+ border:1px solid #b7ff6175;border-radius:50%;color:var(--trade-lime);font-size:15px}
+.flip-trade-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:19px}
+.flip-trade-shortcuts button{display:flex;align-items:center;justify-content:center;gap:10px;
+ min-height:43px;border-radius:11px;border:1px solid #bbff6d88;background:#b6ff68;
+ color:#10210e;font:900 11px 'Space Grotesk',sans-serif;letter-spacing:.45px;cursor:pointer;
+ transition:transform .2s ease,filter .2s ease,background .2s ease}
+.flip-trade-shortcuts button:last-child{border-color:#507151;background:#15271b;color:#d0ffb1}
+.flip-trade-shortcuts button:active{transform:scale(.97)}
+.flip-trade-shortcuts button b{display:grid;place-items:center;min-width:21px;height:21px;
+ border-radius:7px;background:#b6ff6825;color:#d6ffb9;font-size:11px}
+.flip-trade-compose,.flip-trade-feed-panel{border:1px solid var(--trade-line)!important;
+ border-radius:22px!important;background:linear-gradient(142deg,#151b17,#101511 67%)!important;
+ box-shadow:0 16px 30px #02070324}
+.flip-trade-compose{padding:19px 14px 16px!important;scroll-margin-top:12px;
+ animation:flipTradePanelIn .4s cubic-bezier(.21,.75,.21,1) both}
+.flip-trade-compose-head{display:flex;justify-content:space-between;gap:8px;
+ align-items:start;margin-bottom:16px}
+.flip-trade-kicker{display:block;font:800 9px 'Space Grotesk',sans-serif;
+ letter-spacing:1.8px;color:#a4c98f}
+.flip-trade-compose-head h3,.flip-trade-feed-header h3{color:#f0f8ee!important;
+ font:850 22px/1.1 'Space Grotesk',sans-serif!important;letter-spacing:-.65px!important;
+ margin:7px 0 0!important;text-transform:none}
+.flip-trade-compose-mark{display:grid;place-items:center;color:#b6ff68;font-size:30px;
+ width:42px;height:42px;border-radius:14px;background:#b9ff6812;border:1px solid #baff6834}
+.flip-trade-compose .flip-social-label{color:#b0c8b2;font:800 10px 'Space Grotesk',sans-serif;
+ letter-spacing:1px;margin:15px 0 8px}
+.flip-trade-compose .flip-trade-modes{background:#0b100d;border:1px solid #293a2c;
+ border-radius:13px;padding:4px;gap:4px;margin:4px 0 17px}
+.flip-trade-compose .flip-trade-modes button{font-size:10px;border-radius:9px;min-height:39px;
+ color:#acc3ab;transition:background .18s,color .18s,box-shadow .18s}
+.flip-trade-compose .flip-trade-modes button.active{background:#b6ff68;border-color:#b6ff68;
+ color:#13230e;box-shadow:0 3px 15px #b6ff681d}
+.flip-trade-player-search{gap:9px}
+.flip-trade-player-search input{min-height:47px;padding:12px 13px;font-size:16px;
+ background:#0c130e;border:1px solid #3b5240;border-radius:11px;color:#f0f8ed}
+.flip-trade-player-search .outlinebtn{border-radius:11px;min-width:74px;font-size:10px}
+.flip-trade-compose .flip-social-selected{border-radius:12px}
+.flip-trade-picked-player{display:flex;align-items:center;justify-content:space-between;gap:10px;
+ padding:12px 14px;border:1px solid #b6ff684c;background:linear-gradient(100deg,#b6ff681c,#182b1d);
+ margin:16px 0}
+.flip-trade-picked-player small{display:block;color:#a8c7a2;font:800 9px 'Space Grotesk',sans-serif;
+ letter-spacing:1.1px;margin-bottom:5px}
+.flip-trade-picked-player strong{display:block;color:#e7ffdc;font-size:13px}
+.flip-trade-picked-player button{float:none;flex:none}
+.flip-trade-counter-banner{display:flex;justify-content:space-between;align-items:center;gap:12px;
+ font:800 11px 'Space Grotesk',sans-serif}
+.flip-trade-counter-banner button{float:none}
+.flip-trade-pickers{display:grid;gap:12px;margin-top:12px}
+.flip-trade-picker{min-width:0;padding:13px 10px 12px;border:1px solid #344339;
+ border-radius:16px;background:#0c120e}
+.flip-trade-picker-heading{display:flex;align-items:center;justify-content:space-between;
+ margin:0 2px 12px;gap:12px}
+.flip-trade-picker-heading>div{display:flex;align-items:baseline;gap:8px}
+.flip-trade-picker-heading small{font:900 11px 'Space Grotesk',sans-serif;
+ letter-spacing:.55px;color:#dff6d9}
+.flip-trade-picker-heading strong{color:#baff68;font:800 15px 'Space Grotesk',sans-serif}
+.flip-trade-picker-heading strong span{color:#647c66;font-size:12px}
+.flip-trade-picker-total{font:700 9px 'Manrope',sans-serif;color:#8ca18f}
+.flip-trade-filter-bar{display:grid;gap:8px;margin-bottom:11px}
+.flip-trade-card-search-wrap{display:flex;align-items:center;gap:10px;min-height:42px;
+ border:1px solid #34473a;border-radius:10px;background:#161e18;padding:0 11px}
+.flip-trade-card-search-wrap:focus-within{border-color:#b6ff68;box-shadow:0 0 0 2px #b6ff6818}
+.flip-trade-card-search-wrap>span{color:#b6ff68;font:800 23px 'Space Grotesk',sans-serif}
+.flip-trade-card-search{flex:1;min-width:0;border:0;background:transparent;outline:none;
+ color:#f0f9ec;font:600 16px 'Manrope',sans-serif}
+.flip-trade-card-search::placeholder{color:#7d977f}
+.flip-trade-rarity-filter{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.flip-trade-rarity-filter::-webkit-scrollbar{display:none}
+.flip-trade-rarity-filter button{flex:1;min-width:30px;border-radius:7px;border:1px solid #34453a;
+ color:#aac0a7;background:#1a251c;min-height:31px;padding:5px 7px;
+ font:850 10px 'Space Grotesk',sans-serif;cursor:pointer;transition:all .2s}
+.flip-trade-rarity-filter button.active{background:#d3ff9f;color:#192b14;border-color:#d3ff9f}
+.flip-trade-rarity-filter button:active{transform:scale(.94)}
+.flip-trade-choice-viewport{max-height:415px;overflow-y:auto;overscroll-behavior:contain;
+ scrollbar-color:#557d4c transparent;scrollbar-width:thin}
+.flip-trade-card-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;
+ max-height:none;overflow:visible;padding:2px}
+.flip-trade-card-choice{position:relative;display:flex;flex-direction:column;gap:0;padding:0;
+ border-radius:12px;border:1px solid #324335;background:#1a241c;min-width:0;overflow:hidden;
+ transition:transform .22s cubic-bezier(.2,.72,.25,1),border-color .22s,box-shadow .22s;
+ animation:flipTradeTileIn .25s both;animation-delay:calc(var(--tile-order)*25ms)}
+.flip-trade-card-choice.chosen{border-color:#b6ff68;background:#253c25;
+ box-shadow:0 0 0 1px #b6ff6870,0 7px 18px #99ff4d1a}
+.flip-trade-card-choice.at-limit{opacity:.55}
+.flip-trade-card-choice:active{transform:scale(.975)}
+.flip-trade-choice-art{position:relative;display:block;width:100%;aspect-ratio:1/1;
+ padding:0;border:0;background:linear-gradient(135deg,#293d2b,#141e17);cursor:zoom-in;overflow:hidden}
+.flip-trade-art{display:block;position:relative;aspect-ratio:1/1;width:100%;
+ overflow:hidden;background:radial-gradient(circle at 65% 30%,#344b36,#18241a)}
+.flip-trade-art img{display:block;position:absolute;inset:0;width:100%;height:100%;
+ object-fit:cover;z-index:2;transition:transform .4s cubic-bezier(.2,.7,.2,1)}
+.flip-trade-art-fallback{position:absolute;inset:0;z-index:1;display:grid;place-items:center;
+ color:#6b856a;font:900 38px 'Space Grotesk',sans-serif}
+.flip-trade-art-fallback span{color:#b6ff68}
+.flip-trade-art.is-missing img{display:none}
+.flip-trade-choice-zoom{position:absolute;z-index:3;right:7px;top:7px;width:26px;height:26px;
+ display:grid;place-items:center;color:#e8ffd8;border:1px solid #ffffff3f;
+ background:#07140abf;backdrop-filter:blur(8px);border-radius:8px;font-size:16px;
+ transition:transform .2s,background .2s}
+.flip-trade-choice-art:hover .flip-trade-art img{transform:scale(1.06)}
+.flip-trade-choice-art:hover .flip-trade-choice-zoom{background:#386436;transform:translate(1px,-1px)}
+.flip-trade-choice-select{display:flex;align-items:center;gap:6px;padding:10px 8px 5px;
+ cursor:pointer;min-height:56px;width:100%}
+.flip-trade-choice-select input{position:absolute;clip:rect(0,0,0,0);clip-path:inset(50%);
+ width:1px;height:1px;overflow:hidden}
+.flip-trade-choice-name{display:block;min-width:0;flex:1}
+.flip-trade-choice-name strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+ overflow:hidden;color:#eff9eb;font:800 11px/1.3 'Manrope',sans-serif}
+.flip-trade-choice-name small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+ color:#a2b7a4;font:600 9px 'Manrope',sans-serif;margin-top:3px}
+.flip-trade-choice-check{display:grid;place-items:center;flex:none;width:23px;height:23px;
+ border:1px solid #647965;border-radius:8px;color:#a3baa2;font:900 15px 'Space Grotesk';
+ background:#253227;transition:background .18s,transform .18s}
+.flip-trade-card-choice.chosen .flip-trade-choice-check{border-color:#b6ff68;
+ color:#13240d;background:#b6ff68;animation:flipTradeSelectPulse .32s ease}
+.flip-trade-choice-select:focus-within{outline:2px solid #b6ff68;outline-offset:-3px}
+.flip-trade-choice-bottom{display:flex;align-items:center;justify-content:space-between;
+ padding:4px 8px 9px;gap:4px}
+.flip-trade-choice-bottom small{color:#9fb79b;font:700 10px 'Space Grotesk',sans-serif}
+.flip-trade-rarity{font:900 8px 'Space Grotesk',sans-serif;letter-spacing:.45px;color:#a9bbb2}
+.flip-trade-rarity[data-rarity="rare"]{color:#b6ff68}
+.flip-trade-rarity[data-rarity="epic"]{color:#c6a8ff}
+.flip-trade-rarity[data-rarity="legendary"]{color:#f5cb73}
+.flip-trade-rarity[data-rarity="mythic"]{color:#ff8895}
+.flip-trade-rarity[data-rarity="hidden"]{color:#d6dfff}
+.flip-trade-tiles-empty{display:grid;place-items:center;min-height:100px;
+ color:#889c8b;font:750 11px 'Manrope',sans-serif}
+.flip-trade-exchange-direction{display:flex;justify-content:center;align-items:center;
+ height:30px;color:#b6ff68;font:800 24px 'Space Grotesk',sans-serif}
+.flip-trade-exchange-direction span{display:grid;place-items:center;width:43px;height:30px;
+ border-radius:10px;border:1px solid #425a3f;background:#1e3022;
+ animation:flipTradeSwapBreathe 3s ease-in-out infinite}
+.flip-trade-amount-box{margin-top:15px}
+.flip-trade-amount-box .flip-social-label{margin-top:0}
+.flip-trade-amount-input{display:flex;align-items:center;gap:10px;border-radius:12px;
+ border:1px solid #507049;background:#101b13;padding:0 12px}
+.flip-trade-amount-input:focus-within{border-color:#b6ff68}
+.flip-trade-amount-input .flip-social-input{font-size:20px;font-weight:850;min-width:0;
+ border:0;background:transparent;padding:12px 3px}
+.flip-trade-amount-input strong{font:900 16px 'Space Grotesk';color:#b6ff68}
+.flip-trade-review{margin-top:17px;background:#0b110d;border:1px solid #455945;
+ border-radius:15px;overflow:hidden}
+.flip-trade-review-head{display:flex;align-items:center;justify-content:space-between;
+ padding:11px 13px;background:#182719;border-bottom:1px solid #3a503d}
+.flip-trade-review-head>span:first-child{color:#d4efcb;font:900 10px 'Space Grotesk';
+ letter-spacing:.9px}
+.flip-trade-review-arrow{color:#b6ff68;font-size:19px}
+.flip-trade-review-grid,.flip-trade-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:0;margin:0;background:transparent}
+.flip-trade-summary-side,.flip-trade-offer-side{min-width:0;padding:12px 9px}
+.flip-trade-summary-side+div,.flip-trade-offer-side+div{border-left:1px solid #2f4032}
+.flip-trade-side-top{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;
+ margin:0 0 10px;flex-wrap:wrap}
+.flip-trade-side-top small{font:900 9px 'Space Grotesk',sans-serif;letter-spacing:.5px;
+ color:#aabfa9;margin:0}
+.flip-trade-side-top b{color:#d5ffc0;font:850 9px 'Space Grotesk',sans-serif;white-space:nowrap}
+.flip-trade-summary-items,.flip-trade-offer-strip{display:flex;gap:7px;overflow-x:auto;
+ min-width:0;scrollbar-width:thin;scrollbar-color:#445947 transparent;padding:1px 0 8px}
+.flip-trade-preview-card{flex:0 0 auto;display:flex;flex-direction:column;gap:5px;
+ width:78px;min-width:0;padding:0;border:0;background:none;color:#f2faec;
+ text-align:left;cursor:zoom-in}
+.flip-trade-preview-card .flip-trade-art{border-radius:9px;border:1px solid #567053;
+ transition:box-shadow .25s,transform .25s}
+.flip-trade-preview-card:hover .flip-trade-art{box-shadow:0 0 0 2px #b6ff68;
+ transform:translateY(-2px)}
+.flip-trade-preview-caption strong{display:block;overflow:hidden;text-overflow:ellipsis;
+ white-space:nowrap;color:#f0f5eb;font:800 9px 'Manrope',sans-serif}
+.flip-trade-preview-caption small{display:block;overflow:hidden;text-overflow:ellipsis;
+ white-space:nowrap;color:#9cb09c;font:600 8px 'Manrope',sans-serif;margin-top:3px}
+.flip-trade-preview-card.small{width:70px}
+.flip-trade-preview-card.offer{width:72px}
+.flip-trade-preview-card.gift{width:65px}
+.flip-trade-summary-empty{color:#526556;font:850 24px 'Space Grotesk',sans-serif;
+ display:flex;align-items:center;min-height:67px}
+.flip-trade-currency-token{display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:3px;flex:0 0 70px;width:70px;min-height:70px;
+ border-radius:10px;border:1px solid #a6f76578;background:linear-gradient(145deg,#2c5322,#19331c);
+ color:#dcffc5}
+.flip-trade-currency-token b{font:900 16px 'Space Grotesk',sans-serif;max-width:64px;
+ overflow:hidden;text-overflow:ellipsis}
+.flip-trade-currency-token span{font:900 12px 'Space Grotesk',sans-serif;color:#b6ff68}
+.flip-social-preview.flip-trade-cp-impact{margin:13px 0;background:#1b2c1c;
+ border-radius:12px;border-color:#4e7048;gap:8px}
+.flip-trade-compose .flip-trade-send{display:flex;align-items:center;justify-content:center;
+ gap:12px;min-height:50px;border-radius:13px;background:#b6ff68;color:#14210d;
+ font:950 11px 'Space Grotesk';letter-spacing:.4px;
+ box-shadow:0 8px 19px #84d7412b;transition:transform .17s,box-shadow .17s}
+.flip-trade-send span{font-size:19px}
+.flip-trade-send:not(:disabled):active{transform:scale(.97)}
+.flip-trade-send:disabled{background:#455847;color:#97af94;box-shadow:none;opacity:.72}
+.flip-trade-rules{border-color:#2f4132}
+.flip-trade-feed-header{display:flex;justify-content:space-between;align-items:center;
+ gap:10px;padding:9px 2px 0;scroll-margin-top:14px}
+.flip-trade-feed-header .outlinebtn{min-height:36px;border-radius:10px;white-space:nowrap}
+.flip-trade-feed-panel{margin:0!important;padding:15px 12px!important}
+.flip-trade-feed-head{display:flex;align-items:center;justify-content:space-between;
+ gap:12px;margin-bottom:8px}
+.flip-trade-feed-head h3{margin:0!important;font:900 11px 'Space Grotesk',sans-serif;
+ letter-spacing:1.1px;color:#f2fbed}
+.flip-trade-feed-head>span{display:grid;place-items:center;padding:3px 8px;
+ border-radius:8px;background:#b6ff681a;color:#b6ff68;font:900 11px 'Space Grotesk'}
+.flip-trade-empty-state{padding:18px;color:#546b58;text-align:center;font-size:24px}
+.flip-trade-offer{margin:12px 0 0;padding:13px 11px!important;
+ border:1px solid #354638!important;border-radius:15px;
+ background:linear-gradient(155deg,#1a261d,#111a14);
+ animation:flipTradePanelIn .33s ease-out both}
+.flip-trade-offer.is-fresh{border-color:#b6ff68!important;padding-left:11px!important;
+ animation:flipTradeFresh .9s ease-out,flipTradePanelIn .33s ease-out}
+.flip-trade-offer-heading{margin-bottom:11px!important}
+.flip-trade-offer-heading .flip-trade-partner strong{font-size:13px!important;color:#f2fff0}
+.flip-trade-offer .flip-trade-cards{position:relative;overflow:hidden;
+ border-radius:12px;border:1px solid #374d38;background:#0c150f}
+.flip-trade-offer-side{padding:11px 8px;min-width:0}
+.flip-trade-offer-side+ .flip-trade-offer-transfer+ .flip-trade-offer-side{border-left:1px solid #354636}
+.flip-trade-offer-transfer{position:absolute;z-index:2;top:42px;left:50%;
+ transform:translateX(-50%);display:grid;place-items:center;
+ width:27px;height:27px;border-radius:50%;background:#b6ff68;color:#132412;
+ box-shadow:0 2px 7px #05090577;font-size:17px}
+.flip-trade-offer-footer{margin-top:10px;color:#94a995;font:700 9px 'Manrope',sans-serif}
+.flip-trade-actions{margin-top:12px;gap:7px}
+.flip-trade-actions button{border-radius:10px;min-height:38px}
+.flip-trade-actions .bigbtn{background:#b6ff68;color:#18250e;flex:1}
+.flip-trade-inspection{margin:12px 0 0}
+.flip-trade-gift-row{align-items:center}
+.flip-trade-gift-row>div{min-width:0;flex:1}
+.flip-trade-gift-row .flip-trade-preview-card{flex:0 0 65px}
+.flip-trade-gift-row .flip-trade-preview-card small{margin-top:2px}
+.flip-trade-status{border-radius:8px;padding:6px 9px}
+@keyframes flipTradePanelIn{from{opacity:0;transform:translateY(12px)}
+ to{opacity:1;transform:translateY(0)}}
+@keyframes flipTradeTileIn{from{opacity:.6;transform:translateY(6px)}
+ to{opacity:1;transform:translateY(0)}}
+@keyframes flipTradeSelectPulse{0%{transform:scale(.65)}65%{transform:scale(1.15)}
+ to{transform:scale(1)}}
+@keyframes flipTradeSwapBreathe{0%,100%{box-shadow:0 0 0 0 #b6ff6817}
+ 50%{box-shadow:0 0 0 7px #b6ff6800}}
+@keyframes flipTradeOrbit{to{transform:rotate(360deg)}}
+@media(min-width:550px){
+ .flip-trade-card-choices{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .flip-trade-picker{padding:15px}
+ .flip-trade-summary-side,.flip-trade-offer-side{padding:14px}
+}
+@media(max-width:365px){
+ .flip-trade-hero{padding:18px 15px 15px}
+ .flip-trade-compose{padding:15px 10px!important}
+ .flip-trade-card-choices{gap:7px}
+ .flip-trade-card-choice .flip-trade-choice-select{padding:7px 6px 4px}
+ .flip-trade-feed-panel{padding:12px 9px!important}
+ .flip-trade-preview-card.offer{width:60px}
+ .flip-trade-side-top b{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .flip-trade-hero-star,.flip-trade-exchange-direction span,
+ .flip-trade-card-choice,.flip-trade-compose,.flip-trade-offer,
+ .flip-trade-card-choice.chosen .flip-trade-choice-check{animation:none!important}
+ .flip-trade-card-choice,.flip-trade-shortcuts button,.flip-trade-choice-art .flip-trade-art img,
+ .flip-trade-preview-card .flip-trade-art{transition:none!important}
+}
