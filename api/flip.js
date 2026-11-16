@@ -74,7 +74,7 @@ async function rpc(name,payload,db){
   const body=await response.text();
   if (!response.ok) {
     // Return known error codes only. Never forward database internals to the client.
-    const code=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT','ACCOUNT_NOT_FOUND','DUPLICATE_REQUEST_ACTION','TASK_INCOMPLETE','TASK_CHANGED','TASK_ALREADY_CLAIMED','TASK_NOT_VERIFIED','BAD_TASK','TASK_REROLL_USED','TASK_REROLL_FORBIDDEN','TASK_REROLL_UNAVAILABLE','STREAK_NOT_READY','BAD_ACHIEVEMENT','ACHIEVEMENT_ALREADY_CLAIMED','ACHIEVEMENT_STAGE_ORDER','ACHIEVEMENT_NOT_READY','SHOWCASE_BAD_SLOT','SHOWCASE_BAD_CARD','SHOWCASE_NOT_OWNED','PLAYER_NOT_FOUND','UNKNOWN_PACK','THEME_UNAVAILABLE','PACK_GENERATION_FAILED','BAD_DELIVERY_REQUEST','DELIVERY_NOT_FOUND'].find(s=>body.includes(s));
+    const code=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT','ACCOUNT_NOT_FOUND','DUPLICATE_REQUEST_ACTION','TASK_INCOMPLETE','TASK_CHANGED','TASK_ALREADY_CLAIMED','TASK_NOT_VERIFIED','BAD_TASK','TASK_REROLL_USED','TASK_REROLL_FORBIDDEN','TASK_REROLL_UNAVAILABLE','STREAK_NOT_READY','BAD_ACHIEVEMENT','ACHIEVEMENT_ALREADY_CLAIMED','ACHIEVEMENT_STAGE_ORDER','ACHIEVEMENT_NOT_READY','SHOWCASE_BAD_SLOT','SHOWCASE_BAD_CARD','SHOWCASE_NOT_OWNED','SHOWCASE_SLOT_LOCKED','PROFILE_BAD_REQUEST','PROFILE_SLOT_UNAVAILABLE','PROFILE_ITEM_UNAVAILABLE','PROFILE_ALREADY_OWNED','PROFILE_NOT_OWNED','PROFILE_BAD_ARTIST','PROFILE_BAD_BADGE','PLAYER_NOT_FOUND','UNKNOWN_PACK','THEME_UNAVAILABLE','PACK_GENERATION_FAILED','BAD_DELIVERY_REQUEST','DELIVERY_NOT_FOUND'].find(s=>body.includes(s));
     const error=new Error(code||'DATABASE_REQUEST_FAILED');error.status=code?409:502;throw error;
   }
   try{return JSON.parse(body);}catch{throw new Error('DATABASE_RESPONSE_FAILED');}
@@ -87,7 +87,7 @@ export async function handleRequest(request,env=undefined){
   if (!['GET','POST'].includes(request.method)) return json({error:'METHOD_NOT_ALLOWED'},405);
   const configured=!!(process.env.TELEGRAM_BOT_TOKEN&&process.env.SUPABASE_URL&&process.env.SUPABASE_SECRET_KEY);
   if(request.method==='GET' && u.searchParams.get('health')==='1')
-    return json({service:'FLIP',version:'0.9.8.6',configured});
+    return json({service:'FLIP',version:'0.9.8.7',configured});
   if(!configured)return json({error:'SERVER_NOT_CONFIGURED'},503);
   try{
     const raw=request.headers.get('x-telegram-init-data');
@@ -114,6 +114,9 @@ export async function handleRequest(request,env=undefined){
       // Server-derived pack prices and private purchase history. Identity
       // comes exclusively from verified Telegram initData, never the query.
       return json(await rpc('flip_shop_snapshot',{p_telegram_id:user.telegram_id},db));
+    }
+    if(request.method==='GET' && u.searchParams.get('cosmetics')==='1'){
+      return json(await rpc('flip_profile_cosmetics_shop',{p_telegram_id:user.telegram_id},db));
     }
     if(request.method==='GET' && u.searchParams.get('showcase')==='1'){
       return json(await rpc('flip_showcase_own',{p_telegram_id:user.telegram_id},db));
@@ -153,16 +156,17 @@ export async function handleRequest(request,env=undefined){
         telegram_id:user.telegram_id, username:user.username, first_name:user.first_name
       },db);
       await rpc('flip_streak_touch',{p_telegram_id:user.telegram_id},db);
-      const [state,catalog,tasks,achievements,showcase]=await Promise.all([
+      const [state,catalog,tasks,achievements,showcase,cosmetics]=await Promise.all([
         rpc('flip_snapshot',{p_telegram_id:user.telegram_id},db),
         rpc('flip_public_catalog',{},db),
         rpc('flip_task_snapshot',{p_telegram_id:user.telegram_id},db),
         rpc('flip_achievement_snapshot',{p_telegram_id:user.telegram_id},db),
-        rpc('flip_showcase_own',{p_telegram_id:user.telegram_id},db)
+        rpc('flip_showcase_own',{p_telegram_id:user.telegram_id},db),
+        rpc('flip_profile_cosmetics_shop',{p_telegram_id:user.telegram_id},db)
       ]);
       const displayName=[user.first_name,user.last_name].filter(Boolean).join(' ').trim()
         || user.username || 'FLIP PLAYER';
-      return json({state,catalog,tasks,achievements,showcase, mode:'server', admin:isFlipAdmin(user.telegram_id), profile:{
+      return json({state,catalog,tasks,achievements,showcase,cosmetics, mode:'server', admin:isFlipAdmin(user.telegram_id), profile:{
         display_name:displayName,
         handle:user.username ? `@${user.username}` : publicPlayerTag(user.telegram_id),
         avatar_url:user.photo_url
@@ -172,7 +176,7 @@ export async function handleRequest(request,env=undefined){
     const rawBody=await request.text();
     if(rawBody.length>MAX_BODY_LENGTH) return json({error:'BAD_REQUEST'},400);
     let body; try{body=JSON.parse(rawBody)}catch{return json({error:'BAD_REQUEST'},400)}
-    if(!body || !['drop','pack','theme_pack','claim_task','reroll_task','claim_streak','claim_achievement','set_showcase','mark_events_read','ack_card_deliveries'].includes(body.action) ||
+    if(!body || !['drop','pack','theme_pack','claim_task','reroll_task','claim_streak','claim_achievement','set_showcase','profile_buy','profile_equip','profile_favorite','profile_pin_badge','mark_events_read','ack_card_deliveries'].includes(body.action) ||
       typeof body.requestId!=='string' ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.requestId))
       return json({error:'BAD_REQUEST'},400);
@@ -213,9 +217,43 @@ export async function handleRequest(request,env=undefined){
         p_theme:body.theme
       },db));
     }
+    if(body.action==='profile_buy'){
+      if(!['buy_slot','buy_cosmetic'].includes(body.kind)||
+        typeof body.itemId!=='string'||!/^([a-z][a-z0-9-]{1,39})$/.test(body.itemId)||
+        Object.keys(body).some(key=>!['action','requestId','kind','itemId'].includes(key)))
+        return json({error:'BAD_REQUEST'},400);
+      return json(await rpc('flip_profile_purchase',{p_telegram_id:user.telegram_id,
+        p_request_id:body.requestId,p_action:body.kind,p_item_id:body.itemId},db));
+    }
+    if(body.action==='profile_equip'){
+      if(!['background','avatar_frame','showcase_skin','title'].includes(body.kind)||
+        !(body.itemId===null||(typeof body.itemId==='string'&&
+           /^[a-z][a-z0-9-]{1,39}$/.test(body.itemId)))||
+        Object.keys(body).some(key=>!['action','requestId','kind','itemId'].includes(key)))
+        return json({error:'BAD_REQUEST'},400);
+      return json(await rpc('flip_profile_equip',{p_telegram_id:user.telegram_id,
+        p_kind:body.kind,p_item_id:body.itemId},db));
+    }
+    if(body.action==='profile_favorite'){
+      if(!(body.artistId===null||(typeof body.artistId==='string'&&
+         /^[a-z][a-z0-9-]{1,64}$/.test(body.artistId)))||
+        Object.keys(body).some(key=>!['action','requestId','artistId'].includes(key)))
+        return json({error:'BAD_REQUEST'},400);
+      return json(await rpc('flip_profile_favorite_artist',{p_telegram_id:user.telegram_id,
+        p_artist_id:body.artistId},db));
+    }
+    if(body.action==='profile_pin_badge'){
+      if(![1,2,3].includes(body.slot)||
+        !(body.code===null||(typeof body.code==='string'&&
+          /^[a-z][a-z0-9_]{2,47}$/.test(body.code)))||
+        Object.keys(body).some(key=>!['action','requestId','slot','code'].includes(key)))
+        return json({error:'BAD_REQUEST'},400);
+      return json(await rpc('flip_profile_pin_badge',{p_telegram_id:user.telegram_id,
+        p_slot:body.slot,p_badge_code:body.code},db));
+    }
     if(body.action==='set_showcase'){
       const slot=body.slot,cardId=body.cardId;
-      if(!Number.isInteger(slot)||slot<1||slot>3||
+      if(!Number.isInteger(slot)||slot<1||slot>6||
         !(cardId===null||(typeof cardId==='string'&&
           cardId.length<=160&&/^[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+$/i.test(cardId))))
         return json({error:'BAD_REQUEST'},400);
@@ -280,7 +318,7 @@ export async function handleRequest(request,env=undefined){
       'TASK_REROLL_FORBIDDEN','TASK_REROLL_UNAVAILABLE','STREAK_NOT_READY',
       'BAD_ACHIEVEMENT','ACHIEVEMENT_ALREADY_CLAIMED','ACHIEVEMENT_STAGE_ORDER',
       'ACHIEVEMENT_NOT_READY','SHOWCASE_BAD_SLOT','SHOWCASE_BAD_CARD',
-      'SHOWCASE_NOT_OWNED','PLAYER_NOT_FOUND','UNKNOWN_PACK',
+      'SHOWCASE_NOT_OWNED','SHOWCASE_SLOT_LOCKED','PROFILE_BAD_REQUEST','PROFILE_SLOT_UNAVAILABLE','PROFILE_ITEM_UNAVAILABLE','PROFILE_ALREADY_OWNED','PROFILE_NOT_OWNED','PROFILE_BAD_ARTIST','PROFILE_BAD_BADGE','PLAYER_NOT_FOUND','UNKNOWN_PACK',
       'THEME_UNAVAILABLE','PACK_GENERATION_FAILED'].includes(code);
     const unavailable=['TELEGRAM_CHECK_FAILED','BOT_NOT_CONFIGURED'].includes(code);
     return json({error:auth||known||unavailable?code:'SERVER_ERROR'},
