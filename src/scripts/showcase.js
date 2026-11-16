@@ -68,7 +68,7 @@
      '<div class="flip-showcase-heading"><div><span class="eyebrow">YOUR TOP 3 / FLIP</span>'+
        '<h3>ВИТРИНА КАРТОЧЕК</h3></div><strong>'+pinned+' / 3</strong></div>'+
      slotButtons(slots,online)+
-     '<p>Закрепи три любимые рейтинговые карточки. Игроки увидят их в твоём публичном профиле. '+
+     '<p>Закрепи три любимые карточки. Игроки увидят их в твоём публичном профиле. '+
        'Эффекты редкостей сохраняются.</p>'+
      (online?'<button class="outlinebtn" type="button" data-action="showcaseEdit">'+
          'РЕДАКТИРОВАТЬ ВИТРИНУ ↗</button>'+
@@ -86,7 +86,7 @@
      '<button class="link" data-action="profile">← К ПРОФИЛЮ</button>'+
      '<span class="eyebrow">SHOWCASE / EDIT</span>'+
      '<h2>ТВОЯ ВИТРИНА<span style="color:var(--lime)">.</span></h2>'+
-     '<p class="desc">Выбери три карточки из своей рейтинговой коллекции. '+
+     '<p class="desc">Выбери три карточки из своей коллекции. '+
         'Для изменения нажми на нужный слот, затем на обложку.</p>'+
      '<div class="flip-showcase-slottabs">'+[1,2,3].map(n=>
        '<button type="button" class="'+(n===slot?'is-active':'')+
@@ -104,10 +104,10 @@
           picture(c)+'<span>'+esc(c.title||'')+'</span>'+
           '<small>'+esc(c.artist||'')+(pinned?' · СЛОТ '+pinned:'')+'</small></button>';
      }).join('')+'</div>':
-       '<div class="flip-showcase-empty-inventory">В коллекции пока нет рейтинговых карточек. '+
+       '<div class="flip-showcase-empty-inventory">В коллекции пока нет карточек. '+
        'Открой бесплатный дроп, чтобы добавить первую.</div>')+
-     '<p class="flip-showcase-info">Тестовые административные копии в витрине не используются. '+
-       'Если ты продашь или обменяешь последнюю рейтинговую копию, слот освободится автоматически.</p>'+
+     '<p class="flip-showcase-info">'+
+       'Если продашь или обменяешь последнюю копию карточки, она исчезнет из витрины.</p>'+
      '</div>';
  }
  function publicPage(profile,{loading=false,error=''}={}){
@@ -130,15 +130,15 @@
        '<span class="pill">LVL '+fmt(profile.level)+'</span></div></div>'+
      '<div class="flip-showcase-stats">'+
        '<div><small>COLLECTION POINTS</small><strong>'+fmt(profile.cp)+' CP</strong></div>'+
-       '<div><small>РЕЙТИНГОВЫХ КАРТ</small><strong>'+fmt(profile.ranked_cards)+'</strong></div>'+
+       '<div><small>КАРТОЧЕК</small><strong>'+fmt(profile.ranked_cards)+'</strong></div>'+
        '<div><small>РАЗНЫХ КАРТОЧЕК</small><strong>'+fmt(profile.ranked_variants)+'</strong></div></div>'+
      '<section class="content-card flip-showcase-profile"><div class="flip-showcase-heading">'+
        '<h3>ВИТРИНА ИГРОКА</h3><strong>TOP 3</strong></div>'+
        slotButtons(profile.slots,false)+'</section>'+
      '<section class="content-card"><h3>СПЕЦИАЛЬНЫЕ ЗНАЧКИ</h3>'+
        badges(profile.badges)+'</section>'+
-     '<p class="flip-showcase-info">Данные публичного профиля получены с сервера. '+
-       'Баланс F, настройки аккаунта и тестовые карточки не публикуются.</p></div>';
+     '<p class="flip-showcase-info">'+
+       'Смотри любимые карточки и особые значки этого игрока.</p></div>';
  }
  window.FLIPShowcase={own,editor,publicPage,cardFromId,cardsFromState};
 })();
