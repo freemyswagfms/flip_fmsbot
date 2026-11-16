@@ -91,3 +91,17 @@
 .flip-trade-profile-link{padding:3px 0;border:0;background:transparent;color:#baff67;
  font:900 9px 'Space Grotesk',sans-serif;letter-spacing:.5px}
 .flip-trade-profile-link:focus-visible{outline:2px solid #baff67;outline-offset:3px}
+
+/* v0.9.7 — existing-hub live trade status and gently highlighted new offers. */
+.flip-trade-sync{display:flex;align-items:center;gap:8px;margin:19px 1px 2px;
+ color:#c3e9bb;font:800 9px 'Space Grotesk',sans-serif;letter-spacing:.6px}
+.flip-trade-sync i{width:7px;height:7px;flex:none;border-radius:50%;background:#a3f56d;
+ box-shadow:0 0 10px #a3f56d80}
+.flip-trade-sync span{flex:1;min-width:0}
+.flip-trade-sync small{font:700 9px 'Manrope',sans-serif;color:#809c81;letter-spacing:0}
+.flip-trade-sync.is-error{color:#ffc5a5}
+.flip-trade-sync.is-error i{background:#e7a077;box-shadow:none}
+.flip-trade-offer.is-fresh{border-left:2px solid #baff59;padding-left:9px;
+ animation:flipTradeFresh 1.2s ease-out both}
+@keyframes flipTradeFresh{0%{background:#6ba73b38}100%{background:transparent}}
+@media (prefers-reduced-motion:reduce){.flip-trade-offer.is-fresh{animation:none}}
