@@ -191,5 +191,5 @@ test('Separate owner navigation is wired without exposing privileged operations 
  assert.match(gateway,/const routes=\{music,owner,manage,tasks,players\}/);
  assert.doesNotMatch(app,/SUPABASE_SECRET_KEY/);
  const pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'0.9.8.4');
+ assert.ok(pkg.version.localeCompare('0.9.8.4',undefined,{numeric:true})>=0);
 });

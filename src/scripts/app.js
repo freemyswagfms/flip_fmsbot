@@ -174,7 +174,7 @@ function catalogView(){
    '</div>';
 }
 
-function trades(){return '<div class="panel"><h2>ОБМЕНЫ<span style="color:var(--lime)">.</span></h2><div id="flip-trades-root"></div></div>'}
+function trades(){return '<div class="panel flip-trade-page"><div id="flip-trades-root"></div></div>'}
 function achievements(){return window.FLIPAchievements?.page(bridge?.achievements,{online:live()})||'<div class="panel"><h2>ДОСТИЖЕНИЯ</h2><p>Загрузка…</p></div>'}
 function leaderboard(){return '<div class="panel"><button class="link" data-action="profile">← К ПРОФИЛЮ</button><h2>РЕЙТИНГ<span style="color:var(--lime)">.</span></h2><p class="desc">CP не тратятся и не покупаются.</p><div id="flip-leaderboard-root"></div></div>'}
 function store(){

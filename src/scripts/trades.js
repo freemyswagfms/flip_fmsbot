@@ -1,4 +1,4 @@
-/* FLIP v0.9.8 — player gifts and card/F trades, plus live existing trades. */
+/* FLIP v0.9.8.5 — gallery-first trades; original signed transactions unchanged. */
 (() => {
 'use strict';
 const E=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -7,7 +7,8 @@ const ownId=(()=>{try{return String(JSON.parse(new URLSearchParams(initData).get
 const s={q:'',players:[],targetId:'',targetLabel:'',their:[],give:[],take:[],
   mode:'cards',currencySide:'sell',amount:'',gifts:[],
   counterOf:'',trades:[],error:'',message:'',busy:false,loading:false,searching:false,inspectId:'',inspection:null,
-  syncError:'',lastChecked:0};
+  syncError:'',lastChecked:0,
+  cardQuery:{give:'',take:''},rarityFilter:{give:'all',take:'all'}};
 let root=null,serial=0,searchSeq=0,searchTimer=null,requestSeq=0,inFlight=null,lastHubTrades=null;
 let freshIncoming=new Set();
 const fmt=x=>Number(x||0).toLocaleString('ru-RU',{maximumFractionDigits:2});
@@ -22,14 +23,56 @@ const groups=()=>{
   }
   return [...m.values()].sort((a,b)=>a.id.localeCompare(b.id));
 };
+const safeId=id=>typeof id==='string'&&id.length<=160&&
+  /^[a-z0-9-]+\/[a-z0-9-]+\/(?:common|rare|epic|legendary|mythic|hidden)$/.test(id);
+const rarityLabels={common:'COMMON',rare:'RARE',epic:'EPIC',
+  legendary:'LEGENDARY',mythic:'MYTHIC',hidden:'HIDDEN'};
+const rarityName=rarityLabels;
+function artUrl(src,id){
+  if(typeof src==='string'&&
+     /^\.\/src\/assets\/[a-zA-Z0-9/_-]+\.webp$/.test(src))return src;
+  if(typeof src==='string'&&
+     /^https:\/\/sodhvekjhlmbhnrkmkzb\.supabase\.co\/storage\/v1\/object\/public\/flip-artwork\/[a-zA-Z0-9/_-]+\.webp$/.test(src))return src;
+  return safeId(id)?'./src/assets/'+id+'.webp':'';
+}
 function card(id){
-  if(!id)return{id:'',title:'—',rarity:'common'};
-  if(id==='demo/hidden/archive-001')return{id,title:'ARCHIVE 001',rarity:'hidden'};
+  if(!id)return{id:'',artist:'FLIP',name:'—',title:'—',rarity:'common',art:''};
+  if(id==='demo/hidden/archive-001')return{id,artist:'FLIP',name:'ARCHIVE 001',
+    title:'ARCHIVE 001',rarity:'hidden',art:''};
   const parts=String(id).split('/');
   let data=null;
   try{if(parts.length===3)data=window.FLIPCatalog?.getCard(...parts);}catch{}
-  return data?{id,title:data.artist+' · '+data.title+' · '+data.rarity,rarity:String(data.rarity).toLowerCase()}:
-    {id,title:id,rarity:parts[2]||'common'};
+  const rarity=String(data?.color||data?.rarity||parts[2]||'common').toLowerCase();
+  const artist=String(data?.artist||parts[0]||'FLIP');
+  const name=String(data?.title||parts[1]||'Карточка');
+  const title=data?artist+' · '+name+' · '+String(data.rarity||rarity):String(id);
+  return {id,artist,name,title,rarity,style:String(data?.style||''),
+    art:artUrl(data?.art,id)};
+}
+function artMarkup(detail){
+  return '<span class="flip-trade-art" data-rarity="'+E(detail.rarity)+'">'+
+    (detail.art?'<img loading="lazy" decoding="async" src="'+E(detail.art)+
+      '" alt="'+E(detail.artist+' — '+detail.name)+'">':'')+
+    '<span class="flip-trade-art-fallback" aria-hidden="true">F<span>.</span></span>'+
+    '</span>';
+}
+function previewCard(id,variant='mini'){
+  const c=card(id);
+  return '<button type="button" class="flip-trade-preview-card '+E(variant)+
+    '" data-trade-preview-card="'+E(id)+'" aria-label="Просмотреть '+E(c.artist+' — '+c.name)+
+    '">'+artMarkup(c)+'<span class="flip-trade-preview-caption">'+
+    '<strong>'+E(c.name)+'</strong><small>'+E(c.artist)+'</small></span></button>';
+}
+function summarySide(ids,amount,label){
+  return '<div class="flip-trade-summary-side"><div class="flip-trade-side-top">'+
+    '<small>'+E(label)+'</small><b>'+((ids.length||amount>0)?(ids.length?
+      ids.length+' КАРТ.':'')+(ids.length&&amount>0?' + ':'')+
+      (amount>0?fmt(amount)+' F':''):'0')+'</b></div>'+
+    '<div class="flip-trade-summary-items">'+
+    (ids.length?ids.map(id=>previewCard(id,'small')).join(''):'')+
+    (amount>0?'<span class="flip-trade-currency-token"><b>'+fmt(amount)+'</b><span>F</span></span>':'')+
+    (!ids.length&&amount<=0?'<span class="flip-trade-summary-empty">—</span>':'')+
+    '</div></div>';
 }
 const base={common:1,rare:4,epic:12,legendary:35,mythic:90,hidden:250};
 function points(rarity,count){
@@ -78,18 +121,65 @@ async function api(view,args={},body){
   if(!response.ok)throw Error(d.error||'TRADE_REQUEST_FAILED');
   return d;
 }
+function matchingCards(inventory,side){
+  const q=String(s.cardQuery[side]||'').trim().toLocaleLowerCase('ru-RU');
+  const rarity=s.rarityFilter[side]||'all';
+  return inventory.filter(item=>{
+    const c=card(item.id);
+    return (rarity==='all'||c.rarity===rarity)&&
+      (!q||(c.artist+' '+c.name+' '+c.rarity+' '+item.id)
+        .toLocaleLowerCase('ru-RU').includes(q));
+  });
+}
 function cardSelector(inventory,selected,side,limit=5){
-  if(!inventory.length)return '<p class="flip-social-muted">Нет карточек, доступных для обмена.</p>';
+  if(!inventory.length)return '<div class="flip-trade-tiles-empty">Нет доступных карточек</div>';
+  const matched=matchingCards(inventory,side);
   const reached=selected.length>=limit;
-  return '<div class="flip-trade-card-choices">'+inventory.map(item=>{
-    const checked=selected.includes(item.id);
-    return '<label class="flip-trade-card-choice '+(checked?'chosen':'')+(reached&&!checked?' at-limit':'')+'">'+
-      '<input type="checkbox" data-trade-toggle="'+side+'" value="'+E(item.id)+'" '+
-        (checked?'checked':'')+' '+(reached&&!checked?'disabled':'')+'>'+
-      '<span class="flip-trade-choice-copy"><strong>'+E(card(item.id).title)+'</strong>'+
-      '<small>Доступно для обмена: '+E(item.ranked_count)+'</small></span>'+
-      '</label>';
-  }).join('')+'</div>';
+  // Preserve tile positions after a tap; selected cards are already visible in the review strip.
+  const shown=matched;
+  if(!shown.length)return '<div class="flip-trade-tiles-empty">Ничего не найдено</div>';
+  return '<div class="flip-trade-card-choices" data-trade-choices="'+side+'">'+
+    shown.map((item,i)=>{
+      const c=card(item.id),checked=selected.includes(item.id),disabled=reached&&!checked;
+      return '<div class="flip-trade-card-choice '+(checked?'chosen ':'')+
+        (disabled?'at-limit ':'')+'" style="--tile-order:'+Math.min(i,9)+'" data-rarity="'+
+        E(c.rarity)+'">'+
+        '<button type="button" class="flip-trade-choice-art" data-trade-preview-card="'+
+        E(item.id)+'" aria-label="Просмотреть '+E(c.artist+' — '+c.name)+'">'+
+        artMarkup(c)+'<span class="flip-trade-choice-zoom" aria-hidden="true">↗</span></button>'+
+        '<label class="flip-trade-choice-select">'+
+        '<input type="checkbox" data-trade-toggle="'+side+'" value="'+E(item.id)+'" '+
+        (checked?'checked ':'')+(disabled?'disabled ':'')+'>'+
+        '<span class="flip-trade-choice-name"><strong>'+E(c.name)+
+        '</strong><small>'+E(c.artist)+'</small></span>'+
+        '<span class="flip-trade-choice-check" aria-hidden="true">'+(checked?'✓':'+')+'</span>'+
+        '</label><div class="flip-trade-choice-bottom"><span class="flip-trade-rarity" data-rarity="'+
+        E(c.rarity)+'">'+E(rarityName[c.rarity]||c.rarity.toUpperCase())+
+        '</span><small>×'+Math.max(0,Number(item.ranked_count)||0)+'</small></div>'+
+        '</div>';
+    }).join('')+'</div>';
+}
+function cardPicker(inventory,selected,side,title,limit=5){
+  const rarity=s.rarityFilter[side]||'all';
+  const opts=[['all','ВСЕ'],['common','C'],['rare','R'],['epic','E'],
+    ['legendary','L'],['mythic','M'],['hidden','H']];
+  const available=new Set(inventory.map(item=>card(item.id).rarity));
+  return '<div class="flip-trade-picker" data-picker="'+side+'">'+
+   '<div class="flip-trade-picker-heading"><div><small>'+E(title)+'</small>'+
+   '<strong>'+selected.length+' <span>/ '+limit+'</span></strong></div>'+
+   '<span class="flip-trade-picker-total" data-trade-choice-count="'+side+'">'+
+     matchingCards(inventory,side).length+' в списке</span></div>'+
+   '<div class="flip-trade-filter-bar"><label class="flip-trade-card-search-wrap">'+
+    '<span aria-hidden="true">⌕</span><input type="search" data-trade-card-search="'+side+
+    '" class="flip-trade-card-search" placeholder="Артист или релиз" aria-label="Поиск карточек" '+
+    'autocomplete="off" value="'+E(s.cardQuery[side]||'')+'"></label>'+
+    '<div class="flip-trade-rarity-filter" role="group" aria-label="Редкость">'+
+    opts.filter(([id])=>id==='all'||available.has(id)).map(([id,label])=>
+      '<button type="button" data-trade-rarity-side="'+side+'" data-trade-rarity="'+id+
+      '" class="'+(rarity===id?'active':'')+'" aria-pressed="'+(rarity===id)+'" title="'+
+      E(rarityName[id]||'Все редкости')+'">'+label+'</button>').join('')+'</div></div>'+
+   '<div class="flip-trade-choice-viewport" data-trade-viewport="'+side+'">'+
+     cardSelector(inventory,selected,side,limit)+'</div></div>';
 }
 function draft(){
   const mine=groups(),theirs=s.their,locked=!!s.counterOf;
@@ -97,11 +187,15 @@ function draft(){
   const good=validSelection(mine,theirs);
   const giving=mode==='currency'&&s.currencySide==='buy'?[]:s.give;
   const taking=mode==='gift'||(mode==='currency'&&s.currencySide==='sell')?[]:s.take;
-  const heading=locked?'ВСТРЕЧНОЕ ПРЕДЛОЖЕНИЕ':
-    mode==='gift'?'ОТПРАВИТЬ ПОДАРОК':mode==='currency'?'КАРТОЧКИ ЗА F':
-    'НОВОЕ ПРЕДЛОЖЕНИЕ';
-  const out=['<section class="flip-social-panel" id="flip-trade-compose">',
-    '<div class="flip-social-heading"><h3>'+heading+'</h3></div>'];
+  const sum=mode==='currency'?giftAmount():0;
+  const givingF=mode==='currency'&&s.currencySide==='buy'?sum:0;
+  const takingF=mode==='currency'&&s.currencySide==='sell'?sum:0;
+  const heading=locked?'Встречное предложение':
+    mode==='gift'?'Отправить подарок':
+    mode==='currency'?'Карточки за F':'Новый обмен';
+  const out=['<section class="flip-social-panel flip-trade-compose" id="flip-trade-compose">',
+    '<div class="flip-trade-compose-head"><div><span class="flip-trade-kicker">01 / НОВАЯ СДЕЛКА</span>'+
+    '<h3>'+heading+'</h3></div><span class="flip-trade-compose-mark" aria-hidden="true">↗</span></div>'];
   if(!locked){
     out.push('<div class="flip-trade-modes" role="group" aria-label="Тип операции">');
     for(const [id,label] of [['cards','КАРТОЧКИ'],['currency','ЗА F'],['gift','ПОДАРОК']]){
@@ -110,19 +204,20 @@ function draft(){
     }
     out.push('</div>');
   }else{
-    out.push('<div class="flip-social-selected">Изменяешь условия исходного обмена. '+
+    out.push('<div class="flip-social-selected flip-trade-counter-banner">Встречное предложение'+
       '<button type="button" data-trade-reset-counter>ОТМЕНИТЬ</button></div>');
   }
-  out.push('<label class="flip-social-label" for="flip-trade-user-search">Найти игрока</label>',
-    '<div class="flip-social-search"><input class="flip-social-input" id="flip-trade-user-search" '+
-    'maxlength="64" placeholder="@username, имя или Telegram ID" autocomplete="off" '+
+  out.push('<label class="flip-social-label" for="flip-trade-user-search">КОМУ</label>',
+    '<div class="flip-social-search flip-trade-player-search"><input class="flip-social-input" id="flip-trade-user-search" '+
+    'maxlength="64" placeholder="@username или имя" autocomplete="off" '+
     'value="'+E(s.q)+'" '+(locked?'disabled':'')+'>'+
     '<button type="button" class="outlinebtn" data-trade-find '+(locked?'disabled':'')+
     '>НАЙТИ</button></div>',
     '<div id="flip-trade-player-results">'+(locked?'':playerResults())+'</div>');
   if(s.targetId){
-    out.push('<div class="flip-social-selected">Игрок: <strong>'+E(s.targetLabel)+
-      '</strong> '+(locked?'':'<button type="button" data-trade-clear>ИЗМЕНИТЬ</button>')+'</div>');
+    out.push('<div class="flip-social-selected flip-trade-picked-player"><div>'+
+      '<small>ВЫБРАН ИГРОК</small><strong>'+E(s.targetLabel)+'</strong></div> '+
+      (locked?'':'<button type="button" data-trade-clear>ИЗМЕНИТЬ</button>')+'</div>');
     if(mode==='currency'){
       out.push('<div class="flip-trade-modes flip-trade-direction" role="group" aria-label="Направление F">');
       for(const [id,label] of [['sell','ПРОДАЮ КАРТОЧКИ'],['buy','ПОКУПАЮ КАРТОЧКИ']]){
@@ -131,40 +226,39 @@ function draft(){
       }
       out.push('</div>');
     }
-    if(mode==='cards'||mode==='gift'||(mode==='currency'&&s.currencySide==='sell')){
-      out.push('<label class="flip-social-label">ТЫ ОТДАЁШЬ · '+s.give.length+'/'+
-        (mode==='gift'?'1':'5')+'</label>',
-        cardSelector(mine,s.give,'give',mode==='gift'?1:5));
-    }
-    if(mode==='cards'||(mode==='currency'&&s.currencySide==='buy')){
-      out.push('<label class="flip-social-label">ТЫ ПОЛУЧАЕШЬ · '+s.take.length+'/5</label>',
-        cardSelector(theirs,s.take,'take'));
+    const offerMine=mode==='cards'||mode==='gift'||(mode==='currency'&&s.currencySide==='sell');
+    const offerTheirs=mode==='cards'||(mode==='currency'&&s.currencySide==='buy');
+    if(offerMine||offerTheirs){
+      out.push('<div class="flip-trade-pickers">'+
+        (offerMine?cardPicker(mine,s.give,'give','ТЫ ОТДАЁШЬ',mode==='gift'?1:5):'')+
+        (offerMine&&offerTheirs?'<div class="flip-trade-exchange-direction" aria-hidden="true"><span>⇄</span></div>':'')+
+        (offerTheirs?cardPicker(theirs,s.take,'take','ТЫ ПОЛУЧАЕШЬ',5):'')+
+      '</div>');
     }
     if(mode==='currency'){
-      out.push('<label class="flip-social-label" for="flip-trade-amount">'+
-        (s.currencySide==='sell'?'СКОЛЬКО F ПОЛУЧИШЬ':'СКОЛЬКО F ОТДАШЬ')+'</label>',
-        '<input id="flip-trade-amount" class="flip-social-input" type="number" inputmode="numeric" '+
-        'min="1" max="10000" step="1" placeholder="От 1 до 10 000 F" value="'+E(s.amount)+'">',
-        '');
+      out.push('<div class="flip-trade-amount-box"><label class="flip-social-label" for="flip-trade-amount">'+
+        (s.currencySide==='sell'?'ПОЛУЧИШЬ F':'ОТДАШЬ F')+'</label>',
+        '<div class="flip-trade-amount-input"><input id="flip-trade-amount" class="flip-social-input" '+
+        'type="number" inputmode="numeric" min="1" max="10000" step="1" '+
+        'placeholder="0" value="'+E(s.amount)+'"><strong>F</strong></div></div>');
     }
+    out.push('<div class="flip-trade-review"><div class="flip-trade-review-head">'+
+      '<span>УСЛОВИЯ СДЕЛКИ</span><span class="flip-trade-review-arrow" aria-hidden="true">↔</span></div>'+
+      '<div class="flip-trade-review-grid">'+
+      summarySide(giving,givingF,'ОТДАЁШЬ')+
+      summarySide(taking,takingF,'ПОЛУЧАЕШЬ')+'</div></div>');
     if(good){
       const myDelta=delta(mine,giving,taking),theirDelta=delta(theirs,taking,giving);
-      out.push('<div class="flip-social-preview"><div><small>ТВОЙ CP</small><strong class="'+
+      out.push('<div class="flip-social-preview flip-trade-cp-impact"><div><small>ТВОЙ CP</small><strong class="'+
         (myDelta>=0?'positive':'negative')+'">'+signed(myDelta)+'</strong></div>',
-        '<div><small>CP ДРУГОГО ИГРОКА</small><strong class="'+
-        (theirDelta>=0?'positive':'negative')+'">'+signed(theirDelta)+
-        '</strong></div></div>');
-    }else{
-      out.push('<p class="flip-social-muted">'+(mode==='gift'?
-        'Выбери одну карточку из своей коллекции.':mode==='currency'?
-        'Выбери от 1 до 5 карточек и укажи сумму F.':
-        'Выбери от 1 до 5 различных карточек с каждой стороны.')+'</p>');
+        '<div><small>CP ПАРТНЁРА</small><strong class="'+
+        (theirDelta>=0?'positive':'negative')+'">'+signed(theirDelta)+'</strong></div></div>');
     }
     const label=mode==='gift'?'ПОДАРИТЬ КАРТОЧКУ':mode==='currency'?
       'ПРЕДЛОЖИТЬ СДЕЛКУ ЗА F':locked?'ОТПРАВИТЬ ВСТРЕЧНОЕ':
       'ОТПРАВИТЬ ПРЕДЛОЖЕНИЕ';
-    out.push('<button type="button" class="bigbtn" data-trade-create '+
-      (!good||s.busy?'disabled':'')+'>'+label+'</button>');
+    out.push('<button type="button" class="bigbtn flip-trade-send" data-trade-create '+
+      (!good||s.busy?'disabled':'')+'>'+label+' <span aria-hidden="true">↗</span></button>');
   }
   const rules=mode==='gift'?
     'Подарок передаётся сразу. До 10 подарков за 24 часа. Защита новых карточек — 24 часа.':
@@ -197,25 +291,29 @@ function rowTrade(t){
   const takeF=Number(mine?t.want_f:t.offer_f)||0;
   const statusNames={pending:'ОЖИДАЕТ',accepted:'ПРИНЯТ',declined:'ОТКЛОНЁН',
     cancelled:'ОТМЕНЁН',expired:'ИСТЁК',countered:'ВСТРЕЧНОЕ'};
-  const itemList=(items,f)=>{
-    const content=[...items.map(id=>'<li>'+E(card(id).title)+'</li>')];
-    if(f>0)content.push('<li class="flip-trade-money">'+fmt(f)+' F</li>');
-    return '<ul class="flip-trade-offer-list">'+content.join('')+'</ul>';
-  };
   const profileId=typeof t.partner_public_id==='string'&&
-    /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(t.partner_public_id)?
+    /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(t.partner_public_id)?
       t.partner_public_id:null;
-  return '<div class="flip-trade-offer '+(freshIncoming.has(t.id)?'is-fresh':'')+'"><div class="flip-social-heading">'+
+  const offerSide=(ids,f,label)=>'<div class="flip-trade-offer-side">'+
+    '<div class="flip-trade-side-top"><small>'+label+'</small>'+
+    '<b>'+(ids.length?ids.length+' КАРТ.':'')+(ids.length&&f>0?' + ':'')+
+      (f>0?fmt(f)+' F':'')+(!ids.length&&!f?'—':'')+'</b></div>'+
+    '<div class="flip-trade-offer-strip">'+ids.map(id=>previewCard(id,'offer')).join('')+
+    (f>0?'<span class="flip-trade-currency-token"><b>'+fmt(f)+'</b><span>F</span></span>':'')+
+    (!ids.length&&!f?'<span class="flip-trade-summary-empty">—</span>':'')+'</div></div>';
+  return '<article class="flip-trade-offer '+(freshIncoming.has(t.id)?'is-fresh':'')+'">'+
+    '<div class="flip-social-heading flip-trade-offer-heading">'+
     '<div class="flip-trade-partner"><strong>'+E(partner)+'</strong>'+
     (currency?'<small class="flip-trade-kind">КАРТОЧКИ ↔ F</small>':'')+
     (profileId?'<button type="button" class="flip-trade-profile-link" data-player-profile="'+
       E(profileId)+'">ПРОФИЛЬ ↗</button>':'')+'</div>'+
     '<span class="flip-trade-status '+E(t.status)+'">'+E(statusNames[t.status]||t.status)+'</span></div>'+
-    '<div class="flip-trade-cards"><div><small>ТЫ ОТДАЁШЬ</small>'+itemList(give,giveF)+'</div>'+
-    '<div><small>ТЫ ПОЛУЧАЕШЬ</small>'+itemList(take,takeF)+'</div></div>'+
-    '<small class="flip-social-muted">'+
+    '<div class="flip-trade-cards">'+offerSide(give,giveF,'ОТДАЁШЬ')+
+      '<span class="flip-trade-offer-transfer" aria-hidden="true">⇄</span>'+
+      offerSide(take,takeF,'ПОЛУЧАЕШЬ')+'</div>'+
+    '<div class="flip-trade-offer-footer"><small>'+
     E(new Date(t.created_at).toLocaleDateString('ru-RU'))+' · №'+E(t.id.slice(0,8))+
-    (t.parent_trade_id?' · ВСТРЕЧНОЕ':'')+'</small>'+
+    (t.parent_trade_id?' · ВСТРЕЧНОЕ':'')+'</small></div>'+
     (t.status==='pending'?'<div class="flip-trade-actions">'+
       '<button type="button" class="outlinebtn" data-trade-inspect="'+E(t.id)+'">ПРОВЕРИТЬ УСЛОВИЯ</button>'+
       (mine?'<button type="button" class="outlinebtn" data-trade-verb="cancel" data-trade-id="'+E(t.id)+'">ОТМЕНИТЬ</button>':
@@ -223,26 +321,31 @@ function rowTrade(t){
        (currency?'':'<button type="button" class="outlinebtn" data-trade-counter="'+E(t.id)+'">ВСТРЕЧНОЕ</button>')+
        '<button type="button" class="bigbtn" data-trade-verb="accept" data-trade-id="'+E(t.id)+'">ПРИНЯТЬ</button>')+
     '</div>':'')+
-    (s.inspectId===t.id&&s.inspection?'<div class="flip-social-preview">'+
+    (s.inspectId===t.id&&s.inspection?'<div class="flip-social-preview flip-trade-inspection">'+
       '<div><small>ТВОЙ CP</small><strong>'+signed(mine?s.inspection.sender_delta:s.inspection.recipient_delta)+'</strong></div>'+
       '<div><small>CP ПАРТНЁРА</small><strong>'+signed(mine?s.inspection.recipient_delta:s.inspection.sender_delta)+'</strong></div></div>'+
       (s.inspection.available?'':'<p class="flip-social-error">Недостаточно доступных карточек/F или предложение уже закрыто.</p>'):'')+
-    '</div>';
+    '</article>';
 }
 function giftHistory(){
   const list=s.gifts||[];
   if(!list.length)return '';
-  return '<section class="flip-social-panel"><h3>ПОДАРКИ · ПОСЛЕДНИЕ '+list.length+'</h3>'+
-    list.slice(0,20).map(g=>'<div class="flip-trade-gift-row"><span class="flip-trade-gift-icon">'+
-      (g.mine?'↗':'↙')+'</span><div><strong>'+
-      E(g.mine?'ТЫ ПОДАРИЛ':'ТЕБЕ ПОДАРИЛИ')+'</strong><p>'+
-      E(card(g.card_id).title)+'</p><small>'+E(g.partner_label)+
-      ' · '+E(new Date(g.created_at).toLocaleDateString('ru-RU'))+'</small></div></div>').join('')+
+  return '<section class="flip-social-panel flip-trade-feed-panel"><div class="flip-trade-feed-head">'+
+    '<h3>ПОДАРКИ</h3><span>'+list.length+'</span></div>'+
+    list.slice(0,20).map(g=>'<div class="flip-trade-gift-row">'+
+      '<span class="flip-trade-gift-icon">'+(g.mine?'↗':'↙')+'</span>'+
+      previewCard(g.card_id,'gift')+
+      '<div><strong>'+E(g.mine?'ОТПРАВЛЕНО':'ПОЛУЧЕНО')+'</strong>'+
+      '<small>'+E(g.partner_label)+' · '+
+      E(new Date(g.created_at).toLocaleDateString('ru-RU'))+'</small></div></div>').join('')+
   '</section>';
 }
 function section(title,items){
-  return '<section class="flip-social-panel"><h3>'+title+'</h3>'+
-    (items.length?items.map(rowTrade).join(''):'<p class="flip-social-muted">Предложений пока нет.</p>')+'</section>';
+  return '<section class="flip-social-panel flip-trade-feed-panel">'+
+    '<div class="flip-trade-feed-head"><h3>'+title+'</h3>'+
+    '<span>'+items.length+'</span></div>'+
+    (items.length?items.map(rowTrade).join(''):
+      '<div class="flip-trade-empty-state" aria-label="Нет предложений">—</div>')+'</section>';
 }
 function liveStatus(){
   return s.syncError?
@@ -255,12 +358,27 @@ function feedMarkup(){
   const outgoing=trades.filter(t=>t.status==='pending'&&t.mine);
   const history=trades.filter(t=>t.status!=='pending');
   return liveStatus()+
-    '<div class="flip-social-heading flip-trade-list-heading"><h3>ТВОИ ОБМЕНЫ</h3>'+
+    '<section class="flip-trade-feed-header"><div>'+
+    '<span class="flip-trade-kicker">02 / ИСТОРИЯ СДЕЛОК</span>'+
+    '<h3>Предложения</h3></div>'+
     '<button class="outlinebtn" type="button" data-trade-refresh '+(s.busy?'disabled':'')+
-    '>ОБНОВИТЬ ↗</button></div>'+
-    section('ВХОДЯЩИЕ · '+incoming.length,incoming)+
-    section('ИСХОДЯЩИЕ · '+outgoing.length,outgoing)+
+    '>ОБНОВИТЬ ↻</button></section>'+
+    section('ВХОДЯЩИЕ',incoming)+
+    section('ИСХОДЯЩИЕ',outgoing)+
     section('ИСТОРИЯ',history)+giftHistory();
+}
+function hero(){
+  const incoming=s.trades.filter(t=>!t.mine&&statusOf(t)==='pending').length;
+  return '<header class="flip-trade-hero"><div class="flip-trade-hero-grain" aria-hidden="true"></div>'+
+    '<div class="flip-trade-hero-top"><span>FLIP / SOCIAL</span>'+
+    '<span class="flip-trade-hero-star" aria-hidden="true">✳</span></div>'+
+    '<h2>ОБМЕНЫ<span>.</span></h2>'+
+    '<div class="flip-trade-hero-bottom"><span>ТВОЯ КОЛЛЕКЦИЯ. ТВОИ СДЕЛКИ.</span>'+
+    '<span class="flip-trade-hero-ring" aria-hidden="true">⇄</span></div>'+
+    '<div class="flip-trade-shortcuts" role="group" aria-label="Разделы обменов">'+
+    '<button type="button" data-trade-jump="flip-trade-compose">+ СОЗДАТЬ</button>'+
+    '<button type="button" data-trade-jump="flip-trade-live-feed">ПРЕДЛОЖЕНИЯ'+
+    '<b data-trade-incoming-count>'+incoming+'</b></button></div></header>';
 }
 function updateBadge(){
   const count=document.querySelector('[data-tab="trades"] .count');
@@ -276,10 +394,13 @@ function refreshFeed(){
     window.FLIPIcons?.render(target);
   }
   updateBadge();
+  const heroCount=root?.querySelector('[data-trade-incoming-count]');
+  if(heroCount)heroCount.textContent=String(s.trades.filter(t=>!t.mine&&statusOf(t)==='pending').length);
 }
 function draw(){
   if(!root||!root.isConnected)return;
   root.innerHTML=[
+    hero(),
     s.error?'<p class="flip-social-error">'+E(s.error)+'</p>':'',
     s.message?'<p class="flip-social-success">'+E(s.message)+'</p>':'',
     draft(),
@@ -460,9 +581,59 @@ async function act(verb,id){
   }else if(!confirm(verb==='cancel'?'Отменить предложение?':'Отклонить предложение?'))return;
   await submit({action:currency?verb+'_f':verb,tradeId:id});
 }
+
+function openCardPreview(id,button){
+  if(!safeId(id))return;
+  const group=button?.closest?.('.flip-trade-card-choices, .flip-trade-summary-items, .flip-trade-offer-strip, .flip-trade-gift-row');
+  const groupIds=group?.querySelectorAll?
+    [...group.querySelectorAll('[data-trade-preview-card]')].map(x=>x.dataset.tradePreviewCard):[id];
+  const ids=[...new Set([id,...groupIds].filter(safeId))].slice(0,100);
+  const collection=ids.map(value=>{
+    const c=card(value);
+    return {id:c.id,artist:c.artist,title:c.name,color:c.rarity,
+      rarity:c.rarity,style:c.style,art:c.art};
+  });
+  const selected=collection.find(c=>c.id===id);
+  if(selected)window.FLIPCardViewer?.open?.(selected,{mode:'catalog',cards:collection});
+}
+function redrawComposer(){
+  const old=root?.querySelector('#flip-trade-compose');
+  if(!old||typeof old.outerHTML==='undefined'){draw();return;}
+  const previous=[...(old.querySelectorAll?.('[data-trade-viewport]')||[])].map(node=>({
+    side:node.dataset.tradeViewport,scrollTop:node.scrollTop
+  }));
+  old.outerHTML=draft();
+  for(const prev of previous){
+    const node=root?.querySelector('[data-trade-viewport="'+prev.side+'"]');
+    if(node)node.scrollTop=prev.scrollTop;
+  }
+  window.FLIPIcons?.render(root?.querySelector('#flip-trade-compose')||root);
+}
+function filterCardGrid(side){
+  const inventory=side==='give'?groups():s.their;
+  const selected=side==='give'?s.give:s.take;
+  const max=s.mode==='gift'&&side==='give'?1:5;
+  const list=root?.querySelector('[data-trade-viewport="'+side+'"]');
+  if(list)list.innerHTML=cardSelector(inventory,selected,side,max);
+  const count=root?.querySelector('[data-trade-choice-count="'+side+'"]');
+  if(count)count.textContent=matchingCards(inventory,side).length+' в списке';
+}
 function click(e){
   const target=e.target.closest('button');
   if(!target||!root?.contains(target))return;
+  if(target.hasAttribute('data-trade-preview-card')){
+    openCardPreview(target.dataset.tradePreviewCard,target);return;
+  }
+  if(target.hasAttribute('data-trade-jump')){
+    const section=root?.querySelector('#'+target.dataset.tradeJump);
+    section?.scrollIntoView?.({behavior:'smooth',block:'start'});
+    return;
+  }
+  if(target.hasAttribute('data-trade-rarity')){
+    const side=target.dataset.tradeRaritySide,rarity=target.dataset.tradeRarity;
+    if(!['give','take'].includes(side)||!['all','common','rare','epic','legendary','mythic','hidden'].includes(rarity))return;
+    s.rarityFilter[side]=rarity;redrawComposer();return;
+  }
   if(target.hasAttribute('data-trade-mode')){
     s.mode=target.dataset.tradeMode;s.give=[];s.take=[];s.counterOf='';s.error='';s.message='';
     draw();return;
@@ -525,10 +696,35 @@ function click(e){
   if(target.hasAttribute('data-trade-verb'))act(target.dataset.tradeVerb,target.dataset.tradeId);
 }
 function input(e){
+  const side=e.target.dataset?.tradeCardSearch;
+  if(['give','take'].includes(side)){
+    s.cardQuery[side]=String(e.target.value||'').slice(0,80);
+    filterCardGrid(side);
+    return;
+  }
   if(e.target.id==='flip-trade-amount'){
     s.amount=String(e.target.value).slice(0,6);
+    const can=validSelection(groups(),s.their);
     const button=root?.querySelector('[data-trade-create]');
-    if(button)button.disabled=!validSelection(groups(),s.their)||s.busy;
+    if(button)button.disabled=!can||s.busy;
+    const give=s.currencySide==='buy'?[]:s.give;
+    const take=s.currencySide==='sell'?[]:s.take;
+    const sum=giftAmount();
+    const grid=root?.querySelector('.flip-trade-review-grid');
+    if(grid)grid.innerHTML=
+      summarySide(give,s.currencySide==='buy'?sum:0,'ОТДАЁШЬ')+
+      summarySide(take,s.currencySide==='sell'?sum:0,'ПОЛУЧАЕШЬ');
+    const impact=root?.querySelector('.flip-trade-cp-impact');
+    if(impact)impact.hidden=!can;
+    else if(can){
+      const mine=delta(groups(),give,take),theirs=delta(s.their,take,give);
+      root?.querySelector('.flip-trade-review')?.insertAdjacentHTML?.('afterend',
+        '<div class="flip-social-preview flip-trade-cp-impact">'+
+        '<div><small>ТВОЙ CP</small><strong class="'+(mine>=0?'positive':'negative')+
+        '">'+signed(mine)+'</strong></div>'+
+        '<div><small>CP ПАРТНЁРА</small><strong class="'+(theirs>=0?'positive':'negative')+
+        '">'+signed(theirs)+'</strong></div></div>');
+    }
     return;
   }
   if(e.target.id!=='flip-trade-user-search')return;
@@ -547,7 +743,7 @@ function change(e){
     const at=chosen.indexOf(id);
     if(at>=0)chosen.splice(at,1);
   }
-  draw();
+  redrawComposer();
 }
 window.FLIPTrades={
   mount(el){
@@ -559,6 +755,11 @@ window.FLIPTrades={
     el.addEventListener('click',click);
     el.addEventListener('input',input);
     el.addEventListener('change',change);
+    el.addEventListener('error',event=>{
+      const image=event.target;
+      if(image?.matches?.('.flip-trade-art img'))
+        image.parentElement?.classList?.add('is-missing');
+    },true);
     s.give=[];s.take=[];s.counterOf='';
     s.error='';s.message='';s.loading=!s.lastChecked;draw();
     if(!s.lastChecked||Date.now()-s.lastChecked>10000)loadTrades();

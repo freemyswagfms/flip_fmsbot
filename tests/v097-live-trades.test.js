@@ -67,7 +67,7 @@ test('Hub updates a pending incoming trade without remounting composer or losing
  assert.equal(rt.count.textContent,'2');
  assert.equal(rt.root.innerHTML,before,'background refresh never overwrites active draft');
  assert.match(rt.feed.innerHTML,/is-fresh/);
- assert.match(rt.feed.innerHTML,/ВХОДЯЩИЕ · 2/);
+ assert.match(rt.feed.innerHTML,/ВХОДЯЩИЕ<\/h3><span>2<\/span>/);
  rt.trades.syncHub({activity:[{id:6,kind:'trade_offer',read:true},{id:5,kind:'trade_offer',read:true}]});
  await flush();
  assert.equal(rt.calls(),initial+1,'marking notifications read does not refetch trades');
@@ -113,7 +113,7 @@ test('A forced reconciliation cannot be overwritten by an older in-flight respon
  finishOld([trade(tid('8'),{status:'declined'})]);
  await flush();
  assert.equal(rt.count.textContent,'1','old pending response must be ignored');
- assert.match(rt.feed.innerHTML,/ВХОДЯЩИЕ · 1/);
+ assert.match(rt.feed.innerHTML,/ВХОДЯЩИЕ<\/h3><span>1<\/span>/);
 });
 test('Failure keeps last known trades and successful subsequent event can recover',async()=>{
  const rt=runtime(async n=>n===2?Promise.reject(new Error('NETWORK_FAILED')):[trade(tid('9'))]);
