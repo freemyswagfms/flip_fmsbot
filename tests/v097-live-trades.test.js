@@ -135,7 +135,7 @@ test('v0.9.7 reuses only existing hub polling and busts Telegram cache',()=>{
  assert.match(app,/},45000\)/);
  assert.doesNotMatch(script,/setInterval\(/);
  assert.ok(html.includes('trades.js?v='+pkg.version));
- assert.match(html,/social\.css\?v=0\.9\.7/);
+ assert.ok(html.includes('social.css?v='+pkg.version));
  assert.ok(pkg.version.localeCompare('0.9.7',undefined,{numeric:true})>=0);
 });
 
