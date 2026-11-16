@@ -74,7 +74,7 @@ async function rpc(name,payload,db){
   const body=await response.text();
   if (!response.ok) {
     // Return known error codes only. Never forward database internals to the client.
-    const code=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT','ACCOUNT_NOT_FOUND','DUPLICATE_REQUEST_ACTION','TASK_INCOMPLETE','TASK_CHANGED','TASK_ALREADY_CLAIMED','TASK_NOT_VERIFIED','BAD_TASK','TASK_REROLL_USED','TASK_REROLL_FORBIDDEN','TASK_REROLL_UNAVAILABLE','STREAK_NOT_READY','BAD_ACHIEVEMENT','ACHIEVEMENT_ALREADY_CLAIMED','ACHIEVEMENT_STAGE_ORDER','ACHIEVEMENT_NOT_READY','SHOWCASE_BAD_SLOT','SHOWCASE_BAD_CARD','SHOWCASE_NOT_OWNED','SHOWCASE_SLOT_LOCKED','PROFILE_BAD_REQUEST','PROFILE_SLOT_UNAVAILABLE','PROFILE_ITEM_UNAVAILABLE','PROFILE_ALREADY_OWNED','PROFILE_NOT_OWNED','PROFILE_BAD_ARTIST','PROFILE_BAD_BADGE','PLAYER_NOT_FOUND','UNKNOWN_PACK','THEME_UNAVAILABLE','PACK_GENERATION_FAILED','BAD_DELIVERY_REQUEST','DELIVERY_NOT_FOUND'].find(s=>body.includes(s));
+    const code=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT','ACCOUNT_NOT_FOUND','DUPLICATE_REQUEST_ACTION','TASK_INCOMPLETE','TASK_CHANGED','TASK_ALREADY_CLAIMED','TASK_NOT_VERIFIED','BAD_TASK','TASK_REROLL_USED','TASK_REROLL_FORBIDDEN','TASK_REROLL_UNAVAILABLE','STREAK_NOT_READY','BAD_ACHIEVEMENT','ACHIEVEMENT_ALREADY_CLAIMED','ACHIEVEMENT_STAGE_ORDER','ACHIEVEMENT_NOT_READY','SHOWCASE_BAD_SLOT','SHOWCASE_BAD_CARD','SHOWCASE_NOT_OWNED','SHOWCASE_SLOT_LOCKED','PROFILE_BAD_REQUEST','PROFILE_SLOT_UNAVAILABLE','PROFILE_ITEM_UNAVAILABLE','PROFILE_ALREADY_OWNED','PROFILE_NOT_OWNED','PROFILE_BAD_ARTIST','PROFILE_BAD_BADGE','PROFILE_BAD_FRAME_COLOR','PLAYER_NOT_FOUND','UNKNOWN_PACK','THEME_UNAVAILABLE','PACK_GENERATION_FAILED','BAD_DELIVERY_REQUEST','DELIVERY_NOT_FOUND'].find(s=>body.includes(s));
     const error=new Error(code||'DATABASE_REQUEST_FAILED');error.status=code?409:502;throw error;
   }
   try{return JSON.parse(body);}catch{throw new Error('DATABASE_RESPONSE_FAILED');}
@@ -87,7 +87,7 @@ export async function handleRequest(request,env=undefined){
   if (!['GET','POST'].includes(request.method)) return json({error:'METHOD_NOT_ALLOWED'},405);
   const configured=!!(process.env.TELEGRAM_BOT_TOKEN&&process.env.SUPABASE_URL&&process.env.SUPABASE_SECRET_KEY);
   if(request.method==='GET' && u.searchParams.get('health')==='1')
-    return json({service:'FLIP',version:'0.9.8.7',configured});
+    return json({service:'FLIP',version:'0.9.8.8',configured});
   if(!configured)return json({error:'SERVER_NOT_CONFIGURED'},503);
   try{
     const raw=request.headers.get('x-telegram-init-data');
@@ -176,7 +176,7 @@ export async function handleRequest(request,env=undefined){
     const rawBody=await request.text();
     if(rawBody.length>MAX_BODY_LENGTH) return json({error:'BAD_REQUEST'},400);
     let body; try{body=JSON.parse(rawBody)}catch{return json({error:'BAD_REQUEST'},400)}
-    if(!body || !['drop','pack','theme_pack','claim_task','reroll_task','claim_streak','claim_achievement','set_showcase','profile_buy','profile_equip','profile_favorite','profile_pin_badge','mark_events_read','ack_card_deliveries'].includes(body.action) ||
+    if(!body || !['drop','pack','theme_pack','claim_task','reroll_task','claim_streak','claim_achievement','set_showcase','profile_buy','profile_equip','profile_favorite','profile_pin_badge','profile_frame_color','mark_events_read','ack_card_deliveries'].includes(body.action) ||
       typeof body.requestId!=='string' ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.requestId))
       return json({error:'BAD_REQUEST'},400);
@@ -233,6 +233,14 @@ export async function handleRequest(request,env=undefined){
         return json({error:'BAD_REQUEST'},400);
       return json(await rpc('flip_profile_equip',{p_telegram_id:user.telegram_id,
         p_kind:body.kind,p_item_id:body.itemId},db));
+    }
+    if(body.action==='profile_frame_color'){
+      const allowed=['green','pink','red','orange','blue','white','violet','cyan','rgb','glitch'];
+      if(!allowed.includes(body.color)||
+         Object.keys(body).some(key=>!['action','requestId','color'].includes(key)))
+        return json({error:'BAD_REQUEST'},400);
+      return json(await rpc('flip_profile_frame_color',{
+        p_telegram_id:user.telegram_id,p_color:body.color},db));
     }
     if(body.action==='profile_favorite'){
       if(!(body.artistId===null||(typeof body.artistId==='string'&&
