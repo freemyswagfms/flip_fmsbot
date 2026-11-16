@@ -139,6 +139,13 @@ BEGIN
  THEN RAISE EXCEPTION 'CARD_NOT_FOUND'; END IF;
  PERFORM 1 FROM public.flip_players
   WHERE telegram_id IN(p_actor_id,p_recipient_id) ORDER BY telegram_id FOR UPDATE;
+ -- A concurrent retry may have committed while waiting for player row locks.
+ SELECT * INTO v_old FROM public.flip_gifts WHERE request_id=p_request_id;
+ IF FOUND THEN
+   IF v_old.sender_id<>p_actor_id OR v_old.recipient_id<>p_recipient_id OR
+      v_old.card_id<>p_card_id THEN RAISE EXCEPTION 'DUPLICATE_TRADE_REQUEST'; END IF;
+   RETURN jsonb_build_object('ok',true,'id',v_old.id::text,'replayed',true);
+ END IF;
  IF NOT EXISTS(SELECT 1 FROM public.flip_players WHERE telegram_id=p_actor_id)
  THEN RAISE EXCEPTION 'ACCOUNT_NOT_FOUND'; END IF;
  IF NOT EXISTS(SELECT 1 FROM public.flip_players WHERE telegram_id=p_recipient_id)
@@ -225,6 +232,14 @@ BEGIN
  END IF;
  PERFORM 1 FROM public.flip_players
  WHERE telegram_id IN(p_actor_id,p_recipient_id) ORDER BY telegram_id FOR UPDATE;
+ SELECT * INTO v_previous FROM public.flip_f_trades WHERE request_id=p_request_id;
+ IF FOUND THEN
+   IF v_previous.sender_id<>p_actor_id OR v_previous.recipient_id<>p_recipient_id
+     OR v_previous.offer_cards<>v_offer OR v_previous.want_cards<>v_want
+     OR v_previous.offer_f<>p_offer_f OR v_previous.want_f<>p_want_f
+   THEN RAISE EXCEPTION 'DUPLICATE_TRADE_REQUEST'; END IF;
+   RETURN jsonb_build_object('ok',true,'id',v_previous.id::text,'replayed',true);
+ END IF;
  IF NOT EXISTS(SELECT 1 FROM public.flip_players WHERE telegram_id=p_actor_id)
  THEN RAISE EXCEPTION 'ACCOUNT_NOT_FOUND'; END IF;
  IF NOT EXISTS(SELECT 1 FROM public.flip_players WHERE telegram_id=p_recipient_id)
