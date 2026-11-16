@@ -134,7 +134,26 @@ test('v0.9.7 reuses only existing hub polling and busts Telegram cache',()=>{
  assert.match(app,/FLIPTrades\?\.syncHub\?\.\(data\)/);
  assert.match(app,/},45000\)/);
  assert.doesNotMatch(script,/setInterval\(/);
- assert.match(html,/trades\.js\?v=0\.9\.7/);
+ assert.ok(html.includes('trades.js?v='+pkg.version));
  assert.match(html,/social\.css\?v=0\.9\.7/);
- assert.equal(pkg.version,'0.9.7');
+ assert.ok(pkg.version.localeCompare('0.9.7',undefined,{numeric:true})>=0);
+});
+
+test('Fast-check eligibility tracks only active outgoing offers, then stops on acceptance',async()=>{
+ const id=tid('88');
+ const rt=runtime(async n=>n===1?[trade(id,{mine:true})]:
+    [trade(id,{mine:true,status:'accepted'})]);
+ rt.trades.mount(rt.root);
+ await flush();
+ assert.equal(rt.trades.hasPendingOutgoing(),true);
+ rt.trades.syncHub({activity:[{id:19,kind:'trade_offer'}]});
+ rt.trades.syncHub({activity:[{id:20,kind:'trade_accepted'},{id:19,kind:'trade_offer'}]});
+ await flush();
+ assert.equal(rt.trades.hasPendingOutgoing(),false);
+});
+test('No accelerated sender polling for an account without active outgoing trades',async()=>{
+ const rt=runtime(async()=>[trade(tid('31'),{mine:false})]);
+ rt.trades.mount(rt.root);
+ await flush();
+ assert.equal(rt.trades.hasPendingOutgoing(),false);
 });

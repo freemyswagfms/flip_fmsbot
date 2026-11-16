@@ -419,6 +419,8 @@ window.FLIPTrades={
     s.error='';s.message='';s.loading=!s.lastChecked;draw();
     if(!s.lastChecked||Date.now()-s.lastChecked>10000)loadTrades();
   },
-  syncHub
+  syncHub,
+  // Sender-only foreground receipt checks continue until an outgoing trade closes.
+  hasPendingOutgoing(){return !!initData&&s.trades.some(t=>t.mine&&statusOf(t)==='pending');}
 };
 })();

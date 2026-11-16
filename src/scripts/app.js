@@ -904,6 +904,12 @@ setInterval(()=>{
  bridge.refreshTasks?.().then(()=>render(current)).catch(()=>{});
 },60000);
 setInterval(updateTimer,1000);
+// Sender-side fast delivery check while an outbound trade is waiting.
+// Reuse the signed hub and the existing hubLoading guard; no overlapping requests.
+setInterval(()=>{
+ if(live()&&document.visibilityState!=='hidden'&&
+    window.FLIPTrades?.hasPendingOutgoing?.())refreshHub({rerender:true});
+},12000);
 setInterval(()=>{
  if(live()&&document.visibilityState!=='hidden')refreshHub({rerender:true});
 },45000);
