@@ -74,7 +74,7 @@ async function rpc(name,payload,db){
   const body=await response.text();
   if (!response.ok) {
     // Return known error codes only. Never forward database internals to the client.
-    const code=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT','ACCOUNT_NOT_FOUND','DUPLICATE_REQUEST_ACTION','TASK_INCOMPLETE','TASK_CHANGED','TASK_ALREADY_CLAIMED','TASK_NOT_VERIFIED','BAD_TASK','TASK_REROLL_USED','TASK_REROLL_FORBIDDEN','TASK_REROLL_UNAVAILABLE','STREAK_NOT_READY','BAD_ACHIEVEMENT','ACHIEVEMENT_ALREADY_CLAIMED','ACHIEVEMENT_STAGE_ORDER','ACHIEVEMENT_NOT_READY','SHOWCASE_BAD_SLOT','SHOWCASE_BAD_CARD','SHOWCASE_NOT_OWNED','PLAYER_NOT_FOUND','UNKNOWN_PACK','THEME_UNAVAILABLE','PACK_GENERATION_FAILED'].find(s=>body.includes(s));
+    const code=['DROP_COOLDOWN','INSUFFICIENT_FUNDS','DAILY_PACK_LIMIT','ACCOUNT_NOT_FOUND','DUPLICATE_REQUEST_ACTION','TASK_INCOMPLETE','TASK_CHANGED','TASK_ALREADY_CLAIMED','TASK_NOT_VERIFIED','BAD_TASK','TASK_REROLL_USED','TASK_REROLL_FORBIDDEN','TASK_REROLL_UNAVAILABLE','STREAK_NOT_READY','BAD_ACHIEVEMENT','ACHIEVEMENT_ALREADY_CLAIMED','ACHIEVEMENT_STAGE_ORDER','ACHIEVEMENT_NOT_READY','SHOWCASE_BAD_SLOT','SHOWCASE_BAD_CARD','SHOWCASE_NOT_OWNED','PLAYER_NOT_FOUND','UNKNOWN_PACK','THEME_UNAVAILABLE','PACK_GENERATION_FAILED','BAD_DELIVERY_REQUEST','DELIVERY_NOT_FOUND'].find(s=>body.includes(s));
     const error=new Error(code||'DATABASE_REQUEST_FAILED');error.status=code?409:502;throw error;
   }
   try{return JSON.parse(body);}catch{throw new Error('DATABASE_RESPONSE_FAILED');}
@@ -87,7 +87,7 @@ export async function handleRequest(request,env=undefined){
   if (!['GET','POST'].includes(request.method)) return json({error:'METHOD_NOT_ALLOWED'},405);
   const configured=!!(process.env.TELEGRAM_BOT_TOKEN&&process.env.SUPABASE_URL&&process.env.SUPABASE_SECRET_KEY);
   if(request.method==='GET' && u.searchParams.get('health')==='1')
-    return json({service:'FLIP',version:'0.9.6.2',configured});
+    return json({service:'FLIP',version:'0.9.6.3',configured});
   if(!configured)return json({error:'SERVER_NOT_CONFIGURED'},503);
   try{
     const raw=request.headers.get('x-telegram-init-data');
@@ -97,6 +97,11 @@ export async function handleRequest(request,env=undefined){
     if(request.method==='GET' && u.searchParams.get('probe')==='1'){
       await rpc('flip_snapshot',{p_telegram_id:user.telegram_id},db);
       return json({ok:true});
+    }
+    if(request.method==='GET' && u.searchParams.get('inventory')==='1'){
+      // Refresh only the current signed player's cards after external awards,
+      // without restarting the Mini App or touching the daily streak.
+      return json(await rpc('flip_snapshot',{p_telegram_id:user.telegram_id},db));
     }
     if(request.method==='GET' && u.searchParams.get('hub')==='1'){
       // Owner-only notification/activity feed (never accept an account ID).
@@ -164,10 +169,23 @@ export async function handleRequest(request,env=undefined){
     const rawBody=await request.text();
     if(rawBody.length>MAX_BODY_LENGTH) return json({error:'BAD_REQUEST'},400);
     let body; try{body=JSON.parse(rawBody)}catch{return json({error:'BAD_REQUEST'},400)}
-    if(!body || !['drop','pack','theme_pack','claim_task','reroll_task','claim_streak','claim_achievement','set_showcase','mark_events_read'].includes(body.action) ||
+    if(!body || !['drop','pack','theme_pack','claim_task','reroll_task','claim_streak','claim_achievement','set_showcase','mark_events_read','ack_card_deliveries'].includes(body.action) ||
       typeof body.requestId!=='string' ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.requestId))
       return json({error:'BAD_REQUEST'},400);
+    if(body.action==='ack_card_deliveries'){
+      const ids=body.deliveryIds;
+      const unique=Array.isArray(ids)?new Set(ids):null;
+      if(Object.keys(body).some(key=>!['action','requestId','deliveryIds'].includes(key))||
+        !Array.isArray(ids)||ids.length<1||ids.length>20||
+        unique.size!==ids.length||
+        ids.some(id=>!Number.isSafeInteger(id)||id<=0))
+        return json({error:'BAD_REQUEST'},400);
+      // No client-selected recipient or sender: Telegram HMAC defines ownership.
+      return json(await rpc('flip_delivery_ack',{
+        p_telegram_id:user.telegram_id,p_delivery_ids:ids
+      },db));
+    }
     if(body.action==='mark_events_read'){
       const fields=Object.keys(body);
       const all=body.all===true;

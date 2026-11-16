@@ -298,6 +298,23 @@ async function refreshHub({rerender=false}={}){
  hubLoading=true;hubError='';
  try{
    const data=await bridge.refreshHub();
+   // Reuse the existing hub poll, including on Telegram launch and after
+   // successful trades. Acknowledgments never alter owned inventory.
+   const hasNewCards=window.FLIPDelivery?.enqueue(data?.card_deliveries,{
+     onAcknowledge:ids=>bridge.ackCardDeliveries(ids),
+     onRefresh:()=>refreshHub({rerender:true})
+   });
+   if(hasNewCards&&bridge?.refreshInventory){
+     // One fetch per fresh receipt batch, not a new polling interval.
+     // Keep collection copies current even if the gift arrived mid-session.
+     bridge.refreshInventory().then(snapshot=>{
+       if(!snapshot)return;
+       Object.assign(state,snapshot);
+       if(['collection','collectionArtist','collectionRelease','profile'].includes(current))
+         render(current);
+       else $('#balance').textContent=money(state.balance);
+     }).catch(()=>{/* The next signed launch will reconcile card copies. */});
+   }
    if(rerender&&['profile','activity'].includes(current))render(current);
    updateInbox();
    return data;
@@ -847,7 +864,11 @@ window.addEventListener('flip-admin-self-changed',async()=>{
   if(!live())return;
   try{
     const snapshot=await bridge.connect();
-    if(snapshot){Object.assign(state,snapshot);$('#balance').textContent=money(state.balance);}
+    if(snapshot){
+      Object.assign(state,snapshot);
+      $('#balance').textContent=money(state.balance);
+      refreshHub({rerender:true});
+    }
   }catch(_){/* balance refresh happens on next Telegram launch */}
 });
 // Update rotating assignments if a player keeps the Mini App open past midnight MSC.

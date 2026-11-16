@@ -111,6 +111,18 @@
     window.dispatchEvent(new CustomEvent('flip-hub-updated',{detail:{unread:data.unread_count||0}}));
     return data;
   };
+  bridge.refreshInventory=async()=>{
+    if(bridge.mode!=='server')return null;
+    const snapshot=await request(null,null,{},'?inventory=1');
+    return makeState(snapshot);
+  };
+  bridge.ackCardDeliveries=async ids=>{
+    if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+    if(!Array.isArray(ids)||ids.length<1||ids.length>20||
+       ids.some(id=>!Number.isSafeInteger(id)||id<=0))
+      throw new Error('BAD_REQUEST');
+    return request('ack_card_deliveries',crypto.randomUUID(),{deliveryIds:ids});
+  };
   bridge.markEventsRead=async(eventId=null)=>{
     if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
     const payload=eventId===null?{all:true}:{eventId};
