@@ -66,14 +66,14 @@
    '<span class="flip-shop-hero-pill">FLIP EXCLUSIVE</span></div>'+
    '<div class="flip-shop-hero-title"><div><p>EVERY DROP COUNTS</p>'+
     '<h3>STANDARD<br>PACK<span>.</span></h3>'+
-    '<p class="flip-shop-intro">Три случайные карточки из всех доступных релизов FLIP. '+
-    'Каждое открытие — новое сочетание.</p></div>'+
+    '<p class="flip-shop-intro">3 карточки из всех релизов FLIP.'+
+    '</p></div>'+
     '<div class="flip-shop-hero-stack">'+
       '<div class="flip-shop-stack-card is-back"></div>'+
       '<div class="flip-shop-stack-card is-middle"></div>'+
       packBack('lime')+'</div></div>'+
    '<div class="flip-shop-feature-row"><span>3 КАРТОЧКИ</span>'+
-    '<span>≥ 1 RARE+</span><span>БЕЗ PITY</span></div>'+
+    '<span>≥ 1 RARE+</span></div>'+
    '<div class="flip-shop-hero-bottom"><div>'+
       '<small>ЦЕНА НАБОРА</small><strong>'+fmt(price)+' <i>F</i></strong></div>'+
       paymentButton(pack,{...context})+
@@ -105,20 +105,20 @@
   const list=[['COMMON',65],['RARE',25],['EPIC',8],['LEGENDARY',1.8],['MYTHIC',0.2]];
   return '<details class="flip-shop-odds"><summary>'+
     '<span>ВЕРОЯТНОСТИ И ПРАВИЛА ПАКОВ</span><span class="flip-shop-chevron">⌄</span>'+
-    '</summary><div class="flip-shop-odds-inner"><p>Условия одинаковы для стандартных и тематических паков. '+
-    'Тематический набор ограничивает только набор релизов, не повышает шанс редкостей.</p>'+
+    '</summary><div class="flip-shop-odds-inner"><p>Шансы одинаковы для всех наборов.'+
+    '</p>'+
     '<div class="flip-shop-odds-grid">'+list.map(([name,value])=>
       '<div><span>'+name+'</span><strong>'+value+'%</strong></div>').join('')+'</div>'+
-    '<p>Гарантируется минимум одна карточка Rare или выше и три разных варианта в одном паке. '+
-    'Гарантия может менять итоговое распределение относительно базовых шансов. '+
-    'Hidden остаётся секретной редкостью. Pity действует только на бесплатные дропы.</p>'+
+    '<p>В каждом паке 3 разные карточки, минимум одна — Rare+.'+
+    ''+
+    '</p>'+
     '</div></details>';
  }
  function purchaseHistory(history){
   const entries=Array.isArray(history)?history:[];
   if(!entries.length)return '<div class="flip-shop-history-empty">'+
     '<strong>ПОКА НИ ОДНОЙ ПОКУПКИ.</strong>'+
-    '<p>Первое открытие набора появится здесь вместе с полученными карточками.</p></div>';
+    '<p>Первый набор появится здесь.</p></div>';
   return '<div class="flip-shop-history-list">'+entries.slice(0,40).map((item,i)=>{
     const spec=specs[item.pack_type]||specs.standard;
     const when=new Date(item.date);
@@ -149,7 +149,7 @@
   const remaining=Math.max(0,max-used);
   const context={online:live,demo,balance:Number(state?.balance||0),busy,unlimited,remaining};
   return '<div class="panel flip-shop">'+
-    '<span class="eyebrow">FLIP / STORE 005</span>'+
+    
     '<div class="flip-shop-heading"><h2>МАГАЗИН<span>.</span></h2>'+
      '<p>ТВОЯ СЛЕДУЮЩАЯ<br>РЕДКАЯ НАХОДКА.</p></div>'+
     '<div class="flip-shop-topbar"><span><i>F</i> '+fmt(state?.balance)+' НА БАЛАНСЕ</span>'+
@@ -162,20 +162,20 @@
       (tab==='history'?'aria-current="page"':'')+'>ИСТОРИЯ</button></div>'+
     (tab==='history'?
       '<section class="flip-shop-history"><h3>ТВОИ ПОКУПКИ<span>.</span></h3>'+
-      '<p>Последние 40 наборов. Все покупки и полученные карточки сохранены на сервере.</p>'+
+      
       (!live?'<div class="flip-shop-history-empty">История доступна после входа через Telegram.</div>':
        loading?'<div class="flip-shop-history-empty">ЗАГРУЖАЕМ ИСТОРИЮ…</div>':
        error?'<div class="flip-shop-history-empty">Не удалось загрузить историю. Открой раздел ещё раз.</div>':
        purchaseHistory(shop?.history))+'</section>':
       hero(byId('standard'),context)+
       '<div class="flip-shop-section-label"><h3>ТЕМАТИЧЕСКИЕ НАБОРЫ</h3>'+
-        '<p>Без привязки к отдельному артисту</p></div>'+
+        '</div>'+
       '<div class="flip-shop-themes">'+
         themeCard(byId('archive'),context)+
         themeCard(byId('new-era'),context)+'</div>'+
       rates(shop)+
-      '<p class="flip-shop-legal">Дневной лимит общий для всех наборов и обновляется в 00:00 МСК. '+
-      'Цена списывается только после успешной выдачи трёх карточек. Награды — игровая валюта и коллекционные предметы.</p>')+
+      '<p class="flip-shop-legal">Общий лимит обновляется в 00:00 МСК.'+
+      '</p>')+
     '</div>';
  }
  window.FLIPStore={page,cardFromId,packBack,cardCount:3};
