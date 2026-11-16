@@ -180,6 +180,33 @@ begin
   );
 end; $$;
 
+-- Add mode flags only to the player's *own* authenticated snapshot,
+-- so the shop can show "Без лимита" instead of an incorrect 0/10 label.
+create or replace function public.flip_snapshot(p_telegram_id bigint)
+returns jsonb language sql stable set search_path = '' as $
+  select jsonb_build_object(
+    'balance',p.balance,'xp',p.xp,'level',p.level,'xp_to_next',100+50*(p.level-1),
+    'cp',public.flip_cp_total(p.telegram_id),
+    'pity_misses',p.pity_misses,'drop_ready_at',p.drop_ready_at,
+    'welcome_remaining',p.welcome_remaining,'claimed_tasks',to_jsonb(p.claimed_tasks),
+    'packs_today',p.packs_today,'bonus_packs',p.bonus_packs,
+    'unlimited_drop',coalesce((select m.unlimited_drop from public.flip_admin_play_modes m
+      where m.telegram_id=p.telegram_id),false),
+    'unlimited_packs',coalesce((select m.unlimited_packs from public.flip_admin_play_modes m
+      where m.telegram_id=p.telegram_id),false),
+    'username',p.username,'first_name',p.first_name,
+    'inventory',coalesce((select jsonb_agg(jsonb_build_object('id',i.card_id,
+       'count',i.quantity,'ranked_count',i.ranked_quantity,'test_count',i.test_quantity)
+       order by i.card_id) from public.flip_inventory i
+       where i.telegram_id=p.telegram_id),'[]'::jsonb),
+    'discovered',coalesce((select jsonb_agg(d.card_id order by d.card_id)
+       from public.flip_discoveries d
+       where d.telegram_id=p.telegram_id),'[]'::jsonb)
+  ) from public.flip_players p where p.telegram_id=p_telegram_id;
+$;
+revoke all on function public.flip_snapshot(bigint) from public,anon,authenticated;
+grant execute on function public.flip_snapshot(bigint) to service_role;
+
 revoke all on function public.flip_admin_apply_unlimited(),
   public.flip_admin_set_unlimited(bigint,text,boolean,uuid),
   public.flip_admin_cooldown_status(bigint)
