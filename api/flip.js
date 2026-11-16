@@ -98,6 +98,11 @@ export async function handleRequest(request,env=undefined){
       await rpc('flip_snapshot',{p_telegram_id:user.telegram_id},db);
       return json({ok:true});
     }
+    if(request.method==='GET' && u.searchParams.get('inventory')==='1'){
+      // Refresh only the current signed player's cards after external awards,
+      // without restarting the Mini App or touching the daily streak.
+      return json(await rpc('flip_snapshot',{p_telegram_id:user.telegram_id},db));
+    }
     if(request.method==='GET' && u.searchParams.get('hub')==='1'){
       // Owner-only notification/activity feed (never accept an account ID).
       return json(await rpc('flip_event_snapshot',{p_telegram_id:user.telegram_id},db));
