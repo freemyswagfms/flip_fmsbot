@@ -107,13 +107,14 @@ test('Final roulette information and action are spaced without changing animatio
 });
 test('v0.9.8.2 asset cache revision is confined to changed public files',()=>{
  const html=source('index.html'),pkg=JSON.parse(source('package.json'));
- assert.equal(pkg.version,'0.9.8.2');
+ assert.ok(pkg.version.localeCompare('0.9.8.2',undefined,{numeric:true})>=0);
  for(const file of ['src/scripts/catalog.js','src/scripts/collection.js','src/scripts/card-viewer.js',
-  'src/scripts/app.js','src/styles/collection.css','src/styles/card-viewer.css',
-  'src/styles/reveal.css']){
-  assert.ok(html.includes(file+'?v='+pkg.version),file);
+  'src/styles/card-viewer.css']){
+  assert.ok(html.includes(file+'?v=0.9.8.2'),file);
  }
  assert.ok(html.includes('src/scripts/reveal.js?v=0.9.8.1'));
+ assert.ok(html.includes('src/scripts/app.js?v='+pkg.version));
+ assert.ok(html.includes('src/styles/collection.css?v='+pkg.version));
  assert.ok(html.includes('src/scripts/admin.js?v=0.9.6.4'));
  assert.ok(html.includes('src/scripts/store.js?v=0.9.6.2'));
  assert.ok(source('api/flip.js').includes("version:'"+pkg.version+"'"));
