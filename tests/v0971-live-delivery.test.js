@@ -91,5 +91,5 @@ test('Release version and Telegram WebView cache query refer to hotfix assets',(
   'src/scripts/delivery-reveal.js','src/styles/delivery-reveal.css'
  ])assert.ok(html.includes(asset+'?v='+pkg.version),asset);
  assert.ok(html.includes('FLIP v'+pkg.version+' · TELEGRAM GAME'));
- assert.match(read('api/flip.js'),/version:'0\.9\.7\.1'/);
+ assert.ok(read('api/flip.js').includes("version:'"+pkg.version+"'"));
 });
