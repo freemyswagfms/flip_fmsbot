@@ -128,7 +128,7 @@ test('Correct v0.9.8.6 cache tag and release; game and Studio mechanics untouche
  assert.ok(html.includes('src/scripts/app.js?v='+pkg.version));
  assert.ok(html.indexOf('scroll-context.js?v=0.9.8.6')<
    html.indexOf('src/scripts/app.js?v='+pkg.version));
- assert.ok(html.includes('src/scripts/trades.js?v=0.9.8.5'));
- assert.ok(html.includes('src/scripts/achievements.js?v=0.9.8.3'));
+ assert.ok(html.includes('src/scripts/trades.js?v='+pkg.version));
+ assert.ok(html.includes('src/scripts/achievements.js?v='+pkg.version));
  assert.ok(read('api/flip.js').includes("version:'"+pkg.version+"'"));
 });

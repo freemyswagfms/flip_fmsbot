@@ -60,8 +60,8 @@ test('SQL safely adds four non-duplicated catalog entries with listed F prices',
 });
 test('Versioned new stylesheet and game assets load under one release',()=>{
  const html=read('index.html'),pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'0.9.9');
- assert.ok(html.includes('src/styles/cosmetic-v099.css?v='+pkg.version));
+ assert.equal(pkg.version,'0.9.10');
+ assert.ok(html.includes('src/styles/cosmetic-v099.css?v=0.9.9'));
  for(const file of ['profile-cosmetics.js','app.js','showcase.js'])
   assert.ok(html.includes('src/scripts/'+file+'?v='+pkg.version));
  assert.ok(read('api/flip.js').includes("version:'"+pkg.version+"'"));

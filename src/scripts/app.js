@@ -55,6 +55,7 @@ let showcaseEditingSlot=1,publicProfileData=null,publicProfileLoading=false,publ
 let shopTab='packs',shopLoading=false,shopBusy=false,shopError='';
 let cosmeticPreview=null,profilePurchasePending=null;
 let hubLoading=false,hubError='';
+let lastProfileStatsSignature=null,lastActivitySignature=null;
 const catalog=window.FLIPCatalog;
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const artCards=catalog.rarities.map((rarity,i)=>catalog.getCard('carti',catalog.artists[0].releases[i%5].id,rarity));
@@ -225,10 +226,13 @@ function profile(){
     Number(data?.ranked_cards||0).toLocaleString('ru-RU')+'</strong></div>'+
   '<div><small>РАЗНЫХ РЕЙТИНГОВЫХ</small><strong>'+
     Number(data?.ranked_variants||0).toLocaleString('ru-RU')+'</strong></div></div>';
+ const lowerSkin=escapeHtml(window.FLIPProfileCosmetics?.classes?.(data)||'');
  return '<div class="panel flip-profile-page">'+
-    hero+showcase+featured+stats+settings+
+    hero+showcase+
+    '<div class="flip-profile-lower '+lowerSkin+'">'+featured+stats+
     (window.FLIPActivity?.profileStats(bridge?.hub?.stats,{online:live()})||'')+
-    (window.FLIPAchievements?.profile(bridge?.achievements,{online:live()})||'')+
+    (window.FLIPAchievements?.profile(bridge?.achievements,{
+      online:live(),pinnedBadges:data?.pinned_badges})||'')+'</div>'+settings+
     (live()?'':blocked()?'<div class="content-card"><h3>НЕТ СОЕДИНЕНИЯ</h3>'+
       '<p>Перезапусти FLIP через Telegram.</p></div>':
       '<div class="content-card"><h3>ДЕМО</h3>'+
@@ -397,8 +401,14 @@ async function refreshHub({rerender=false}={}){
  hubLoading=true;hubError='';
  try{
    const data=await bridge.refreshHub();
-   // Reconcile offers and badges using this existing signed 45-second hub poll.
+   // The signed hub is unchanged; visible trades get separate coalesced reads.
    window.FLIPTrades?.syncHub?.(data);
+   const profileSignature=JSON.stringify(data?.stats||null);
+   const activitySignature=JSON.stringify([data?.stats||null,data?.activity||[]]);
+   const profileChanged=lastProfileStatsSignature!==profileSignature;
+   const activityChanged=lastActivitySignature!==activitySignature;
+   lastProfileStatsSignature=profileSignature;
+   lastActivitySignature=activitySignature;
    // Admin-awarded tester modes are published through this existing private
    // hub poll. Players see a changed cooldown without restarting FLIP.
    const modes=data?.play_modes;
@@ -406,14 +416,15 @@ async function refreshHub({rerender=false}={}){
      const drop=modes.unlimited_drop===true;
      const pack=modes.unlimited_packs===true;
      const timestamp=Date.parse(modes.drop_ready_at);
-     const changed=state.unlimitedDrop!==drop||state.unlimitedPacks!==pack||
+     const packChanged=state.unlimitedPacks!==pack;
+     const changed=state.unlimitedDrop!==drop||packChanged||
        (Number.isFinite(timestamp)&&state.dropReadyAt!==timestamp);
      state.unlimitedDrop=drop;state.unlimitedPacks=pack;
      if(Number.isFinite(timestamp))state.dropReadyAt=timestamp;
      if(Number.isSafeInteger(modes.packs_today))state.packsToday=modes.packs_today;
      if(changed){
        if(current==='home')updateTimer();
-       if(current==='store')bridge.refreshShop?.().then(()=>{
+       if(current==='store'&&packChanged)bridge.refreshShop?.().then(()=>{
          if(current==='store')render('store');
        }).catch(()=>{});
      }
@@ -435,7 +446,9 @@ async function refreshHub({rerender=false}={}){
        else $('#balance').textContent=money(state.balance);
      }).catch(()=>{/* The next signed launch will reconcile card copies. */});
    }
-   if(rerender&&['profile','activity'].includes(current))render(current);
+   // Keep the reader in-place if the hub snapshot did not change on screen.
+   if(rerender&&((current==='profile'&&profileChanged)||
+       (current==='activity'&&activityChanged)))render(current);
    updateInbox();
    return data;
  }catch(error){hubError=error.message||'HUB_ERROR';updateInbox();return null;}
@@ -1091,6 +1104,11 @@ setInterval(()=>{
  bridge.refreshTasks?.().then(()=>render(current)).catch(()=>{});
 },60000);
 setInterval(updateTimer,1000);
+// Only the visible trades tab polls offer statuses every 15 seconds.
+setInterval(()=>{
+ if(live()&&current==='trades'&&document.visibilityState!=='hidden')
+   window.FLIPTrades?.tickVisible?.();
+},15000);
 // Sender-side fast delivery check while an outbound trade is waiting.
 // Reuse the signed hub and the existing hubLoading guard; no overlapping requests.
 setInterval(()=>{
@@ -1101,7 +1119,10 @@ setInterval(()=>{
  if(live()&&document.visibilityState!=='hidden')refreshHub({rerender:true});
 },45000);
 document.addEventListener('visibilitychange',()=>{
- if(document.visibilityState==='visible'&&live())refreshHub({rerender:true});
+ if(document.visibilityState==='visible'&&live()){
+   refreshHub({rerender:true});
+   if(current==='trades')window.FLIPTrades?.tickVisible?.();
+ }
 });
 render();updateServerDot();updateInbox();window.FLIPIcons?.render($('#notifications'));
 bridge?.connect().then(snapshot=>{

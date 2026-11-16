@@ -62,7 +62,12 @@
          '">ИЗМЕНИТЬ</button>':'')+'</div>';
       }).join('')+'</div>';
   }
-  function badges(items){
+  const badgeKey=b=>String(b?.code||b?.title||'').trim();
+ function unpinnedBadges(items,pins){
+   const pinned=new Set((Array.isArray(pins)?pins:[]).map(badgeKey).filter(Boolean));
+   return (Array.isArray(items)?items:[]).filter(b=>!pinned.has(badgeKey(b)));
+ }
+ function badges(items){
    const list=Array.isArray(items)?items:[];
    if(!list.length)return '<p class="flip-showcase-no-badges">Особые значки пока не получены.</p>';
    return '<div class="flip-showcase-badges">'+list.slice(0,12).map(x=>
@@ -145,6 +150,7 @@
       avatarContent+'</div><div class="flip-identity-meta"><strong>'+esc(name)+'</strong>'+
       '<span>LVL '+fmt(profile.level)+'</span></div></div></section>';
     const limit=Math.min(6,Math.max(3,Number(profile.slot_count)||3));
+    const extraBadges=unpinnedBadges(profile.badges,profile.pinned_badges);
     return '<div class="panel flip-public-profile">'+
       '<button class="link" data-action="leaderboard">← К РЕЙТИНГУ</button>'+
       identity+
@@ -161,8 +167,8 @@
         '<div><small>РЕЙТИНГОВЫХ КАРТОЧЕК</small><strong>'+fmt(profile.ranked_cards)+'</strong></div>'+
         '<div><small>РАЗНЫХ РЕЙТИНГОВЫХ</small><strong>'+fmt(profile.ranked_variants)+'</strong></div></div>'+
       (window.FLIPActivity?.publicStats(profile.stats)||'')+
-      (profile.badges?.length?'<section class="content-card flip-profile-all-badges"><h3>ЗНАЧКИ ИГРОКА</h3>'+
-        badges(profile.badges)+'</section>':'')+'</div></div>';
+      (extraBadges.length?'<section class="content-card flip-profile-all-badges"><h3>ДРУГИЕ ЗНАЧКИ</h3>'+
+        badges(extraBadges)+'</section>':'')+'</div></div>';
   }
-  window.FLIPShowcase={own,editor,publicPage,cardFromId,cardsFromState};
+  window.FLIPShowcase={own,editor,publicPage,cardFromId,cardsFromState,unpinnedBadges};
 })();

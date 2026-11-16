@@ -1,4 +1,4 @@
-/* FLIP v0.9.8.5 — gallery-first trades; original signed transactions unchanged. */
+/* FLIP v0.9.10 — gallery-first trades; original signed transactions unchanged. */
 (() => {
 'use strict';
 const E=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -11,6 +11,7 @@ const s={q:'',players:[],targetId:'',targetLabel:'',their:[],give:[],take:[],
   cardQuery:{give:'',take:''},rarityFilter:{give:'all',take:'all'}};
 let root=null,serial=0,searchSeq=0,searchTimer=null,requestSeq=0,inFlight=null,lastHubTrades=null;
 let freshIncoming=new Set();
+const LIVE_TRADE_REFRESH_MS=15000;
 const fmt=x=>Number(x||0).toLocaleString('ru-RU',{maximumFractionDigits:2});
 const signed=x=>(Number(x||0)>0?'+':'')+fmt(x)+' CP';
 const groups=()=>{
@@ -348,9 +349,13 @@ function section(title,items){
       '<div class="flip-trade-empty-state" aria-label="Нет предложений">—</div>')+'</section>';
 }
 function liveStatus(){
-  return s.syncError?
-    '<div class="flip-trade-sync is-error" role="alert"><i aria-hidden="true"></i>'+
-    '<span>НЕТ СОЕДИНЕНИЯ · НАЖМИ «ОБНОВИТЬ»</span></div>':'';
+  if(s.syncError)return '<div class="flip-trade-sync is-error" role="alert">'+
+    '<i aria-hidden="true"></i><span>НЕТ СОЕДИНЕНИЯ · НАЖМИ «ОБНОВИТЬ»</span></div>';
+  const clock=s.lastChecked?new Date(s.lastChecked).toLocaleTimeString('ru-RU',{
+    hour:'2-digit',minute:'2-digit'}):null;
+  return '<div class="flip-trade-sync is-live" aria-label="Автообновление обменов">'+
+    '<i aria-hidden="true"></i><span>'+(clock?'ОБНОВЛЕНО '+clock+' · ':'')+
+    'АВТО · 15 С</span></div>';
 }
 function feedMarkup(){
   const trades=visibleTrades();
@@ -446,10 +451,16 @@ function syncHub(hub){
   const changed=lastHubTrades!==null&&lastHubTrades!==signature;
   lastHubTrades=signature;
   const active=!!(root&&root.isConnected);
-  const interval=active?40000:300000;
+  const interval=active?LIVE_TRADE_REFRESH_MS:300000;
   if(!s.lastChecked||changed||Date.now()-s.lastChecked>=interval)
     loadTrades({force:changed});
   else updateBadge();
+}
+function tickVisible(){
+  if(!initData||s.busy||document.visibilityState==='hidden'||!root?.isConnected)return null;
+  if(s.lastChecked&&Date.now()-s.lastChecked<LIVE_TRADE_REFRESH_MS)return null;
+  // loadTrades coalesces overlapping hub, manual and foreground reads.
+  return loadTrades();
 }
 async function searchPlayers(){
   const stamp=serial,seq=++searchSeq;
@@ -764,7 +775,7 @@ window.FLIPTrades={
     s.error='';s.message='';s.loading=!s.lastChecked;draw();
     if(!s.lastChecked||Date.now()-s.lastChecked>10000)loadTrades();
   },
-  syncHub,
+  syncHub,tickVisible,
   // Sender-only foreground receipt checks continue until an outgoing trade closes.
   hasPendingOutgoing(){return !!initData&&s.trades.some(t=>t.mine&&statusOf(t)==='pending');}
 };

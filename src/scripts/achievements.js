@@ -19,7 +19,11 @@
      '<span class="flip-ach-badge" title="'+esc(b.title)+'" aria-label="'+esc(b.title)+'">'+
        '<b>'+esc(b.symbol)+'</b><small>'+esc(b.title)+'</small></span>').join('')+'</div>';
  }
- function profile(data,{online=false}={}){
+ function profile(data,{online=false,pinnedBadges=[]}={}){
+   const pinned=new Set((Array.isArray(pinnedBadges)?pinnedBadges:[])
+     .map(b=>String(b?.code||b?.title||'').trim()).filter(Boolean));
+   const remaining=(Array.isArray(data?.badges)?data.badges:[])
+     .filter(b=>!pinned.has(String(b?.code||b?.title||'').trim()));
    const completed=Number(data?.completed||0),total=online?Number(data?.total||30):30;
    const ready=online?Number(data?.claimable||0):0;
    return '<section class="content-card flip-ach-profile">'+
@@ -27,7 +31,9 @@
        '<strong>'+completed+' / '+total+'</strong></div>'+
      (online?(ready>0?'<p>'+ready+' наград доступно к получению.</p>':''):
        '<p>Достижения доступны после входа через Telegram.</p>')+
-     badgeRow(data?.badges)+
+     (remaining.length?badgeRow(remaining):
+       data?.badges?.length?'<p class="flip-ach-profile-note">Закреплённые значки показаны выше.</p>':
+       badgeRow([]))+
      '<button class="outlinebtn" type="button" data-action="achievements">'+
        'ОТКРЫТЬ ДОСТИЖЕНИЯ ↗</button></section>';
  }

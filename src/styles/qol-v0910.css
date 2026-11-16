@@ -1,0 +1,21 @@
+/* FLIP v0.9.10 — foreground trade updates and matched own/public profile panels */
+.flip-trade-sync.is-live{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;
+ margin-bottom:9px;border:1px solid #55774b;border-radius:9px;color:#b6ff86;
+ background:#18291c;font:800 9px/1.3 'Space Grotesk',sans-serif;letter-spacing:.65px}
+.flip-trade-sync.is-live i{width:6px;height:6px;display:block;border-radius:50%;
+ background:#b6ff68;box-shadow:0 0 9px #aaff5c88}
+.flip-profile-page>.flip-profile-lower{margin:0!important}
+.flip-profile-lower>.flip-profile-metrics{margin:0!important;gap:8px}
+.flip-profile-lower>.flip-profile-metrics>div{min-height:79px;padding:10px 8px;
+ border-radius:12px;background:var(--lower-tile);border:1px solid var(--lower-edge)}
+.flip-profile-lower>.flip-profile-metrics strong{color:var(--lower-accent)}
+.flip-profile-lower>.flip-ach-profile{margin:0!important;min-width:0;
+ padding:14px 12px!important;border:1px solid var(--lower-edge)!important;
+ border-radius:17px!important;
+ background:linear-gradient(145deg,var(--lower-panel),#101613)!important}
+.flip-profile-lower .flip-ach-profile .flip-ach-badge{background:var(--lower-tile);border-color:var(--lower-edge)}
+.flip-profile-lower .flip-ach-profile .flip-ach-badge b{color:var(--lower-accent);text-shadow:none}
+.flip-profile-lower .flip-ach-profile-title strong{color:var(--lower-accent)}
+.flip-ach-profile-note{padding:6px 0 10px;color:#aebcaf!important;
+ font:650 10px/1.5 'Manrope',sans-serif}
+@media(prefers-reduced-motion:reduce){.flip-trade-sync.is-live i{animation:none!important}}
