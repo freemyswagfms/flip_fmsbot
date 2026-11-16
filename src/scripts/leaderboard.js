@@ -28,7 +28,7 @@
         '<div class="flip-leaderboard-list">',
         (data.leaders||[]).length?data.leaders.map(p=>{
           const profileId=typeof p.profileId==='string'&&
-            /^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$/i.test(p.profileId)
+            /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(p.profileId)
             ?p.profileId:null;
           const tag=profileId?'button':'div';
           return '<'+tag+(profileId?' type="button" data-player-profile="'+safe(profileId)+
