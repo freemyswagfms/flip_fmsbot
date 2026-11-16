@@ -298,6 +298,8 @@ async function refreshHub({rerender=false}={}){
  hubLoading=true;hubError='';
  try{
    const data=await bridge.refreshHub();
+   // Reconcile offers and badges using this existing signed 45-second hub poll.
+   window.FLIPTrades?.syncHub?.(data);
    // Admin-awarded tester modes are published through this existing private
    // hub poll. Players see a changed cooldown without restarting FLIP.
    const modes=data?.play_modes;
