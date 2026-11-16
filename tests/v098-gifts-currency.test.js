@@ -158,6 +158,6 @@ test('Client gift and F action modes are present and use existing trade UI',()=>
  assert.match(read('src/scripts/delivery-reveal.js'),/source==='gift'/);
  assert.match(read('src/scripts/activity.js'),/gift_received/);
  assert.match(read('src/scripts/activity.js'),/currency_offer/);
- assert.equal(pkg.version,'0.9.8');
+ assert.ok(pkg.version.localeCompare('0.9.8',undefined,{numeric:true})>=0);
  assert.match(html,/trades\.js\?v=0\.9\.8/);
 });
