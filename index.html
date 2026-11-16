@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="./src/styles/showcase.css?v=0.9.4.2" />
   <link rel="stylesheet" href="./src/styles/store.css?v=0.9.5" />
   <link rel="stylesheet" href="./src/styles/profile.css?v=0.9.0" />
+  <link rel="stylesheet" href="./src/styles/activity.css?v=0.9.6" />
   <link rel="stylesheet" href="./src/styles/admin.css?v=0.9.4.4" />
   <link rel="stylesheet" href="./src/styles/social.css?v=0.9.0" />
   <style>
@@ -48,7 +49,7 @@
       <div class="eyebrow">INTERACTIVE UI / FLIP</div>
       <h1>FLIP<span style="color:var(--lime)">.</span></h1>
       <p>Открой свой дроп.<br>Собирай музыкальные обложки и обменивайся карточками.</p>
-      <div class="label">● FLIP v0.9.5 · TELEGRAM GAME</div>
+      <div class="label">● FLIP v0.9.6 · TELEGRAM GAME</div>
     </aside>
     <main class="phone" role="application" aria-label="FLIP — коллекция музыкальных карточек">
       <div class="status"></div>
@@ -59,16 +60,14 @@
             <span class="f-coin">F</span><span id="balance">1 250</span><span class="balance-plus">+</span>
           </button>
           <button class="iconbtn" id="bellBtn" aria-label="Уведомления">
-            <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><i class="dot"></i>
+            <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><i class="dot" hidden></i>
           </button>
         </div>
       </header>
       <section class="notif-sheet" id="notifications">
         <button class="close" id="closeNotifications" aria-label="Закрыть уведомления">✕</button>
-        <h3>УВЕДОМЛЕНИЯ</h3>
-        <p>◉ Добро пожаловать в FLIP! Новые музыкальные открытия впереди.</p>
-        <p>✦ NEW COLLECTION: свежий релиз уже в каталоге.</p>
-        <p>↔ Входящие предложения об обмене ищи в разделе «Обмены».</p>
+        <div class="flip-notif-head"><h3>УВЕДОМЛЕНИЯ</h3><small>FLIP / LIVE</small></div>
+        <div id="flip-notifications-body" class="flip-notif-sheet-body" aria-live="polite"></div>
       </section>
       <div class="scroll" id="scroll"><div id="screen"></div></div>
       <nav class="bottom-nav" aria-label="Основная навигация">
@@ -94,7 +93,7 @@
   <script src="./src/scripts/reveal.js?v=0.9.1" defer></script>
   <script src="./src/scripts/collection.js?v=0.9.0" defer></script>
   <script src="./src/scripts/card-viewer.js?v=0.9.4.1" defer></script>
-  <script src="./src/scripts/server.js?v=0.9.5" defer></script>
+  <script src="./src/scripts/server.js?v=0.9.6" defer></script>
   <script src="./src/scripts/admin.js?v=0.9.4.4" defer></script>
   <script src="./src/scripts/leaderboard.js?v=0.9.4.1" defer></script>
   <script src="./src/scripts/trades.js?v=0.9.4.1" defer></script>
@@ -102,6 +101,7 @@
   <script src="./src/scripts/showcase.js?v=0.9.4.2" defer></script>
   <script src="./src/scripts/store.js?v=0.9.5" defer></script>
   <script src="./src/scripts/pack-reveal.js?v=0.9.5" defer></script>
-  <script src="./src/scripts/app.js?v=0.9.5" defer></script>
+  <script src="./src/scripts/activity.js?v=0.9.6" defer></script>
+  <script src="./src/scripts/app.js?v=0.9.6" defer></script>
 </body>
 </html>
