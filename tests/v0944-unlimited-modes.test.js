@@ -103,7 +103,7 @@ test('Owner UI toggles and game state reflect permanent mode, with cache busting
  assert.ok(server.includes("unlimitedDrop:snapshot.unlimited_drop===true"));
  assert.ok(src('src/scripts/store.js').includes('unlimitedPacks===true'));
  assert.ok(html.includes('src/scripts/admin.js?v=0.9.6.4'));
- assert.ok(html.includes('src/scripts/app.js?v=0.9.6.3'));
+ assert.ok(html.includes('src/scripts/app.js?v=0.9.6.4'));
  assert.ok(html.includes('src/scripts/server.js?v=0.9.6.3'));
  assert.ok(html.includes('src/styles/admin.css?v=0.9.4.4'));
  assert.ok(html.includes('FLIP v0.9.6.4 · TELEGRAM GAME'));
