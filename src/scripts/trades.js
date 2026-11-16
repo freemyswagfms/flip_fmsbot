@@ -121,18 +121,65 @@ async function api(view,args={},body){
   if(!response.ok)throw Error(d.error||'TRADE_REQUEST_FAILED');
   return d;
 }
+function matchingCards(inventory,side){
+  const q=String(s.cardQuery[side]||'').trim().toLocaleLowerCase('ru-RU');
+  const rarity=s.rarityFilter[side]||'all';
+  return inventory.filter(item=>{
+    const c=card(item.id);
+    return (rarity==='all'||c.rarity===rarity)&&
+      (!q||(c.artist+' '+c.name+' '+c.rarity+' '+item.id)
+        .toLocaleLowerCase('ru-RU').includes(q));
+  });
+}
 function cardSelector(inventory,selected,side,limit=5){
-  if(!inventory.length)return '<p class="flip-social-muted">Нет карточек, доступных для обмена.</p>';
+  if(!inventory.length)return '<div class="flip-trade-tiles-empty">Нет доступных карточек</div>';
+  const matched=matchingCards(inventory,side);
   const reached=selected.length>=limit;
-  return '<div class="flip-trade-card-choices">'+inventory.map(item=>{
-    const checked=selected.includes(item.id);
-    return '<label class="flip-trade-card-choice '+(checked?'chosen':'')+(reached&&!checked?' at-limit':'')+'">'+
-      '<input type="checkbox" data-trade-toggle="'+side+'" value="'+E(item.id)+'" '+
-        (checked?'checked':'')+' '+(reached&&!checked?'disabled':'')+'>'+
-      '<span class="flip-trade-choice-copy"><strong>'+E(card(item.id).title)+'</strong>'+
-      '<small>Доступно для обмена: '+E(item.ranked_count)+'</small></span>'+
-      '</label>';
-  }).join('')+'</div>';
+  const shown=[...matched].sort((a,b)=>Number(selected.includes(b.id))-
+    Number(selected.includes(a.id))||a.id.localeCompare(b.id));
+  if(!shown.length)return '<div class="flip-trade-tiles-empty">Ничего не найдено</div>';
+  return '<div class="flip-trade-card-choices" data-trade-choices="'+side+'">'+
+    shown.map((item,i)=>{
+      const c=card(item.id),checked=selected.includes(item.id),disabled=reached&&!checked;
+      return '<div class="flip-trade-card-choice '+(checked?'chosen ':'')+
+        (disabled?'at-limit ':'')+'" style="--tile-order:'+Math.min(i,9)+'" data-rarity="'+
+        E(c.rarity)+'">'+
+        '<button type="button" class="flip-trade-choice-art" data-trade-preview-card="'+
+        E(item.id)+'" aria-label="Просмотреть '+E(c.artist+' — '+c.name)+'">'+
+        artMarkup(c)+'<span class="flip-trade-choice-zoom" aria-hidden="true">↗</span></button>'+
+        '<label class="flip-trade-choice-select">'+
+        '<input type="checkbox" data-trade-toggle="'+side+'" value="'+E(item.id)+'" '+
+        (checked?'checked ':'')+(disabled?'disabled ':'')+'>'+
+        '<span class="flip-trade-choice-name"><strong>'+E(c.name)+
+        '</strong><small>'+E(c.artist)+'</small></span>'+
+        '<span class="flip-trade-choice-check" aria-hidden="true">'+(checked?'✓':'+')+'</span>'+
+        '</label><div class="flip-trade-choice-bottom"><span class="flip-trade-rarity" data-rarity="'+
+        E(c.rarity)+'">'+E(rarityName[c.rarity]||c.rarity.toUpperCase())+
+        '</span><small>×'+Math.max(0,Number(item.ranked_count)||0)+'</small></div>'+
+        '</div>';
+    }).join('')+'</div>';
+}
+function cardPicker(inventory,selected,side,title,limit=5){
+  const rarity=s.rarityFilter[side]||'all';
+  const opts=[['all','ВСЕ'],['common','C'],['rare','R'],['epic','E'],
+    ['legendary','L'],['mythic','M'],['hidden','H']];
+  const available=new Set(inventory.map(item=>card(item.id).rarity));
+  return '<div class="flip-trade-picker" data-picker="'+side+'">'+
+   '<div class="flip-trade-picker-heading"><div><small>'+E(title)+'</small>'+
+   '<strong>'+selected.length+' <span>/ '+limit+'</span></strong></div>'+
+   '<span class="flip-trade-picker-total" data-trade-choice-count="'+side+'">'+
+     matchingCards(inventory,side).length+' в списке</span></div>'+
+   '<div class="flip-trade-filter-bar"><label class="flip-trade-card-search-wrap">'+
+    '<span aria-hidden="true">⌕</span><input type="search" data-trade-card-search="'+side+
+    '" class="flip-trade-card-search" placeholder="Артист или релиз" aria-label="Поиск карточек" '+
+    'autocomplete="off" value="'+E(s.cardQuery[side]||'')+'"></label>'+
+    '<div class="flip-trade-rarity-filter" role="group" aria-label="Редкость">'+
+    opts.filter(([id])=>id==='all'||available.has(id)).map(([id,label])=>
+      '<button type="button" data-trade-rarity-side="'+side+'" data-trade-rarity="'+id+
+      '" class="'+(rarity===id?'active':'')+'" aria-pressed="'+(rarity===id)+'" title="'+
+      E(rarityName[id]||'Все редкости')+'">'+label+'</button>').join('')+'</div></div>'+
+   '<div class="flip-trade-choice-viewport" data-trade-viewport="'+side+'">'+
+     cardSelector(inventory,selected,side,limit)+'</div></div>';
 }
 function draft(){
   const mine=groups(),theirs=s.their,locked=!!s.counterOf;
@@ -140,11 +187,15 @@ function draft(){
   const good=validSelection(mine,theirs);
   const giving=mode==='currency'&&s.currencySide==='buy'?[]:s.give;
   const taking=mode==='gift'||(mode==='currency'&&s.currencySide==='sell')?[]:s.take;
-  const heading=locked?'ВСТРЕЧНОЕ ПРЕДЛОЖЕНИЕ':
-    mode==='gift'?'ОТПРАВИТЬ ПОДАРОК':mode==='currency'?'КАРТОЧКИ ЗА F':
-    'НОВОЕ ПРЕДЛОЖЕНИЕ';
-  const out=['<section class="flip-social-panel" id="flip-trade-compose">',
-    '<div class="flip-social-heading"><h3>'+heading+'</h3></div>'];
+  const sum=mode==='currency'?giftAmount():0;
+  const givingF=mode==='currency'&&s.currencySide==='buy'?sum:0;
+  const takingF=mode==='currency'&&s.currencySide==='sell'?sum:0;
+  const heading=locked?'Встречное предложение':
+    mode==='gift'?'Отправить подарок':
+    mode==='currency'?'Карточки за F':'Новый обмен';
+  const out=['<section class="flip-social-panel flip-trade-compose" id="flip-trade-compose">',
+    '<div class="flip-trade-compose-head"><div><span class="flip-trade-kicker">01 / НОВАЯ СДЕЛКА</span>'+
+    '<h3>'+heading+'</h3></div><span class="flip-trade-compose-mark" aria-hidden="true">↗</span></div>'];
   if(!locked){
     out.push('<div class="flip-trade-modes" role="group" aria-label="Тип операции">');
     for(const [id,label] of [['cards','КАРТОЧКИ'],['currency','ЗА F'],['gift','ПОДАРОК']]){
@@ -153,19 +204,20 @@ function draft(){
     }
     out.push('</div>');
   }else{
-    out.push('<div class="flip-social-selected">Изменяешь условия исходного обмена. '+
+    out.push('<div class="flip-social-selected flip-trade-counter-banner">Встречное предложение'+
       '<button type="button" data-trade-reset-counter>ОТМЕНИТЬ</button></div>');
   }
-  out.push('<label class="flip-social-label" for="flip-trade-user-search">Найти игрока</label>',
-    '<div class="flip-social-search"><input class="flip-social-input" id="flip-trade-user-search" '+
-    'maxlength="64" placeholder="@username, имя или Telegram ID" autocomplete="off" '+
+  out.push('<label class="flip-social-label" for="flip-trade-user-search">КОМУ</label>',
+    '<div class="flip-social-search flip-trade-player-search"><input class="flip-social-input" id="flip-trade-user-search" '+
+    'maxlength="64" placeholder="@username или имя" autocomplete="off" '+
     'value="'+E(s.q)+'" '+(locked?'disabled':'')+'>'+
     '<button type="button" class="outlinebtn" data-trade-find '+(locked?'disabled':'')+
     '>НАЙТИ</button></div>',
     '<div id="flip-trade-player-results">'+(locked?'':playerResults())+'</div>');
   if(s.targetId){
-    out.push('<div class="flip-social-selected">Игрок: <strong>'+E(s.targetLabel)+
-      '</strong> '+(locked?'':'<button type="button" data-trade-clear>ИЗМЕНИТЬ</button>')+'</div>');
+    out.push('<div class="flip-social-selected flip-trade-picked-player"><div>'+
+      '<small>ВЫБРАН ИГРОК</small><strong>'+E(s.targetLabel)+'</strong></div> '+
+      (locked?'':'<button type="button" data-trade-clear>ИЗМЕНИТЬ</button>')+'</div>');
     if(mode==='currency'){
       out.push('<div class="flip-trade-modes flip-trade-direction" role="group" aria-label="Направление F">');
       for(const [id,label] of [['sell','ПРОДАЮ КАРТОЧКИ'],['buy','ПОКУПАЮ КАРТОЧКИ']]){
@@ -174,40 +226,39 @@ function draft(){
       }
       out.push('</div>');
     }
-    if(mode==='cards'||mode==='gift'||(mode==='currency'&&s.currencySide==='sell')){
-      out.push('<label class="flip-social-label">ТЫ ОТДАЁШЬ · '+s.give.length+'/'+
-        (mode==='gift'?'1':'5')+'</label>',
-        cardSelector(mine,s.give,'give',mode==='gift'?1:5));
-    }
-    if(mode==='cards'||(mode==='currency'&&s.currencySide==='buy')){
-      out.push('<label class="flip-social-label">ТЫ ПОЛУЧАЕШЬ · '+s.take.length+'/5</label>',
-        cardSelector(theirs,s.take,'take'));
+    const offerMine=mode==='cards'||mode==='gift'||(mode==='currency'&&s.currencySide==='sell');
+    const offerTheirs=mode==='cards'||(mode==='currency'&&s.currencySide==='buy');
+    if(offerMine||offerTheirs){
+      out.push('<div class="flip-trade-pickers">'+
+        (offerMine?cardPicker(mine,s.give,'give','ТЫ ОТДАЁШЬ',mode==='gift'?1:5):'')+
+        (offerMine&&offerTheirs?'<div class="flip-trade-exchange-direction" aria-hidden="true"><span>⇄</span></div>':'')+
+        (offerTheirs?cardPicker(theirs,s.take,'take','ТЫ ПОЛУЧАЕШЬ',5):'')+
+      '</div>');
     }
     if(mode==='currency'){
-      out.push('<label class="flip-social-label" for="flip-trade-amount">'+
-        (s.currencySide==='sell'?'СКОЛЬКО F ПОЛУЧИШЬ':'СКОЛЬКО F ОТДАШЬ')+'</label>',
-        '<input id="flip-trade-amount" class="flip-social-input" type="number" inputmode="numeric" '+
-        'min="1" max="10000" step="1" placeholder="От 1 до 10 000 F" value="'+E(s.amount)+'">',
-        '');
+      out.push('<div class="flip-trade-amount-box"><label class="flip-social-label" for="flip-trade-amount">'+
+        (s.currencySide==='sell'?'ПОЛУЧИШЬ F':'ОТДАШЬ F')+'</label>',
+        '<div class="flip-trade-amount-input"><input id="flip-trade-amount" class="flip-social-input" '+
+        'type="number" inputmode="numeric" min="1" max="10000" step="1" '+
+        'placeholder="0" value="'+E(s.amount)+'"><strong>F</strong></div></div>');
     }
+    out.push('<div class="flip-trade-review"><div class="flip-trade-review-head">'+
+      '<span>УСЛОВИЯ СДЕЛКИ</span><span class="flip-trade-review-arrow" aria-hidden="true">↔</span></div>'+
+      '<div class="flip-trade-review-grid">'+
+      summarySide(giving,givingF,'ОТДАЁШЬ')+
+      summarySide(taking,takingF,'ПОЛУЧАЕШЬ')+'</div></div>');
     if(good){
       const myDelta=delta(mine,giving,taking),theirDelta=delta(theirs,taking,giving);
-      out.push('<div class="flip-social-preview"><div><small>ТВОЙ CP</small><strong class="'+
+      out.push('<div class="flip-social-preview flip-trade-cp-impact"><div><small>ТВОЙ CP</small><strong class="'+
         (myDelta>=0?'positive':'negative')+'">'+signed(myDelta)+'</strong></div>',
-        '<div><small>CP ДРУГОГО ИГРОКА</small><strong class="'+
-        (theirDelta>=0?'positive':'negative')+'">'+signed(theirDelta)+
-        '</strong></div></div>');
-    }else{
-      out.push('<p class="flip-social-muted">'+(mode==='gift'?
-        'Выбери одну карточку из своей коллекции.':mode==='currency'?
-        'Выбери от 1 до 5 карточек и укажи сумму F.':
-        'Выбери от 1 до 5 различных карточек с каждой стороны.')+'</p>');
+        '<div><small>CP ПАРТНЁРА</small><strong class="'+
+        (theirDelta>=0?'positive':'negative')+'">'+signed(theirDelta)+'</strong></div></div>');
     }
     const label=mode==='gift'?'ПОДАРИТЬ КАРТОЧКУ':mode==='currency'?
       'ПРЕДЛОЖИТЬ СДЕЛКУ ЗА F':locked?'ОТПРАВИТЬ ВСТРЕЧНОЕ':
       'ОТПРАВИТЬ ПРЕДЛОЖЕНИЕ';
-    out.push('<button type="button" class="bigbtn" data-trade-create '+
-      (!good||s.busy?'disabled':'')+'>'+label+'</button>');
+    out.push('<button type="button" class="bigbtn flip-trade-send" data-trade-create '+
+      (!good||s.busy?'disabled':'')+'>'+label+' <span aria-hidden="true">↗</span></button>');
   }
   const rules=mode==='gift'?
     'Подарок передаётся сразу. До 10 подарков за 24 часа. Защита новых карточек — 24 часа.':
