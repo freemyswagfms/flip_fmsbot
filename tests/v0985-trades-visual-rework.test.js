@@ -157,10 +157,10 @@ test('v0.9.8.5 only revamps presentation: server mechanics and conditions retain
  const trades=read('src/scripts/trades.js'),html=read('index.html'),
  css=read('src/styles/social.css'),app=read('src/scripts/app.js'),
  pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'0.9.8.5');
+ assert.ok(pkg.version.localeCompare('0.9.8.5',undefined,{numeric:true})>=0);
  assert.ok(html.includes('src/scripts/trades.js?v=0.9.8.5'));
  assert.ok(html.includes('src/styles/social.css?v=0.9.8.5'));
- assert.ok(html.includes('src/scripts/app.js?v=0.9.8.5'));
+ assert.ok(html.includes('src/scripts/app.js?v='+pkg.version));
  assert.match(app,/panel flip-trade-page/);
  assert.match(trades,/window\.FLIPCardViewer\?\.open\?\./);
  assert.match(trades,/data-trade-preview-card/);
