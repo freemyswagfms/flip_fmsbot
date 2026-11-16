@@ -34,6 +34,7 @@ test('Social endpoints reject unsigned callers',withEnv(async()=>{
 test('Public leaderboard reveals names and CP, not private Telegram IDs',withEnv(async()=>{
   let body,name;
   globalThis.fetch=async(url,options)=>{
+    if(String(url).endsWith('/rpc/flip_player_is_banned'))return Response.json(false);
     const path=String(url),payload=JSON.parse(options.body);
     if(path.endsWith('flip_profile_directory')){
       assert.deepEqual(payload.p_player_ids,[123,789]);
@@ -61,7 +62,8 @@ test('Public leaderboard reveals names and CP, not private Telegram IDs',withEnv
 }));
 test('Trade creation ignores forged sender ID and refuses fake currencies',withEnv(async()=>{
   let body,name,count=0;
-  globalThis.fetch=async(url,options)=>{name=url;body=JSON.parse(options.body);count++;
+  globalThis.fetch=async(url,options)=>{
+    if(String(url).endsWith('/rpc/flip_player_is_banned'))return Response.json(false);name=url;body=JSON.parse(options.body);count++;
     return new Response(JSON.stringify({ok:true,id:'11111111-1111-4111-8111-111111111111'}),{status:200});};
   const valid={action:'create',recipientId:'456',offerCard:'carti/die-lit/mythic',
     wantCard:'carti/music/legendary',requestId:'11111111-1111-4111-8111-111111111112',
@@ -84,6 +86,7 @@ test('Trade creation ignores forged sender ID and refuses fake currencies',withE
 test('Only a signed actor can accept and only with a valid trade UUID',withEnv(async()=>{
   const calls=[];
   globalThis.fetch=async(url,options)=>{
+    if(String(url).endsWith('/rpc/flip_player_is_banned'))return Response.json(false);
     calls.push({url,body:JSON.parse(options.body)});
     return new Response(JSON.stringify({ok:true,status:'accepted'}),{status:200});};
   const body={action:'accept',tradeId:'99999999-9999-4999-8999-999999999999',
@@ -100,6 +103,7 @@ test('Only a signed actor can accept and only with a valid trade UUID',withEnv(a
 test('Partner inventory and preview are read-only and validated',withEnv(async()=>{
   const calls=[];
   globalThis.fetch=async(url,options)=>{
+    if(String(url).endsWith('/rpc/flip_player_is_banned'))return Response.json(false);
     calls.push({url,body:JSON.parse(options.body)});
     return new Response(JSON.stringify([]),{status:200});};
   const bad=await handleSocialRequest(request(123,'https://flip.example.com/api/social?view=cards&playerId=0'));
@@ -115,6 +119,7 @@ test('Partner inventory and preview are read-only and validated',withEnv(async()
 test('Signed multi-card offer accepts 1 to 5 per side and keeps actor server-side',withEnv(async()=>{
   const calls=[];
   globalThis.fetch=async(url,options)=>{
+    if(String(url).endsWith('/rpc/flip_player_is_banned'))return Response.json(false);
     calls.push({url,body:JSON.parse(options.body)});
     return new Response(JSON.stringify({ok:true,id:'77777777-7777-4777-8777-777777777777'}),{status:200});
   };
@@ -146,6 +151,7 @@ test('Signed multi-card offer accepts 1 to 5 per side and keeps actor server-sid
 test('Counteroffers use validated parent trade and signed recipient',withEnv(async()=>{
   const calls=[];
   globalThis.fetch=async(url,options)=>{
+    if(String(url).endsWith('/rpc/flip_player_is_banned'))return Response.json(false);
     calls.push({url,body:JSON.parse(options.body)});
     return new Response(JSON.stringify({ok:true,id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'}),{status:200});
   };
