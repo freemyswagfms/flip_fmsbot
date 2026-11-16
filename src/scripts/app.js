@@ -176,7 +176,7 @@ function catalogView(){
    '<p class="note">Каталог синхронизируется при входе в игру. Карточки из старых релизов сохраняют свои идентификаторы.</p></div>';
 }
 
-function trades(){return '<div class="panel"><span class="eyebrow">PLAYER TO PLAYER / 003</span><h2>ОБМЕНЫ<span style="color:var(--lime)">.</span></h2><p class="desc">Реальные обмены от 1 до 5 карточек с каждой стороны, встречные предложения и предварительный расчёт CP.</p><div id="flip-trades-root"></div></div>'}
+function trades(){return '<div class="panel"><span class="eyebrow">PLAYER TO PLAYER / 003</span><h2>ОБМЕНЫ<span style="color:var(--lime)">.</span></h2><p class="desc">Обменивай карточки, предлагай сделки за F или отправляй подарки друзьям.</p><div id="flip-trades-root"></div></div>'}
 function achievements(){return window.FLIPAchievements?.page(bridge?.achievements,{online:live()})||'<div class="panel"><h2>ДОСТИЖЕНИЯ</h2><p>Загрузка…</p></div>'}
 function leaderboard(){return '<div class="panel"><button class="link" data-action="profile">← К ПРОФИЛЮ</button><span class="eyebrow">FLIP / LEADERBOARD</span><h2>РЕЙТИНГ<span style="color:var(--lime)">.</span></h2><p class="desc">Соревнуйся ценностью своей текущей коллекции. CP не тратятся и не покупаются.</p><div id="flip-leaderboard-root"></div></div>'}
 function store(){

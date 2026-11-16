@@ -18,6 +18,12 @@
   trade_declined:{icon:'×',title:'Предложение отклонено',route:'trades'},
   trade_cancelled:{icon:'×',title:'Предложение отменено',route:'trades'},
   trade_countered:{icon:'⇄',title:'Получено встречное предложение',route:'trades'},
+   currency_offer:{icon:'⇄',title:'Новое предложение обмена за F',route:'trades'},
+   currency_accepted:{icon:'✓',title:'Обмен карточек за F завершён',route:'trades'},
+   currency_declined:{icon:'×',title:'Предложение за F отклонено',route:'trades'},
+   currency_cancelled:{icon:'×',title:'Предложение за F отменено',route:'trades'},
+   gift_received:{icon:'✦',title:'Тебе подарили карточку',route:'collection'},
+   gift_sent:{icon:'✦',title:'Ты подарил карточку',route:'trades'},
   achievement_claim:{icon:'✦',title:'Награда достижения получена',route:'achievements'},
   drop:{icon:'◈',title:'Бесплатный дроп открыт',route:'collection'},
   pack:{icon:'▣',title:'Набор открыт',route:'store'}
@@ -31,7 +37,11 @@
  function detail(e){
   const d=e?.details||{},item=types[e?.kind];
   const partner=String(e?.partner_name||'Другой игрок');
-  if(e?.kind?.startsWith('trade_'))return partner;
+  if(e?.kind?.startsWith('trade_')||e?.kind?.startsWith('currency_'))return partner;
+   if(e?.kind==='gift_received'||e?.kind==='gift_sent'){
+     const c=cardOf(d.card_id);
+     return (c?(c.artist||'')+' · '+(c.title||'Карточка'):'Карточка')+' · '+partner;
+   }
   if(e?.kind==='achievement_claim')return 'Этап '+(Number(d.stage)||1)+
     ' · +'+fmt(d.reward_f)+' F';
   if(e?.kind==='drop'){
@@ -59,7 +69,7 @@
       'data-event-route="'+esc(type.route)+'"'+
       (validId?' data-event-read="'+id+'"':'')+
       ' aria-label="Открыть: '+esc(type.title)+'">↗</button>':
-      (e.kind?.startsWith('trade_')&&e.partner_public_id?
+      ((e.kind?.startsWith('trade_')||e.kind?.startsWith('currency_')||e.kind?.startsWith('gift_'))&&e.partner_public_id?
        '<button type="button" class="flip-event-profile" data-player-profile="'+
         esc(e.partner_public_id)+'">ПРОФИЛЬ ↗</button>':''))+
     '</article>';

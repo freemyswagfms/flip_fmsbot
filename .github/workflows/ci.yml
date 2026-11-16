@@ -26,6 +26,8 @@ jobs:
           node --check studio/api/tasks.js
           node --check api/admin.js
           node --check src/scripts/app.js
+          node --check src/scripts/trades.js
+          node --check api/social.js
           node --check src/scripts/server.js
           node --check src/scripts/catalog.js
       - name: Run server tests

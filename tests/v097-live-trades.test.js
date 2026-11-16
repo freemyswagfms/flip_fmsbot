@@ -36,10 +36,10 @@ function runtime(respond){
   },
   fetch:async(url,options)=>{
    calls++;
-   assert.equal(url.searchParams.get('view'),'trades');
+   assert.equal(url.searchParams.get('view'),'expanded');
    assert.equal(options.headers['x-telegram-init-data'],context.window.Telegram.WebApp.initData);
    const result=await respond(calls);
-   return Response.json({trades:result});
+   return Response.json({trades:result,gifts:[]});
   },
   crypto:{randomUUID(){return tid('42');}},
   localStorage:{getItem(){return null;},setItem(){},removeItem(){}},
@@ -135,7 +135,7 @@ test('v0.9.7 reuses only existing hub polling and busts Telegram cache',()=>{
  assert.match(app,/},45000\)/);
  assert.doesNotMatch(script,/setInterval\(/);
  assert.ok(html.includes('trades.js?v='+pkg.version));
- assert.match(html,/social\.css\?v=0\.9\.7/);
+ assert.ok(html.includes('social.css?v='+pkg.version));
  assert.ok(pkg.version.localeCompare('0.9.7',undefined,{numeric:true})>=0);
 });
 
