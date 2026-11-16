@@ -21,7 +21,7 @@
  filter:blur(17px);animation:flip-showcase-mythic-sheen 6s ease-in-out infinite alternate
 }
 @keyframes flip-showcase-mythic-sheen{from{transform:translateX(-28%)}to{transform:translateX(24%)}}
-.flip-showcase-hidden{border-color:#e6f5ef;box-shadow:0 0 13px #baff6631,0 7px 20px #0008}
+.flip-showcase-hidden{border-color:transparent;box-shadow:0 0 13px #baff6631,0 7px 20px #0008}
 .flip-showcase-hidden.flip-hidden-frame::after{z-index:4!important}
 .flip-showcase-title{font:700 9px/1.4 'Manrope',sans-serif;color:#dae8da;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .flip-showcase-change,.flip-showcase-public-link{
