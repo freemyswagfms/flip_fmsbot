@@ -32,16 +32,16 @@
   overlay.classList.add('show','flip-pack-modal-active');
   overlay.setAttribute('aria-label','Открытие '+title+' пака');
   modal.innerHTML='<div class="flip-pack-scene">'+
-    '<div class="flip-pack-top"><span>FLIP<span class="flip-pack-dot">.</span> / REVEAL</span>'+
-      '<span>PACK 03 / 03</span></div>'+
-    '<span class="flip-pack-eyebrow">OPEN YOUR COLLECTION</span>'+
+    '<div class="flip-pack-top"><span>FLIP<span class="flip-pack-dot">.</span></span>'+
+      '</div>'+
+    
     '<h2>'+esc(title)+'<span>.</span></h2>'+
-    '<p class="flip-pack-subtitle">Три новые находки. Посмотрим, что внутри.</p>'+
+    
     '<div class="flip-pack-cards">'+cards.map((c,i)=>{
       const rarity=String(c.color||'common').toLowerCase();
       const art=c.art?'<img src="'+esc(c.art)+'" alt="'+esc(c.title)+
         '" decoding="async" draggable="false">':
-        '<span class="flip-pack-unknown">FLIP / SECRET</span>';
+        '<span class="flip-pack-unknown">FLIP</span>';
       return '<div class="flip-pack-slot '+esc(rarity)+'" data-pack-index="'+i+'">'+
         '<div class="flip-pack-flip">'+
           '<div class="flip-pack-face flip-pack-back">'+
@@ -54,14 +54,14 @@
           '</div>'+
         '</div></div>';
     }).join('')+'</div>'+
-    '<div class="flip-pack-found" aria-live="polite"><span class="flip-pack-found-label">'+
-      'REVEALING YOUR CARDS</span><div class="flip-pack-found-titles">'+
+    '<div class="flip-pack-found" aria-live="polite">'+
+      '<div class="flip-pack-found-titles">'+
       cards.map(c=>'<span>'+esc(c.title)+'</span>').join('')+'</div></div>'+
     '<div class="flip-pack-bottom"><span>−'+esc(Number(price)||200)+
-      ' F · +30 XP</span><span>≥ 1 RARE+</span></div>'+
+      ' F · +30 XP</span></div>'+
     '<button type="button" class="flip-pack-action" data-flip-pack-skip>'+
       '<span>ПОКАЗАТЬ ВСЁ</span><span>↗</span></button>'+
-    '<p class="flip-pack-footnote">Карточки уже сохранены в твоей коллекции</p>'+
+    
     '</div>';
   // Pack opening bypasses the regular app renderer, so convert its controls
   // before displaying them instead of letting iOS render the arrow as emoji.
