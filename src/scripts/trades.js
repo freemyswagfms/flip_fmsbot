@@ -62,7 +62,7 @@ async function api(view,args={},body){
   return d;
 }
 function cardSelector(inventory,selected,side){
-  if(!inventory.length)return '<p class="flip-social-muted">Нет рейтинговых карточек для обмена.</p>';
+  if(!inventory.length)return '<p class="flip-social-muted">Нет карточек, доступных для обмена.</p>';
   const reached=selected.length>=5;
   return '<div class="flip-trade-card-choices">'+inventory.map(item=>{
     const checked=selected.includes(item.id);
@@ -70,7 +70,7 @@ function cardSelector(inventory,selected,side){
       '<input type="checkbox" data-trade-toggle="'+side+'" value="'+E(item.id)+'" '+
         (checked?'checked':'')+' '+(reached&&!checked?'disabled':'')+'>'+
       '<span class="flip-trade-choice-copy"><strong>'+E(card(item.id).title)+'</strong>'+
-      '<small>Рейтинговых копий: '+E(item.ranked_count)+'</small></span>'+
+      '<small>Доступно для обмена: '+E(item.ranked_count)+'</small></span>'+
       '</label>';
   }).join('')+'</div>';
 }
@@ -106,7 +106,7 @@ function draft(){
       '<button type="button" class="bigbtn" data-trade-create '+(!good||s.busy?'disabled':'')+
       '>'+(s.counterOf?'ОТПРАВИТЬ ВСТРЕЧНОЕ ↗':'ОТПРАВИТЬ ПРЕДЛОЖЕНИЕ ↗')+'</button>':'')+
     '<p class="flip-social-muted">Срок предложения — 72 часа. Карточки не резервируются. '+
-    'Тестовые экземпляры и F не обмениваются, обе стороны должны передать хотя бы одну карточку.</p></section>';
+    'Обе стороны должны выбрать хотя бы одну карточку.</p></section>';
 }
 function playerResults(){
   if(s.searching)return '<p class="flip-social-muted">Ищем игроков…</p>';
