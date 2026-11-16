@@ -122,8 +122,14 @@ function rowTrade(t){
   const statusNames={pending:'ОЖИДАЕТ',accepted:'ПРИНЯТ',declined:'ОТКЛОНЁН',
     cancelled:'ОТМЕНЁН',expired:'ИСТЁК',countered:'ВСТРЕЧНОЕ'};
   const itemList=items=>'<ul class="flip-trade-offer-list">'+items.map(id=>'<li>'+E(card(id).title)+'</li>').join('')+'</ul>';
-  return '<div class="flip-trade-offer"><div class="flip-social-heading"><strong>'+
-    E(partner)+'</strong><span class="flip-trade-status '+E(t.status)+'">'+E(statusNames[t.status]||t.status)+'</span></div>'+
+  const profileId=typeof t.partner_public_id==='string'&&
+    /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(t.partner_public_id)?
+      t.partner_public_id:null;
+  return '<div class="flip-trade-offer"><div class="flip-social-heading">'+
+    '<div class="flip-trade-partner"><strong>'+E(partner)+'</strong>'+
+    (profileId?'<button type="button" class="flip-trade-profile-link" data-player-profile="'+
+      E(profileId)+'">ПРОФИЛЬ ↗</button>':'')+'</div>'+
+    '<span class="flip-trade-status '+E(t.status)+'">'+E(statusNames[t.status]||t.status)+'</span></div>'+
     '<div class="flip-trade-cards"><div><small>ТЫ ОТДАЁШЬ · '+give.length+'</small>'+itemList(give)+'</div>'+
     '<div><small>ТЫ ПОЛУЧАЕШЬ · '+take.length+'</small>'+itemList(take)+'</div></div>'+
     '<small class="flip-social-muted">'+
@@ -241,6 +247,7 @@ async function submit(payload){
       s.counterOf='';s.targetId='';s.targetLabel='';s.their=[];s.give=[];s.take=[];s.players=[];
     }
     await loadTrades();
+    window.dispatchEvent(new Event('flip-trade-changed'));
     if(payload.action==='accept')window.dispatchEvent(new Event('flip-trade-completed'));
   }catch(e){
     s.busy=false;s.error='Ошибка операции: '+e.message+'. Повтор безопасен с теми же параметрами.';
