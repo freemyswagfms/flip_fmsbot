@@ -1,0 +1,75 @@
+/* FLIP v0.9.9 — two new profile backgrounds, two new showcase scenes.
+   All visuals CSS-only. Profile backgrounds never spill onto lower info blocks. */
+.flip-identity.flip-bg-lunar-haze{
+ --identity-ink:#dfeafb;--identity-edge:#abb7d19c;
+ background:radial-gradient(circle at 83% 21%,#d6e7ffa1 0%,#8497b83b 15%,transparent 43%),
+ repeating-linear-gradient(0deg,transparent 0 23px,#d7e0fd0c 24px),
+ linear-gradient(145deg,#323b51 0%,#191e2c 56%,#0b101a 100%)}
+.flip-bg-lunar-haze .flip-identity-art i:first-child{
+ border-color:#ebf4ff55;box-shadow:0 0 0 22px #e7efff0b,0 0 0 48px #e7efff0e}
+.flip-bg-lunar-haze .flip-identity-art i:nth-child(2){
+ background:radial-gradient(circle,#d0dfff48,transparent 65%)}
+.flip-identity.flip-bg-prism-shift{
+ --identity-ink:#b9fff4;--identity-edge:#9b95ffad;
+ background:radial-gradient(ellipse 70% 82% at 95% 5%,#b880ff9c,transparent 68%),
+ radial-gradient(ellipse 73% 70% at -10% 100%,#51dfdb87,transparent 70%),
+ linear-gradient(132deg,#172b43 2%,#39335d 48%,#153441 100%)}
+.flip-bg-prism-shift .flip-identity-art i:nth-child(3){
+ background-image:linear-gradient(118deg,transparent 0 48%,#bfefff20 49% 50%,transparent 51%),
+ radial-gradient(#fff8 .6px,transparent .6px);
+ background-size:65px 65px,19px 19px;opacity:.8}
+.flip-cosmetic-hero.flip-bg-lunar-haze{
+ background:radial-gradient(circle at 80% 24%,#d6e4ff65,transparent 39%),
+ linear-gradient(145deg,#353d50,#0b101a 84%)}
+.flip-cosmetic-hero.flip-bg-prism-shift{
+ background:radial-gradient(ellipse at 88% 9%,#a97aff8e,transparent 60%),
+ radial-gradient(ellipse at 5% 94%,#4edbd275,transparent 58%),
+ linear-gradient(130deg,#182b48,#39365a,#12333d)}
+.flip-sample-lunar-haze{
+ background:radial-gradient(circle at 76% 27%,#e0e9fcb9 0 12%,#98abc04d 20%,transparent 44%),
+ repeating-linear-gradient(0deg,transparent 0 18px,#c4cde51c 19px),
+ linear-gradient(135deg,#374155,#0c121d)}
+.flip-sample-prism-shift{
+ background:radial-gradient(ellipse at 80% 5%,#b58affcf,transparent 66%),
+ radial-gradient(ellipse at 10% 90%,#68f7e0a4,transparent 69%),
+ linear-gradient(125deg,#243759,#503e7b,#15383f)}
+/* Midnight Vault pairs with the blue Midnight Grid ID background. */
+.flip-scene-midnight-vault.flip-showcase-profile{
+ background:radial-gradient(ellipse at 84% 5%,#245fbd77,transparent 58%),
+ repeating-linear-gradient(0deg,transparent 0 22px,#90b8ff14 23px),
+ repeating-linear-gradient(90deg,transparent 0 22px,#90b8ff14 23px),#0c1730!important;
+ border-color:#729be1!important}
+.flip-scene-midnight-vault .flip-showcase-frame{
+ box-shadow:0 0 0 1px #a4c7ff8c,0 0 21px #337cff66,0 12px 20px #040c22aa}
+.flip-scene-prism-chamber.flip-showcase-profile{
+ background:radial-gradient(ellipse at 100% 3%,#af71d975,transparent 54%),
+ radial-gradient(ellipse at 0 100%,#3ccfc85d,transparent 62%),
+ linear-gradient(148deg,#252143,#152936 82%)!important;
+ border-color:#b8a0eb!important}
+.flip-scene-prism-chamber .flip-showcase-frame{
+ box-shadow:0 0 0 1px #aaf9f5a3,0 0 20px #ba83ff53,0 11px 24px #0008}
+.flip-sample-midnight-vault{
+ background:radial-gradient(ellipse at 82% 15%,#2e76d16e,transparent 62%),
+ repeating-linear-gradient(0deg,transparent 0 20px,#84adff22 21px),
+ repeating-linear-gradient(90deg,transparent 0 20px,#84adff22 21px),#122346}
+.flip-sample-prism-chamber{
+ background:radial-gradient(circle at 89% 11%,#c688d7ad,transparent 57%),
+ radial-gradient(circle at 8% 85%,#58d6c89c,transparent 63%),
+ linear-gradient(137deg,#35305e,#203b4d)}
+.flip-cosmetic-hero.flip-scene-midnight-vault .flip-cosmetic-mini-showcase{
+ background:#0e2344;border-color:#81b6fd;box-shadow:inset 0 0 12px #4a90ff30}
+.flip-cosmetic-hero.flip-scene-prism-chamber .flip-cosmetic-mini-showcase{
+ background:#2a2749;border-color:#afceee;box-shadow:inset 0 0 15px #90ffea2b}
+/* Public stats tiles, icons (including SVG) and numbers inherit scene colors. */
+.flip-profile-lower.flip-scene-midnight-vault{
+ --lower-panel:#122342;--lower-edge:#668cd2;
+ --lower-tile:#0d1b34;--lower-accent:#a9cbff}
+.flip-profile-lower.flip-scene-prism-chamber{
+ --lower-panel:#252344;--lower-edge:#a18bcc;
+ --lower-tile:#20203b;--lower-accent:#b7fff2}
+.flip-profile-lower .flip-stat-symbol{
+ color:var(--lower-accent)!important;opacity:.8}
+.flip-profile-lower .flip-stat-symbol .flip-svg{
+ stroke:currentColor;fill:none}
+.flip-profile-lower .flip-stat-tile strong{color:var(--lower-accent)}
+.flip-profile-lower .flip-profile-heading>span{color:var(--lower-accent)}

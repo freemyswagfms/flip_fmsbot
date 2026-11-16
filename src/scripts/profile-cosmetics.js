@@ -1,4 +1,4 @@
-/* FLIP v0.9.8.9 — curated, server-owned profile cosmetics.
+/* FLIP v0.9.9 — curated, server-owned profile cosmetics.
  * Artwork is CSS/SVG only. The browser never grants entitlements or F.
  */
 (()=>{
@@ -8,15 +8,17 @@
  const types=['background','avatar_frame','showcase_skin','title'];
  const cosmeticNames={
   'acid-signal':'ACID SIGNAL','midnight-grid':'MIDNIGHT GRID','redline':'REDLINE',
+  'lunar-haze':'LUNAR HAZE','prism-shift':'PRISM SHIFT',
   'neon-ring':'NEON RING','liquid-chrome':'LIQUID CHROME','pulse':'PULSE',
   'glass-cabinet':'GLASS CABINET','black-chrome':'BLACK CHROME','red-velvet':'RED VELVET',
   'blush-gallery':'BLUSH GALLERY','pastel-dream':'PASTEL DREAM','aurora-flow':'AURORA FLOW',
+  'midnight-vault':'MIDNIGHT VAULT','prism-chamber':'PRISM CHAMBER',
   'archive-hunter':'ARCHIVE HUNTER','no-skips':'NO SKIPS','day-one':'DAY ONE'
  };
  const allowedKinds={
-  background:new Set(['acid-signal','midnight-grid','redline','pastel-dream']),
+  background:new Set(['acid-signal','midnight-grid','redline','pastel-dream','lunar-haze','prism-shift']),
   avatar_frame:new Set(['neon-ring','liquid-chrome','pulse','aurora-flow']),
-  showcase_skin:new Set(['glass-cabinet','black-chrome','red-velvet','blush-gallery']),
+  showcase_skin:new Set(['glass-cabinet','black-chrome','red-velvet','blush-gallery','midnight-vault','prism-chamber']),
   title:new Set(['archive-hunter','no-skips','day-one'])
  };
  const kinds={
@@ -116,7 +118,7 @@
    const list=items.filter(item=>item.kind===type);
    return '<section class="flip-cosmetic-category"><div class="flip-cosmetic-category-head">'+
     '<h4>'+kinds[type]+'</h4>'+
- (equipped[type]?'<button type="button" class="flip-cosmetic-reset" data-cosmetic-reset-kind="'+type+'">СБРОСИТЬ ✕</button>':'<span>'+list.length+' ПРЕДМЕТА</span>')+'</div>'+
+ (equipped[type]?'<button type="button" class="flip-cosmetic-reset" data-cosmetic-reset-kind="'+type+'">СБРОСИТЬ ✕</button>':'<span>'+list.length+' '+(list.length===1?'ПРЕДМЕТ':list.length>=2&&list.length<=4?'ПРЕДМЕТА':'ПРЕДМЕТОВ')+'</span>')+'</div>'+
     (type==='avatar_frame'?frameColorPicker(profile):'')+
     '<div class="flip-cosmetic-grid">'+list.map(item=>{
       const selected=previewId===item.id,has=owned.has(item.id);
