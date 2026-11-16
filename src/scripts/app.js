@@ -281,12 +281,16 @@ function updateInbox(){
  if(dot){dot.hidden=unread===0;dot.textContent=unread>9?'9+':String(unread);}
  const body=document.querySelector('#flip-notifications-body');
  if(body){
+   const sheet=document.querySelector('#notifications');
+   const sheetScroll=sheet?.scrollTop||0;
    body.innerHTML=window.FLIPActivity?.notifications(bridge?.hub,{
      online:live(),loading:hubLoading
    })||'';
    // The inbox is replaced after each server poll; convert every new glyph
    // to the same platform-independent SVG icons as the rest of FLIP.
    window.FLIPIcons?.render(body);
+   // The inbox is reloaded by the hub poll; don't move the reader to the top.
+   if(sheet)sheet.scrollTop=sheetScroll;
  }
 }
 async function refreshHub({rerender=false}={}){
