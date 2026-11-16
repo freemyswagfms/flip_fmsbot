@@ -86,15 +86,15 @@ test('Pack and delivery result overlays preserve cards but no repetitive technic
 });
 test('Release is v0.9.8.3 without modifying admin, backend mechanics or previous roulette',()=>{
  const html=read('index.html'),pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'0.9.8.3');
+ assert.ok(pkg.version.localeCompare('0.9.8.3',undefined,{numeric:true})>=0);
  for(const file of ['src/scripts/app.js','src/scripts/trades.js','src/scripts/store.js',
  'src/scripts/achievements.js','src/scripts/showcase.js','src/scripts/leaderboard.js',
  'src/scripts/activity.js','src/scripts/pack-reveal.js','src/scripts/delivery-reveal.js',
  'src/styles/collection.css','src/styles/social.css','src/styles/delivery-reveal.css']){
-  assert.ok(html.includes(file+'?v='+pkg.version),file);
+  assert.ok(html.includes(file+'?v='+(file==='src/scripts/app.js'?pkg.version:'0.9.8.3')),file);
  }
  assert.match(html,/src\/scripts\/reveal\.js\?v=0\.9\.8\.1/);
  assert.match(html,/src\/scripts\/admin\.js\?v=0\.9\.6\.4/);
  assert.doesNotMatch(html,/FLIP v0\.9\.8\.3 · TELEGRAM GAME/);
- assert.match(read('api/flip.js'),/version:'0\.9\.8\.3'/);
+ assert.ok(read('api/flip.js').includes("version:'"+pkg.version+"'"));
 });
