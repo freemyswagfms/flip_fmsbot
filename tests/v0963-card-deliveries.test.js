@@ -260,7 +260,7 @@ test('Delivery styles are animated, reduced-motion friendly and iPhone-emoji ind
  assert.ok(html.includes('src/scripts/delivery-reveal.js?v=0.9.8'));
  assert.ok(html.includes('src/styles/delivery-reveal.css?v=0.9.8'));
  assert.ok(html.includes('src/scripts/app.js?v='+JSON.parse(read('package.json')).version));
- assert.match(html,/src\/scripts\/server\.js\?v=0\.9\.8\.7/);
+ assert.match(html,/src\/scripts\/server\.js\?v=0\.9\.8\.8/);
  assert.ok(JSON.parse(read('package.json')).version.localeCompare('0.9.6.4',undefined,{numeric:true})>=0);
  assert.ok(read('api/flip.js').includes("version:'"+JSON.parse(read('package.json')).version+"'"));
 });
