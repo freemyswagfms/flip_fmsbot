@@ -1,0 +1,99 @@
+/* FLIP v0.9.6.4 — creator-only searchable card browser and tester controls. */
+.flip-admin-card-searchbar{position:relative;display:flex;align-items:center;margin-top:4px}
+.flip-admin-card-searchbar input{padding-left:40px!important;margin-bottom:0!important}
+.flip-admin-search-icon{position:absolute;left:12px;top:50%;translate:0 -50%;
+ display:grid;place-items:center;color:#a9d687;pointer-events:none;z-index:1}
+.flip-admin-search-icon svg{width:17px;height:17px}
+.flip-admin-rarity-filters{display:flex;gap:6px;overflow-x:auto;padding:12px 0 8px;
+ scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.flip-admin-rarity-filters::-webkit-scrollbar{display:none}
+.flip-admin-rarity-filters button{flex-shrink:0;padding:9px 10px;border:1px solid #405342;
+ background:#17251a;color:#adc5b0;border-radius:9px;
+ font:900 9px/1 'Space Grotesk',sans-serif;letter-spacing:.4px;cursor:pointer}
+.flip-admin-rarity-filters button.active{background:#baff67;color:#16270a;border-color:#baff67}
+.flip-admin-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+.flip-admin-card-tile{min-width:0;border:1px solid #334638;border-radius:13px;padding:8px;
+ background:linear-gradient(155deg,#1c2920,#0c1710);overflow:hidden;
+ display:flex;flex-direction:column;gap:8px;transition:border-color .15s,background .15s}
+.flip-admin-card-tile.is-selected{border-color:#baff678c;background:#213924;
+ box-shadow:inset 0 0 0 1px #baff6628}
+.flip-admin-card-preview{position:relative;display:block;width:100%;aspect-ratio:1;
+ padding:0;border-radius:9px;overflow:hidden;background:
+ radial-gradient(circle at 50% 55%,#374d35,#101812);border:1px solid #4b6750;
+ box-shadow:0 6px 18px #0006;cursor:zoom-in}
+.flip-admin-card-preview img{display:block;width:100%;height:100%;object-fit:cover;
+ -webkit-user-drag:none}
+.flip-admin-card-preview img[hidden]{display:none!important}
+.flip-admin-card-fallback{position:absolute;inset:0;display:grid;place-items:center;
+ color:#baff67;font:italic 900 22px 'Space Grotesk',sans-serif;letter-spacing:-2px}
+.flip-admin-card-zoom{position:absolute;right:6px;bottom:6px;display:grid;place-items:center;
+ width:27px;height:27px;background:#08120be3;color:#d4ffad;border-radius:7px;
+ border:1px solid #adff8470}
+.flip-admin-card-zoom svg{width:15px;height:15px}
+.flip-admin-card-tile-info{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.flip-admin-card-tile-info small{color:#a9bfa8;font:700 9px/1.2 'Manrope',sans-serif;
+ text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.flip-admin-card-tile-info strong{color:#f0fbea;font:800 11px/1.3 'Space Grotesk',sans-serif;
+ min-height:27px;overflow-wrap:anywhere}
+.flip-admin-rarity{display:inline-block;align-self:start;border:1px solid #63806a;border-radius:5px;
+ color:#c3d4c2;padding:4px 6px;font:900 8px 'Space Grotesk',sans-serif;letter-spacing:.5px}
+.flip-admin-rarity.rare{border-color:#5f9ece;color:#9ddcff}
+.flip-admin-rarity.epic{border-color:#a38bd7;color:#d9c7ff}
+.flip-admin-rarity.legendary{border-color:#c89e5f;color:#f6d9a0}
+.flip-admin-rarity.mythic{border-color:#bc627b;color:#ff9caf}
+.flip-admin-rarity.hidden{border-color:#9ed9c2;color:#b4fceb}
+.flip-admin-card-add{border:1px solid #83b84f;color:#d4ffab;background:#2b4922;
+ padding:10px 5px;border-radius:8px;min-height:37px;cursor:pointer;
+ font:900 9px 'Space Grotesk',sans-serif;letter-spacing:.25px}
+.flip-admin-card-tile.is-selected .flip-admin-card-add{background:#baff67;color:#10220c;
+ border-color:#baff67}
+.flip-admin-more{width:100%;min-height:44px;margin:5px 0 14px;
+ font:900 10px 'Space Grotesk',sans-serif}
+.flip-admin-more span{color:#92ab91}
+.flip-admin-basket-head{display:flex;align-items:center;justify-content:space-between;gap:9px;
+ border-top:1px solid #385443;padding-top:14px;margin-top:22px}
+.flip-admin-basket-head h3{margin:0}
+.flip-admin-basket-head output{white-space:nowrap;background:#2b4529;
+ border:1px solid #78a85e;padding:6px 10px;border-radius:15px;
+ font:900 11px 'Space Grotesk',sans-serif;color:#cbff9b}
+.flip-admin-cart-empty{padding:16px 12px;margin:10px 0;border:1px dashed #547153;
+ background:#16241b;border-radius:11px;font:600 10px/1.5 'Manrope',sans-serif;color:#93ae99}
+.flip-admin-cart-list{display:flex;flex-direction:column;gap:7px;margin:12px 0}
+.flip-admin-cart-line{min-width:0;display:flex;gap:8px;align-items:center;padding:9px;
+ background:#19291e;border:1px solid #405845;border-radius:11px}
+.flip-admin-cart-thumb{position:relative;flex:0 0 43px;width:43px;height:43px;
+ background:#213223;border:1px solid #70936b;border-radius:7px;overflow:hidden}
+.flip-admin-cart-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.flip-admin-cart-thumb img[hidden]{display:none!important}
+.flip-admin-cart-thumb .flip-admin-card-fallback{font-size:11px;letter-spacing:0}
+.flip-admin-cart-label{flex:1;min-width:0}
+.flip-admin-cart-label strong{display:block;font:800 10px/1.25 'Space Grotesk',sans-serif;
+ color:#eef8e9;overflow-wrap:anywhere}
+.flip-admin-cart-label small{display:block;color:#9eb99e;font:600 9px/1.4 'Manrope',sans-serif;
+ margin-top:3px;overflow-wrap:anywhere}
+.flip-admin-cart-stepper{display:flex;align-items:center;flex-shrink:0;gap:4px;
+ background:#102018;border:1px solid #54754f;border-radius:8px;padding:3px}
+.flip-admin-cart-stepper button{width:24px;height:28px;border:0;background:#274427;color:#baff67;
+ border-radius:5px;font:900 15px 'Space Grotesk',sans-serif}
+.flip-admin-cart-stepper output{min-width:17px;text-align:center;font:900 12px 'Space Grotesk',sans-serif}
+.flip-admin-cart-stepper button:disabled{opacity:.36}
+.flip-admin-cart-remove{width:21px;min-width:21px;align-self:center;padding:1px 0;border:0;
+ color:#dfa6a4;background:transparent;font:900 17px 'Space Grotesk',sans-serif}
+.flip-admin-mode-target{display:flex;flex-direction:column;gap:4px;padding:12px;
+ background:#112416;border:1px solid #557c4b;border-radius:11px}
+.flip-admin-mode-target span{color:#93af91;font:900 8px 'Space Grotesk',sans-serif;letter-spacing:.7px}
+.flip-admin-mode-target strong{color:#d8fbbf;font:900 13px 'Space Grotesk',sans-serif;overflow-wrap:anywhere}
+.flip-admin-mode-target small{font:600 9px 'Manrope',sans-serif;color:#91ac96}
+.flip-admin-mode-target-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0 13px}
+.flip-admin-mode-target-actions .outlinebtn{min-width:0;white-space:normal;padding:10px 7px;
+ min-height:44px;font:900 9px/1.35 'Space Grotesk',sans-serif}
+.flip-admin-card-preview:focus-visible,.flip-admin-card-add:focus-visible,
+.flip-admin-rarity-filters button:focus-visible,.flip-admin-cart-stepper button:focus-visible{
+ outline:2px solid #baff67;outline-offset:2px}
+@media(max-width:365px){
+ .flip-admin-card-grid{gap:7px}.flip-admin-card-tile{padding:6px}
+ .flip-admin-cart-line{gap:5px;padding:6px}
+ .flip-admin-cart-thumb{flex-basis:35px;width:35px;height:35px}
+ .flip-admin-cart-stepper{gap:1px}.flip-admin-cart-stepper button{width:21px}
+ .flip-admin-mode-target-actions .outlinebtn{font-size:8px}
+}
