@@ -46,6 +46,8 @@
       welcomeRemaining:snapshot.welcome_remaining,
       pityMisses:snapshot.pity_misses,
       claimedTasks:snapshot.claimed_tasks||[], packsToday:snapshot.packs_today||0,
+      unlimitedDrop:snapshot.unlimited_drop===true,
+      unlimitedPacks:snapshot.unlimited_packs===true,
       bonusPacks:snapshot.bonus_packs||0,
       telegramName:profile?.display_name||snapshot.first_name||snapshot.username||'FLIP PLAYER',
       telegramHandle:profile?.handle||(snapshot.username?'@'+snapshot.username:'FLIP PLAYER'),

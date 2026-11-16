@@ -86,6 +86,8 @@
   }
   function cooldownPanel(){
     const cd=s.cooldowns;
+    const dropUnlimited=cd?.drop_unlimited===true;
+    const packUnlimited=cd?.pack_unlimited===true;
     const dropReady=cd?.drop_ready===true;
     const dropAt=cd?.drop_ready_at?new Date(cd.drop_ready_at):null;
     const dropTime=dropAt&&!Number.isNaN(dropAt.valueOf())?
@@ -99,33 +101,41 @@
         value.toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',
           hour:'2-digit',minute:'2-digit',timeZone:'Europe/Moscow'});
     };
+    const entry=a=>{
+      const label=a.kind==='drop'?'Бесплатный дроп':'Наборы';
+      const verb=a.enabled===true?'Включено без ограничений':
+                 a.enabled===false?'Обычный режим':'Разовый сброс';
+      return '<div class="flip-admin-history-row"><strong>'+E(label)+
+        ' · '+E(verb)+'</strong><small>'+E(clock(a.created_at))+' МСК</small></div>';
+    };
     return [
       '<section class="flip-admin-section flip-admin-cooldowns">',
-      '<div class="flip-admin-section-heading"><h3>КОНТРОЛЬ ТАЙМЕРОВ</h3>',
+      '<div class="flip-admin-section-heading"><h3>РЕЖИМЫ РАЗРАБОТЧИКА</h3>',
       '<span class="flip-admin-private-badge">ТОЛЬКО СОЗДАТЕЛЬ</span></div>',
-      '<p class="flip-admin-hint">Сброс действует только на твой аккаунт. F, XP, карточки, шанс редкостей и прогресс не меняются.</p>',
+      '<p class="flip-admin-hint">Постоянные переключатели только для твоего аккаунта. Настройки сохраняются после перезапуска FLIP.</p>',
       '<div class="flip-admin-cooldown-grid">',
-      '<div class="flip-admin-cooldown-box"><span>БЕСПЛАТНЫЙ ДРОП</span>',
-      '<strong>',cd?(dropReady?'ГОТОВ':dropTime+' МСК'):'ЗАГРУЗКА…','</strong>',
-      '<button type="button" class="outlinebtn" data-admin-reset-cooldown="drop" ',
+      '<div class="flip-admin-cooldown-box',dropUnlimited?' is-unlimited':'','">',
+      '<span>БЕСПЛАТНЫЙ ДРОП</span>',
+      '<strong>',cd?(dropUnlimited?'∞ БЕЗ КД':dropReady?'ГОТОВ':dropTime+' МСК'):'ЗАГРУЗКА…','</strong>',
+      '<button type="button" class="outlinebtn" data-admin-set-unlimited="drop" ',
+      'aria-pressed="',String(dropUnlimited),'" ',
       (!cd||s.cooldownBusy||s.busy?'disabled':''),
-      '>СБРОСИТЬ КД ДРОПА ↻</button></div>',
-      '<div class="flip-admin-cooldown-box"><span>СТАНДАРТНЫЕ НАБОРЫ</span>',
-      '<strong>',cd?used+' / 10':'ЗАГРУЗКА…','</strong>',
-      '<button type="button" class="outlinebtn" data-admin-reset-cooldown="pack" ',
+      '>',dropUnlimited?'ВЫКЛЮЧИТЬ БЕЗ КД':'ВКЛЮЧИТЬ БЕЗ КД','</button></div>',
+      '<div class="flip-admin-cooldown-box',packUnlimited?' is-unlimited':'','">',
+      '<span>СТАНДАРТНЫЕ НАБОРЫ</span>',
+      '<strong>',cd?(packUnlimited?'∞ БЕЗ ЛИМИТА':used+' / 10'):'ЗАГРУЗКА…','</strong>',
+      '<button type="button" class="outlinebtn" data-admin-set-unlimited="pack" ',
+      'aria-pressed="',String(packUnlimited),'" ',
       (!cd||s.cooldownBusy||s.busy?'disabled':''),
-      '>СБРОСИТЬ ЛИМИТ НАБОРОВ ↻</button></div>',
+      '>',packUnlimited?'ВЕРНУТЬ ЛИМИТ':'УБРАТЬ ЛИМИТ','</button></div>',
       '</div>',
       s.cooldownMessage?'<div role="status" class="flip-admin-message '+
         (s.cooldownError?'failed':'ok')+'">'+E(s.cooldownMessage)+'</div>':'',
-      '<p class="flip-admin-hint">Наборы по-прежнему стоят 200 F. Покупки и дропы фиксируются обычным образом.</p>',
-      '<details class="flip-admin-cooldown-history"><summary>ИСТОРИЯ СБРОСОВ (',
+      '<p class="flip-admin-hint">Без КД: новый бесплатный дроп сразу после предыдущего. Без лимита: любое количество наборов за 200 F каждый. Шансы и награды не меняются.</p>',
+      '<details class="flip-admin-cooldown-history"><summary>ИСТОРИЯ РЕЖИМОВ (',
       logs.length,')</summary>',
-      logs.length?logs.map(a=>
-        '<div class="flip-admin-history-row"><strong>'+
-        (a.kind==='drop'?'Бесплатный дроп':'Лимит наборов')+
-        '</strong><small>'+E(clock(a.created_at))+' МСК</small></div>').join(''):
-        '<p class="flip-admin-hint">Сбросов пока не было.</p>',
+      logs.length?logs.map(entry).join(''):
+        '<p class="flip-admin-hint">Переключений пока не было.</p>',
       '</details></section>'
     ].join('');
   }
@@ -256,34 +266,42 @@
       draw();
     }
   }
-  async function resetCooldown(kind){
-    if(s.cooldownBusy||s.busy||!['drop','pack'].includes(kind))return;
-    const description=kind==='drop'?'бесплатного дропа':'10 стандартных наборов за день';
-    if(!window.confirm('Сбросить ограничение '+description+' только для своего аккаунта?'))return;
-    const id=s.cooldownRetry?.kind===kind?s.cooldownRetry.id:crypto.randomUUID();
-    s.cooldownRetry={kind,id};
+  async function setUnlimited(kind){
+    if(s.cooldownBusy||s.busy||!['drop','pack'].includes(kind)||!s.cooldowns)return;
+    const old=kind==='drop'?s.cooldowns.drop_unlimited===true:
+      s.cooldowns.pack_unlimited===true;
+    const enabled=!old;
+    const subject=kind==='drop'?'КД бесплатного дропа':'дневной лимит наборов';
+    if(!window.confirm((enabled?'Убрать ':'Вернуть ')+subject+
+      ' для своего аккаунта? Режим сохранится до следующего переключения.'))return;
+    const retry=s.cooldownRetry;
+    const id=retry?.kind===kind&&retry?.enabled===enabled?
+      retry.id:crypto.randomUUID();
+    s.cooldownRetry={kind,enabled,id};
     s.cooldownBusy=true;s.cooldownMessage='';s.cooldownError=false;draw();
     try{
-      const result=await call('',{action:'reset_cooldown',kind,requestId:id});
+      const result=await call('',{action:'set_unlimited',kind,enabled,requestId:id});
       s.cooldownRetry=null;
       s.cooldowns=result.cooldowns||s.cooldowns;
       s.cooldownMessage=kind==='drop'?
-        'Готово! Бесплатный дроп снова доступен.':
-        'Готово! Счётчик наборов обнулён: 0 / 10.';
+        (enabled?'Режим без КД включён. Дроп доступен без ожидания.':
+                 'Обычный КД бесплатного дропа восстановлен.'):
+        (enabled?'Дневной лимит наборов отключён. Цена: 200 F за набор.':
+                 'Дневной лимит 10 наборов восстановлен.');
       s.cooldownError=false;
       window.dispatchEvent(new Event('flip-admin-self-changed'));
     }catch(error){
       s.cooldownError=true;
-      s.cooldownMessage='Не удалось сбросить: '+error.message+
-        '. Повтори, чтобы проверить тот же запрос.';
+      s.cooldownMessage='Не удалось изменить режим: '+error.message+
+        '. Повтори нажатие, чтобы проверить тот же запрос.';
     }finally{
       s.cooldownBusy=false;draw();
     }
   }
   async function click(e){
     const b=e.target.closest('button');if(!b||!root.contains(b))return;
-    if(b.hasAttribute('data-admin-reset-cooldown')){
-      resetCooldown(b.dataset.adminResetCooldown);return;
+    if(b.hasAttribute('data-admin-set-unlimited')){
+      setUnlimited(b.dataset.adminSetUnlimited);return;
     }
     if(b.hasAttribute('data-admin-studio-login')||
        b.hasAttribute('data-admin-studio-login-copy')){
