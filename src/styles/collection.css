@@ -122,3 +122,8 @@
 .col-gallery-filter[aria-pressed="true"] .col-gallery-filter-count{
  background:#1b2f11;color:#eaffd6
 }
+
+/* v0.9.8.2 — clean heading alignment after removing redundant eyebrows. */
+.col-page .col-title-group h2{margin-top:0}
+.col-page .col-section-head h3{margin-top:0}
+.col-v087 .col-gallery-title{margin-bottom:12px}

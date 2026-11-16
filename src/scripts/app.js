@@ -156,8 +156,7 @@ function catalogView(){
   const releases=artistList.flatMap(artist=>artist.releases.filter(r=>r.active!==false)
     .map(release=>({artist,release})));
   return '<div class="panel"><button class="link" data-action="collection">← К КОЛЛЕКЦИИ</button>'+
-   '<span class="eyebrow">CATALOG / PUBLISHED ARTWORK</span><h2>КАТАЛОГ<span style="color:var(--lime)">.</span></h2>'+
-   '<p class="desc">Все опубликованные релизы. Просмотр оформления не добавляет карточки в коллекцию. Новые обложки появляются после публикации в FLIP STUDIO.</p>'+
+   '<h2>КАТАЛОГ<span style="color:var(--lime)">.</span></h2>'+
    '<div class="chips"><span class="chip active">'+artistList.length+' АРТИСТОВ</span>'+
    '<span class="chip">'+releases.length+' РЕЛИЗОВ</span></div>'+
    releases.map(({artist,release})=>'<section class="catalog-release">'+
@@ -171,7 +170,7 @@ function catalogView(){
         sq(card)+'<span class="catalog-tile-label rarity-'+rarity+'">'+escapeHtml(card.rarity)+
         '</span></button>';
      }).join('')+'</div></section>').join('')+
-   '<p class="note">Каталог синхронизируется при входе в игру. Карточки из старых релизов сохраняют свои идентификаторы.</p></div>';
+   '</div>';
 }
 
 function trades(){return '<div class="panel"><span class="eyebrow">PLAYER TO PLAYER / 003</span><h2>ОБМЕНЫ<span style="color:var(--lime)">.</span></h2><p class="desc">Обменивай карточки, предлагай сделки за F или отправляй подарки друзьям.</p><div id="flip-trades-root"></div></div>'}

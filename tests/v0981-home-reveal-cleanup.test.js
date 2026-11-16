@@ -59,13 +59,13 @@ test('Free drop reveal has no English build HUD or redundant phase subtitles',()
 });
 test('No accidental cleanup outside home and reveal, versioned assets refreshed',()=>{
  const html=read('index.html'),pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'0.9.8.1');
+ assert.ok(pkg.version.localeCompare('0.9.8.1',undefined,{numeric:true})>=0);
  assert.ok(html.includes('src/scripts/app.js?v='+pkg.version));
- assert.ok(html.includes('src/scripts/reveal.js?v='+pkg.version));
- assert.ok(html.includes('src/styles/home.css?v='+pkg.version));
+ assert.ok(html.includes('src/scripts/reveal.js?v=0.9.8.1'));
+ assert.ok(html.includes('src/styles/home.css?v=0.9.8.1'));
  assert.ok(html.includes('src/styles/reveal.css?v='+pkg.version));
  assert.ok(html.includes('src/scripts/trades.js?v=0.9.8'));
  assert.ok(html.includes('src/scripts/delivery-reveal.js?v=0.9.8'));
  assert.ok(html.includes('src/scripts/admin.js?v=0.9.6.4'));
- assert.match(read('api/flip.js'),/version:'0\.9\.8\.1'/);
+ assert.ok(read('api/flip.js').includes("version:'"+pkg.version+"'"));
 });
