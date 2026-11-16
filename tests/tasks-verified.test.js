@@ -20,7 +20,8 @@ function signedData(id=5555){
 }
 function withEnv(fetchMock,run){
  const before=process.env,old=globalThis.fetch;
- process.env={...before,...testEnv};globalThis.fetch=fetchMock;
+ process.env={...before,...testEnv};globalThis.fetch=(url,opts)=>
+  String(url).endsWith('/rpc/flip_player_is_banned')?Response.json(false):fetchMock(url,opts);
  return Promise.resolve().then(run).finally(()=>{process.env=before;globalThis.fetch=old});
 }
 const json=x=>Response.json(x);
