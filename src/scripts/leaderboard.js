@@ -21,19 +21,26 @@
         '<div class="flip-social-cp-row"><div><strong>',me?'#'+safe(me.place):'—',
         '</strong><small>Место в общем рейтинге</small></div><div><strong>',
         points(me?.cp),'<span> CP</span></strong><small>Ценность текущей коллекции</small></div></div>',
-        '<p>Рейтинг обновляется по текущим рейтинговым экземплярам. Тестовые карточки исключены.</p></section>',
+        '<p>Собирай карточки, повышай ценность коллекции и поднимайся в топе.</p></section>',
         '<section class="flip-social-panel"><div class="flip-social-heading"><h3>ОБЩИЙ ТОП</h3>',
         '<button type="button" class="outlinebtn" data-cp-refresh>ОБНОВИТЬ ↗</button></div>',
+        '<p class="flip-social-muted flip-leaderboard-tip">Нажми на игрока, чтобы посмотреть его профиль ↗</p>',
         '<div class="flip-leaderboard-list">',
-        (data.leaders||[]).length?data.leaders.map(p=>
-          '<'+(p.profileId?'button type="button" data-player-profile="'+safe(p.profileId)+'"':'div')+
-             ' class="flip-cp-player'+(p.place===me?.place?' is-me':'')+
-             '"><span class="flip-cp-place">#'+
-          safe(p.place)+'</span><div><strong>'+safe(p.name)+'</strong><small>LVL '+safe(p.level)+
-          ' · '+safe(p.rankedVariants)+' уник. · '+safe(p.rankedCards)+' карт.</small></div>'+
-          '<span class="flip-cp-score">'+points(p.cp)+' CP</span>'+
-           (p.profileId?'<span class="flip-cp-open-icon">↗</span></button>':'</div>')
-        ).join(''):'<p class="flip-social-muted">Пока нет участников.</p>',
+        (data.leaders||[]).length?data.leaders.map(p=>{
+          const profileId=typeof p.profileId==='string'&&
+            /^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$/i.test(p.profileId)
+            ?p.profileId:null;
+          const tag=profileId?'button':'div';
+          return '<'+tag+(profileId?' type="button" data-player-profile="'+safe(profileId)+
+            '" aria-label="Открыть профиль '+safe(p.name)+'"':'')+
+            ' class="flip-cp-player'+(p.place===me?.place?' is-me':'')+
+            '"><span class="flip-cp-place">#'+safe(p.place)+
+            '</span><div><strong>'+safe(p.name)+'</strong><small>LVL '+safe(p.level)+
+            ' · '+safe(p.rankedVariants)+' уник. · '+safe(p.rankedCards)+' карт.</small></div>'+
+            '<span class="flip-cp-score">'+points(p.cp)+' CP</span>'+
+            (profileId?'<span class="flip-cp-open-icon" aria-hidden="true">↗</span>':'')+
+            '</'+tag+'>';
+        }).join(''):'<p class="flip-social-muted">Пока нет участников.</p>',
         '</div><p class="flip-social-muted">Показаны первые 50 игроков. Всего участников: ',
         safe(data.players),'.</p></section>',
         '<section class="flip-social-panel"><h3>ПРАВИЛА CP</h3><p>Первая копия 100%, вторая 25%,',
@@ -56,12 +63,6 @@
       root=el;serial++;
       el.addEventListener('click',event=>{
         if(event.target.closest('[data-cp-refresh]')){load(el);return;}
-        const target=event.target.closest('[data-player-profile]');
-        if(target){
-          const publicId=target.dataset.playerProfile;
-          if(/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(publicId||''))
-            window.dispatchEvent(new CustomEvent('flip-open-public-profile',{detail:{publicId}}));
-        }
       });
       load(el);
     }
