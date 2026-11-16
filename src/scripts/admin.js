@@ -6,7 +6,8 @@
   const raw=tg?.initData||'';
   let root=null,stamp=0,cardTimer=null,cardSeq=0;
   const s={players:[],cards:[],history:[],rewards:[],leaders:[],q:'',recipient:'',card:'',cardQuery:'',
-    rewardKind:'card',amount:'',mode:'test',note:'',busy:false,message:'',error:false,retryId:null,retryPayload:null};
+    rewardKind:'card',amount:'',mode:'test',note:'',busy:false,message:'',error:false,retryId:null,retryPayload:null,
+    cooldowns:null,cooldownBusy:false,cooldownMessage:'',cooldownError:false,cooldownRetry:null};
   function selfId(){
     try{const p=JSON.parse(new URLSearchParams(raw).get('user')||'null');
       return Number.isSafeInteger(p?.id)&&p.id>0?String(p.id):'';}
@@ -83,6 +84,51 @@
       '</strong><small>'+E(Number(p.cp||0).toLocaleString('ru-RU',{maximumFractionDigits:2}))+' CP · '+E(p.ranked_cards)+' карт.</small></div>').join(''):
       '<p class="flip-admin-hint">Рейтинговых карточек пока нет.</p>';
   }
+  function cooldownPanel(){
+    const cd=s.cooldowns;
+    const dropReady=cd?.drop_ready===true;
+    const dropAt=cd?.drop_ready_at?new Date(cd.drop_ready_at):null;
+    const dropTime=dropAt&&!Number.isNaN(dropAt.valueOf())?
+      dropAt.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',
+        timeZone:'Europe/Moscow'}):'—';
+    const used=Math.min(10,Math.max(0,Number(cd?.packs_today)||0));
+    const logs=Array.isArray(cd?.history)?cd.history:[];
+    const clock=when=>{
+      const value=new Date(when);
+      return Number.isNaN(value.valueOf())?'—':
+        value.toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',
+          hour:'2-digit',minute:'2-digit',timeZone:'Europe/Moscow'});
+    };
+    return [
+      '<section class="flip-admin-section flip-admin-cooldowns">',
+      '<div class="flip-admin-section-heading"><h3>КОНТРОЛЬ ТАЙМЕРОВ</h3>',
+      '<span class="flip-admin-private-badge">ТОЛЬКО СОЗДАТЕЛЬ</span></div>',
+      '<p class="flip-admin-hint">Сброс действует только на твой аккаунт. F, XP, карточки, шанс редкостей и прогресс не меняются.</p>',
+      '<div class="flip-admin-cooldown-grid">',
+      '<div class="flip-admin-cooldown-box"><span>БЕСПЛАТНЫЙ ДРОП</span>',
+      '<strong>',cd?(dropReady?'ГОТОВ':dropTime+' МСК'):'ЗАГРУЗКА…','</strong>',
+      '<button type="button" class="outlinebtn" data-admin-reset-cooldown="drop" ',
+      (!cd||s.cooldownBusy||s.busy?'disabled':''),
+      '>СБРОСИТЬ КД ДРОПА ↻</button></div>',
+      '<div class="flip-admin-cooldown-box"><span>СТАНДАРТНЫЕ НАБОРЫ</span>',
+      '<strong>',cd?used+' / 10':'ЗАГРУЗКА…','</strong>',
+      '<button type="button" class="outlinebtn" data-admin-reset-cooldown="pack" ',
+      (!cd||s.cooldownBusy||s.busy?'disabled':''),
+      '>СБРОСИТЬ ЛИМИТ НАБОРОВ ↻</button></div>',
+      '</div>',
+      s.cooldownMessage?'<div role="status" class="flip-admin-message '+
+        (s.cooldownError?'failed':'ok')+'">'+E(s.cooldownMessage)+'</div>':'',
+      '<p class="flip-admin-hint">Наборы по-прежнему стоят 200 F. Покупки и дропы фиксируются обычным образом.</p>',
+      '<details class="flip-admin-cooldown-history"><summary>ИСТОРИЯ СБРОСОВ (',
+      logs.length,')</summary>',
+      logs.length?logs.map(a=>
+        '<div class="flip-admin-history-row"><strong>'+
+        (a.kind==='drop'?'Бесплатный дроп':'Лимит наборов')+
+        '</strong><small>'+E(clock(a.created_at))+' МСК</small></div>').join(''):
+        '<p class="flip-admin-hint">Сбросов пока не было.</p>',
+      '</details></section>'
+    ].join('');
+  }
   function draw(){
     if(!root||!root.isConnected)return;
     const isCard=s.rewardKind==='card';
@@ -94,6 +140,7 @@
       '<p class="flip-admin-hint">Вход без письма работает только для владельца. Ссылка одноразовая — никому её не передавай.</p>',
       '<button class="outlinebtn" type="button" data-admin-studio>ОТКРЫТЬ FLIP STUDIO ↗</button>',
       '<button class="outlinebtn" type="button" data-admin-studio-code>КОПИРОВАТЬ КОД ВЛАДЕЛЬЦА</button></section>',
+      cooldownPanel(),
       '<section class="flip-admin-section"><div class="flip-admin-section-heading"><h3>01 / ПОЛУЧАТЕЛЬ</h3>',
       '<button type="button" class="outlinebtn" data-admin-self>СЕБЕ</button></div>',
       '<div class="flip-admin-search"><input id="flip-admin-search" maxlength="64" placeholder="Имя, @username или ID" value="',E(s.q),
@@ -148,22 +195,24 @@
     if(part==='cards'){await searchCards();return;}
     try{
       if(part==='all'){
-        const [u,c,h,r,l]=await Promise.all([
-          call('players'),call('cards'),call('history'),call('rewards'),call('ranked')
+        const [u,c,h,r,l,cd]=await Promise.all([
+          call('players'),call('cards'),call('history'),call('rewards'),call('ranked'),
+          call('cooldowns').catch(()=>({cooldowns:null}))
         ]);
         if(job!==stamp)return;
         s.players=u.players||[];s.cards=c.cards||[];s.history=h.history||[];
-        s.rewards=r.rewards||[];s.leaders=l.leaders||[];
+        s.rewards=r.rewards||[];s.leaders=l.leaders||[];s.cooldowns=cd.cooldowns||null;
         if(!s.cards.some(x=>x.id===s.card))s.card=s.cards[0]?.id||'';
       }else if(part==='players'){
         const r=await call('players');if(job!==stamp)return;s.players=r.players||[];
       }else{
-        const [u,h,r,l]=await Promise.all([
-          call('players'),call('history'),call('rewards'),call('ranked')
+        const [u,h,r,l,cd]=await Promise.all([
+          call('players'),call('history'),call('rewards'),call('ranked'),
+          call('cooldowns').catch(()=>({cooldowns:null}))
         ]);
         if(job!==stamp)return;
         s.players=u.players||[];s.history=h.history||[];
-        s.rewards=r.rewards||[];s.leaders=l.leaders||[];
+        s.rewards=r.rewards||[];s.leaders=l.leaders||[];s.cooldowns=cd.cooldowns||null;
       }
       draw();
     }catch(e){if(job!==stamp)return;s.error=true;s.message='Ошибка запроса: '+e.message;draw();}
@@ -207,8 +256,35 @@
       draw();
     }
   }
+  async function resetCooldown(kind){
+    if(s.cooldownBusy||s.busy||!['drop','pack'].includes(kind))return;
+    const description=kind==='drop'?'бесплатного дропа':'10 стандартных наборов за день';
+    if(!window.confirm('Сбросить ограничение '+description+' только для своего аккаунта?'))return;
+    const id=s.cooldownRetry?.kind===kind?s.cooldownRetry.id:crypto.randomUUID();
+    s.cooldownRetry={kind,id};
+    s.cooldownBusy=true;s.cooldownMessage='';s.cooldownError=false;draw();
+    try{
+      const result=await call('',{action:'reset_cooldown',kind,requestId:id});
+      s.cooldownRetry=null;
+      s.cooldowns=result.cooldowns||s.cooldowns;
+      s.cooldownMessage=kind==='drop'?
+        'Готово! Бесплатный дроп снова доступен.':
+        'Готово! Счётчик наборов обнулён: 0 / 10.';
+      s.cooldownError=false;
+      window.dispatchEvent(new Event('flip-admin-self-changed'));
+    }catch(error){
+      s.cooldownError=true;
+      s.cooldownMessage='Не удалось сбросить: '+error.message+
+        '. Повтори, чтобы проверить тот же запрос.';
+    }finally{
+      s.cooldownBusy=false;draw();
+    }
+  }
   async function click(e){
     const b=e.target.closest('button');if(!b||!root.contains(b))return;
+    if(b.hasAttribute('data-admin-reset-cooldown')){
+      resetCooldown(b.dataset.adminResetCooldown);return;
+    }
     if(b.hasAttribute('data-admin-studio-login')||
        b.hasAttribute('data-admin-studio-login-copy')){
       if(s.busy)return;
@@ -277,7 +353,7 @@
       if(!el||window.FLIPServer?.isAdmin!==true)return;
       if(root===el)return;
       root=el;stamp++;cardSeq++;if(cardTimer)clearTimeout(cardTimer);
-      s.message='';s.error=false;
+      s.message='';s.error=false;s.cooldownMessage='';s.cooldownError=false;
       el.addEventListener('click',click);
       el.addEventListener('input',input);
       el.addEventListener('change',change);
