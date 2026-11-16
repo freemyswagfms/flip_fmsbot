@@ -92,69 +92,87 @@ function cardSelector(inventory,selected,side,limit=5){
   }).join('')+'</div>';
 }
 function draft(){
-  const mine=groups(),theirs=s.their,good=validSelection(mine,theirs);
-  const give=s.mode==='currency'&&s.currencySide==='buy'?[]:s.give;
-  const take=s.mode==='currency'&&s.currencySide==='sell'||s.mode==='gift'?[]:s.take;
-  const myDelta=good?delta(mine,give,take):null;
-  const theirDelta=good?delta(theirs,take,give):null;
-  const locked=s.counterOf!=='';
-  const activeMode=locked?'cards':s.mode;
+  const mine=groups(),theirs=s.their,locked=!!s.counterOf;
+  const mode=locked?'cards':s.mode;
+  const good=validSelection(mine,theirs);
+  const giving=mode==='currency'&&s.currencySide==='buy'?[]:s.give;
+  const taking=mode==='gift'||(mode==='currency'&&s.currencySide==='sell')?[]:s.take;
   const heading=locked?'ВСТРЕЧНОЕ ПРЕДЛОЖЕНИЕ':
-    activeMode==='gift'?'ОТПРАВИТЬ ПОДАРОК':
-    activeMode==='currency'?'КАРТОЧКИ ЗА F':'НОВОЕ ПРЕДЛОЖЕНИЕ';
-  return '<section class="flip-social-panel" id="flip-trade-compose">'+
-    '<div class="flip-social-heading"><h3>'+heading+
-    '</h3><span class="pill">FLIP / PLAYER</span></div>'+
-    (!locked?'<div class="flip-trade-modes" role="group" aria-label="Тип операции">'+
-      [['cards','КАРТОЧКИ'],['currency','ЗА F'],['gift','ПОДАРОК']].map(([id,label])=>
-        '<button type="button" data-trade-mode="'+id+'" class="'+
-        (activeMode===id?'active':'')+'" aria-pressed="'+(activeMode===id)+'">'+label+'</button>').join('')+'</div>':'')+
-    (locked?'<div class="flip-social-selected">Изменяешь условия исходного обмена. '+
-      '<button type="button" data-trade-reset-counter>ОТМЕНИТЬ</button></div>':'')+
-    '<label class="flip-social-label" for="flip-trade-user-search">Найти игрока</label>'+
+    mode==='gift'?'ОТПРАВИТЬ ПОДАРОК':mode==='currency'?'КАРТОЧКИ ЗА F':
+    'НОВОЕ ПРЕДЛОЖЕНИЕ';
+  const out=['<section class="flip-social-panel" id="flip-trade-compose">',
+    '<div class="flip-social-heading"><h3>'+heading+'</h3><span class="pill">FLIP / PLAYER</span></div>'];
+  if(!locked){
+    out.push('<div class="flip-trade-modes" role="group" aria-label="Тип операции">');
+    for(const [id,label] of [['cards','КАРТОЧКИ'],['currency','ЗА F'],['gift','ПОДАРОК']]){
+      out.push('<button type="button" data-trade-mode="'+id+'" class="'+
+        (mode===id?'active':'')+'" aria-pressed="'+(mode===id)+'">'+label+'</button>');
+    }
+    out.push('</div>');
+  }else{
+    out.push('<div class="flip-social-selected">Изменяешь условия исходного обмена. '+
+      '<button type="button" data-trade-reset-counter>ОТМЕНИТЬ</button></div>');
+  }
+  out.push('<label class="flip-social-label" for="flip-trade-user-search">Найти игрока</label>',
     '<div class="flip-social-search"><input class="flip-social-input" id="flip-trade-user-search" '+
-      'maxlength="64" placeholder="@username, имя или Telegram ID" autocomplete="off" value="'+E(s.q)+'" '+
-      (locked?'disabled':'')+'>'+
-      '<button type="button" class="outlinebtn" data-trade-find '+(locked?'disabled':'')+'>НАЙТИ</button></div>'+
-    '<div id="flip-trade-player-results">'+(locked?'':playerResults())+'</div>'+
-    (s.targetId?'<div class="flip-social-selected">Игрок: <strong>'+E(s.targetLabel)+
-      '</strong> '+(locked?'':'<button type="button" data-trade-clear>ИЗМЕНИТЬ</button>')+'</div>':'')+
-    (s.targetId?(
-      activeMode==='currency'?'<div class="flip-trade-modes flip-trade-direction" role="group" aria-label="Направление F">'+
-        '<button type="button" data-trade-currency-side="sell" class="'+(s.currencySide==='sell'?'active':'')+
-        '" aria-pressed="'+(s.currencySide==='sell')+'">ПРОДАЮ КАРТОЧКИ</button>'+
-        '<button type="button" data-trade-currency-side="buy" class="'+(s.currencySide==='buy'?'active':'')+
-        '" aria-pressed="'+(s.currencySide==='buy')+'">ПОКУПАЮ КАРТОЧКИ</button></div>':'')+
-      ((activeMode==='cards'||activeMode==='gift'||s.currencySide==='sell')?
-        '<label class="flip-social-label">ТЫ ОТДАЁШЬ · '+s.give.length+'/'+
-          (activeMode==='gift'?'1':'5')+'</label>'+
-        cardSelector(mine,s.give,'give',activeMode==='gift'?1:5):'')+
-      ((activeMode==='cards'||(activeMode==='currency'&&s.currencySide==='buy'))?
-        '<label class="flip-social-label">ТЫ ПОЛУЧАЕШЬ · '+s.take.length+'/5</label>'+
-        cardSelector(theirs,s.take,'take'):'')+
-      (activeMode==='currency'?'<label class="flip-social-label" for="flip-trade-amount">'+
-         (s.currencySide==='sell'?'СКОЛЬКО F ПОЛУЧИШЬ':'СКОЛЬКО F ОТДАШЬ')+'</label>'+
-         '<input id="flip-trade-amount" class="flip-social-input" type="number" inputmode="numeric" '+
-         'min="1" max="10000" step="1" placeholder="От 1 до 10 000 F" value="'+E(s.amount)+'">'+
-         '<p class="flip-social-muted">Обе стороны подтвердят сделку. F и карточки '+
-         'списываются вместе при принятии, без резервирования. XP за сделки с F не начисляется.</p>':'')+
-      (good?'<div class="flip-social-preview"><div><small>ТВОЙ CP</small><strong class="'+
-        (myDelta>=0?'positive':'negative')+'">'+signed(myDelta)+'</strong></div>'+
-        '<div><small>CP ДРУГОГО ИГРОКА</small><strong class="'+(theirDelta>=0?'positive':'negative')+'">'+
-        signed(theirDelta)+'</strong></div></div>':
-        '<p class="flip-social-muted">'+(activeMode==='gift'?'Выбери одну рейтинговую карточку.':
-          activeMode==='currency'?'Выбери от 1 до 5 карточек и укажи сумму F.':
-          'Выбери от 1 до 5 различных карточек с каждой стороны.')+'</p>')+
-      '<button type="button" class="bigbtn" data-trade-create '+(!good||s.busy?'disabled':'')+
-      '>'+(activeMode==='gift'?'ПОДАРИТЬ КАРТОЧКУ':
-        activeMode==='currency'?'ПРЕДЛОЖИТЬ СДЕЛКУ ЗА F':
-        locked?'ОТПРАВИТЬ ВСТРЕЧНОЕ':'ОТПРАВИТЬ ПРЕДЛОЖЕНИЕ')+'</button>'
-    ):'')+
-    '<p class="flip-social-muted">'+(activeMode==='gift'?
-      'Подарок передаётся сразу и не требует принятия. До 10 подарков за 24 часа.':
-      'Предложение действует 72 часа. Карточки и F не резервируются.')+
-    ' Тестовые карточки недоступны. Новые подарки и сделки с F защищены '+
-    '24 часами после выпадения карты.</p></section>';
+    'maxlength="64" placeholder="@username, имя или Telegram ID" autocomplete="off" '+
+    'value="'+E(s.q)+'" '+(locked?'disabled':'')+'>'+
+    '<button type="button" class="outlinebtn" data-trade-find '+(locked?'disabled':'')+
+    '>НАЙТИ</button></div>',
+    '<div id="flip-trade-player-results">'+(locked?'':playerResults())+'</div>');
+  if(s.targetId){
+    out.push('<div class="flip-social-selected">Игрок: <strong>'+E(s.targetLabel)+
+      '</strong> '+(locked?'':'<button type="button" data-trade-clear>ИЗМЕНИТЬ</button>')+'</div>');
+    if(mode==='currency'){
+      out.push('<div class="flip-trade-modes flip-trade-direction" role="group" aria-label="Направление F">');
+      for(const [id,label] of [['sell','ПРОДАЮ КАРТОЧКИ'],['buy','ПОКУПАЮ КАРТОЧКИ']]){
+        out.push('<button type="button" data-trade-currency-side="'+id+'" class="'+
+          (s.currencySide===id?'active':'')+'" aria-pressed="'+(s.currencySide===id)+'">'+label+'</button>');
+      }
+      out.push('</div>');
+    }
+    if(mode==='cards'||mode==='gift'||(mode==='currency'&&s.currencySide==='sell')){
+      out.push('<label class="flip-social-label">ТЫ ОТДАЁШЬ · '+s.give.length+'/'+
+        (mode==='gift'?'1':'5')+'</label>',
+        cardSelector(mine,s.give,'give',mode==='gift'?1:5));
+    }
+    if(mode==='cards'||(mode==='currency'&&s.currencySide==='buy')){
+      out.push('<label class="flip-social-label">ТЫ ПОЛУЧАЕШЬ · '+s.take.length+'/5</label>',
+        cardSelector(theirs,s.take,'take'));
+    }
+    if(mode==='currency'){
+      out.push('<label class="flip-social-label" for="flip-trade-amount">'+
+        (s.currencySide==='sell'?'СКОЛЬКО F ПОЛУЧИШЬ':'СКОЛЬКО F ОТДАШЬ')+'</label>',
+        '<input id="flip-trade-amount" class="flip-social-input" type="number" inputmode="numeric" '+
+        'min="1" max="10000" step="1" placeholder="От 1 до 10 000 F" value="'+E(s.amount)+'">',
+        '<p class="flip-social-muted">F и карточки передаются вместе при принятии. '+
+        'XP за сделки с F не начисляется.</p>');
+    }
+    if(good){
+      const myDelta=delta(mine,giving,taking),theirDelta=delta(theirs,taking,giving);
+      out.push('<div class="flip-social-preview"><div><small>ТВОЙ CP</small><strong class="'+
+        (myDelta>=0?'positive':'negative')+'">'+signed(myDelta)+'</strong></div>',
+        '<div><small>CP ДРУГОГО ИГРОКА</small><strong class="'+
+        (theirDelta>=0?'positive':'negative')+'">'+signed(theirDelta)+
+        '</strong></div></div>');
+    }else{
+      out.push('<p class="flip-social-muted">'+(mode==='gift'?
+        'Выбери одну рейтинговую карточку.':mode==='currency'?
+        'Выбери от 1 до 5 карточек и укажи сумму F.':
+        'Выбери от 1 до 5 различных карточек с каждой стороны.')+'</p>');
+    }
+    const label=mode==='gift'?'ПОДАРИТЬ КАРТОЧКУ':mode==='currency'?
+      'ПРЕДЛОЖИТЬ СДЕЛКУ ЗА F':locked?'ОТПРАВИТЬ ВСТРЕЧНОЕ':
+      'ОТПРАВИТЬ ПРЕДЛОЖЕНИЕ';
+    out.push('<button type="button" class="bigbtn" data-trade-create '+
+      (!good||s.busy?'disabled':'')+'>'+label+'</button>');
+  }
+  out.push('<p class="flip-social-muted">'+(mode==='gift'?
+    'Подарок передаётся сразу без принятия. До 10 подарков за 24 часа.':
+    'Предложение действует 72 часа. F и карточки не резервируются.')+
+    ' Тестовые карточки недоступны. Для подарков и сделок за F действует '+
+    '24-часовая защита свежих карт из дропов.</p></section>');
+  return out.join('');
 }
 function playerResults(){
   if(s.searching)return '<p class="flip-social-muted">Ищем игроков…</p>';
