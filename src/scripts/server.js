@@ -5,7 +5,7 @@
   const initData = telegram?.initData || '';
   const telegramClient=window.FLIPViewport?.isTelegram || !!initData;
   const api='/api/flip';
-  const bridge={mode:'loading',health:'connecting',error:null,connectedUser:null,profile:null,isAdmin:false,tasks:null,achievements:null,showcase:null,shop:null};
+  const bridge={mode:'loading',health:'connecting',error:null,connectedUser:null,profile:null,isAdmin:false,tasks:null,achievements:null,showcase:null,shop:null,hub:null};
   const setHealth=status=>{
     if(bridge.health===status)return;
     bridge.health=status;
@@ -103,6 +103,21 @@
   bridge.themePack=(theme,id)=>{
     if(!['archive','new-era'].includes(theme))throw new Error('UNKNOWN_PACK');
     return perform('theme_pack',id,{theme},'theme_pack_'+theme);
+  };
+  bridge.refreshHub=async()=>{
+    if(bridge.mode!=='server')return null;
+    const data=await request(null,null,{},'?hub=1');
+    bridge.hub=data;
+    window.dispatchEvent(new CustomEvent('flip-hub-updated',{detail:{unread:data.unread_count||0}}));
+    return data;
+  };
+  bridge.markEventsRead=async(eventId=null)=>{
+    if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+    const payload=eventId===null?{all:true}:{eventId};
+    const result=await request('mark_events_read',crypto.randomUUID(),payload);
+    // Requery to keep per-event state and badge consistent across clients.
+    await bridge.refreshHub();
+    return result;
   };
   bridge.refreshShop=async()=>{
     if(bridge.mode!=='server')return null;
