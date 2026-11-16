@@ -139,6 +139,7 @@
        '<div><small>COLLECTION POINTS</small><strong>'+fmt(profile.cp)+' CP</strong></div>'+
        '<div><small>КАРТОЧЕК</small><strong>'+fmt(profile.ranked_cards)+'</strong></div>'+
        '<div><small>РАЗНЫХ КАРТОЧЕК</small><strong>'+fmt(profile.ranked_variants)+'</strong></div></div>'+
+     (window.FLIPActivity?.publicStats(profile.stats)||'')+
      '<section class="content-card flip-showcase-profile"><div class="flip-showcase-heading">'+
        '<h3>ВИТРИНА ИГРОКА</h3><strong>TOP 3</strong></div>'+
        slotButtons(profile.slots,false)+'</section>'+
