@@ -1,4 +1,4 @@
-/* FLIP v0.9.6.3 — premium, receipt-only card acquisition. */
+/* FLIP v0.9.7.1 — Telegram-safe live card receipts. */
 .flip-delivery-overlay{
  --delivery-accent:#baff67;
  position:absolute;inset:0;z-index:90;
@@ -40,11 +40,18 @@
 .flip-delivery-inner{position:relative;z-index:1;height:100%;min-height:0;display:flex;
  flex-direction:column;overflow-y:auto;overscroll-behavior:contain;
  padding:max(20px,env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom))}
-.flip-delivery-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0}
-.flip-delivery-wordmark{font:italic 900 28px/.9 'Space Grotesk',sans-serif;letter-spacing:-2px}
-.flip-delivery-wordmark span{color:#baff67}
-.flip-delivery-upper-label{color:#8cae99;letter-spacing:1.6px;
- font:900 8px/1.2 'Space Grotesk',sans-serif;text-align:center;white-space:nowrap}
+.flip-delivery-header{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-shrink:0}
+/* Telegram fullscreen renders its Close/menu controls ABOVE the web page.
+   Their hit region is taller than the system status bar and env(safe-area-inset-top).
+   Follow the same runtime inset as the main screen plus a native-controls buffer. */
+:root.flip-telegram-fullscreen .flip-delivery-inner{
+ padding-top:max(156px,calc(var(--flip-top-space,88px) + 68px));
+}
+@media(max-height:700px){
+ :root.flip-telegram-fullscreen .flip-delivery-inner{
+  padding-top:max(123px,calc(var(--flip-top-space,88px) + 42px));
+ }
+}
 .flip-delivery-later{display:grid;place-items:center;flex:none;width:34px;height:34px;
  padding:8px;background:#1a2d22b9;color:#acbdb0;border:1px solid #436049;border-radius:11px}
 .flip-delivery-later svg{width:15px;height:15px}
@@ -85,8 +92,6 @@
 .flip-delivery-back-brand{font:italic 900 clamp(51px,15vw,66px)/1 'Space Grotesk',sans-serif;
  letter-spacing:-5px;transform:rotate(-8deg);text-shadow:0 0 25px #baff664b}
 .flip-delivery-back-brand span{color:#baff67}
-.flip-delivery-back-tag{position:absolute;bottom:22px;left:22px;font:900 8px/1.5 'Space Grotesk',sans-serif;
- letter-spacing:1.1px;text-align:left}
 .flip-delivery-front{transform:rotateY(180deg);border:3px solid var(--delivery-accent);
  background:#121d19;box-shadow:0 0 36px color-mix(in srgb,var(--delivery-accent) 55%,transparent),0 22px 65px #000b}
 .flip-delivery-front .flip-delivery-art-image{width:100%;height:100%;display:block;
@@ -135,8 +140,6 @@
 .flip-delivery-all{display:block;margin:11px auto 0;background:transparent;
  border:0;color:#aaccae;letter-spacing:1.1px;font:900 9px 'Space Grotesk',sans-serif;
  min-height:29px;padding:7px}
-.flip-delivery-disclaimer{text-align:center;color:#7b9682;margin:13px 0 0;
- font:600 9px 'Manrope',sans-serif}
 .flip-delivery-loading{min-height:18px;margin:7px 0 0;text-align:center;color:#ffc4b3;
  letter-spacing:.6px;font:700 9px 'Space Grotesk',sans-serif}
 .flip-delivery-overlay[data-rarity="legendary"] .flip-delivery-card-shell.is-revealed:before{
@@ -169,7 +172,6 @@
 }
 @media(max-width:360px){
  .flip-delivery-inner{padding-left:12px;padding-right:12px}
- .flip-delivery-upper-label{font-size:7px}
  .flip-delivery-center h2{font-size:22px}
  .flip-delivery-kicker{font-size:8px}
 }
