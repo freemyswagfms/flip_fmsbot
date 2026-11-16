@@ -704,8 +704,27 @@ function input(e){
   }
   if(e.target.id==='flip-trade-amount'){
     s.amount=String(e.target.value).slice(0,6);
+    const can=validSelection(groups(),s.their);
     const button=root?.querySelector('[data-trade-create]');
-    if(button)button.disabled=!validSelection(groups(),s.their)||s.busy;
+    if(button)button.disabled=!can||s.busy;
+    const give=s.currencySide==='buy'?[]:s.give;
+    const take=s.currencySide==='sell'?[]:s.take;
+    const sum=giftAmount();
+    const grid=root?.querySelector('.flip-trade-review-grid');
+    if(grid)grid.innerHTML=
+      summarySide(give,s.currencySide==='buy'?sum:0,'ОТДАЁШЬ')+
+      summarySide(take,s.currencySide==='sell'?sum:0,'ПОЛУЧАЕШЬ');
+    const impact=root?.querySelector('.flip-trade-cp-impact');
+    if(impact)impact.hidden=!can;
+    else if(can){
+      const mine=delta(groups(),give,take),theirs=delta(s.their,take,give);
+      root?.querySelector('.flip-trade-review')?.insertAdjacentHTML?.('afterend',
+        '<div class="flip-social-preview flip-trade-cp-impact">'+
+        '<div><small>ТВОЙ CP</small><strong class="'+(mine>=0?'positive':'negative')+
+        '">'+signed(mine)+'</strong></div>'+
+        '<div><small>CP ПАРТНЁРА</small><strong class="'+(theirs>=0?'positive':'negative')+
+        '">'+signed(theirs)+'</strong></div></div>');
+    }
     return;
   }
   if(e.target.id!=='flip-trade-user-search')return;
