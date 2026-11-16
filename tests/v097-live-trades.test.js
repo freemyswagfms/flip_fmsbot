@@ -36,10 +36,10 @@ function runtime(respond){
   },
   fetch:async(url,options)=>{
    calls++;
-   assert.equal(url.searchParams.get('view'),'trades');
+   assert.equal(url.searchParams.get('view'),'expanded');
    assert.equal(options.headers['x-telegram-init-data'],context.window.Telegram.WebApp.initData);
    const result=await respond(calls);
-   return Response.json({trades:result});
+   return Response.json({trades:result,gifts:[]});
   },
   crypto:{randomUUID(){return tid('42');}},
   localStorage:{getItem(){return null;},setItem(){},removeItem(){}},
