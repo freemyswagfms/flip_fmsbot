@@ -51,6 +51,7 @@ for(const oldCard of state.received){if(oldCard?.id && !previousDiscoveries.has(
 
 let current='home';
 let collectionArtistId=null, collectionReleaseId=null;
+let showcaseEditingSlot=1,publicProfileData=null,publicProfileLoading=false,publicProfileError='';
 const catalog=window.FLIPCatalog;
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const artCards=catalog.rarities.map((rarity,i)=>catalog.getCard('carti',catalog.artists[0].releases[i%5].id,rarity));
@@ -188,7 +189,7 @@ function playerAvatar(){
     : '';
   return `<div class="flip-player-avatar"><span class="flip-player-initials">${escapeHtml(initial.toUpperCase())}</span>${photo}</div>`;
 }
-function profile(){return `<div class="panel"><span class="eyebrow">PERSONAL SPACE / 005</span><h2>ПРОФИЛЬ<span style="color:var(--lime)">.</span></h2><div class="content-card"><div class="flip-player-row">${playerAvatar()}<div class="flip-player-meta"><h3>${escapeHtml(live()?(state.telegramName||'FLIP PLAYER'):'FLIP PLAYER')}</h3><p class="flip-player-handle">${escapeHtml(live()?(state.telegramHandle||'FLIP PLAYER'):'FLIP / DEMO')}</p><span class="pill">LVL ${state.level} · ${state.xp} XP</span></div></div><div class="progress" style="--p:${Math.min(100,100*state.xp/(state.xpToNext||100))}%;margin-top:19px"><i></i></div><p>Следующий уровень · базовая награда 30 F</p></div><div class="content-card"><h3>ВИТРИНА КАРТОЧЕК <span style="color:#8fa68d">0/3</span></h3><div class="square-grid">${[0,1,2].map(()=>`<div class="sq-card" style="border-style:dashed;background:#171f18;border-color:#3f5740"><span style="color:#516b55;font-size:24px">+</span></div>`).join('')}</div><p>Сюда можно закреплять до трёх любимых карточек, включая Hidden.</p></div>${window.FLIPAchievements?.profile(bridge?.achievements,{online:live()})||''}<div class="content-card"><h3>${live()?'ПОДКЛЮЧЕНИЕ К TELEGRAM':blocked()?'СЕРВЕР НЕ ПОДКЛЮЧЕН':'НАСТРОЙКИ ДЕМО'}</h3><p>${live()?'Прогресс сохраняется на сервере и не сбрасывается из приложения. Локальные демо-награды не перенесены.':blocked()?'Подключение не установлено. Локальные награды не отображаются и не выдаются.':'Очистить состояние локального прототипа и снова сделать дроп доступным.'}</p>${live()?'<span class="pill">● SERVER CONNECTED</span>':blocked()?'<span class="pill">● OFFLINE</span>':'<button class="outlinebtn" id="resetBtn">СБРОСИТЬ ДЕМО</button>'}</div></div>`}
+function profile(){return `<div class="panel"><span class="eyebrow">PERSONAL SPACE / 005</span><h2>ПРОФИЛЬ<span style="color:var(--lime)">.</span></h2><div class="content-card"><div class="flip-player-row">${playerAvatar()}<div class="flip-player-meta"><h3>${escapeHtml(live()?(state.telegramName||'FLIP PLAYER'):'FLIP PLAYER')}</h3><p class="flip-player-handle">${escapeHtml(live()?(state.telegramHandle||'FLIP PLAYER'):'FLIP / DEMO')}</p><span class="pill">LVL ${state.level} · ${state.xp} XP</span></div></div><div class="progress" style="--p:${Math.min(100,100*state.xp/(state.xpToNext||100))}%;margin-top:19px"><i></i></div><p>Следующий уровень · базовая награда 30 F</p></div>${window.FLIPShowcase?.own(bridge?.showcase,{online:live()})||''}${window.FLIPAchievements?.profile(bridge?.achievements,{online:live()})||''}<div class="content-card"><h3>${live()?'ПОДКЛЮЧЕНИЕ К TELEGRAM':blocked()?'СЕРВЕР НЕ ПОДКЛЮЧЕН':'НАСТРОЙКИ ДЕМО'}</h3><p>${live()?'Прогресс сохраняется на сервере и не сбрасывается из приложения. Локальные демо-награды не перенесены.':blocked()?'Подключение не установлено. Локальные награды не отображаются и не выдаются.':'Очистить состояние локального прототипа и снова сделать дроп доступным.'}</p>${live()?'<span class="pill">● SERVER CONNECTED</span>':blocked()?'<span class="pill">● OFFLINE</span>':'<button class="outlinebtn" id="resetBtn">СБРОСИТЬ ДЕМО</button>'}</div></div>`}
 function tasks(){
  const payload=live()?bridge?.tasks:null;
  const daily=payload?.daily,weekly=payload?.weekly;
@@ -212,6 +213,50 @@ function tasks(){
   (weekly?.length===3?weekly.map(gameTaskRow).join(''):'<p>Загрузка еженедельных заданий…</p>')+
   '</div><p class="note">За выполнение всех трёх недельных заданий: дополнительно +50 F.</p></div>';
 }
+function showcaseEdit(){
+ if(!live())return '<div class="panel"><button class="link" data-action="profile">← К ПРОФИЛЮ</button><h2>ВИТРИНА</h2><p>Доступно только через Telegram.</p></div>';
+ return window.FLIPShowcase?.editor(state,bridge?.showcase,showcaseEditingSlot)||'';
+}
+function publicProfile(){
+ return window.FLIPShowcase?.publicPage(publicProfileData,{
+   loading:publicProfileLoading,error:publicProfileError
+ })||'';
+}
+async function openPlayerProfile(publicId){
+ if(!live()||!bridge?.publicProfile)return;
+ if(typeof publicId!=='string'||!/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(publicId))return;
+ publicProfileData=null;publicProfileLoading=true;publicProfileError='';
+ render('publicProfile');
+ try{
+   publicProfileData=await bridge.publicProfile(publicId);
+ }catch(error){
+   publicProfileError=error.message==='PLAYER_NOT_FOUND'?
+     'Этот игрок пока не зарегистрирован в FLIP.':'Не удалось загрузить профиль игрока.';
+ }finally{
+   publicProfileLoading=false;
+   if(current==='publicProfile')render('publicProfile');
+ }
+}
+async function updateShowcase(slot,cardId){
+ if(!live()||serverBusy||!bridge?.setShowcase)return;
+ if(!Number.isInteger(slot)||slot<1||slot>3)return;
+ serverBusy=true;
+ try{
+   if(cardId!==null){
+     const permitted=window.FLIPShowcase?.cardsFromState(state).some(c=>c.id===cardId);
+     if(!permitted)return;
+   }
+   await bridge.setShowcase(slot,cardId);
+   render('profile');
+   toast(cardId===null?'Карточка убрана из витрины.':'Витрина обновлена!');
+ }catch(error){
+   const text=error.message==='SHOWCASE_NOT_OWNED'?
+     'Этой рейтинговой карточки больше нет в коллекции.':
+     'Не удалось сохранить витрину. Попробуй снова.';
+   toast(text);
+   try{await bridge.refreshShowcase();render(current)}catch{}
+ }finally{serverBusy=false}
+}
 function rankingProfile(){return live()?'<div class="content-card"><span class="eyebrow">COLLECTION POINTS</span><h3 style="margin-top:9px;font-size:15px">ТВОЙ РЕЙТИНГ</h3><div class="kpi">'+Number(state.cp||0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' CP</div><p>Рейтинговые экземпляры, включая карточки из обменов и рейтинговые выдачи администрации. Тестовые карточки не учитываются.</p><button type="button" class="outlinebtn" data-action="leaderboard">ОТКРЫТЬ ОБЩИЙ ТОП ↗</button></div>':''}
 function adminProfile(){
   const id=window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
@@ -223,7 +268,7 @@ function adminProfile(){
 function adminPage(){return live()&&bridge?.isAdmin?
   '<div class="panel flip-admin-page"><button class="link" data-action="profile">← НАЗАД В ПРОФИЛЬ</button><span class="eyebrow">FLIP / PRIVATE ACCESS</span><h2>CONTROL CENTER<span style="color:var(--lime)">.</span></h2><p class="desc">Поиск игроков и карточек, выдача карт, XP и F с журналом начислений.</p><div id="flip-admin-root"></div></div>':
   '<div class="panel"><h2>ДОСТУП ЗАКРЫТ</h2></div>';}
-const render=(view=current)=>{current=view;$('#screen').innerHTML=({home,collection,collectionArtist,collectionRelease,collectionHistory,catalog:catalogView,trades,leaderboard,store,profile:adminProfile,admin:adminPage,tasks,achievements}[view]||home)();document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===(['catalog','collectionArtist','collectionRelease','collectionHistory'].includes(view)?'collection':view==='achievements'?'profile':view)));$('#balance').textContent=money(state.balance);$('#scroll').scrollTop=0;updateTimer();window.FLIPIcons?.render($('#screen'));if(view==='admin'&&bridge?.isAdmin)window.FLIPAdmin?.mount($('#flip-admin-root'));if(view==='trades')window.FLIPTrades?.mount($('#flip-trades-root'));if(view==='leaderboard')window.FLIPLeaderboard?.mount($('#flip-leaderboard-root'));const photo=$('#flipPlayerPhoto');if(photo)photo.addEventListener('error',()=>photo.remove(),{once:true})};
+const render=(view=current)=>{current=view;$('#screen').innerHTML=({home,collection,collectionArtist,collectionRelease,collectionHistory,catalog:catalogView,trades,leaderboard,store,profile:adminProfile,admin:adminPage,tasks,achievements,showcaseEdit,publicProfile}[view]||home)();document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===(['catalog','collectionArtist','collectionRelease','collectionHistory'].includes(view)?'collection':['achievements','showcaseEdit','publicProfile'].includes(view)?'profile':view)));$('#balance').textContent=money(state.balance);$('#scroll').scrollTop=0;updateTimer();window.FLIPIcons?.render($('#screen'));if(view==='admin'&&bridge?.isAdmin)window.FLIPAdmin?.mount($('#flip-admin-root'));if(view==='trades')window.FLIPTrades?.mount($('#flip-trades-root'));if(view==='leaderboard')window.FLIPLeaderboard?.mount($('#flip-leaderboard-root'));const photo=$('#flipPlayerPhoto');if(photo)photo.addEventListener('error',()=>photo.remove(),{once:true})};
 let toastTid;const toast=msg=>{const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTid);toastTid=setTimeout(()=>el.classList.remove('show'),3000)};
 const closeModal=()=>$('#overlay').classList.remove('show');
 function modal(html){$('#modal').innerHTML=html;window.FLIPIcons?.render($('#modal'));$('#overlay').classList.add('show')}
@@ -604,6 +649,20 @@ async function claimAchievement(button){
 }
 function handleTask(i){if(state.claimedTasks.includes(i))return;modal(`<span class="eyebrow">DAILY TASK</span><h3>${taskDefs[i].title}</h3><p>Это макет задания. В реальной игре выполнение определяется сервером автоматически, без ручного начисления.</p><button class="bigbtn" id="closeReveal">ПОНЯТНО</button>`)}
 document.addEventListener('click',e=>{
+   const profileOpen=e.target.closest('[data-open-my-profile]');
+   if(profileOpen){openPlayerProfile(bridge?.showcase?.public_id);return;}
+   const slot=e.target.closest('[data-showcase-slot]');
+   if(slot){showcaseEditingSlot=Math.min(3,Math.max(1,Number(slot.dataset.showcaseSlot)||1));render('showcaseEdit');return;}
+   const pick=e.target.closest('[data-showcase-pick]');
+   if(pick){updateShowcase(showcaseEditingSlot,pick.dataset.showcasePick);return;}
+   const remove=e.target.closest('[data-showcase-clear]');
+   if(remove){updateShowcase(Number(remove.dataset.showcaseClear),null);return;}
+   const viewCard=e.target.closest('[data-showcase-view-card]');
+   if(viewCard){
+     const card=window.FLIPShowcase?.cardFromId(viewCard.dataset.showcaseViewCard);
+     if(card)window.FLIPCardViewer?.open(card,{mode:'catalog',cards:[card]});
+     return;
+   }
    const achFilter=e.target.closest('[data-ach-filter]');
    if(achFilter){
      window.FLIPAchievements?.filter(achFilter.dataset.achFilter);
@@ -634,8 +693,19 @@ document.addEventListener('click',e=>{
   if(historyCardTarget){showOwnedCard(historyCardTarget.dataset.historyCard,true);return}
   const hiddenTarget=e.target.closest('[data-hidden-card]');
   if(hiddenTarget){showHiddenCard(hiddenTarget.dataset.hiddenCard);return;}
-  const tab=e.target.closest('[data-tab]');if(tab){render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks','achievements'].includes(a)){render(a);if(a==='tasks'&&live())bridge.refreshTasks?.().then(()=>{if(current==='tasks')render('tasks')}).catch(()=>{});if(a==='achievements'&&live())bridge.refreshAchievements?.().then(()=>{if(current==='achievements')render('achievements')}).catch(()=>{});}else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogArtist||'carti',b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn'))previewRoulette();if(e.target.closest('#buyPackBtn'))doPack();if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))render('store');if(e.target.closest('#bellBtn'))$('#notifications').classList.toggle('show');if(e.target.closest('#closeNotifications'))$('#notifications').classList.remove('show');if(e.target.closest('#resetBtn')){if(live()||blocked())return;localStorage.removeItem('flip_demo');localStorage.removeItem('flip20_demo');Object.assign(state,{...initial,dropReadyAt:Date.now(),received:[],discovered:[],claimedTasks:[]});save();render('profile');toast('Демо сброшено — бесплатный дроп доступен')};const t=e.target.closest('[data-task]');if(t)handleTask(+t.dataset.task);if(e.target.closest('#levelQuick'))render('profile')});
-$('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#notifications').classList.remove('show')}});window.addEventListener('flip-trade-completed',async()=>{
+  const tab=e.target.closest('[data-tab]');if(tab){render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks','achievements','showcaseEdit'].includes(a)){render(a);if(a==='tasks'&&live())bridge.refreshTasks?.().then(()=>{if(current==='tasks')render('tasks')}).catch(()=>{});if(a==='achievements'&&live())bridge.refreshAchievements?.().then(()=>{if(current==='achievements')render('achievements')}).catch(()=>{});}else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogArtist||'carti',b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn'))previewRoulette();if(e.target.closest('#buyPackBtn'))doPack();if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))render('store');if(e.target.closest('#bellBtn'))$('#notifications').classList.toggle('show');if(e.target.closest('#closeNotifications'))$('#notifications').classList.remove('show');if(e.target.closest('#resetBtn')){if(live()||blocked())return;localStorage.removeItem('flip_demo');localStorage.removeItem('flip20_demo');Object.assign(state,{...initial,dropReadyAt:Date.now(),received:[],discovered:[],claimedTasks:[]});save();render('profile');toast('Демо сброшено — бесплатный дроп доступен')};const t=e.target.closest('[data-task]');if(t)handleTask(+t.dataset.task);if(e.target.closest('#levelQuick'))render('profile')});
+$('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closeModal()});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#notifications').classList.remove('show')}});document.addEventListener('input',e=>{
+  const input=e.target.closest('[data-showcase-search]');
+  if(!input)return;
+  const needle=input.value.trim().toLocaleLowerCase('ru');
+  for(const node of document.querySelectorAll('[data-showcase-filter]')){
+    node.hidden=!String(node.dataset.showcaseFilter||'').toLocaleLowerCase('ru').includes(needle);
+  }
+});
+window.addEventListener('flip-open-public-profile',event=>{
+  openPlayerProfile(event.detail?.publicId);
+});
+window.addEventListener('flip-trade-completed',async()=>{
   if(!live())return;
   try{
     const snapshot=await bridge.connect();
