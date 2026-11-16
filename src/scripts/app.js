@@ -453,7 +453,7 @@ async function markNotification(eventId=null,route=null){
    else if(['trades','achievements','collection','profile'].includes(route))render(route);
  }
 }
-function rankingProfile(){return live()?'<div class="content-card"><h3 style="margin-top:9px;font-size:15px">ТВОЙ РЕЙТИНГ</h3><div class="kpi">'+Number(state.cp||0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' CP</div><button type="button" class="outlinebtn" data-action="leaderboard">ОТКРЫТЬ ОБЩИЙ ТОП ↗</button></div>':''}
+function rankingProfile(){return live()?'<div class="flip-profile-ranking-link"><button type="button" class="outlinebtn" data-action="leaderboard">ОБЩИЙ РЕЙТИНГ ↗</button></div>':''}
 function adminProfile(){
   const id=window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
   const idInfo=live()&&bridge?.isAdmin===true&&Number.isSafeInteger(id)&&id>0?
@@ -964,6 +964,13 @@ document.addEventListener('click',e=>{
      promptProfilePurchase('buy_slot','slot-'+(Number(bridge?.cosmetics?.slot_count||3)+1));return;
    }
    if(e.target.closest('[data-profile-confirm-buy]')){confirmProfilePurchase();return;}
+   const reset=e.target.closest('[data-cosmetic-reset-kind]');
+   if(reset){
+     const kind=reset.dataset.cosmeticResetKind;
+     if(['background','avatar_frame','showcase_skin','title'].includes(kind))
+       changeProfileDesign('equip',kind,null);
+     return;
+   }
    const equip=e.target.closest('[data-cosmetic-equip]');
    if(equip){
      const item=bridge?.cosmetics?.items?.find(i=>i.id===equip.dataset.cosmeticEquip);
