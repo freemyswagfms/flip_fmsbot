@@ -248,6 +248,7 @@ function profileError(error){
    PROFILE_NOT_OWNED:'Сначала приобрети этот предмет.',
    PROFILE_BAD_ARTIST:'Артист недоступен.',
    PROFILE_BAD_BADGE:'Этот значок пока не получен.',
+   PROFILE_BAD_FRAME_COLOR:'Такой цвет недоступен.',
    SHOWCASE_SLOT_LOCKED:'Сначала открой место в витрине.',
    DUPLICATE_REQUEST_ACTION:'Повтори операцию с новыми параметрами.'
  };
@@ -297,6 +298,7 @@ async function changeProfileDesign(action,...args){
   if(action==='equip')result=await bridge.equipProfile(args[0],args[1]);
   else if(action==='favorite')result=await bridge.setFavoriteArtist(args[0]);
   else if(action==='badge')result=await bridge.pinProfileBadge(args[0],args[1]);
+  else if(action==='color')result=await bridge.setFrameColor(args[0]);
   if(result?.profile)bridge.showcase=result.profile;
   if(current==='profile'||current==='store'||current==='showcaseEdit')render(current);
   toast('Профиль обновлён.');
@@ -952,6 +954,13 @@ document.addEventListener('click',e=>{
    }
    if(e.target.closest('[data-cosmetic-open-shop], [data-profile-open-cosmetics]')){
      showCosmetics();return;
+   }
+   const frameColor=e.target.closest('[data-profile-frame-color]');
+   if(frameColor){
+     const color=frameColor.dataset.profileFrameColor;
+     if(window.FLIPProfileCosmetics?.frameColors?.some(([key])=>key===color)&&live())
+       changeProfileDesign('color',color);
+     return;
    }
    const preview=e.target.closest('[data-cosmetic-preview]');
    if(preview){cosmeticPreview=preview.dataset.cosmeticPreview;render('store');return;}
