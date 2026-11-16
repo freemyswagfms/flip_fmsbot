@@ -162,7 +162,7 @@
       (tab==='history'?'aria-current="page"':'')+'>ИСТОРИЯ</button>'+
       '<button type="button" data-shop-tab="cosmetics" '+
       (tab==='cosmetics'?'aria-current="page"':'')+'>КОСМЕТИКА</button></div>'+
-    (tab==='cosmetics'?(window.FLIPProfileCosmetics?.shop({shop:cosmetics,profile,online:live,busy,previewId:cosmeticPreview})||''):
+    (tab==='cosmetics'?(window.FLIPProfileCosmetics?.shop({shop:cosmetics,profile,player:state,online:live,busy,previewId:cosmeticPreview})||''):
      tab==='history'?
       '<section class="flip-shop-history"><h3>ТВОИ ПОКУПКИ<span>.</span></h3>'+
       
