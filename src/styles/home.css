@@ -18,7 +18,6 @@ body, button { font-family:var(--ui); }
 .hero-kicker { color:var(--lime); font:800 11px/1.45 var(--ui); letter-spacing:2.0px; }
 .hero-star { color:var(--lime); font-size:22px; line-height:0; vertical-align:-3px; margin-right:6px; }
 .hero-intro h2 { font:900 clamp(29px,7.5vw,37px)/1.02 var(--display); letter-spacing:-1.9px; margin:0 0 9px; }
-.hero-description { margin:0; max-width:355px; color:#bac0be; font:500 12px/1.48 var(--ui); letter-spacing:-.12px; }
 .hero-progress { width:max-content; margin-top:12px; display:flex; align-items:center; gap:7px; border:1px solid #344435; background:#141d16; padding:5px 9px; border-radius:20px; color:#b2c7b0; font:800 9px var(--ui); letter-spacing:.3px; cursor:pointer; }
 .hero-progress span:first-child { color:var(--lime); }
 .progress-separator { display:block; width:1px; height:10px; background:#596d53; }
@@ -108,7 +107,6 @@ body, button { font-family:var(--ui); }
 }
 @media (max-width:360px){
   .hero-intro h2 { font-size:29px; }
-  .hero-description { font-size:11px; }
   .drop-shell { padding:13px 12px 11px; min-height:390px; }
   .drop-stage { height:205px; }
   .deck { width:148px; height:148px; top:26px; }
@@ -155,3 +153,8 @@ body, button { font-family:var(--ui); }
 @media(prefers-reduced-motion:reduce){
   .brand[data-server-status="offline"] .flip-server-dot{animation:none}
 }
+
+/* v0.9.8.1: show just a countdown while recharging; keep admin preview visible. */
+.flip-drop-timer[hidden]{display:none!important}
+.flip-drop-timer strong{font-variant-numeric:tabular-nums;font-size:11px;letter-spacing:.45px}
+.drop-footer:not(:has(.drop-preview-btn)):has(.flip-drop-timer[hidden]){display:none}
