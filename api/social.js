@@ -82,6 +82,8 @@ export async function handleSocialRequest(request){
     process.env.TELEGRAM_BOT_TOKEN);}catch{return json({error:'INVALID_TELEGRAM_SESSION'},401)}
   try{
     const db=config(), actor=user.telegram_id;
+    if(await rpc('flip_player_is_banned',{p_telegram_id:actor},db))
+      return json({error:'ACCOUNT_BANNED'},403);
     if(request.method==='GET'){
       const view=url.searchParams.get('view')||'leaderboard';
       if(view==='leaderboard'){
