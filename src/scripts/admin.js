@@ -406,6 +406,50 @@
     if(b.hasAttribute('data-admin-set-unlimited')){
       setUnlimited(b.dataset.adminSetUnlimited);return;
     }
+    if(b.hasAttribute('data-admin-modes-self')){
+      loadTargetModes(selfId());return;
+    }
+    if(b.hasAttribute('data-admin-modes-recipient')){
+      const target=s.recipient.trim();
+      if(!/^[1-9]\d{0,15}$/.test(target)){
+        s.targetMessage='Сначала выбери игрока в разделе «Получатель».';
+        s.targetError=true;draw();return;
+      }
+      loadTargetModes(target);return;
+    }
+    if(b.hasAttribute('data-admin-rarity')){
+      s.cardRarity=b.dataset.adminRarity;
+      s.cardOffset=0;s.cards=[];s.cardTotal=0;
+      draw();searchCards();return;
+    }
+    if(b.hasAttribute('data-admin-more')){
+      if(s.cardOffset<s.cardTotal)searchCards(true);return;
+    }
+    if(b.hasAttribute('data-admin-preview-card')){
+      const id=b.dataset.adminPreviewCard;
+      const source=s.cards.find(x=>x.id===id)||s.basket.find(x=>x.id===id)||id;
+      const c=visual()?.cardInfo(source);
+      if(c){
+        const original=window.FLIPCatalog?.getCard?.(...id.split('/'));
+        window.FLIPCardViewer?.open(original||{
+          id,artist:c.artist,title:c.title,rarity:c.rarity,color:c.rarity,
+          art:c.art
+        },{mode:'catalog'});
+      }
+      return;
+    }
+    if(b.hasAttribute('data-admin-add-card')){
+      editBasket(b.dataset.adminAddCard,1);return;
+    }
+    if(b.hasAttribute('data-admin-cart-plus')){
+      editBasket(b.dataset.adminCartPlus,1);return;
+    }
+    if(b.hasAttribute('data-admin-cart-minus')){
+      editBasket(b.dataset.adminCartMinus,-1);return;
+    }
+    if(b.hasAttribute('data-admin-cart-remove')){
+      editBasket(b.dataset.adminCartRemove,-999);return;
+    }
     if(b.hasAttribute('data-admin-studio-login')||
        b.hasAttribute('data-admin-studio-login-copy')){
       if(s.busy)return;
@@ -462,11 +506,10 @@
     if(e.target.id==='flip-admin-card-search'){
       s.cardQuery=e.target.value;
       if(cardTimer)clearTimeout(cardTimer);
-      cardTimer=setTimeout(()=>searchCards(),250);
+      cardTimer=setTimeout(()=>searchCards(false),250);
     }
   }
   function change(e){
-    if(e.target.id==='flip-admin-card')s.card=e.target.value;
     if(e.target.name==='flip-admin-mode'){s.mode=e.target.value;draw();}
   }
   window.FLIPAdmin={
@@ -475,6 +518,7 @@
       if(root===el)return;
       root=el;stamp++;cardSeq++;if(cardTimer)clearTimeout(cardTimer);
       s.message='';s.error=false;s.cooldownMessage='';s.cooldownError=false;
+      s.modeTarget=selfId();s.targetCooldowns=null;s.targetLabel='';s.targetLogs=[];
       el.addEventListener('click',click);
       el.addEventListener('input',input);
       el.addEventListener('change',change);
