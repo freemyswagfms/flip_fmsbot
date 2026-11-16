@@ -87,12 +87,15 @@ export async function handleRequest(request,env=undefined){
   if (!['GET','POST'].includes(request.method)) return json({error:'METHOD_NOT_ALLOWED'},405);
   const configured=!!(process.env.TELEGRAM_BOT_TOKEN&&process.env.SUPABASE_URL&&process.env.SUPABASE_SECRET_KEY);
   if(request.method==='GET' && u.searchParams.get('health')==='1')
-    return json({service:'FLIP',version:'0.9.8.3',configured});
+    return json({service:'FLIP',version:'0.9.8.4',configured});
   if(!configured)return json({error:'SERVER_NOT_CONFIGURED'},503);
   try{
     const raw=request.headers.get('x-telegram-init-data');
     const user=validateTelegramInitData(raw,process.env.TELEGRAM_BOT_TOKEN);
     const db=settings();
+    // The signed owner can suspend a game account; check on every request.
+    if(await rpc('flip_player_is_banned',{p_telegram_id:user.telegram_id},db))
+      return json({error:'ACCOUNT_BANNED'},403);
     // Authenticated, read-only database probe. Do not register activity from probes.
     if(request.method==='GET' && u.searchParams.get('probe')==='1'){
       await rpc('flip_snapshot',{p_telegram_id:user.telegram_id},db);
