@@ -12,12 +12,16 @@
     '◆': '<path d="m12 2 10 10-10 10L2 12 12 2Z"/>',
     '✓': '<path d="m4 12 5.1 5.1L20 6"/>',
     '↔': '<path d="M3 8h18M7 4 3 8l4 4M21 16H3m14-4 4 4-4 4"/>',
+    '⇄': '<path d="M3 7h17m-4-4 4 4-4 4M21 17H4m4-4-4 4 4 4"/>',
+    '×': '<path d="m5 5 14 14M19 5 5 19"/>',
+    '▣': '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><rect x="7.5" y="7.5" width="9" height="9" rx="1.5"/>',
+    '◇': '<path d="m12 2 9.5 10-9.5 10L2.5 12 12 2Z"/>',
     '›': '<path d="m9 5 7 7-7 7"/>',
     '←': '<path d="m12 5-7 7 7 7M5 12h15"/>',
     '✕': '<path d="M5 5 19 19M19 5 5 19"/>',
     '◉': '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/>'
   };
-  const pattern = /[✳↗◷◎✦◈☆◆✓↔›←✕◉]/g;
+  const pattern = /[✳↗◷◎✦◈☆◆✓↔⇄×▣◇›←✕◉]/g;
   const ns = 'http://www.w3.org/2000/svg';
   function make(glyph) {
     const svg = document.createElementNS(ns, 'svg');
