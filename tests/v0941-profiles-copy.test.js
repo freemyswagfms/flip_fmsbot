@@ -81,9 +81,9 @@ test('The normal game has no internal ranked/test-copy vocabulary',()=>{
 test('Telegram WebView preserves cache-busting after the 0.9.4.1 hotfix',()=>{
   const html=src('index.html');
   for(const name of ['app','leaderboard','showcase','trades','card-viewer']){
-    const version=html.match(new RegExp('src/scripts/'+name+'\\.js\\?v=(0\\.9\\.4\\.[0-9]+)'))?.[1];
+    const version=html.match(new RegExp('src/scripts/'+name+'\\.js\\?v=([0-9]+\\.[0-9]+\\.[0-9]+(?:\\.[0-9]+)?)'))?.[1];
     assert.ok(version,name+' must be cache-busted');
-    assert.ok(Number(version.split('.').at(-1))>=1,name+' needs patch 1 or newer');
+    assert.ok((()=>{const [major,minor,patch,hotfix=0]=version.split('.').map(Number);return major>0||(minor>9)||(minor===9&&(patch>4||(patch===4&&hotfix>=1)));})(),name+' needs v0.9.4.1 or newer');
   }
   const current=JSON.parse(src('package.json')).version;
   assert.ok(html.includes('FLIP v'+current+' · TELEGRAM GAME'));
