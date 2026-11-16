@@ -114,7 +114,7 @@ test('Achievement claim, streak claim and task reroll all use same-screen preser
  }
  assert.match(app,/try\{await bridge\.refreshTasks\(\);render\(current\);/);
  assert.match(app,/if\(current==='achievements'\)render\('achievements'\)/);
- assert.match(app,/bridge\.refreshTasks\?\.then\(\(\)=>render\(current\)\)/);
+ assert.match(app,/bridge\.refreshTasks\?\.\(\)\.then\(\(\)=>render\(current\)\)/);
 });
 test('Inbox polling preserves an open notification list at its position',()=>{
  const app=read('src/scripts/app.js');
