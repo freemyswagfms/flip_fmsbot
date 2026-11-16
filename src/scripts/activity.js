@@ -92,7 +92,7 @@
  function profileStats(stats,{online=false}={}){
   return '<section class="content-card flip-profile-stats"><div class="flip-stat-heading">'+
    '<div><span class="eyebrow">PLAYER DATA / FLIP</span><h3>СТАТИСТИКА ИГРОКА</h3></div>'+
-   '<span class="flip-stat-verified">● LIVE</span></div>'+
+   '<span class="flip-stat-verified"><i class="flip-stat-live-dot" aria-hidden="true"></i>LIVE</span></div>'+
    (online&&stats?statCards(stats):
      '<p class="flip-event-empty">'+(online?'Загружаем статистику…':
        'Статистика будет доступна при входе через Telegram.')+'</p>')+
@@ -104,7 +104,7 @@
   if(!stats)return '';
   return '<section class="content-card flip-profile-stats">'+
     '<div class="flip-stat-heading"><h3>СТАТИСТИКА ИГРОКА</h3>'+
-      '<span class="flip-stat-verified">● FLIP</span></div>'+
+      '<span class="flip-stat-verified"><i class="flip-stat-live-dot" aria-hidden="true"></i>FLIP</span></div>'+
     statCards(stats,{publicMode:true})+'</section>';
  }
  function activityPage(hub,{online=false,loading=false,error=''}={}){
