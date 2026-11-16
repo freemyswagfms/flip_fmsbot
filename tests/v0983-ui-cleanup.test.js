@@ -91,7 +91,7 @@ test('Release is v0.9.8.3 without modifying admin, backend mechanics or previous
  'src/scripts/achievements.js','src/scripts/showcase.js','src/scripts/leaderboard.js',
  'src/scripts/activity.js','src/scripts/pack-reveal.js','src/scripts/delivery-reveal.js',
  'src/styles/collection.css','src/styles/social.css','src/styles/delivery-reveal.css']){
-  assert.ok(html.includes(file+'?v='+(['src/scripts/app.js','src/scripts/showcase.js'].includes(file)?pkg.version:['src/scripts/trades.js','src/styles/social.css'].includes(file)?'0.9.8.5':'0.9.8.3')),file);
+  assert.ok(html.includes(file+'?v='+(['src/scripts/app.js','src/scripts/showcase.js','src/scripts/store.js','src/scripts/activity.js'].includes(file)?pkg.version:['src/scripts/trades.js','src/styles/social.css'].includes(file)?'0.9.8.5':'0.9.8.3')),file);
  }
  assert.match(html,/src\/scripts\/reveal\.js\?v=0\.9\.8\.1/);
  assert.match(html,/src\/scripts\/admin\.js\?v=0\.9\.6\.4/);
