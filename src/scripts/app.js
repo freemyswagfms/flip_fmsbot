@@ -180,7 +180,7 @@ function achievements(){return window.FLIPAchievements?.page(bridge?.achievement
 function leaderboard(){return '<div class="panel"><button class="link" data-action="profile">← К ПРОФИЛЮ</button><span class="eyebrow">FLIP / LEADERBOARD</span><h2>РЕЙТИНГ<span style="color:var(--lime)">.</span></h2><p class="desc">Соревнуйся ценностью своей текущей коллекции. CP не тратятся и не покупаются.</p><div id="flip-leaderboard-root"></div></div>'}
 function store(){
  return window.FLIPStore?.page({
-   shop:bridge?.shop,state,live:live(),busy:shopBusy||serverBusy,
+   shop:bridge?.shop,state,live:live(),demo:bridge?.mode==='demo',busy:shopBusy||serverBusy,
    tab:shopTab,loading:shopLoading,error:shopError
  })||'<div class="panel"><h2>МАГАЗИН</h2><p>Загрузка...</p></div>';
 }
