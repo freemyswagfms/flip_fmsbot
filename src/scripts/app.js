@@ -129,12 +129,12 @@ function streakPanel(){
    '<h3>СЕРИЯ АКТИВНОСТИ</h3></div><b>'+days+' / 7</b></div>'+
    '<div class="flip-streak-days" aria-label="'+days+' из 7 дней">'+
    Array.from({length:7},(_,i)=>'<span class="'+(i<days?'is-filled':'')+'">'+(i<days?'✓':i+1)+'</span>').join('')+
-   '</div><p>'+(streak.grace_used?'Один пропуск уже использован в этой серии.':
-     'Можно пропустить один день без потери серии.')+
-   ' За каждые 7 активных дней — <strong>100 F</strong>.</p>'+
+   '</div><p>'+(streak.grace_used?'Пропуск использован.':
+     '1 пропуск доступен.')+
+   ' За 7 дней — <strong>100 F</strong>.</p>'+
    (unclaimed?'<button class="flip-streak-claim" type="button" data-streak-claim>'+
      'ЗАБРАТЬ '+(unclaimed>1?unclaimed+' × ':'')+'100 F ↗</button>':
-     '<small>Засчитывается один вход через Telegram в день · 00:00 МСК</small>')+
+     '<small>Обновление · 00:00 МСК</small>')+
    '</section>';
 }
 function taskRow(i,compact=false){
@@ -157,8 +157,9 @@ function catalogView(){
     .map(release=>({artist,release})));
   return '<div class="panel"><button class="link" data-action="collection">← К КОЛЛЕКЦИИ</button>'+
    '<h2>КАТАЛОГ<span style="color:var(--lime)">.</span></h2>'+
-   '<div class="chips"><span class="chip active">'+artistList.length+' АРТИСТОВ</span>'+
-   '<span class="chip">'+releases.length+' РЕЛИЗОВ</span></div>'+
+   '<div class="chips catalog-stats" aria-label="Состав каталога">'+
+   '<span class="catalog-stat">'+artistList.length+' АРТИСТОВ</span>'+
+   '<span class="catalog-stat">'+releases.length+' РЕЛИЗОВ</span></div>'+
    releases.map(({artist,release})=>'<section class="catalog-release">'+
      '<div class="collection-heading"><h3>'+escapeHtml(artist.name+' — '+release.title)+
      '</h3><span>'+escapeHtml(String(release.year||'АРХИВ'))+'</span></div>'+
@@ -173,9 +174,9 @@ function catalogView(){
    '</div>';
 }
 
-function trades(){return '<div class="panel"><span class="eyebrow">PLAYER TO PLAYER / 003</span><h2>ОБМЕНЫ<span style="color:var(--lime)">.</span></h2><p class="desc">Обменивай карточки, предлагай сделки за F или отправляй подарки друзьям.</p><div id="flip-trades-root"></div></div>'}
+function trades(){return '<div class="panel"><h2>ОБМЕНЫ<span style="color:var(--lime)">.</span></h2><div id="flip-trades-root"></div></div>'}
 function achievements(){return window.FLIPAchievements?.page(bridge?.achievements,{online:live()})||'<div class="panel"><h2>ДОСТИЖЕНИЯ</h2><p>Загрузка…</p></div>'}
-function leaderboard(){return '<div class="panel"><button class="link" data-action="profile">← К ПРОФИЛЮ</button><span class="eyebrow">FLIP / LEADERBOARD</span><h2>РЕЙТИНГ<span style="color:var(--lime)">.</span></h2><p class="desc">Соревнуйся ценностью своей текущей коллекции. CP не тратятся и не покупаются.</p><div id="flip-leaderboard-root"></div></div>'}
+function leaderboard(){return '<div class="panel"><button class="link" data-action="profile">← К ПРОФИЛЮ</button><h2>РЕЙТИНГ<span style="color:var(--lime)">.</span></h2><p class="desc">CP не тратятся и не покупаются.</p><div id="flip-leaderboard-root"></div></div>'}
 function store(){
  return window.FLIPStore?.page({
    shop:bridge?.shop,state,live:live(),demo:bridge?.mode==='demo',busy:shopBusy||serverBusy,
@@ -204,17 +205,15 @@ function playerAvatar(){
     : '';
   return `<div class="flip-player-avatar"><span class="flip-player-initials">${escapeHtml(initial.toUpperCase())}</span>${photo}</div>`;
 }
-function profile(){return `<div class="panel"><span class="eyebrow">PERSONAL SPACE / 005</span><h2>ПРОФИЛЬ<span style="color:var(--lime)">.</span></h2><div class="content-card"><div class="flip-player-row">${playerAvatar()}<div class="flip-player-meta"><h3>${escapeHtml(live()?(state.telegramName||'FLIP PLAYER'):'FLIP PLAYER')}</h3><p class="flip-player-handle">${escapeHtml(live()?(state.telegramHandle||'FLIP PLAYER'):'FLIP / DEMO')}</p><span class="pill">LVL ${state.level} · ${state.xp} XP</span></div></div><div class="progress" style="--p:${Math.min(100,100*state.xp/(state.xpToNext||100))}%;margin-top:19px"><i></i></div><p>Следующий уровень · базовая награда 30 F</p></div>${window.FLIPShowcase?.own(bridge?.showcase,{online:live()})||''}${window.FLIPAchievements?.profile(bridge?.achievements,{online:live()})||''}${window.FLIPActivity?.profileStats(bridge?.hub?.stats,{online:live()})||''}<div class="content-card"><h3>${live()?'ПОДКЛЮЧЕНИЕ К TELEGRAM':blocked()?'СЕРВЕР НЕ ПОДКЛЮЧЕН':'НАСТРОЙКИ ДЕМО'}</h3><p>${live()?'Прогресс сохраняется на сервере и не сбрасывается из приложения. Локальные демо-награды не перенесены.':blocked()?'Подключение не установлено. Локальные награды не отображаются и не выдаются.':'Очистить состояние локального прототипа и снова сделать дроп доступным.'}</p>${live()?'<span class="pill">● SERVER CONNECTED</span>':blocked()?'<span class="pill">● OFFLINE</span>':'<button class="outlinebtn" id="resetBtn">СБРОСИТЬ ДЕМО</button>'}</div></div>`}
+function profile(){return `<div class="panel"><h2>ПРОФИЛЬ<span style="color:var(--lime)">.</span></h2><div class="content-card"><div class="flip-player-row">${playerAvatar()}<div class="flip-player-meta"><h3>${escapeHtml(live()?(state.telegramName||'FLIP PLAYER'):'FLIP PLAYER')}</h3><p class="flip-player-handle">${escapeHtml(live()?(state.telegramHandle||'FLIP PLAYER'):'FLIP / DEMO')}</p><span class="pill">LVL ${state.level} · ${state.xp} XP</span></div></div><div class="progress" style="--p:${Math.min(100,100*state.xp/(state.xpToNext||100))}%;margin-top:19px"><i></i></div><p>Следующий уровень · +30 F</p></div>${window.FLIPShowcase?.own(bridge?.showcase,{online:live()})||''}${window.FLIPAchievements?.profile(bridge?.achievements,{online:live()})||''}${window.FLIPActivity?.profileStats(bridge?.hub?.stats,{online:live()})||''}${live()?'':blocked()?'<div class="content-card"><h3>НЕТ СОЕДИНЕНИЯ</h3><p>Не удалось подключиться к серверу. Проверь Telegram и открой FLIP снова.</p></div>':'<div class="content-card"><h3>ДЕМО</h3><button class="outlinebtn" id="resetBtn">СБРОСИТЬ ДЕМО</button></div>'}</div>`}
 function tasks(){
  const payload=live()?bridge?.tasks:null;
  const daily=payload?.daily,weekly=payload?.weekly;
  const note=scope=>'<div class="flip-quest-reroll-info">'+
-   (payload?.[scope+'_reroll_used']?
-     'Бесплатная замена использована · обновится '+(scope==='daily'?'завтра':'в понедельник'):
-     'Доступна 1 бесплатная замена · только для обычных невыполненных заданий')+'</div>';
+   (payload?.[scope+'_reroll_used']?'Замена использована':'Замена: 1 бесплатно')+'</div>';
  return '<div class="panel"><button class="link" data-action="home">← НА ГЛАВНУЮ</button>'+
   '<h2>ЗАДАНИЯ<span style="color:var(--lime)">.</span></h2>'+
-  '<p class="desc">Три ежедневных и три еженедельных задания. Обновляются по Москве.</p>'+
+  ''+
   streakPanel()+
   '<div class="section-head"><span class="section-title">DAILY TASKS · 3</span>'+
   '<span class="section-sub">ЕЖЕДНЕВНО · 00:00</span></div>'+
@@ -447,7 +446,7 @@ function gain(card,source){
   while(state.xp>=100){state.xp-=100;state.level++;state.balance+=30}
   save();
 }
-function cardReveal(card,label){modal(`<span class="eyebrow">${escapeHtml(label)}</span><h3>НОВАЯ КАРТОЧКА!</h3>${sq(card)}<div class="pill">✦ ${escapeHtml(card.rarity.toUpperCase())}</div><p>Карточка добавлена в демо-коллекцию.</p><button class="bigbtn" id="closeReveal">ПРОДОЛЖИТЬ ↗</button>`)}
+function cardReveal(card,label){modal(`<span class="eyebrow">${escapeHtml(label)}</span><h3>НОВАЯ КАРТОЧКА!</h3>${sq(card)}<div class="pill">✦ ${escapeHtml(card.rarity.toUpperCase())}</div><p>ТЕСТ · БЕЗ НАГРАДЫ</p><button class="bigbtn" id="closeReveal">ПРОДОЛЖИТЬ ↗</button>`)}
 function serverError(error){
   const reasons={DROP_COOLDOWN:'Дроп ещё перезаряжается',INSUFFICIENT_FUNDS:'Недостаточно F',DAILY_PACK_LIMIT:'Лимит: 10 паков за день',THEME_UNAVAILABLE:'Этот тематический набор пока недоступен',UNKNOWN_PACK:'Такой набор не найден',PACK_GENERATION_FAILED:'Не удалось сформировать набор. Попробуй ещё раз.',EXPIRED_TELEGRAM_SESSION:'Перезапусти FLIP через Telegram',INVALID_TELEGRAM_SESSION:'Ошибка Telegram: перезапусти приложение'};
   return reasons[error?.message]||'Не удалось связаться с сервером. Повтори попытку.';
@@ -772,7 +771,7 @@ async function claimAchievement(button){
    }catch{}
  }finally{serverBusy=false;}
 }
-function handleTask(i){if(state.claimedTasks.includes(i))return;modal(`<span class="eyebrow">DAILY TASK</span><h3>${taskDefs[i].title}</h3><p>Это макет задания. В реальной игре выполнение определяется сервером автоматически, без ручного начисления.</p><button class="bigbtn" id="closeReveal">ПОНЯТНО</button>`)}
+function handleTask(i){if(state.claimedTasks.includes(i))return;modal(`<span class="eyebrow">DAILY TASK</span><h3>${taskDefs[i].title}</h3><p>Тестовое задание · без награды.</p><button class="bigbtn" id="closeReveal">ПОНЯТНО</button>`)}
 document.addEventListener('click',e=>{
    const readAll=e.target.closest('[data-event-read-all]');
    if(readAll){markNotification(null);return;}
@@ -856,7 +855,7 @@ document.addEventListener('click',e=>{
   if(historyCardTarget){showOwnedCard(historyCardTarget.dataset.historyCard,true);return}
   const hiddenTarget=e.target.closest('[data-hidden-card]');
   if(hiddenTarget){showHiddenCard(hiddenTarget.dataset.hiddenCard);return;}
-  const tab=e.target.closest('[data-tab]');if(tab){if(tab.dataset.tab==='store')openStore();else render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks','achievements','showcaseEdit','activity'].includes(a)){if(a==='store')openStore();else if(a==='activity')openActivity();else render(a);if(a==='tasks'&&live())bridge.refreshTasks?.().then(()=>{if(current==='tasks')render('tasks')}).catch(()=>{});if(a==='achievements'&&live())bridge.refreshAchievements?.().then(()=>{if(current==='achievements')render('achievements')}).catch(()=>{});}else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Приём, отклонение и встречные предложения заработают после подключения серверной части.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Это место для следующего экрана, без реальных денежных операций.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogArtist||'carti',b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn')&&live()&&bridge?.isAdmin===true)previewRoulette();if(e.target.closest('#buyPackBtn'))doPack('standard');if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))openStore();if(e.target.closest('#bellBtn')){
+  const tab=e.target.closest('[data-tab]');if(tab){if(tab.dataset.tab==='store')openStore();else render(tab.dataset.tab);return}const action=e.target.closest('[data-action]');if(action){let a=action.dataset.action;if(a==='admin'&&bridge?.isAdmin&&live())render('admin');else if(['home','collection','catalog','trades','store','profile','leaderboard','tasks','achievements','showcaseEdit','activity'].includes(a)){if(a==='store')openStore();else if(a==='activity')openActivity();else render(a);if(a==='tasks'&&live())bridge.refreshTasks?.().then(()=>{if(current==='tasks')render('tasks')}).catch(()=>{});if(a==='achievements'&&live())bridge.refreshAchievements?.().then(()=>{if(current==='achievements')render('achievements')}).catch(()=>{});}else if(a==='tradeDemo')modal('<span class="eyebrow">TRADES</span><h3>ДЕМО ОБМЕНА</h3><p>Открой FLIP через Telegram.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');else modal('<span class="eyebrow">COMING SOON</span><h3>СКОРО В FLIP</h3><p>Раздел пока недоступен.</p><button class="bigbtn" id="closeReveal">ЗАКРЫТЬ</button>');return}if(e.target.closest('[data-catalog-release]')){const b=e.target.closest('[data-catalog-release]');showCatalogCard(b.dataset.catalogArtist||'carti',b.dataset.catalogRelease,b.dataset.catalogRarity);return}if(e.target.closest('#dropBtn'))doDrop();if(e.target.closest('#dropPreviewBtn')&&live()&&bridge?.isAdmin===true)previewRoulette();if(e.target.closest('#buyPackBtn'))doPack('standard');if(e.target.closest('#closeReveal'))closeModal();if(e.target.closest('#balanceBtn'))openStore();if(e.target.closest('#bellBtn')){
  const panel=$('#notifications');panel.classList.toggle('show');
  if(panel.classList.contains('show'))refreshHub();
  updateInbox();
