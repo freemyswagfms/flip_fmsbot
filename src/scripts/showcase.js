@@ -136,11 +136,14 @@
        profile.avatar_data:'';
     const photo=avatar?'<img class="flip-showcase-player-photo" src="'+esc(avatar)+
        '" alt="" decoding="async" referrerpolicy="no-referrer" draggable="false">':'';
-    const avatarContent='<span class="flip-player-avatar"><span class="flip-player-initials">'+
+    const avatarContent='<span class="flip-player-avatar"><span class="flip-showcase-avatar-initials">'+
       esc(initial)+'</span>'+photo+'</span>';
     const identity=window.FLIPProfileCosmetics?.identity({profile,name,
       handle:profile.username?'@'+profile.username:'',
-      avatar:avatarContent,level:profile.level,publicMode:true})||'';
+      avatar:avatarContent,level:profile.level,publicMode:true})||
+      '<section class="flip-identity"><div class="flip-identity-row"><div class="flip-identity-avatar">'+
+      avatarContent+'</div><div class="flip-identity-meta"><strong>'+esc(name)+'</strong>'+
+      '<span>LVL '+fmt(profile.level)+'</span></div></div></section>';
     const limit=Math.min(6,Math.max(3,Number(profile.slot_count)||3));
     return '<div class="panel flip-public-profile">'+
       '<button class="link" data-action="leaderboard">← К РЕЙТИНГУ</button>'+
