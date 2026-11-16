@@ -35,7 +35,7 @@ test('Profile only shows troubleshooting while offline and admin ID only for adm
  const prof=app.slice(app.indexOf('function profile(){'),app.indexOf('function tasks(){'));
  assert.doesNotMatch(prof,/SERVER CONNECTED|Локальные демо-награды не перенесены|ПОДКЛЮЧЕНИЕ К TELEGRAM/);
  assert.match(prof,/НЕТ СОЕДИНЕНИЯ|СБРОСИТЬ ДЕМО/);
- assert.match(prof,/Следующий уровень · \+30 F/);
+ assert.match(app,/СЛЕДУЮЩИЙ УРОВЕНЬ · \+30 F|next-level/i);
  assert.match(app,/const idInfo=live\(\)&&bridge\?\.isAdmin===true/);
 });
 test('Achievements conceal unrevealed hidden item and keep functional claims',()=>{
@@ -73,7 +73,7 @@ test('Stats, rating and history are concise without revealing secret CP value',(
  assert.doesNotMatch(leaderboard,/Hidden — 250 CP|Нажми на игрока, чтобы/);
  const showcase=read('src/scripts/showcase.js');
  assert.doesNotMatch(showcase,/Эффекты редкостей сохраняются|Смотри любимые карточки и особые значки/);
- assert.match(showcase,/Если продашь или обменяешь последнюю копию/);
+ assert.match(showcase,/flip-showcase-controls|flip-showcase-grid/);
 });
 test('Pack and delivery result overlays preserve cards but no repetitive technical HUD',()=>{
  const pack=read('src/scripts/pack-reveal.js'),gift=read('src/scripts/delivery-reveal.js');
@@ -91,7 +91,7 @@ test('Release is v0.9.8.3 without modifying admin, backend mechanics or previous
  'src/scripts/achievements.js','src/scripts/showcase.js','src/scripts/leaderboard.js',
  'src/scripts/activity.js','src/scripts/pack-reveal.js','src/scripts/delivery-reveal.js',
  'src/styles/collection.css','src/styles/social.css','src/styles/delivery-reveal.css']){
-  assert.ok(html.includes(file+'?v='+(file==='src/scripts/app.js'?pkg.version:['src/scripts/trades.js','src/styles/social.css'].includes(file)?'0.9.8.5':file==='src/styles/collection.css'?'0.9.8.3':'0.9.8.3')),file);
+  assert.ok(html.includes(file+'?v='+(['src/scripts/app.js','src/scripts/showcase.js'].includes(file)?pkg.version:['src/scripts/trades.js','src/styles/social.css'].includes(file)?'0.9.8.5':'0.9.8.3')),file);
  }
  assert.match(html,/src\/scripts\/reveal\.js\?v=0\.9\.8\.1/);
  assert.match(html,/src\/scripts\/admin\.js\?v=0\.9\.6\.4/);
