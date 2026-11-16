@@ -135,8 +135,8 @@ function cardSelector(inventory,selected,side,limit=5){
   if(!inventory.length)return '<div class="flip-trade-tiles-empty">Нет доступных карточек</div>';
   const matched=matchingCards(inventory,side);
   const reached=selected.length>=limit;
-  const shown=[...matched].sort((a,b)=>Number(selected.includes(b.id))-
-    Number(selected.includes(a.id))||a.id.localeCompare(b.id));
+  // Preserve tile positions after a tap; selected cards are already visible in the review strip.
+  const shown=matched;
   if(!shown.length)return '<div class="flip-trade-tiles-empty">Ничего не найдено</div>';
   return '<div class="flip-trade-card-choices" data-trade-choices="'+side+'">'+
     shown.map((item,i)=>{
