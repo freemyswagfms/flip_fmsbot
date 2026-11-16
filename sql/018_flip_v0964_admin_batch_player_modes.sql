@@ -257,3 +257,75 @@ grant execute on function public.flip_admin_card_browser(text,text,integer,integ
  public.flip_admin_player_mode_status(bigint,bigint),
  public.flip_admin_set_player_mode(bigint,bigint,text,boolean,uuid)
  to service_role;
+
+-- Live tester mode changes ride the existing 45-second private hub poll.
+CREATE OR REPLACE FUNCTION public.flip_event_snapshot(p_telegram_id bigint)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE
+ SET search_path TO ''
+AS $function$
+declare v_notifications jsonb:='[]'::jsonb;
+        v_activity jsonb:='[]'::jsonb;
+        v_unread integer:=0;
+        v_stats jsonb;
+        v_ready integer:=0;
+begin
+ if not exists(select 1 from public.flip_players where telegram_id=p_telegram_id)
+   then raise exception 'ACCOUNT_NOT_FOUND';end if;
+ select public.flip_profile_stats(p_telegram_id) into v_stats;
+ select coalesce((public.flip_achievement_snapshot(p_telegram_id)->>'claimable')::integer,0)
+   into v_ready;
+ -- Ignore offers that are no longer actionable, even if an expiry cron hasn't run.
+ select count(*)::integer into v_unread
+ from public.flip_user_events e
+ left join public.flip_trades t on t.id=e.trade_id
+ where e.telegram_id=p_telegram_id and e.is_notification and e.read_at is null
+   and (e.kind not in ('trade_offer','trade_counteroffer')
+        or (t.status='pending' and t.expires_at>now()));
+
+ select coalesce(jsonb_agg(rowdata.data order by rowdata.created_at desc,rowdata.id desc),'[]'::jsonb)
+ into v_notifications from (
+   select e.id,e.created_at,jsonb_build_object(
+     'id',e.id,'kind',e.kind,'created_at',e.created_at,
+     'read',e.read_at is not null,'trade_id',e.trade_id,
+     'details',e.details,
+     'partner_public_id',actor.public_id,
+     'partner_name',coalesce(nullif(actor.username,''),actor.first_name,'FLIP PLAYER')
+   ) data
+   from public.flip_user_events e
+   left join public.flip_players actor on actor.telegram_id=e.actor_id
+   left join public.flip_trades t on t.id=e.trade_id
+   where e.telegram_id=p_telegram_id and e.is_notification
+     and (e.kind not in ('trade_offer','trade_counteroffer')
+        or (t.status='pending' and t.expires_at>now()))
+   order by e.created_at desc,e.id desc limit 35
+ ) rowdata;
+
+ select coalesce(jsonb_agg(rowdata.data order by rowdata.created_at desc,rowdata.id desc),'[]'::jsonb)
+ into v_activity from (
+   select e.id,e.created_at,jsonb_build_object(
+     'id',e.id,'kind',e.kind,'created_at',e.created_at,
+     'read',e.read_at is not null,'trade_id',e.trade_id,
+     'details',e.details,'partner_public_id',actor.public_id,
+     'partner_name',coalesce(nullif(actor.username,''),actor.first_name,'FLIP PLAYER')
+   ) data from public.flip_user_events e
+   left join public.flip_players actor on actor.telegram_id=e.actor_id
+   where e.telegram_id=p_telegram_id
+   order by e.created_at desc,e.id desc limit 60
+ ) rowdata;
+ return jsonb_build_object('unread_count',v_unread,
+    'notifications',v_notifications,'activity',v_activity,
+    'stats',v_stats,'rewards_ready',v_ready,
+    'card_deliveries',public.flip_delivery_pending(p_telegram_id),
+    'play_modes',(select jsonb_build_object(
+      'unlimited_drop',coalesce(m.unlimited_drop,false),
+      'unlimited_packs',coalesce(m.unlimited_packs,false),
+      'drop_ready_at',p.drop_ready_at,'packs_today',p.packs_today)
+     from public.flip_players p
+     left join public.flip_admin_play_modes m on m.telegram_id=p.telegram_id
+     where p.telegram_id=p_telegram_id));
+end; $function$
+
+revoke all on function public.flip_event_snapshot(bigint) from public,anon,authenticated;
+grant execute on function public.flip_event_snapshot(bigint) to service_role;
