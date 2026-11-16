@@ -1,4 +1,4 @@
-/* FLIP v0.9.6.3 — cinematic, server-backed card delivery receipts.
+/* FLIP v0.9.7.1 — live trade receipts and Telegram-safe presentation.
  * Display only: all cards were already transferred atomically in Supabase.
  */
 (()=>{
@@ -137,9 +137,7 @@
     '<div class="flip-delivery-halo"></div><div class="flip-delivery-orbit one"></div>'+
     '<div class="flip-delivery-orbit two"></div><div class="flip-delivery-noise"></div></div>'+
     '<div class="flip-delivery-inner">'+
-    '<header class="flip-delivery-header"><span class="flip-delivery-wordmark">FLIP<span>.</span></span>'+
-    '<div class="flip-delivery-upper-label">SPECIAL DELIVERY / '+String(index+1).padStart(2,'0')+
-      '—'+String(total).padStart(2,'0')+'</div>'+
+    '<header class="flip-delivery-header">'+
     '<button type="button" class="flip-delivery-later" data-delivery-later aria-label="Посмотреть позже">'+cross+'</button></header>'+
     '<main class="flip-delivery-center">'+
     '<p class="flip-delivery-kicker">'+E(textOf(frame))+'</p>'+
@@ -152,7 +150,7 @@
     '<div class="flip-delivery-face flip-delivery-back">'+
      '<div class="flip-delivery-back-outline"></div>'+
      '<div class="flip-delivery-back-brand">FLIP<span>.</span></div>'+
-     '<div class="flip-delivery-back-tag">A NEW ADDITION<br>TO YOUR COLLECTION</div>'+
+
     '</div>'+
     '<div class="flip-delivery-face flip-delivery-front">'+art+
      '<span class="flip-delivery-rarity-sticker">'+E(rarityLabels[frame.rarity])+'</span>'+
@@ -170,8 +168,7 @@
     '<button type="button" class="flip-delivery-primary" data-delivery-next><span>'+
       'РАСКРЫТЬ КАРТОЧКУ'+'</span>'+arrow+'</button>'+
     (many?'<button type="button" class="flip-delivery-all" data-delivery-all>'+
-      'ЗАБРАТЬ ВСЁ ('+total+')</button>':
-      '<p class="flip-delivery-disclaimer">Карточка уже находится в твоей коллекции</p>')+
+      'ЗАБРАТЬ ВСЁ ('+total+')</button>':'')+
     '<div class="flip-delivery-loading" role="status" aria-live="polite"></div>'+
     '</footer></div>';
   // The animation is decorative; do not depend on iOS Unicode emoji fonts.
