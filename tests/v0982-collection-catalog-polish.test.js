@@ -116,6 +116,6 @@ test('v0.9.8.2 asset cache revision is confined to changed public files',()=>{
  assert.ok(html.includes('src/scripts/app.js?v='+pkg.version));
  assert.ok(html.includes('src/styles/collection.css?v=0.9.8.3'));
  assert.ok(html.includes('src/scripts/admin.js?v=0.9.6.4'));
- assert.ok(html.includes('src/scripts/store.js?v=0.9.8.3'));
+ assert.ok(html.includes('src/scripts/store.js?v=0.9.8.7'));
  assert.ok(source('api/flip.js').includes("version:'"+pkg.version+"'"));
 });
