@@ -352,7 +352,9 @@ function updateResults(){
 async function choosePlayer(id,label,preset=null){
   s.targetId=id;s.targetLabel=label;s.their=[];s.take=[];s.error='';
   if(preset){
-    s.counterOf=preset.tradeId;
+    // A counteroffer is always a card/card proposal, regardless of the
+    // previously selected gift or F-trade composer mode.
+    s.mode='cards';s.counterOf=preset.tradeId;
     s.give=[...preset.give];
     s.take=[...preset.take];
   }else{
@@ -400,7 +402,7 @@ async function submit(payload){
       (payload.action==='accept_f'?' · '+(Number(result.recipient_f_delta)>=0?'+':'')+
         fmt(result.recipient_f_delta)+' F':'')+
         (result.recipient_xp?' · +'+result.recipient_xp+' XP':''):
-      payload.action==='decline'?'Предложение отклонено.':'Предложение отменено.';
+      ['decline','decline_f'].includes(payload.action)?'Предложение отклонено.':'Предложение отменено.';
     s.inspectId='';s.inspection=null;
     if(['create','counter','create_f','gift'].includes(payload.action)){
       s.counterOf='';s.targetId='';s.targetLabel='';s.their=[];s.give=[];s.take=[];s.players=[];
