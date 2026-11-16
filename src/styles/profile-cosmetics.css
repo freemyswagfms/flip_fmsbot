@@ -287,3 +287,7 @@
 .flip-cosmetic-hero.flip-scene-red-velvet .flip-cosmetic-mini-showcase{background:#4b152a;border-color:#b86485}
 .flip-cosmetic-hero-preview div>span{font-size:11px;letter-spacing:.5px}
 .flip-cosmetic-hero .flip-cosmetic-mini-showcase{position:relative;z-index:1}
+
+.flip-cosmetic-reset{background:#364634;border:1px solid #70906b;color:#e0ffcf;
+ padding:7px 9px;border-radius:8px;font:850 9px 'Space Grotesk',sans-serif;cursor:pointer}
+.flip-profile-ranking-link .outlinebtn{width:100%;min-height:41px;border-radius:12px}
