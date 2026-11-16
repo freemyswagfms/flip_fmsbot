@@ -153,14 +153,16 @@
       '<div class="flip-showcase-heading"><div><span class="eyebrow">PLAYER COLLECTION</span>'+
       '<h3>ВИТРИНА ИГРОКА</h3></div><strong>TOP '+limit+'</strong></div>'+
         slotButtons(profile.slots,false,limit)+'</section>'+
+      '<div class="flip-profile-lower '+
+        esc(window.FLIPProfileCosmetics?.classes?.(profile)||'')+'">'+
       (window.FLIPProfileCosmetics?.featuredBadges(profile)||'')+
       '<div class="flip-showcase-stats flip-showcase-stats-public">'+
         '<div><small>COLLECTION POINTS</small><strong>'+fmt(profile.cp)+' CP</strong></div>'+
         '<div><small>РЕЙТИНГОВЫХ КАРТОЧЕК</small><strong>'+fmt(profile.ranked_cards)+'</strong></div>'+
         '<div><small>РАЗНЫХ РЕЙТИНГОВЫХ</small><strong>'+fmt(profile.ranked_variants)+'</strong></div></div>'+
       (window.FLIPActivity?.publicStats(profile.stats)||'')+
-      (profile.badges?.length?'<section class="content-card"><h3>ЗНАЧКИ ИГРОКА</h3>'+
-        badges(profile.badges)+'</section>':'')+'</div>';
+      (profile.badges?.length?'<section class="content-card flip-profile-all-badges"><h3>ЗНАЧКИ ИГРОКА</h3>'+
+        badges(profile.badges)+'</section>':'')+'</div></div>';
   }
   window.FLIPShowcase={own,editor,publicPage,cardFromId,cardsFromState};
 })();

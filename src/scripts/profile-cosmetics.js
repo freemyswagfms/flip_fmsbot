@@ -1,4 +1,4 @@
-/* FLIP v0.9.8.7 — curated, server-owned profile cosmetics.
+/* FLIP v0.9.8.8 — curated, server-owned profile cosmetics.
  * Artwork is CSS/SVG only. The browser never grants entitlements or F.
  */
 (()=>{
@@ -10,12 +10,13 @@
   'acid-signal':'ACID SIGNAL','midnight-grid':'MIDNIGHT GRID','redline':'REDLINE',
   'neon-ring':'NEON RING','liquid-chrome':'LIQUID CHROME','pulse':'PULSE',
   'glass-cabinet':'GLASS CABINET','black-chrome':'BLACK CHROME','red-velvet':'RED VELVET',
+  'blush-gallery':'BLUSH GALLERY','pastel-dream':'PASTEL DREAM','aurora-flow':'AURORA FLOW',
   'archive-hunter':'ARCHIVE HUNTER','no-skips':'NO SKIPS','day-one':'DAY ONE'
  };
  const allowedKinds={
-  background:new Set(['acid-signal','midnight-grid','redline']),
-  avatar_frame:new Set(['neon-ring','liquid-chrome','pulse']),
-  showcase_skin:new Set(['glass-cabinet','black-chrome','red-velvet']),
+  background:new Set(['acid-signal','midnight-grid','redline','pastel-dream']),
+  avatar_frame:new Set(['neon-ring','liquid-chrome','pulse','aurora-flow']),
+  showcase_skin:new Set(['glass-cabinet','black-chrome','red-velvet','blush-gallery']),
   title:new Set(['archive-hunter','no-skips','day-one'])
  };
  const kinds={
@@ -23,6 +24,22 @@
   showcase_skin:'ОФОРМЛЕНИЯ ВИТРИНЫ',title:'ТИТУЛЫ ИГРОКА'
  };
  const kindTag={background:'BG',avatar_frame:'FRAME',showcase_skin:'SHOWCASE',title:'TITLE'};
+ const frameColors=[
+  ['green','Зелёный'],['pink','Розовый'],['red','Красный'],
+  ['orange','Оранжевый'],['blue','Синий'],['white','Белый'],
+  ['violet','Фиолетовый'],['cyan','Голубой'],['rgb','RGB'],['glitch','Глитч']
+ ];
+ const safeColor=color=>frameColors.some(([key])=>key===color)?color:'green';
+ const frameColorPicker=profile=>{
+  const color=safeColor(profile?.appearance?.frame_color);
+  return '<section class="flip-frame-palette"><div class="flip-frame-palette-top">'+
+    '<strong>ЦВЕТ РАМКИ</strong><span>БЕСПЛАТНО</span></div>'+
+    '<div class="flip-frame-swatches" role="group" aria-label="Цвет рамки">'+
+    frameColors.map(([key,label])=>
+      '<button type="button" data-profile-frame-color="'+key+'" aria-label="'+label+
+      '" aria-pressed="'+String(color===key)+'" title="'+label+'" class="flip-frame-swatch flip-color-'+key+
+      (color===key?' active':'')+'"><span></span></button>').join('')+'</div></section>';
+ };
  const safe=(kind,id)=>allowedKinds[kind]?.has(id)?id:null;
  const classes=(profile,override=null)=>{
   const p=profile?.appearance||{};
@@ -31,7 +48,8 @@
   return ['flip-profile-themed',
    o.background?'flip-bg-'+safe('background',o.background):'flip-bg-default',
    o.avatar_frame?'flip-frame-'+safe('avatar_frame',o.avatar_frame):'flip-frame-default',
-   o.showcase_skin?'flip-scene-'+safe('showcase_skin',o.showcase_skin):'flip-scene-default'].join(' ');
+   o.showcase_skin?'flip-scene-'+safe('showcase_skin',o.showcase_skin):'flip-scene-default',
+   'flip-color-'+safeColor(o.frame_color)].join(' ');
  };
  function identity({profile,name,handle,avatar,level,xp=0,xpToNext=100,publicMode=false,override=null}){
   const item=override&&override.kind==='title'?override.id:profile?.appearance?.title;
@@ -90,19 +108,25 @@
   const items=(Array.isArray(shop?.items)?shop.items:[]).filter(item=>safe(item.kind,item.id));
   const owned=new Set(Array.isArray(shop?.owned)?shop.owned:[]);
   const equipped=profile?.appearance||{};
+  const frameColor=safeColor(profile?.appearance?.frame_color);
   const groups=types.map(type=>{
    const list=items.filter(item=>item.kind===type);
    return '<section class="flip-cosmetic-category"><div class="flip-cosmetic-category-head">'+
     '<h4>'+kinds[type]+'</h4>'+
  (equipped[type]?'<button type="button" class="flip-cosmetic-reset" data-cosmetic-reset-kind="'+type+'">СБРОСИТЬ ✕</button>':'<span>'+list.length+' ПРЕДМЕТА</span>')+'</div>'+
+    (type==='avatar_frame'?frameColorPicker(profile):'')+
     '<div class="flip-cosmetic-grid">'+list.map(item=>{
       const selected=previewId===item.id,has=owned.has(item.id);
       const active=equipped[type]===item.id;
+      const frameSample=type==='avatar_frame';
       return '<article class="flip-cosmetic-item '+(selected?'is-previewing ':'')+
        (active?'is-equipped':'')+'"><button type="button" class="flip-cosmetic-preview-btn" '+
         'data-cosmetic-preview="'+esc(item.id)+'" aria-label="Примерить '+esc(item.name)+'">'+
-        '<span class="flip-cosmetic-sample flip-sample-'+esc(item.id)+'">'+
-        '<span class="flip-cosmetic-sample-mark">F<span>.</span></span></span>'+
+        '<span class="flip-cosmetic-sample flip-sample-'+esc(item.id)+
+        (frameSample?' flip-frame-'+esc(item.id)+' flip-color-'+frameColor:'')+'">'+
+        (frameSample?
+          '<span class="flip-frame-sample-ring"><span class="flip-frame-sample-core">F</span></span>':
+          '<span class="flip-cosmetic-sample-mark">F<span>.</span></span>')+'</span>'+
         '<span class="flip-cosmetic-name">'+esc(item.name)+'</span>'+
         '<small>'+esc(kindTag[type])+'</small></button>'+
         (active?'<span class="flip-cosmetic-owned is-equipped">ПРИМЕНЕНО ✓</span>':
@@ -132,11 +156,11 @@
    '<section class="flip-cosmetic-hero '+esc(classes(profile,trial))+'">'+
     '<div class="flip-cosmetic-hero-head"><span>FLIP / IDENTITY</span>'+
     '<span>COLLECT YOUR LOOK</span></div>'+
-    '<div class="flip-cosmetic-hero-preview"><span class="flip-cosmetic-preview-avatar">'+photo+'</span>'+
+    '<div class="flip-cosmetic-hero-preview"><span class="flip-identity-avatar flip-cosmetic-preview-shell"><span class="flip-cosmetic-preview-avatar">'+photo+'</span></span>'+
     '<div><small>ПРИМЕРКА НА ПРОФИЛЕ</small><strong>'+esc(displayName)+'</strong>'+
     '<span>'+esc(title||trial?.name||'ТВОЙ СТИЛЬ')+'</span></div></div>'+
     '<div class="flip-cosmetic-mini-showcase">'+thumbs+'</div>'+
-    '<div class="flip-cosmetic-hero-bottom"><span>12 ОБЪЕКТОВ · 4 КАТЕГОРИИ</span>'+
+    '<div class="flip-cosmetic-hero-bottom"><span>'+items.length+' ПРЕДМЕТОВ · 4 КАТЕГОРИИ</span>'+
     (trial?'<button type="button" data-cosmetic-clear-preview>СБРОСИТЬ ПРИМЕРКУ ✕</button>':'')+
     '</div></section>'+
     '<section class="flip-cosmetic-slot-panel"><div class="flip-cosmetic-slot-icon">▦</div>'+
@@ -148,5 +172,5 @@
     groups+'</div>';
  }
  window.FLIPProfileCosmetics={identity,profileSettings,featuredBadges,shop,
-  safe,classes,cosmeticNames};
+  safe,classes,cosmeticNames,frameColors,safeColor};
 })();

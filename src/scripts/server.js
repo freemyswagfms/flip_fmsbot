@@ -189,6 +189,12 @@
      bridge.showcase=result.profile||bridge.showcase;
      return result;
    };
+   bridge.setFrameColor=async(color)=>{
+     if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
+     const result=await request('profile_frame_color',crypto.randomUUID(),{color});
+     bridge.showcase=result.profile||bridge.showcase;
+     return result;
+   };
    bridge.setFavoriteArtist=async(artistId)=>{
      if(bridge.mode!=='server')throw new Error('NOT_AUTHENTICATED');
      const result=await request('profile_favorite',crypto.randomUUID(),{artistId});
