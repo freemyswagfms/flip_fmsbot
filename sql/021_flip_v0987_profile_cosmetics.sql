@@ -224,8 +224,8 @@ BEGIN
   RETURN saved.result;
  END IF;
  IF p_action='buy_slot' THEN
-  SELECT COALESCE(slot_count,3) INTO slot_count FROM public.flip_profile_settings
-  WHERE telegram_id=p_telegram_id;
+  SELECT COALESCE(st.slot_count,3) INTO slot_count FROM public.flip_profile_settings st
+  WHERE st.telegram_id=p_telegram_id;
   slot_count:=COALESCE(slot_count,3);
   v_new_slot:=slot_count+1;
   IF v_new_slot>6 OR p_item_id<>('slot-'||v_new_slot) THEN
