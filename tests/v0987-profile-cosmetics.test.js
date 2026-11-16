@@ -32,9 +32,10 @@ test('Profile is a collectible identity with verified cosmetic classes, avatar a
  const x=modules(),html=x.FLIPProfileCosmetics.identity({
    profile:sample,name:'Player Name',handle:'@tester',
    avatar:'<b>avatar</b>',level:7,xp:45,xpToNext:150});
- for(const fragment of ['Player Name','ARCHIVE HUNTER','LVL 7','1 337 CP','Playboi Carti',
+ for(const fragment of ['Player Name','ARCHIVE HUNTER','LVL 7','Playboi Carti',
    'flip-bg-acid-signal','flip-frame-neon-ring','flip-scene-glass-cabinet','45 / 150 XP'])
   assert.ok(html.includes(fragment),fragment);
+ assert.match(html,/1[\s\u00a0\u202f]?337 CP/);
  const bad=x.FLIPProfileCosmetics.classes({appearance:{background:'javascript:alert(1)'}});
  assert.doesNotMatch(bad,/javascript|alert/);
 });
@@ -56,7 +57,7 @@ test('Owned showcase keeps 3 free slots and offers upgrades up to 6 without expo
 test('Public profile puts the actual six-slot showcase BEFORE stats and pins badges',()=>{
  const x=modules();
  const html=x.FLIPShowcase.publicPage(sample);
- assert.ok(html.indexOf('ВИТРИНА ИГРОКА')<html.indexOf('СТАТИСТИКА'));
+ assert.ok(html.indexOf('ВИТРИНА ИГРОКА')<html.indexOf('STATS AFTER SHOWCASE'));
  assert.ok(html.indexOf('ВИТРИНА ИГРОКА')<html.indexOf('COLLECTION POINTS'));
  assert.match(html,/ЗНАКИ ОТЛИЧИЯ/);
  assert.match(html,/Красная аура/);
