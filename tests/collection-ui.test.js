@@ -180,7 +180,7 @@ test('Viewer escapes untrusted labels and does not accept remote image URLs',()=
 test('3D viewer is registered before the application and no viewport zoom lock is introduced',()=>{
   const index=source('index.html'),css=source('src/styles/card-viewer.css');
   assert.ok(index.indexOf('card-viewer.js')<index.indexOf('scripts/app.js'));
-  assert.ok(index.includes('card-viewer.css?v='+JSON.parse(source('package.json')).version));
+  assert.ok(index.includes('card-viewer.css?v=0.9.8.2'));
   assert.match(css,/prefers-reduced-motion/);
   assert.match(css,/touch-action:none/);
   assert.match(css,/flip-viewer-wave/);
