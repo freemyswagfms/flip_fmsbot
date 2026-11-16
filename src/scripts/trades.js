@@ -581,9 +581,59 @@ async function act(verb,id){
   }else if(!confirm(verb==='cancel'?'Отменить предложение?':'Отклонить предложение?'))return;
   await submit({action:currency?verb+'_f':verb,tradeId:id});
 }
+
+function openCardPreview(id,button){
+  if(!safeId(id))return;
+  const group=button?.closest?.('.flip-trade-card-choices, .flip-trade-summary-items, .flip-trade-offer-strip, .flip-trade-gift-row');
+  const groupIds=group?.querySelectorAll?
+    [...group.querySelectorAll('[data-trade-preview-card]')].map(x=>x.dataset.tradePreviewCard):[id];
+  const ids=[...new Set([id,...groupIds].filter(safeId))].slice(0,100);
+  const collection=ids.map(value=>{
+    const c=card(value);
+    return {id:c.id,artist:c.artist,title:c.name,color:c.rarity,
+      rarity:c.rarity,style:c.style,art:c.art};
+  });
+  const selected=collection.find(c=>c.id===id);
+  if(selected)window.FLIPCardViewer?.open?.(selected,{mode:'catalog',cards:collection});
+}
+function redrawComposer(){
+  const old=root?.querySelector('#flip-trade-compose');
+  if(!old||typeof old.outerHTML==='undefined'){draw();return;}
+  const previous=[...(old.querySelectorAll?.('[data-trade-viewport]')||[])].map(node=>({
+    side:node.dataset.tradeViewport,scrollTop:node.scrollTop
+  }));
+  old.outerHTML=draft();
+  for(const prev of previous){
+    const node=root?.querySelector('[data-trade-viewport="'+prev.side+'"]');
+    if(node)node.scrollTop=prev.scrollTop;
+  }
+  window.FLIPIcons?.render(root?.querySelector('#flip-trade-compose')||root);
+}
+function filterCardGrid(side){
+  const inventory=side==='give'?groups():s.their;
+  const selected=side==='give'?s.give:s.take;
+  const max=s.mode==='gift'&&side==='give'?1:5;
+  const list=root?.querySelector('[data-trade-viewport="'+side+'"]');
+  if(list)list.innerHTML=cardSelector(inventory,selected,side,max);
+  const count=root?.querySelector('[data-trade-choice-count="'+side+'"]');
+  if(count)count.textContent=matchingCards(inventory,side).length+' в списке';
+}
 function click(e){
   const target=e.target.closest('button');
   if(!target||!root?.contains(target))return;
+  if(target.hasAttribute('data-trade-preview-card')){
+    openCardPreview(target.dataset.tradePreviewCard,target);return;
+  }
+  if(target.hasAttribute('data-trade-jump')){
+    const section=root?.querySelector('#'+target.dataset.tradeJump);
+    section?.scrollIntoView?.({behavior:'smooth',block:'start'});
+    return;
+  }
+  if(target.hasAttribute('data-trade-rarity')){
+    const side=target.dataset.tradeRaritySide,rarity=target.dataset.tradeRarity;
+    if(!['give','take'].includes(side)||!['all','common','rare','epic','legendary','mythic','hidden'].includes(rarity))return;
+    s.rarityFilter[side]=rarity;redrawComposer();return;
+  }
   if(target.hasAttribute('data-trade-mode')){
     s.mode=target.dataset.tradeMode;s.give=[];s.take=[];s.counterOf='';s.error='';s.message='';
     draw();return;
@@ -646,6 +696,12 @@ function click(e){
   if(target.hasAttribute('data-trade-verb'))act(target.dataset.tradeVerb,target.dataset.tradeId);
 }
 function input(e){
+  const side=e.target.dataset?.tradeCardSearch;
+  if(['give','take'].includes(side)){
+    s.cardQuery[side]=String(e.target.value||'').slice(0,80);
+    filterCardGrid(side);
+    return;
+  }
   if(e.target.id==='flip-trade-amount'){
     s.amount=String(e.target.value).slice(0,6);
     const button=root?.querySelector('[data-trade-create]');
@@ -668,7 +724,7 @@ function change(e){
     const at=chosen.indexOf(id);
     if(at>=0)chosen.splice(at,1);
   }
-  draw();
+  redrawComposer();
 }
 window.FLIPTrades={
   mount(el){
@@ -680,6 +736,11 @@ window.FLIPTrades={
     el.addEventListener('click',click);
     el.addEventListener('input',input);
     el.addEventListener('change',change);
+    el.addEventListener('error',event=>{
+      const image=event.target;
+      if(image?.matches?.('.flip-trade-art img'))
+        image.parentElement?.classList?.add('is-missing');
+    },true);
     s.give=[];s.take=[];s.counterOf='';
     s.error='';s.message='';s.loading=!s.lastChecked;draw();
     if(!s.lastChecked||Date.now()-s.lastChecked>10000)loadTrades();
