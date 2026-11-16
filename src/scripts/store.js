@@ -47,12 +47,13 @@
     price:250,available:false,collection_size:0,previews:[]}
   ];
  }
- function paymentButton(pack,{online,busy,balance,remaining,unlimited}){
+ function paymentButton(pack,{online,demo=false,busy,balance,remaining,unlimited}){
   const available=pack.available!==false;
   const enough=balance>=Number(pack.price);
   const limit=!unlimited&&remaining<=0;
-  const disabled=busy||!online||!available||!enough||limit;
-  const copy=!online?'ОТКРОЙ В TELEGRAM':!available?'СКОРО':
+  const previewDemo=!online&&demo&&pack.id==='standard';
+  const disabled=busy||(!online&&!previewDemo)||!available||!enough||limit;
+  const copy=!online?(previewDemo?'ОТКРЫТЬ ДЕМО':'ДОСТУПНО В TELEGRAM'):!available?'СКОРО':
    !enough?'НЕДОСТАТОЧНО F':limit?'ЛИМИТ НА СЕГОДНЯ':busy?'ОБРАБОТКА…':'ОТКРЫТЬ ПАК';
   return '<button type="button" class="flip-shop-buy" data-shop-buy="'+esc(pack.id)+
     '"'+(disabled?' disabled':'')+' aria-label="'+esc(copy)+' '+esc(pack.name)+'">'+
@@ -139,14 +140,14 @@
       '</details>';
    }).join('')+'</div>';
  }
- function page({shop,state,live=false,busy=false,tab='packs',loading=false,error='' }={}){
+ function page({shop,state,live=false,demo=false,busy=false,tab='packs',loading=false,error='' }={}){
   const packs=Array.isArray(shop?.packs)?shop.packs: packsFallback();
   const byId=id=>packs.find(x=>x.id===id)||packsFallback().find(x=>x.id===id);
   const used=Math.max(0,Number(shop?.packs_today??state?.packsToday)||0);
   const max=Math.max(1,Number(shop?.daily_limit)||10);
   const unlimited=live&&(shop?.unlimited===true||state?.unlimitedPacks===true);
   const remaining=Math.max(0,max-used);
-  const context={online:live,balance:Number(state?.balance||0),busy,unlimited,remaining};
+  const context={online:live,demo,balance:Number(state?.balance||0),busy,unlimited,remaining};
   return '<div class="panel flip-shop">'+
     '<span class="eyebrow">FLIP / STORE 005</span>'+
     '<div class="flip-shop-heading"><h2>МАГАЗИН<span>.</span></h2>'+
