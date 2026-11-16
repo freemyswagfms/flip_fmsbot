@@ -325,7 +325,7 @@ begin
      from public.flip_players p
      left join public.flip_admin_play_modes m on m.telegram_id=p.telegram_id
      where p.telegram_id=p_telegram_id));
-end; $function$
+end; $function$;
 
 revoke all on function public.flip_event_snapshot(bigint) from public,anon,authenticated;
 grant execute on function public.flip_event_snapshot(bigint) to service_role;
