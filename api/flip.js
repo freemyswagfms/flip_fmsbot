@@ -94,7 +94,7 @@ export async function handleRequest(request,env=undefined){
     const user=validateTelegramInitData(raw,process.env.TELEGRAM_BOT_TOKEN);
     const db=settings();
     // The signed owner can suspend a game account; check on every request.
-    if(await rpc('flip_player_is_banned',{p_telegram_id:user.telegram_id},db))
+    if(request.method==='GET'&&await rpc('flip_player_is_banned',{p_telegram_id:user.telegram_id},db))
       return json({error:'ACCOUNT_BANNED'},403);
     // Authenticated, read-only database probe. Do not register activity from probes.
     if(request.method==='GET' && u.searchParams.get('probe')==='1'){
@@ -176,6 +176,8 @@ export async function handleRequest(request,env=undefined){
       typeof body.requestId!=='string' ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.requestId))
       return json({error:'BAD_REQUEST'},400);
+    if(await rpc('flip_player_is_banned',{p_telegram_id:user.telegram_id},db))
+      return json({error:'ACCOUNT_BANNED'},403);
     if(body.action==='ack_card_deliveries'){
       const ids=body.deliveryIds;
       const unique=Array.isArray(ids)?new Set(ids):null;
