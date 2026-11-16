@@ -81,7 +81,7 @@ test('Pack and delivery result overlays preserve cards but no repetitive technic
  assert.doesNotMatch(pack,/OPEN YOUR COLLECTION|PACK 03 \/ 03|REVEALING YOUR CARDS|Карточки уже сохранены/);
  assert.match(gift,/flip-delivery-stage|flip-delivery-meta|data-delivery-next/);
  assert.doesNotMatch(gift,/СОХРАНЯЕМ ПРОСМОТР|Особенный подарок для твоей коллекции|Игрок отправил тебе новую карточку/);
- assert.match(gift,/status\.classList\.add\('is-working'\)/);
+ assert.match(gift,/status\.classList\?\.add\?\.\('is-working'\)/);
  assert.match(read('src/styles/delivery-reveal.css'),/flip-delivery-loading\.is-working/);
 });
 test('Release is v0.9.8.3 without modifying admin, backend mechanics or previous roulette',()=>{
