@@ -106,7 +106,7 @@ test('Showcase model only offers ranked copies and renders unique Hidden frame',
     title:'Music',isTestCopy:true}
  ]};
  const cards=module.cardsFromState(state);
- assert.deepEqual(cards.map(c=>c.id),[hidden,owned]);
+ assert.deepEqual(Array.from(cards,c=>c.id),[hidden,owned]);
  const profile={public_id:publicId,slots:[
   {slot:1,card_id:hidden,rarity:'hidden'},
   {slot:2,card_id:owned,rarity:'mythic'},
