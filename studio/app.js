@@ -1,5 +1,6 @@
 import './styles.css';
 import {createClient} from '@supabase/supabase-js';
+import {playerListPage,playerDetailPage,playerRows} from './player-desk.js';
 
 /* FLIP STUDIO v0.9.1 — creative workspace. All privileged writes use RLS or
    authenticated server functions; no secret/service-role keys in this bundle. */
@@ -45,13 +46,15 @@ const iPaths={
 };
 const ico=(name,size=18)=>'<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" aria-hidden="true">'+(iPaths[name]||iPaths.circle)+'</svg>';
 const nav=[
- ['dashboard','layout-dashboard','Обзор'],['artists','users','Артисты'],
+ ['dashboard','layout-dashboard','Обзор'],['players','users','Игроки'],['artists','users','Артисты'],
  ['releases','disc','Релизы'],['import','search','Music Importer'],
  ['editor','image','Artwork Studio'],['tasks','check','Задания'],['team','shield','Команда'],
  ['activity','history','История']
 ];
 const s={db:null,user:null,member:null,artists:[],releases:[],variants:[],audit:[],
  taskSlots:[],current:'dashboard',selectedRelease:null,artistFilter:null,q:'',filter:'all',busy:false,
+ playerList:[],playerTotal:0,playerQuery:'',playerOffset:0,playerListLoaded:false,
+ selectedPlayer:null,playerDetail:null,playerCardsOffset:0,playerAction:null,playerLoading:false,
  editorMode:'draft',selectedPublished:null,publishedCatalog:{artists:[],releases:[],cards:[]},
  importQ:'',importArtists:[],importArtist:null,importReleases:[],importSelected:new Set(),
  importPage:0,importCount:0,importError:'',crop:null,
@@ -86,6 +89,11 @@ function formatError(e){
  'INVALID_ARTWORK_FORMAT':'Обложка должна быть в формате WebP.',
  'ARTWORK_PUBLICATION_FAILED':'Не удалось обновить опубликованную обложку.',
  'CARD_NOT_FOUND':'Карточка отсутствует в опубликованном каталоге.',
+   'CARD_NOT_OWNED':'Игрок больше не владеет этой карточкой.',
+   'CARD_COUNT_CHANGED':'Количество копий изменилось. Обнови профиль.',
+   'PLAYER_NOT_FOUND':'Игрок не найден.',
+   'DUPLICATE_REQUEST_ACTION':'Действие уже выполнено с другими параметрами.',
+   'PLAYER_OPERATION_FAILED':'Не удалось выполнить действие. Попробуй ещё раз.',
   'BOT_NOT_ADMIN':'Добавь бота FLIP администратором канала.',
   'NOT_A_CHANNEL':'Указанный адрес не является каналом.',
   'CHANNEL_MISMATCH':'Ссылка и ID канала не совпадают.',
@@ -125,7 +133,7 @@ function button(label,act,primary=false){
  return '<button type="button" class="button '+(primary?'primary':'')+'" data-action="'+esc(act)+'">'+label+'</button>'}
 function layout(content){
  const role=s.member?.role||'editor';
- const visibleNav=nav.filter(x=>!['team','tasks'].includes(x[0])||role==='owner');
+ const visibleNav=nav.filter(x=>!['team','tasks','players'].includes(x[0])||role==='owner');
  const item=nav.find(x=>x[0]===s.current);
  const buttons=visibleNav.map(([id,icon,label])=>
   '<button type="button" class="nav-btn '+(s.current===id?'active':'')+
@@ -142,7 +150,7 @@ function layout(content){
   '<main class="canvas view-enter">'+content+
   '<div class="footer-note">FLIP STUDIO © 2026 · CONTENT OPERATIONS · YOUR COLLECTION, YOUR RULES</div></main></div>'+
   '</div><nav class="mobile-menu" aria-label="Навигация">'+
-  visibleNav.filter(x=>['dashboard','releases','editor','tasks','team'].includes(x[0]))
+  visibleNav.filter(x=>['dashboard','releases','editor','tasks','team','players'].includes(x[0]))
     .map(([id,icon,label])=>'<button data-nav="'+id+'" class="'+(s.current===id?'active':'')+'">'+
       ico(icon)+'<span>'+esc(label.replace('Music ','').replace('Artwork ',''))+'</span></button>').join('')+
   '</nav>';
@@ -554,7 +562,7 @@ function render(){
  if(!s.user){authScreen();return;}
  if(!s.member){awaitingAccess();return;}
  const pages={dashboard,artists:artistGrid,releases:releaseGrid,import:importer,editor,
-  tasks:taskEditor,team,activity};
+  tasks:taskEditor,team,players:playersPage,activity};
  app.innerHTML=layout((pages[s.current]||dashboard)());
  if(s.current==='editor'&&s.editorMode==='draft')populateThumbnails();
  if(s.current==='team')refreshTeam();
@@ -731,10 +739,11 @@ async function claimOwner(){
 }
 function go(page){
  if(!nav.some(x=>x[0]===page))return;
- if(['team','tasks'].includes(page)&&s.member?.role!=='owner')return;
+ if(['team','tasks','players'].includes(page)&&s.member?.role!=='owner')return;
  if(page==='releases')s.artistFilter=null;
  s.q='';s.filter='all';s.current=page;
   if(page==='tasks')loadTaskSlots();
+ if(page==='players'&&!s.playerListLoaded&&!s.selectedPlayer)loadPlayers();
  render();
  window.scrollTo({top:0,behavior:'instant'});
 }
