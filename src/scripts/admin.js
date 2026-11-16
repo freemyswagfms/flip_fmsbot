@@ -7,7 +7,10 @@
   let root=null,stamp=0,cardTimer=null,cardSeq=0;
   const s={players:[],cards:[],history:[],rewards:[],leaders:[],q:'',recipient:'',card:'',cardQuery:'',
     rewardKind:'card',amount:'',mode:'test',note:'',busy:false,message:'',error:false,retryId:null,retryPayload:null,
-    cooldowns:null,cooldownBusy:false,cooldownMessage:'',cooldownError:false,cooldownRetry:null};
+    cooldowns:null,cooldownBusy:false,cooldownMessage:'',cooldownError:false,cooldownRetry:null,
+    cardRarity:'',cardTotal:0,cardOffset:0,basket:[],
+    modeTarget:'',targetCooldowns:null,targetLabel:'',targetLogs:[],
+    targetBusy:false,targetMessage:'',targetError:false};
   function selfId(){
     try{const p=JSON.parse(new URLSearchParams(raw).get('user')||'null');
       return Number.isSafeInteger(p?.id)&&p.id>0?String(p.id):'';}
@@ -16,7 +19,13 @@
   async function call(view,payload){
     const url=new URL('/api/admin',location.origin);
     if(!payload){url.searchParams.set('view',view);if(view==='players'&&s.q.trim())url.searchParams.set('q',s.q.trim().replace(/^@/,''));
-      if(view==='cards'&&s.cardQuery.trim())url.searchParams.set('q',s.cardQuery.trim());}
+      if(view==='cards'&&s.cardQuery.trim())url.searchParams.set('q',s.cardQuery.trim());
+      if(view==='cards_browser'){
+        if(s.cardQuery.trim())url.searchParams.set('q',s.cardQuery.trim());
+        if(s.cardRarity)url.searchParams.set('rarity',s.cardRarity);
+        url.searchParams.set('offset',String(s.cardOffset));
+      }
+      if(view==='player_modes')url.searchParams.set('recipientId',s.modeTarget);}
     const options={method:payload?'POST':'GET',cache:'no-store',headers:{'x-telegram-init-data':raw}};
     if(payload){options.headers['content-type']='application/json';options.body=JSON.stringify(payload);}
     const res=await fetch(url,options);
@@ -47,37 +56,58 @@
       (a.note?'<small>'+E(a.note)+'</small>':'')+'</div>').join(''):
       '<p class="flip-admin-hint">Начислений пока нет.</p>';
   }
-  function cardOptions(){
-    return s.cards.length?s.cards.map(c=>'<option value="'+E(c.id)+'" '+
-      (s.card===c.id?'selected':'')+'>'+E(c.label)+'</option>').join(''):
-      '<option value="">Ничего не найдено</option>';
+  const visual=()=>window.FLIPAdminVisual;
+  const basketCount=()=>s.basket.reduce((total,item)=>total+item.quantity,0);
+  function cardGrid(){
+    return visual()?.grid(s.cards,s.basket,s.cardTotal,s.cardOffset)||
+      '<p class="flip-admin-hint">Загрузка карточек…</p>';
   }
-  function updateCardOptions(){
+  function basket(){
+    return visual()?.cart(s.basket)||'<p class="flip-admin-hint">Корзина пуста.</p>';
+  }
+  function cardHint(){
+    return 'Найдено вариантов: '+s.cardTotal+
+      ' · показано '+s.cards.length+' · максимум 20 карточек за выдачу';
+  }
+  function updateCardResults(){
     if(!root)return;
-    const select=root.querySelector('#flip-admin-card');
-    if(!select)return;
-    if(!s.cards.some(c=>c.id===s.card))s.card=s.cards[0]?.id||'';
-    select.innerHTML=cardOptions();
-    select.disabled=!s.cards.length;
+    const results=root.querySelector('#flip-admin-card-results');
+    if(results)results.innerHTML=cardGrid();
     const hint=root.querySelector('#flip-admin-card-hint');
-    if(hint)hint.textContent=s.cards.length===50?'Показаны первые 50 вариантов. Уточни поиск.':
-      'Найдено вариантов: '+s.cards.length;
+    if(hint)hint.textContent=cardHint();
+    const cart=root.querySelector('#flip-admin-basket');
+    if(cart)cart.innerHTML=basket();
+    const count=root.querySelector('#flip-admin-basket-count');
+    if(count)count.textContent=basketCount()+' / 20';
     const button=root.querySelector('[data-admin-grant]');
-    if(button)button.disabled=s.busy||(s.rewardKind==='card'&&!s.card);
+    if(button){
+      button.disabled=s.busy||(s.rewardKind==='card'&&basketCount()===0);
+      button.textContent=s.busy?'СОХРАНЕНИЕ…':
+        s.rewardKind==='card'?'ВЫДАТЬ '+basketCount()+' КАРТОЧЕК ↗':
+          'НАЧИСЛИТЬ '+s.rewardKind.toUpperCase()+' ↗';
+    }
+    window.FLIPIcons?.render(results);
+    window.FLIPIcons?.render(cart);
   }
-  async function searchCards(){
-    const job=stamp,seq=++cardSeq;
+  async function searchCards(append=false){
+    const job=stamp,seq=++cardSeq,old=append?s.cards.slice():[];
+    if(!append)s.cardOffset=0;
+    const nextOffset=append?s.cards.length:0;
     try{
-      const r=await call('cards');
+      const r=await call('cards_browser');
       if(job!==stamp||seq!==cardSeq)return;
-      s.cards=r.cards||[];
-      updateCardOptions();
+      // Keep already visible items while extending a server-paginated page.
+      s.cards=append?old.concat((r.cards||[]).filter(x=>!old.some(o=>o.id===x.id))):r.cards||[];
+      s.cardTotal=Number(r.total)||0;s.cardOffset=s.cards.length;
+      updateCardResults();
     }catch(e){
       if(job!==stamp||seq!==cardSeq)return;
+      s.cardOffset=nextOffset;
       const hint=root?.querySelector('#flip-admin-card-hint');
       if(hint)hint.textContent='Ошибка поиска: '+e.message;
     }
   }
+
   function ranking(){
     return s.leaders.length?s.leaders.slice(0,10).map((p,i)=>'<div class="flip-admin-leader"><span>'+
       E(p.place||i+1)+'.</span><strong>'+E(p.username?'@'+p.username:(p.first_name||'FLIP PLAYER'))+
