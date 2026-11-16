@@ -45,11 +45,11 @@
    Their hit region is taller than the system status bar and env(safe-area-inset-top).
    Follow the same runtime inset as the main screen plus a native-controls buffer. */
 :root.flip-telegram-fullscreen .flip-delivery-inner{
- padding-top:max(156px,calc(var(--flip-top-space,88px) + 68px));
+ padding-top:max(100px,calc(var(--flip-top-space,88px) + 16px));
 }
 @media(max-height:700px){
  :root.flip-telegram-fullscreen .flip-delivery-inner{
-  padding-top:max(123px,calc(var(--flip-top-space,88px) + 42px));
+  padding-top:max(96px,calc(var(--flip-top-space,88px) + 10px));
  }
 }
 .flip-delivery-later{display:grid;place-items:center;flex:none;width:34px;height:34px;
