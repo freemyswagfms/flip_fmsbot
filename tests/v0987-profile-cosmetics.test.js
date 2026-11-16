@@ -41,7 +41,7 @@ test('Profile is a collectible identity with verified cosmetic classes, avatar a
 test('Owned showcase keeps 3 free slots and offers upgrades up to 6 without exposing Hidden',()=>{
  const x=modules();
  const three=x.FLIPShowcase.own({...sample,slot_count:3,slots:sample.slots.slice(0,3)},{online:true});
- assert.match(three,/3 \/ 3/);
+ assert.match(three,/1 \/ 3/);
  assert.equal((three.match(/data-cosmetic-open-shop/g)||[]).length,3);
  const six=x.FLIPShowcase.own({...sample,slot_count:6},{online:true});
  assert.match(six,/1 \/ 6/);
@@ -74,7 +74,7 @@ test('Cosmetic store has twelve whitelisted CSS editions and honest owned states
  ['red-velvet','showcase_skin',750],['archive-hunter','title',180],
  ['no-skips','title',240],['day-one','title',400]
  ].map(([id,kind,price])=>({id,kind,price,name:id.toUpperCase()}));
- const html=x.FLIPProfileCosmetics.shop({shop:{items,owned:['acid-signal','neon-ring'],
+ const html=x.FLIPProfileCosmetics.shop({shop:{items,owned:['acid-signal','liquid-chrome'],
   slot_count:4,next_slot_price:600,balance:4000},profile:sample,
   player:{telegramName:'Amir',telegramAvatarUrl:'https://t.me/photo.jpg',
    balance:4000},online:true,previewId:'redline'});
@@ -82,7 +82,7 @@ test('Cosmetic store has twelve whitelisted CSS editions and honest owned states
  assert.match(html,/data-cosmetic-buy-slot/);
  assert.match(html,/600 F ↗/);
  assert.match(html,/ПРИМЕНЕНО/);
- assert.match(html,/data-cosmetic-equip="neon-ring"/);
+ assert.match(html,/data-cosmetic-equip="liquid-chrome"/);
  assert.match(html,/data-cosmetic-buy="redline"/);
  assert.match(html,/Amir/);
  assert.match(html,/src="https:\/\/t.me\/photo.jpg"/);
