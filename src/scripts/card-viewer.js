@@ -113,7 +113,7 @@
       esc(look.label)+'</strong></div><div><small>'+esc(mode==='catalog'?'СТАТУС':'В КОЛЛЕКЦИИ')+
       '</small><strong>'+esc(mode==='catalog'?'ПРЕВЬЮ':count>0?'×'+count:'НЕТ КОПИЙ')+
       '</strong></div></div>'+
-      (tests>0&&mode!=='catalog'?'<p class="flip-viewer-test">Из них тестовых копий: '+esc(tests)+'</p>':'')+
+      
       (playlist.length>1?'<div class="flip-viewer-pagination" aria-live="polite">'+
         '<span>'+String(activeIndex+1).padStart(2,'0')+' / '+String(playlist.length).padStart(2,'0')+'</span>'+
         '<span>ЛИСТАЙ КАРТОЧКИ ← →</span></div>':'')+
