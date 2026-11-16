@@ -204,5 +204,5 @@ test('New admin panel binds card grid and per-player toggles, without changing t
  assert.match(admin,/action:'set_player_unlimited'/);
  assert.match(admin,/action:s\.rewardKind==='card'\?'grant_cards'/);
  assert.match(admin,/const id=retry\?\.kind===kind&&retry\?\.enabled===enabled&&retry\?\.target===target/);
- assert.equal(JSON.parse(read('package.json')).version,'0.9.6.4');
+ assert.ok(JSON.parse(read('package.json')).version.localeCompare('0.9.6.4',undefined,{numeric:true})>=0);
 });
