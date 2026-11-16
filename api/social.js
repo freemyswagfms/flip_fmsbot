@@ -87,9 +87,17 @@ export async function handleSocialRequest(request){
       }
       if(view==='trades'){
         const trades=await rpc('flip_trade_list',{p_actor_id:actor,p_limit:40},db);
+        const ids=[...new Set((trades||[]).flatMap(t=>
+          [Number(t.sender_id),Number(t.recipient_id)]).filter(Number.isSafeInteger))];
+        const directory=ids.length?
+          await rpc('flip_profile_directory',{p_player_ids:ids},db):[];
+        const publicIds=new Map((Array.isArray(directory)?directory:[])
+          .map(p=>[String(p.telegram_id),p.public_id]));
         return json({trades:(trades||[]).map(t=>({...t,
           sender_label:name({id:t.sender_id,username:t.sender_username,first_name:t.sender_name}),
           recipient_label:name({id:t.recipient_id,username:t.recipient_username,first_name:t.recipient_name}),
+          partner_public_id:publicIds.get(String(String(t.sender_id)===String(actor)?
+            t.recipient_id:t.sender_id))||null,
           mine:String(t.sender_id)===String(actor)}))});
       }
       if(view==='players'){
