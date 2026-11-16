@@ -125,7 +125,7 @@ test('Live UI and cache versions include cosmetic JS before showcase, plus new s
  const html=read('index.html'),pkg=JSON.parse(read('package.json'));
  assert.ok(pkg.version.localeCompare('0.9.8.7',undefined,{numeric:true})>=0);
  for(const path of ['profile-cosmetics.js','showcase.js','store.js','server.js','app.js']){
-  assert.ok(html.includes('src/scripts/'+path+'?v='+(path==='store.js'?'0.9.8.7':path==='profile-cosmetics.js'?pkg.version:'0.9.8.8')),path);
+  assert.ok(html.includes('src/scripts/'+path+'?v='+(path==='store.js'?'0.9.8.7':['profile-cosmetics.js','app.js'].includes(path)?pkg.version:'0.9.8.8')),path);
  }
  assert.ok(html.includes('src/styles/profile-cosmetics.css?v='+pkg.version));
  assert.ok(html.includes('src/styles/showcase.css?v=0.9.8.7'));
