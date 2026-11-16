@@ -108,8 +108,11 @@ test('Shop UI uses server prices, approved periods and genuine collectible artwo
  const owner=store.page({shop:{...shop,unlimited:true,packs_today:0},
    state:{balance:3000,unlimitedPacks:true},live:true});
  assert.match(owner,/∞ БЕЗ ЛИМИТА/);
- const mock=store.page({shop:null,state:{balance:1500,packsToday:0},live:false});
- assert.match(mock,/ОТКРОЙ В TELEGRAM/);
+ const mock=store.page({shop:null,state:{balance:1500,packsToday:0},live:false,demo:true});
+ assert.match(mock,/ОТКРЫТЬ ДЕМО/);
+ assert.match(mock,/ДОСТУПНО В TELEGRAM/);
+ const blocked=store.page({shop:null,state:{balance:1500},live:false,demo:false});
+ assert.doesNotMatch(blocked,/ОТКРЫТЬ ДЕМО/);
 });
 test('Private historical purchases render three original cards and hide all account IDs',()=>{
  const window={FLIPCatalog:{getCard:(a,r,rarity)=>({
