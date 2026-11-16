@@ -192,3 +192,39 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{
  .import-search .button{width:100%}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Owner player support desk — v0.9.8.4 */
+.player-search{display:flex;gap:10px;flex-wrap:wrap}
+.player-search .input{flex:1;min-width:210px}
+.player-list-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+ padding:14px 0;border-bottom:1px solid var(--border,#2e3d34)}
+.player-list-main{min-width:190px;flex:1;display:grid;gap:5px}
+.player-list-main strong,.player-owner-head h2{font-size:16px;color:#edf7ea}
+.player-list-main small,.player-owner-head small{color:#92a997;font-size:12px}
+.player-pager{display:flex;align-items:center;justify-content:space-between;gap:10px;
+ margin:17px 0 0;color:#98b19e;font-size:12px}
+.player-owner-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;
+ flex-wrap:wrap;margin-bottom:17px}
+.player-owner-head h2{font-size:23px;margin:0 0 5px}
+.player-cards{display:grid;gap:12px}
+.player-card{display:flex;align-items:flex-start;gap:15px;padding:13px;
+ background:#101d15;border:1px solid #354738;border-radius:13px}
+.player-card img{width:94px;height:94px;object-fit:cover;flex:none;border-radius:9px;
+ border:1px solid #3a4f3d;background:#172019}
+.player-card-info{min-width:0;display:grid;gap:6px;flex:1}
+.player-card-info strong{font-size:13px;overflow-wrap:anywhere;color:#f0f6ef}
+.player-card-info span,.player-card-info small{font-size:11px;color:#a4b5a6}
+.player-card-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
+.player-action-row{padding:12px 0;border-bottom:1px solid #354738}
+.player-action-row strong{display:inline-block;margin-right:12px}
+.player-action-row small,.player-action-row p{color:#9bb09e;font-size:11px}
+.button.danger{border:1px solid #bb5959;background:#472326;color:#ffd9d9}
+.button.danger:hover{background:#623034}
+@media(max-width:640px){
+ .player-search{display:grid;grid-template-columns:1fr 1fr}
+ .player-search .input{grid-column:1/-1;min-width:0}
+ .player-card{gap:10px;padding:10px}
+ .player-card img{width:74px;height:74px}
+ .player-pager{font-size:11px}
+ .player-owner-head h2{font-size:18px}
+}
