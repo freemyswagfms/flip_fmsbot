@@ -80,7 +80,7 @@ test('Notifications are converted to SVG after every async refresh, not just ini
  const html=source('index.html');
  assert.match(html,/src\/scripts\/icons\.js\?v=0\.9\.6\.2/);
  assert.match(html,/src\/scripts\/activity\.js\?v=0\.9\.6\.1/);
- assert.match(html,/src\/scripts\/app\.js\?v=0\.9\.6\.3/);
+ assert.match(html,/src\/scripts\/app\.js\?v=0\.9\.6\.4/);
  assert.match(html,/src\/styles\/activity\.css\?v=0\.9\.6\.1/);
 });
 test('Notification and statistic icon dimensions are fixed instead of relying on iOS font glyphs',()=>{
