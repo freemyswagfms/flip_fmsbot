@@ -564,7 +564,7 @@ async function loadPlayerDetail(){
 function playerActionDialog(action,cardId='',kind='',max=1){
  if(s.member?.role!=='owner'||!s.selectedPlayer||!s.playerDetail?.player)return;
  const p=s.playerDetail.player,remove=action==='remove_card';
- s.playerAction={action,cardId,kind,max};
+ s.playerAction={action,cardId,kind,max,requestId:crypto.randomUUID()};
  const heading=remove?'Удаление карточек':action==='ban'?'Блокировка игрока':'Разблокировка';
  const copy=remove?
   '<p class="hint">'+esc(cardId)+' · '+(kind==='ranked'?'обычные':'тестовые')+
@@ -599,7 +599,7 @@ async function confirmPlayerAction(){
  s.playerLoading=true;
  const b=$('[data-action="player-confirm"]');if(b)b.disabled=true;
  try{
-  await invoke('players',{action:a.action,playerId:target,requestId:crypto.randomUUID(),reason,
+  await invoke('players',{action:a.action,playerId:target,requestId:a.requestId,reason,
    ...(a.action==='remove_card'?{cardId:a.cardId,kind:a.kind,quantity}:{})});
   closeModal();s.playerAction=null;s.playerListLoaded=false;
   s.playerLoading=false;s.playerDetail=null;
