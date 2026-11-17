@@ -1,4 +1,4 @@
-/* FLIP 0.9.12 — searched all-player CP ranking with compact identity skins. */
+/* FLIP 0.9.13 — searched all-player CP ranking with compact identity skins. */
 (() => {
  'use strict';
  const E=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39'}[c]));
@@ -41,12 +41,11 @@
      '</'+tag+'>';
  }
  function summary(me){
-   if(!me)return '<div class="flip-leader-mine"><span>МОЯ ПОЗИЦИЯ</span>'+
-     '<strong>—</strong><small>Открой FLIP через Telegram</small></div>';
-   return '<div class="flip-leader-mine">'+
-     '<div><span>МОЯ ПОЗИЦИЯ</span><strong>#'+E(me.place)+'</strong></div>'+
-     '<div><span>МОЙ CP</span><strong>'+fmt(me.cp)+'</strong></div>'+
-     '</div>';
+   return '<section class="flip-leader-mine" aria-label="Моя позиция в рейтинге">'+
+     '<div class="flip-leader-mine-caption">МОЯ ПОЗИЦИЯ</div>'+
+     (me?player({...me,isMe:true},{featured:true}):
+       '<p class="flip-social-muted">Позиция пока недоступна.</p>')+
+     '</section>';
  }
  function results(data){
    const players=Array.isArray(data?.leaders)?data.leaders:[];

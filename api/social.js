@@ -116,6 +116,7 @@ export async function handleSocialRequest(request){
             isMe:String(p.telegram_id)===String(actor)
           })),
           me:data?.me?{place:data.me.place,cp:data.me.cp,level:data.me.level,
+            name:name(data.me),appearance:data.me.appearance||null,isMe:true,
             rankedCards:data.me.ranked_cards,rankedVariants:data.me.ranked_variants,
             profileId:data.me.public_id||null}:null,
           players:Number(data?.players)||0,matches:Number(data?.matches)||0

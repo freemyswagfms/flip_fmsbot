@@ -233,7 +233,7 @@ function profile(){
     Number(data?.ranked_variants||0).toLocaleString('ru-RU')+'</strong></div></div>';
  const lowerSkin=escapeHtml(window.FLIPProfileCosmetics?.classes?.(data)||'');
  return '<div class="panel flip-profile-page">'+
-    hero+rankingProfile()+showcase+
+    hero+showcase+rankingProfile(data)+
     '<div class="flip-profile-lower '+lowerSkin+'">'+featured+stats+
     (window.FLIPActivity?.profileStats(bridge?.hub?.stats,{online:live()})||'')+
     (window.FLIPAchievements?.profile(bridge?.achievements,{
@@ -475,9 +475,15 @@ async function markNotification(eventId=null,route=null){
    else if(['trades','achievements','collection','profile'].includes(route))render(route);
  }
 }
-function rankingProfile(){return '<button type="button" class="flip-leader-entry" data-action="leaderboard">'+
- '<span><strong>ЛИДЕРЫ FLIP</strong><small>Топ игроков · поиск · профили</small></span>'+
- '<span aria-hidden="true">↗</span></button>'}
+function rankingProfile(profile){
+ const background=window.FLIPProfileCosmetics?.safe?.(
+  'background',profile?.appearance?.background)||'default';
+ return '<button type="button" class="flip-leader-entry flip-leader-bg-'+background+
+  '" data-action="leaderboard" aria-label="Открыть рейтинг игроков FLIP">'+
+  '<span><strong>ЛИДЕРЫ FLIP</strong>'+
+  '<small>Топ игроков · поиск · профили</small></span>'+
+  '<span aria-hidden="true">↗</span></button>';
+}
 function adminProfile(){
   const id=window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
   const idInfo=live()&&bridge?.isAdmin===true&&Number.isSafeInteger(id)&&id>0?

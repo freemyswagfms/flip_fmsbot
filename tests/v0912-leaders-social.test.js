@@ -39,7 +39,10 @@ test('Signed all-player search returns true rank, profile skin, no exposed Teleg
       public_id:two,place:356,level:5,cp:48.25,ranked_cards:31,ranked_variants:16,
       appearance:{background:'midnight-grid',showcase_skin:'midnight-vault',
        frame_color:'blue'}}],
-    me:{place:4,cp:999},players:1200,matches:1});
+    me:{place:4,cp:999,username:'viewer',first_name:'Viewer',
+      public_id:one,level:7,ranked_cards:22,ranked_variants:12,
+      appearance:{background:'redline',frame_color:'pink'}},
+    players:1200,matches:1});
    throw Error('Unexpected RPC '+method);
   };
   const r=await handleSocialRequest(request(123,'?view=leaderboard_social&q=%40Vic'));
@@ -55,6 +58,8 @@ test('Signed all-player search returns true rank, profile skin, no exposed Teleg
   assert.equal(data.matches,1);
   assert.ok(!('telegram_id' in data.leaders[0]));
   assert.ok(!('telegram_id' in data.me));
+  assert.equal(data.me.name,'@viewer');
+  assert.equal(data.me.appearance.background,'redline');
  });
 });
 test('Public profile trade-target resolution checks signed actor and rejects own UUID',async()=>{
@@ -99,7 +104,8 @@ test('Leaderboard visually skins every known background while blocking unsafe CS
    FLIPIcons:{render(){}}},fetch:async(url,opts)=>{
      calls++;assert.equal(opts.headers['x-telegram-init-data'],'signed_launch');
      return {ok:true,async json(){return {leaders:list,players:6,matches:6,
-       me:{place:1,cp:999}}}};},
+       me:{place:1,cp:999,name:'@collector0',profileId:one,level:2,
+        rankedVariants:5,rankedCards:8,appearance:{background:'acid-signal'}}}}};},
     setTimeout(){return 1;},clearTimeout(){},URL,JSON,Set};
  runInNewContext(read('src/scripts/leaderboard.js'),context);
  context.window.FLIPLeaderboard.mount(root);
@@ -120,9 +126,11 @@ test('Leaderboard visually skins every known background while blocking unsafe CS
  for(const background of ['acid-signal','midnight-grid','redline','pastel-dream','lunar-haze','prism-shift'])
   assert.ok(skin.includes('.flip-leader-bg-'+background+'{'));
 });
-test('Top button is immediately under identity, not buried after stats',()=>{
+test('Showcase immediately follows identity, then themed leader CTA',()=>{
  const app=read('src/scripts/app.js');
- assert.match(app,/hero\+rankingProfile\(\)\+showcase/);
+ assert.match(app,/hero\+showcase\+rankingProfile\(data\)/);
+ assert.doesNotMatch(app,/hero\+rankingProfile\(\)\+showcase/);
+ assert.match(app,/FLIPProfileCosmetics\?\.safe\?\.\(/);
  assert.doesNotMatch(app,/profile\(\)\+rankingProfile\(\)\+idInfo/);
  assert.match(app,/flip-leaderboard-page/);
  assert.match(app,/data-profile-trade/);
@@ -149,15 +157,18 @@ test('SQL server-only functions do not leak database roles or modify CP economy'
 });
 test('Versioned social assets and existing app navigation remain intact',()=>{
  const index=read('index.html'),pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'0.9.12');
+ assert.equal(pkg.version,'0.9.13');
  for(const p of ['leaderboard.js','showcase.js','trades.js','app.js'])
-  assert.ok(index.includes('src/scripts/'+p+'?v=0.9.12'),p);
- assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.12.1'));
+  assert.ok(index.includes('src/scripts/'+p+'?v=0.9.13'),p);
+ assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13'));
  const spacing=read('src/styles/leaderboard-v0912.css');
  assert.match(spacing,/\.flip-leader-podium \+ \.flip-leader-list\{margin-top:8px\}/);
+ assert.ok(spacing.includes('.flip-leaderboard-page .flip-leader-results-heading{'));
+ assert.ok(spacing.includes('margin:25px 0 14px'));
+ assert.ok(spacing.includes('.flip-profile-page .flip-leader-entry{'));
  assert.match(spacing,/\.flip-leader-runners\{display:grid;gap:8px\}/);
  assert.match(spacing,/\.flip-leader-list\{display:grid;gap:8px;margin-top:0\}/);
  assert.match(index,/data-tab="home"/);
  assert.match(index,/data-tab="profile"/);
- assert.ok(read('api/flip.js').includes("version:'0.9.12'"));
+ assert.ok(read('api/flip.js').includes("version:'0.9.13'"));
 });
