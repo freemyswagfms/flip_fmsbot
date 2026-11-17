@@ -8,8 +8,10 @@ const publicId='11111111-1111-4111-8111-111111111111';
 
 test('Leaderboard paints actionable player buttons with real UUIDs',async()=>{
   let clickHandler;
+  const results={innerHTML:'',dataset:{},setAttribute(){}};
   const el={
     innerHTML:'',isConnected:true,
+    querySelector(selector){return selector==='#flip-leaderboard-results'?results:null;},
     addEventListener(name,handler){if(name==='click')clickHandler=handler;}
   };
   const window={
@@ -35,13 +37,13 @@ test('Leaderboard paints actionable player buttons with real UUIDs',async()=>{
   runInNewContext(src('src/scripts/leaderboard.js'),{window,fetch});
   window.FLIPLeaderboard.mount(el);
   await new Promise(resolve=>setImmediate(resolve));
-  assert.equal(requested,'/api/social?view=leaderboard');
-  assert.match(el.innerHTML,new RegExp('data-player-profile="'+publicId+'"'));
-  assert.match(el.innerHTML,/aria-label="Открыть профиль @collector"/);
-  assert.doesNotMatch(el.innerHTML,/Нажми на игрока, чтобы посмотреть его профиль/);
-  assert.equal((el.innerHTML.match(/data-player-profile=/g)||[]).length,2);
+  assert.equal(requested,'/api/social?view=leaderboard_social');
+  assert.match(results.innerHTML,new RegExp('data-player-profile="'+publicId+'"'));
+  assert.match(results.innerHTML,/aria-label="Открыть профиль @collector"/);
+  assert.doesNotMatch(results.innerHTML,/Нажми на игрока, чтобы посмотреть его профиль/);
+  assert.equal((results.innerHTML.match(/data-player-profile=/g)||[]).length,2);
   assert.equal(typeof clickHandler,'function');
-  assert.doesNotMatch(el.innerHTML,/рейтинговых экземпляр|Тестовые карточки исключены/i);
+  assert.doesNotMatch(results.innerHTML,/рейтинговых экземпляр|Тестовые карточки исключены/i);
 });
 
 test('Navigation is handled directly and only once by the app click delegate',()=>{
