@@ -62,7 +62,10 @@
 }
 .flip-leader-podium{display:grid;gap:8px}
 .flip-leader-runners{display:grid;gap:8px}
+/* Top 3 (podium) and ranks 4+ are separate sibling grids. Give the
+   boundary the same 8px vertical rhythm as all other player cards. */
 .flip-leader-list{display:grid;gap:8px;margin-top:0}
+.flip-leader-podium + .flip-leader-list{margin-top:8px}
 .flip-leader-player{
  --leader-ink:#f0f8ee;--leader-muted:#a1b8a4;
  --leader-accent:#baff67;--leader-edge:#46624a;
