@@ -11,6 +11,11 @@ test('Profile goes hero → showcase → styled leaderboard entry, never between
  assert.ok(app.includes('flip-leader-bg-'));
  assert.ok(css.includes('.flip-profile-page .flip-leader-entry{'));
  assert.ok(css.includes('color:var(--leader-muted)'));
+ const entryRule=css.split('.flip-profile-page .flip-leader-entry{')[1].split('}')[0];
+ assert.ok(entryRule.includes('margin:0;'), 'CTA must not double the parent grid gap');
+ assert.ok(!entryRule.includes('margin:22px 0 18px'));
+ const cosmetics=read('src/styles/profile-cosmetics.css');
+ assert.ok(cosmetics.includes('.flip-profile-page,.flip-public-profile{display:grid;gap:15px}'));
 });
 test('Personal rank has identical styled player tile even when outside top 50',async()=>{
  const output={innerHTML:'',dataset:{},setAttribute(){}};
@@ -58,6 +63,6 @@ test('Current release is cache-busted for Telegram WebView',()=>{
  assert.equal(pkg.version,'0.9.13');
  for(const p of ['app.js','leaderboard.js','profile-cosmetics.js'])
   assert.ok(index.includes('src/scripts/'+p+'?v='+pkg.version),p);
- assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.1'));
+ assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.2'));
  assert.ok(read('api/flip.js').includes("version:'"+pkg.version+"'"));
 });

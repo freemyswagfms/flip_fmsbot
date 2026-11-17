@@ -160,7 +160,7 @@ test('Versioned social assets and existing app navigation remain intact',()=>{
  assert.equal(pkg.version,'0.9.13');
  for(const p of ['leaderboard.js','showcase.js','trades.js','app.js'])
   assert.ok(index.includes('src/scripts/'+p+'?v=0.9.13'),p);
- assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.1'));
+ assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.2'));
  const spacing=read('src/styles/leaderboard-v0912.css');
  assert.match(spacing,/\.flip-leader-podium \+ \.flip-leader-list\{margin-top:8px\}/);
  assert.ok(spacing.includes('.flip-leaderboard-page .flip-leader-results-heading{'));

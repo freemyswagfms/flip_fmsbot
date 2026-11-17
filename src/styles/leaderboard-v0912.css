@@ -216,7 +216,9 @@
 /* Theme is selected through the same six safe background classes as the ranking. */
 .flip-profile-page .flip-leader-entry{
  width:100%;
- margin:22px 0 18px;
+ /* Parent .flip-profile-page already uses grid-gap:15px between sections.
+    Avoid additional margins before/after the leaderboard button. */
+ margin:0;
  padding:17px;
  min-height:84px;
  border:1px solid var(--leader-edge);
