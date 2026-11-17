@@ -35,21 +35,6 @@
  font:900 13px 'Space Grotesk',sans-serif
 }
 .flip-leader-search-row button .flip-svg{width:16px;height:16px}
-.flip-leader-mine{
- display:flex;justify-content:space-between;gap:10px;
- border-radius:16px;background:radial-gradient(ellipse at 85% 4%,#8dce6720,transparent 64%),#192b1b;
- border:1px solid #618a4c;padding:15px 16px;min-height:98px
-}
-.flip-leader-mine>div{display:grid;gap:5px;align-content:center;min-width:0}
-.flip-leader-mine span{
- display:block;font:900 9px 'Space Grotesk',sans-serif;
- color:#b0cbaa;letter-spacing:.65px
-}
-.flip-leader-mine strong{
- display:block;font:900 clamp(23px,6vw,30px)/1.1 'Space Grotesk',sans-serif;
- color:#baff67;overflow-wrap:anywhere
-}
-.flip-leader-mine small{font-size:11px;color:#b7c4b1}
 .flip-leader-results-heading{
  display:flex;justify-content:space-between;align-items:center;gap:6px;
  padding:7px 1px 1px

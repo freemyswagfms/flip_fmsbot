@@ -40,6 +40,8 @@ test('Headline and leaderboard items have explicit breathing room',()=>{
  assert.ok(css.includes('.flip-leaderboard-page .flip-leader-results-heading{'));
  assert.ok(css.includes('margin:25px 0 14px'));
  assert.ok(css.includes('.flip-leader-mine-caption{'));
+ assert.ok(!css.includes('.flip-leader-mine span{'));
+ assert.ok(!css.includes('.flip-leader-mine strong{'));
  assert.ok(css.includes('.flip-leader-podium + .flip-leader-list{margin-top:8px}'));
 });
 test('Read-only leaderboard SQL returns self with safe appearance from settings',()=>{
@@ -56,6 +58,6 @@ test('Current release is cache-busted for Telegram WebView',()=>{
  assert.equal(pkg.version,'0.9.13');
  for(const p of ['app.js','leaderboard.js','profile-cosmetics.js'])
   assert.ok(index.includes('src/scripts/'+p+'?v='+pkg.version),p);
- assert.ok(index.includes('src/styles/leaderboard-v0912.css?v='+pkg.version));
+ assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.1'));
  assert.ok(read('api/flip.js').includes("version:'"+pkg.version+"'"));
 });
