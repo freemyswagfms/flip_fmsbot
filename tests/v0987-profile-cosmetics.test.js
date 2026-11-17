@@ -36,6 +36,7 @@ test('Profile is a collectible identity with verified cosmetic classes, avatar a
    'flip-bg-acid-signal','flip-frame-neon-ring','flip-scene-glass-cabinet','45 / 150 XP'])
   assert.ok(html.includes(fragment),fragment);
  assert.match(html,/1[\s\u00a0\u202f]?337 CP/);
+ assert.match(html,/СЛЕДУЮЩИЙ УРОВЕНЬ · \+30 F/);
  const bad=x.FLIPProfileCosmetics.classes({appearance:{background:'javascript:alert(1)'}});
  assert.doesNotMatch(bad,/javascript|alert/);
 });

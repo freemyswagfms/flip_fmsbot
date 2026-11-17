@@ -65,6 +65,6 @@ test('New CSS and JS are cache-busted without changing economic rules or version
  const html=read('index.html'),pkg=JSON.parse(read('package.json'));
  assert.equal(pkg.version,'0.9.13');
  for(const p of ['showcase.js','profile-cosmetics.js'])
-  assert.ok(html.includes('src/scripts/'+p+'?v=0.9.13.6'));
+  assert.ok(html.includes('src/scripts/'+p+'?v='+(p==='profile-cosmetics.js'?'0.9.13.7':'0.9.13.6')));
  assert.ok(html.includes('src/styles/public-profile-v09135.css?v=0.9.13.6'));
 });

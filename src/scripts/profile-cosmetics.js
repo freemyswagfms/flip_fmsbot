@@ -84,7 +84,7 @@
     '<div style="width:'+progress+'%"></div></div>'+
     '<div class="flip-identity-progress-caption"><span>'+
     fmt(currentXp)+' / '+fmt(threshold)+' XP</span>'+
-    '<span>СЛЕДУЮЩИЙ УРОВЕНЬ · +30 F</span></div>'+
+    (publicMode?'':'<span>СЛЕДУЮЩИЙ УРОВЕНЬ · +30 F</span>')+'</div>'+
    '</section>';
  }
  function profileSettings(profile,artists,{online=false}={}){

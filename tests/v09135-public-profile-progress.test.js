@@ -28,7 +28,8 @@ test('Public identity shows real XP on the same adaptive bar as own profile',()=
  assert.match(html,/aria-valuenow="350"/);
  assert.match(html,/style="width:70%"/);
  assert.match(html,/350 \/ 500 XP/);
- assert.match(html,/СЛЕДУЮЩИЙ УРОВЕНЬ/);
+ assert.doesNotMatch(html,/СЛЕДУЮЩИЙ УРОВЕНЬ|\+30 F/);
+ assert.equal((html.match(/flip-identity-progress-caption/g)||[]).length,1);
  const css=read('src/styles/public-profile-v09135.css');
  assert.match(css,/\.flip-public-profile \.flip-identity-progress>div\{/);
  assert.match(css,/background:var\(--identity-ink\)/);
@@ -41,6 +42,7 @@ test('Public profile without title or favorite artist is compact, but always has
  assert.match(html,/flip-bg-pastel-dream/);
  assert.match(html,/role="progressbar"/);
  assert.match(html,/0 \/ 500 XP/);
+ assert.doesNotMatch(html,/СЛЕДУЮЩИЙ УРОВЕНЬ|\+30 F/);
  assert.match(html,/Игрок пока не добавил карточки в витрину/);
  assert.doesNotMatch(html,/class="flip-showcase-empty is-public"/);
  const css=read('src/styles/public-profile-v09135.css');

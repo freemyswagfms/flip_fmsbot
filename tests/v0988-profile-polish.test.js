@@ -158,7 +158,7 @@ test('Release stamps preserve the unaffected store but refresh changed assets',(
  for(const filename of ['server.js']){
   assert.ok(index.includes('src/scripts/'+filename+'?v=0.9.8.8'),filename);
  }
- assert.ok(index.includes('src/scripts/profile-cosmetics.js?v=0.9.13.6'));
+ assert.ok(index.includes('src/scripts/profile-cosmetics.js?v=0.9.13.7'));
  assert.ok(index.includes('src/scripts/app.js?v=0.9.13.5'));
  assert.ok(index.includes('src/scripts/showcase.js?v=0.9.13.6'));
  assert.ok(index.includes('src/styles/profile-cosmetics.css?v=0.9.13'));
