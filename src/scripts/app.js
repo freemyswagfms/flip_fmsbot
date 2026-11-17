@@ -178,7 +178,12 @@ function catalogView(){
 
 function trades(){return '<div class="panel flip-trade-page"><div id="flip-trades-root"></div></div>'}
 function achievements(){return window.FLIPAchievements?.page(bridge?.achievements,{online:live()})||'<div class="panel"><h2>ДОСТИЖЕНИЯ</h2><p>Загрузка…</p></div>'}
-function leaderboard(){return '<div class="panel"><button class="link" data-action="profile">← К ПРОФИЛЮ</button><h2>РЕЙТИНГ<span style="color:var(--lime)">.</span></h2><p class="desc">CP не тратятся и не покупаются.</p><div id="flip-leaderboard-root"></div></div>'}
+function leaderboard(){return '<div class="panel flip-leaderboard-page">'+
+ '<button class="link" data-action="profile">← К ПРОФИЛЮ</button>'+
+ '<span class="eyebrow">FLIP / COMMUNITY</span>'+
+ '<h2>ЛИДЕРЫ<span style="color:var(--lime)">.</span></h2>'+
+ '<p class="desc">Игроки, коллекции и рейтинг CP.</p>'+
+ '<div id="flip-leaderboard-root"></div></div>'}
 function store(){
  return window.FLIPStore?.page({
    shop:bridge?.shop,cosmetics:bridge?.cosmetics,profile:bridge?.showcase,cosmeticPreview,
@@ -228,7 +233,7 @@ function profile(){
     Number(data?.ranked_variants||0).toLocaleString('ru-RU')+'</strong></div></div>';
  const lowerSkin=escapeHtml(window.FLIPProfileCosmetics?.classes?.(data)||'');
  return '<div class="panel flip-profile-page">'+
-    hero+showcase+
+    hero+rankingProfile()+showcase+
     '<div class="flip-profile-lower '+lowerSkin+'">'+featured+stats+
     (window.FLIPActivity?.profileStats(bridge?.hub?.stats,{online:live()})||'')+
     (window.FLIPAchievements?.profile(bridge?.achievements,{
@@ -336,7 +341,9 @@ function showcaseEdit(){
 }
 function publicProfile(){
  return window.FLIPShowcase?.publicPage(publicProfileData,{
-   loading:publicProfileLoading,error:publicProfileError
+   loading:publicProfileLoading,error:publicProfileError,
+   isOwn:!!(publicProfileData?.public_id&&
+     publicProfileData.public_id===bridge?.showcase?.public_id)
  })||'';
 }
 async function openPlayerProfile(publicId){
@@ -468,12 +475,14 @@ async function markNotification(eventId=null,route=null){
    else if(['trades','achievements','collection','profile'].includes(route))render(route);
  }
 }
-function rankingProfile(){return live()?'<div class="flip-profile-ranking-link"><button type="button" class="outlinebtn" data-action="leaderboard">ОБЩИЙ РЕЙТИНГ ↗</button></div>':''}
+function rankingProfile(){return '<button type="button" class="flip-leader-entry" data-action="leaderboard">'+
+ '<span><strong>ЛИДЕРЫ FLIP</strong><small>Топ игроков · поиск · профили</small></span>'+
+ '<span aria-hidden="true">↗</span></button>'}
 function adminProfile(){
   const id=window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
   const idInfo=live()&&bridge?.isAdmin===true&&Number.isSafeInteger(id)&&id>0?
     '<div class="content-card"><p>Твой Telegram ID: <strong>'+id+'</strong></p><p class="muted">Используется для настройки административного доступа. Не является паролем.</p></div>':'';
-  return profile()+rankingProfile()+idInfo+(live()&&bridge?.isAdmin?
+  return profile()+idInfo+(live()&&bridge?.isAdmin?
     '<div class="content-card flip-admin-entry"><button type="button" class="outlinebtn" data-action="admin">◆ ОТКРЫТЬ АДМИН-ПАНЕЛЬ ↗</button></div>':'');
 }
 function adminPage(){return live()&&bridge?.isAdmin?
@@ -496,7 +505,7 @@ const render=(view=current,{returnTo=false,resetScroll=false}={})=>{
   tasks,achievements,showcaseEdit,publicProfile,activity}[view]||home)();
  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',
   x.dataset.tab===(['catalog','collectionArtist','collectionRelease','collectionHistory'].includes(view)?
-    'collection':['achievements','showcaseEdit','publicProfile','activity'].includes(view)?
+    'collection':['achievements','showcaseEdit','publicProfile','activity','leaderboard'].includes(view)?
     'profile':view)));
  $('#balance').textContent=money(state.balance);
  updateTimer();
@@ -1013,6 +1022,15 @@ document.addEventListener('click',e=>{
    if(player){
      e.preventDefault();
      openPlayerProfile(player.dataset.playerProfile);
+     return;
+   }
+   const profileTrade=e.target.closest('[data-profile-trade]');
+   if(profileTrade){
+     const publicId=profileTrade.dataset.profileTrade;
+     if(!live()){toast('Обмены доступны при входе через Telegram.');return;}
+     if(!/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(publicId||''))return;
+     render('trades');
+     window.FLIPTrades?.openWithProfile?.(publicId);
      return;
    }
    const profileOpen=e.target.closest('[data-open-my-profile]');

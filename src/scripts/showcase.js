@@ -124,7 +124,7 @@
        'Если продашь или обменяешь последнюю копию карточки, она исчезнет из витрины.</p>'+
      '</div>';
  }
- function publicPage(profile,{loading=false,error=''}={}){
+ function publicPage(profile,{loading=false,error='',isOwn=false}={}){
     if(loading)return '<div class="panel"><button class="link" data-action="leaderboard">'+
       '← К РЕЙТИНГУ</button><h2>ПРОФИЛЬ ИГРОКА</h2>'+
       '<p class="flip-showcase-notice">Загружаем публичный профиль…</p></div>';
@@ -151,9 +151,14 @@
       '<span>LVL '+fmt(profile.level)+'</span></div></div></section>';
     const limit=Math.min(6,Math.max(3,Number(profile.slot_count)||3));
     const extraBadges=unpinnedBadges(profile.badges,profile.pinned_badges);
+    // Only other people's public identity cards offer a direct trade.
+    // The existing trade backend verifies account age and card ownership.
+    const tradeCta=!isOwn&&typeof profile.public_id==='string'&&profile.public_id.length===36?
+      '<button type="button" class="flip-profile-trade-action" data-profile-trade="'+
+        esc(profile.public_id)+'">ПРЕДЛОЖИТЬ ОБМЕН <span aria-hidden="true">↗</span></button>':'';
     return '<div class="panel flip-public-profile">'+
       '<button class="link" data-action="leaderboard">← К РЕЙТИНГУ</button>'+
-      identity+
+      identity+tradeCta+
       '<section class="content-card flip-showcase-profile '+
         esc(window.FLIPProfileCosmetics?.classes?.(profile)||'')+'">'+
       '<div class="flip-showcase-heading"><div><span class="eyebrow">PLAYER COLLECTION</span>'+

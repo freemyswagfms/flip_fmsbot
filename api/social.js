@@ -1,4 +1,4 @@
-/** FLIP v0.9.8: server-only CP leaderboard, gifts, card/F and card/card trades.
+/** FLIP v0.9.12: public CP leaderboard, searchable profiles, gifts, card/F and card/card trades.
  *  Never trusts a client-submitted actor ID, CP number or inventory count.
  */
 import {createHash} from 'node:crypto';
@@ -100,6 +100,37 @@ export async function handleSocialRequest(request){
           me:data.me?{...data.me,
             public_id:publicIds.get(String(data.me.telegram_id))||null}:null};
         return json(serializeLeaderboard(enriched));
+      }
+      if(view==='leaderboard_social'){
+        const q=(url.searchParams.get('q')||'').trim().replace(/^@/,'');
+        if(q.length>64)return json({error:'BAD_REQUEST'},400);
+        const data=await rpc('flip_leaderboard_social',{
+          p_viewer_id:actor,p_query:q,p_limit:q?25:50
+        },db);
+        return json({
+          leaders:(Array.isArray(data?.leaders)?data.leaders:[]).map(p=>({
+            place:p.place,name:name(p),level:p.level,cp:p.cp,
+            profileId:p.public_id||null,
+            rankedCards:p.ranked_cards,rankedVariants:p.ranked_variants,
+            appearance:p.appearance||null,
+            isMe:String(p.telegram_id)===String(actor)
+          })),
+          me:data?.me?{place:data.me.place,cp:data.me.cp,level:data.me.level,
+            rankedCards:data.me.ranked_cards,rankedVariants:data.me.ranked_variants,
+            profileId:data.me.public_id||null}:null,
+          players:Number(data?.players)||0,matches:Number(data?.matches)||0
+        });
+      }
+      if(view==='profile_target'){
+        const id=url.searchParams.get('publicId');
+        if(!uuid(id))return json({error:'BAD_REQUEST'},400);
+        const target=await rpc('flip_trade_profile_target',{
+          p_actor_id:actor,p_public_id:id
+        },db);
+        if(!target||!numberId(String(target.telegram_id||'')))
+          return json({error:'PLAYER_NOT_FOUND'},404);
+        return json({player:{id:String(target.telegram_id),
+          name:name(target),level:target.level}});
       }
       if(view==='expanded'){
         const [classic,currency,gifts]=await Promise.all([

@@ -98,10 +98,10 @@ test('Reduced motion shows all three cards and retains price and native safe-spa
 test('Only pack result assets are changed; server-issued cards remain authoritative',()=>{
  const pkg=JSON.parse(read('package.json'));
  const index=read('index.html');
- assert.equal(pkg.version,'0.9.11');
+ assert.equal(pkg.version,'0.9.12');
  assert.ok(index.includes('src/styles/pack-result-v0911.css?v=0.9.11'));
- assert.ok(index.includes('src/scripts/pack-reveal.js?v=0.9.11'));
- assert.ok(read('api/flip.js').includes("version:'0.9.11'"));
+ assert.ok(index.includes('src/scripts/pack-reveal.js?v=0.9.12'));
+ assert.ok(read('api/flip.js').includes("version:'0.9.12'"));
  assert.match(read('src/scripts/app.js'),/const pack=\(result\.card_ids\|\|\[\]\)\.map\(cardById\)/);
  assert.match(read('src/scripts/app.js'),/await bridge\.themePack\(packType,crypto\.randomUUID\(\)\)/);
  assert.match(read('src/styles/store.css'),/flip-pack-slot\.hidden \.flip-pack-front:after/);

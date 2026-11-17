@@ -74,11 +74,11 @@ test('Personal skin, smart hub rerender and spare requests are guarded',()=>{
 });
 test('Economy remains server-authoritative; new release has correct cache stamps',()=>{
  const pkg=JSON.parse(read('package.json')),index=read('index.html');
- assert.equal(pkg.version,'0.9.11');
+ assert.equal(pkg.version,'0.9.12');
  for(const p of ['app.js','trades.js','showcase.js','achievements.js'])
   assert.ok(index.includes('src/scripts/'+p+'?v='+pkg.version),p);
  assert.ok(index.includes('src/styles/qol-v0910.css?v='+pkg.version));
- assert.ok(read('api/flip.js').includes("version:'0.9.11'"));
+ assert.ok(read('api/flip.js').includes("version:'0.9.12'"));
  assert.match(read('src/scripts/server.js'),/return makeState\(data.state\)/);
  assert.match(read('src/scripts/trades.js'),/const factors=\[1,\.25,\.10,\.05,\.05,\.01/);
 });

@@ -1,4 +1,4 @@
-/* FLIP v0.9.10 — gallery-first trades; original signed transactions unchanged. */
+/* FLIP v0.9.12 — gallery-first trades; original signed transactions unchanged. */
 (() => {
 'use strict';
 const E=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -500,6 +500,30 @@ async function choosePlayer(id,label,preset=null){
     if(preset)root?.querySelector('#flip-trade-compose')?.scrollIntoView({block:'start',behavior:'smooth'});
   }catch(e){if(stamp!==serial)return;s.error='Не удалось загрузить карточки игрока.';draw();}
 }
+// Resolve the signed public UUID into a trade partner on the server. This
+// cannot grant a trade: all existing transaction and cooldown checks still apply.
+async function openWithProfile(publicId){
+  if(!initData||!root?.isConnected||typeof publicId!=='string'||publicId.length!==36)return;
+  const stamp=serial;
+  s.q='';s.mode='cards';s.counterOf='';s.give=[];s.take=[];
+  s.error='';s.message='Загружаем карточки выбранного игрока…';draw();
+  try{
+    const response=await api('profile_target',{publicId});
+    if(stamp!==serial||!root?.isConnected)return;
+    const p=response?.player;
+    if(!p||typeof p.id!=='string'||!/^[1-9][0-9]{0,15}$/.test(p.id))throw Error('PLAYER_NOT_FOUND');
+    s.message='';
+    await choosePlayer(p.id,String(p.name||'FLIP PLAYER'));
+    if(stamp===serial){
+      root?.querySelector('#flip-trade-compose')?.scrollIntoView?.({
+        block:'start',behavior:'smooth'});
+    }
+  }catch{
+    if(stamp!==serial||!root?.isConnected)return;
+    s.message='';s.error='Не удалось выбрать игрока для обмена. Попробуй найти его по нику.';
+    draw();
+  }
+}
 const pendingKey='flip_v085_social_'+ownId;
 function remember(payload){
   const marker=JSON.stringify(payload);
@@ -775,7 +799,7 @@ window.FLIPTrades={
     s.error='';s.message='';s.loading=!s.lastChecked;draw();
     if(!s.lastChecked||Date.now()-s.lastChecked>10000)loadTrades();
   },
-  syncHub,tickVisible,
+  syncHub,tickVisible,openWithProfile,
   // Sender-only foreground receipt checks continue until an outgoing trade closes.
   hasPendingOutgoing(){return !!initData&&s.trades.some(t=>t.mine&&statusOf(t)==='pending');}
 };
