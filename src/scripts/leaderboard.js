@@ -1,4 +1,4 @@
-/* FLIP 0.9.13.3 — lazy Telegram photos with initials as safe fallback. */
+/* FLIP 0.9.13.4 — concentric animated avatar frame and masked photo. */
 (() => {
  'use strict';
  const E=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39'}[c]));
@@ -7,6 +7,7 @@
  const backgrounds=new Set(['acid-signal','midnight-grid','redline','pastel-dream','lunar-haze','prism-shift']);
  const showcases=new Set(['glass-cabinet','black-chrome','red-velvet','blush-gallery','midnight-vault','prism-chamber']);
  const colors=new Set(['green','pink','red','orange','blue','white','violet','cyan','rgb','glitch']);
+ const frames=new Set(['neon-ring','liquid-chrome','pulse','aurora-flow']);
  const fmt=n=>Number(n||0).toLocaleString('ru-RU',{maximumFractionDigits:2});
  let root=null,serial=0,searchTimer=null,query='';
  const photoCache=new Map();
@@ -48,9 +49,15 @@
        img.loading='lazy';
        img.decoding='async';
        img.referrerPolicy='no-referrer';
-       img.addEventListener('error',()=>img.remove(),{once:true});
+       const inner=element.querySelector('.flip-leader-avatar-inner');
+       if(!inner)return;
+       img.addEventListener('load',()=>element.classList.add('has-photo'),{once:true});
+       img.addEventListener('error',()=>{
+         img.remove();
+         element.classList.remove('has-photo');
+       },{once:true});
+       inner.appendChild(img);
        img.src=data;
-       element.appendChild(img);
      }).finally(()=>{photoActive--;pumpPhotos()});
    }
  }
@@ -92,7 +99,9 @@
    const bg=backgrounds.has(o.background)?o.background:'default';
    const scene=showcases.has(o.showcase_skin)?o.showcase_skin:'default';
    const color=colors.has(o.frame_color)?o.frame_color:'green';
-   return ' flip-leader-bg-'+bg+' flip-leader-scene-'+scene+' flip-leader-color-'+color;
+   const frame=frames.has(o.avatar_frame)?o.avatar_frame:'default';
+   return ' flip-leader-bg-'+bg+' flip-leader-scene-'+scene+
+     ' flip-leader-color-'+color+' flip-leader-frame-'+frame;
  };
  function player(p,{featured=false}={}){
    const id=validProfileId(p.profileId);
@@ -105,7 +114,10 @@
      '<span class="flip-leader-rank">#'+E(number)+'</span>'+
      '<span class="flip-leader-avatar" aria-hidden="true"'+
        (id?' data-leader-avatar="'+E(id)+'"':'')+'>'+
-       E(initials(p.name))+'</span>'+
+       '<span class="flip-leader-avatar-inner">'+
+         '<span class="flip-leader-avatar-fallback">'+E(initials(p.name))+'</span>'+
+       '</span>'+
+     '</span>'+
      '<span class="flip-leader-person"><strong>'+E(p.name||'FLIP PLAYER')+'</strong>'+
      '<small>LVL '+E(p.level)+' · '+E(p.rankedVariants)+' уник. · '+
      E(p.rankedCards)+' карт.</small></span>'+

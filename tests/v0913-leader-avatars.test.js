@@ -84,10 +84,12 @@ test('Unavailable photo returns null; unsigned or malformed requests are rejecte
 const tick=()=>new Promise(r=>setImmediate(r));
 test('Client lazily fetches photos only for visible players and preserves colored initials fallback',async()=>{
  let observer,avatarGets=0,leaderGets=0;
+ const photoPlane={children:[],appendChild(img){this.children.push(img)}};
  const avatar={
-  dataset:{},isConnected:true,children:[],
+  dataset:{},isConnected:true,classes:new Set(),
+  classList:{add(name){avatar.classes.add(name)},remove(name){avatar.classes.delete(name)}},
   getAttribute(name){return name==='data-leader-avatar'?publicId:null},
-  appendChild(img){this.children.push(img)}
+  querySelector(selector){return selector==='.flip-leader-avatar-inner'?photoPlane:null}
  };
  const output={dataset:{},innerHTML:'',setAttribute(){},
   querySelectorAll(sel){return sel==='[data-leader-avatar]'?[avatar]:[]}};
@@ -129,14 +131,15 @@ test('Client lazily fetches photos only for visible players and preserves colore
  assert.equal(avatarGets,0,'Photo should not download before becoming visible');
  assert.match(output.innerHTML,/data-leader-avatar="/);
  assert.match(output.innerHTML,/flip-leader-color-pink/);
- assert.match(output.innerHTML,/flip-leader-avatar[^>]*>VI<\/span>/);
+ assert.match(output.innerHTML,/class="flip-leader-avatar-inner"/);
+ assert.match(output.innerHTML,/class="flip-leader-avatar-fallback">VI<\/span>/);
  observer.trigger();
  await tick();
  assert.equal(avatarGets,1);
- assert.equal(avatar.children.length,1);
- assert.equal(avatar.children[0].src,'data:image/png;base64,AA==');
- assert.equal(avatar.children[0].referrerPolicy,'no-referrer');
- assert.equal(avatar.children[0].alt,'');
+ assert.equal(photoPlane.children.length,1);
+ assert.equal(photoPlane.children[0].src,'data:image/png;base64,AA==');
+ assert.equal(photoPlane.children[0].referrerPolicy,'no-referrer');
+ assert.equal(photoPlane.children[0].alt,'');
 });
 test('No image URL is ever built from the Telegram user ID, and photo stays inside frame',()=>{
  const client=read('src/scripts/leaderboard.js');
@@ -146,9 +149,15 @@ test('No image URL is ever built from the Telegram user ID, and photo stays insi
  assert.match(client,/safePhoto\(data\?\.avatar_data\)/);
  assert.match(client,/photoActive<3/);
  assert.match(client,/IntersectionObserver/);
- assert.match(css,/\.flip-leader-avatar\{\s*position:relative;overflow:hidden/);
+ assert.match(css,/\.flip-leader-avatar\{[\s\S]*?overflow:visible/);
+ assert.match(css,/\.flip-leader-avatar-inner\{[\s\S]*?overflow:hidden/);
+ assert.match(css,/\.flip-leader-avatar::before/);
+ assert.match(css,/\.flip-leader-color-rgb \.flip-leader-avatar::before/);
+ assert.match(css,/-webkit-mask-composite:xor/);
+ assert.doesNotMatch(css,/box-shadow:-2px 0 9px/);
+ assert.match(client,/inner\.appendChild\(img\)/);
  assert.match(css,/\.flip-leader-photo\{[\s\S]*?object-fit:cover/);
  const index=read('index.html');
- assert.ok(index.includes('src/scripts/leaderboard.js?v=0.9.13.3'));
- assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.3'));
+ assert.ok(index.includes('src/scripts/leaderboard.js?v=0.9.13.4'));
+ assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.4'));
 });
