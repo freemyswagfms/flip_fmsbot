@@ -63,6 +63,7 @@ test('Public profile puts the actual six-slot showcase BEFORE stats and pins bad
  assert.match(html,/Красная аура/);
  assert.match(html,/ARCHIVE HUNTER/);
  assert.match(html,/PLAYER PROFILE/);
+ assert.doesNotMatch(html,/data-profile-trade=/);
  assert.doesNotMatch(html,/Telegram ID|ИНВЕНТАРЬ КОСМЕТИКИ|owner_id/);
 });
 test('Cosmetic store has twelve whitelisted CSS editions and honest owned states',()=>{
@@ -125,7 +126,7 @@ test('Live UI and cache versions include cosmetic JS before showcase, plus new s
  const html=read('index.html'),pkg=JSON.parse(read('package.json'));
  assert.ok(pkg.version.localeCompare('0.9.8.7',undefined,{numeric:true})>=0);
  for(const path of ['profile-cosmetics.js','showcase.js','store.js','server.js','app.js']){
-  assert.ok(html.includes('src/scripts/'+path+'?v='+(path==='store.js'?'0.9.8.7':['profile-cosmetics.js','app.js','showcase.js'].includes(path)?'0.9.13.5':'0.9.8.8')),path);
+  assert.ok(html.includes('src/scripts/'+path+'?v='+(path==='store.js'?'0.9.8.7':['profile-cosmetics.js','showcase.js'].includes(path)?'0.9.13.6':path==='app.js'?'0.9.13.5':'0.9.8.8')),path);
  }
  assert.ok(html.includes('src/styles/profile-cosmetics.css?v='+pkg.version));
  assert.ok(html.includes('src/styles/showcase.css?v=0.9.8.7'));

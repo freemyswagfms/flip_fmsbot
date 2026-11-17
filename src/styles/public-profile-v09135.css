@@ -23,3 +23,38 @@
  color:#a5b7a6;font:650 11px/1.5 'Manrope',sans-serif;
  text-align:center;
 }
+
+/* FLIP 0.9.13.6 — exchange is a subtle contextual action in identity header.
+   The hero flows directly into the collection; no standalone lime interruption. */
+.flip-public-profile .flip-identity-top .flip-identity-trade{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  gap:7px;
+  min-height:32px;
+  padding:7px 10px;
+  border:1px solid var(--identity-edge);
+  border-radius:9px;
+  background:rgba(8,16,17,.44);
+  color:var(--identity-ink);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  font:800 9px/1 'Space Grotesk',sans-serif;
+  letter-spacing:1px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.flip-public-profile .flip-identity-top .flip-identity-trade>span{
+  font:900 14px/1 'Space Grotesk',sans-serif;
+  letter-spacing:0;
+  color:inherit;
+}
+.flip-public-profile .flip-identity-top .flip-identity-trade:focus-visible{
+  outline:2px solid var(--identity-ink);
+  outline-offset:3px;
+}
+@media(max-width:355px){
+ .flip-public-profile .flip-identity-top .flip-identity-trade{
+  min-height:30px;padding:6px 8px;gap:5px;font-size:8px;letter-spacing:.6px;
+ }
+}

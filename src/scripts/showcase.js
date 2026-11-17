@@ -148,10 +148,15 @@
        '" alt="" decoding="async" referrerpolicy="no-referrer" draggable="false">':'';
     const avatarContent='<span class="flip-player-avatar"><span class="flip-showcase-avatar-initials">'+
       esc(initial)+'</span>'+photo+'</span>';
+    // A trade is the secondary action of the identity header, never a
+    // full-width interruption between the profile and its collection.
+    const tradePublicId=!isOwn&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      .test(String(profile.public_id||''))?String(profile.public_id):null;
     const identity=window.FLIPProfileCosmetics?.identity({profile,name,
       handle:profile.username?'@'+profile.username:'',
       avatar:avatarContent,level:profile.level,
-      xp:profile.xp,xpToNext:profile.xp_to_next,publicMode:true})||
+      xp:profile.xp,xpToNext:profile.xp_to_next,publicMode:true,
+      tradePublicId})||
       '<section class="flip-identity"><div class="flip-identity-row"><div class="flip-identity-avatar">'+
       avatarContent+'</div><div class="flip-identity-meta"><strong>'+esc(name)+'</strong>'+
       '<span>LVL '+fmt(profile.level)+'</span></div></div></section>';
@@ -160,14 +165,9 @@
       .filter(s=>Number.isInteger(Number(s?.slot))&&Number(s.slot)>=1&&
         Number(s.slot)<=limit&&s?.card_id&&cardFromId(s.card_id));
     const extraBadges=unpinnedBadges(profile.badges,profile.pinned_badges);
-    // Only other people's public identity cards offer a direct trade.
-    // The existing trade backend verifies account age and card ownership.
-    const tradeCta=!isOwn&&typeof profile.public_id==='string'&&profile.public_id.length===36?
-      '<button type="button" class="flip-profile-trade-action" data-profile-trade="'+
-        esc(profile.public_id)+'">ПРЕДЛОЖИТЬ ОБМЕН <span aria-hidden="true">↗</span></button>':'';
     return '<div class="panel flip-public-profile">'+
       '<button class="link" data-action="leaderboard">← К РЕЙТИНГУ</button>'+
-      identity+tradeCta+
+      identity+
       '<section class="content-card flip-showcase-profile '+
         esc(window.FLIPProfileCosmetics?.classes?.(profile)||'')+'">'+
       '<div class="flip-showcase-heading"><div><span class="eyebrow">PLAYER COLLECTION</span>'+

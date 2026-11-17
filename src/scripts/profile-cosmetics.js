@@ -53,7 +53,7 @@
    o.showcase_skin?'flip-scene-'+safe('showcase_skin',o.showcase_skin):'flip-scene-default',
    'flip-color-'+safeColor(o.frame_color)].join(' ');
  };
- function identity({profile,name,handle,avatar,level,xp=0,xpToNext=null,publicMode=false,override=null}){
+ function identity({profile,name,handle,avatar,level,xp=0,xpToNext=null,publicMode=false,tradePublicId=null,override=null}){
   const item=override&&override.kind==='title'?override.id:profile?.appearance?.title;
   const title=safe('title',item)?cosmeticNames[item]:null;
   const artist=profile?.favorite_artist?.name||'';
@@ -66,7 +66,11 @@
   return '<section class="flip-identity '+esc(classes(profile,override))+'">'+
    '<div class="flip-identity-art" aria-hidden="true"><i></i><i></i><i></i></div>'+
    '<div class="flip-identity-top"><span>FLIP / COLLECTOR</span>'+
-   (publicMode?'<span>PLAYER PROFILE</span>':'<span>YOUR IDENTITY</span>')+'</div>'+
+   (publicMode?(tradePublicId?
+     '<button class="flip-identity-trade" type="button" data-profile-trade="'+
+      esc(tradePublicId)+'" aria-label="Предложить обмен с '+esc(name||'игроком')+'">'+
+      'ОБМЕН <span aria-hidden="true">↗</span></button>':
+     '<span>PLAYER PROFILE</span>'):'<span>YOUR IDENTITY</span>')+'</div>'+
    '<div class="flip-identity-row"><div class="flip-identity-avatar">'+avatar+'</div>'+
    '<div class="flip-identity-meta"><strong>'+esc(name||'FLIP PLAYER')+'</strong>'+
    '<small class="flip-identity-handle">'+esc(handle||'')+'</small>'+

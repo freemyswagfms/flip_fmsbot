@@ -76,7 +76,7 @@ test('Economy remains server-authoritative; new release has correct cache stamps
  const pkg=JSON.parse(read('package.json')),index=read('index.html');
  assert.equal(pkg.version,'0.9.13');
  for(const p of ['app.js','trades.js','showcase.js','achievements.js'])
-  assert.ok(index.includes('src/scripts/'+p+'?v='+(p==='app.js'||p==='showcase.js'?'0.9.13.5':pkg.version)),p);
+  assert.ok(index.includes('src/scripts/'+p+'?v='+(p==='showcase.js'?'0.9.13.6':p==='app.js'?'0.9.13.5':pkg.version)),p);
  assert.ok(index.includes('src/styles/qol-v0910.css?v='+pkg.version));
  assert.ok(read('api/flip.js').includes("version:'0.9.13'"));
  assert.match(read('src/scripts/server.js'),/return makeState\(data.state\)/);

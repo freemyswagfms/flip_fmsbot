@@ -137,7 +137,9 @@ test('Showcase immediately follows identity, then themed leader CTA',()=>{
  assert.match(app,/openWithProfile\?\.\(publicId\)/);
  const showcase=read('src/scripts/showcase.js');
  assert.match(showcase,/isOwn=false/);
- assert.match(showcase,/identity\+tradeCta/);
+ assert.match(showcase,/identity\+/);
+ assert.match(showcase,/tradePublicId/);
+ assert.doesNotMatch(showcase,/identity\+tradeCta/);
  assert.match(showcase,/data-profile-trade/);
  const trades=read('src/scripts/trades.js');
  assert.match(trades,/async function openWithProfile\(publicId\)/);
@@ -159,7 +161,7 @@ test('Versioned social assets and existing app navigation remain intact',()=>{
  const index=read('index.html'),pkg=JSON.parse(read('package.json'));
  assert.equal(pkg.version,'0.9.13');
  for(const p of ['showcase.js','trades.js','app.js'])
-  assert.ok(index.includes('src/scripts/'+p+'?v='+(p==='trades.js'?'0.9.13':'0.9.13.5')),p);
+  assert.ok(index.includes('src/scripts/'+p+'?v='+(p==='trades.js'?'0.9.13':p==='showcase.js'?'0.9.13.6':'0.9.13.5')),p);
  assert.ok(index.includes('src/scripts/leaderboard.js?v=0.9.13.4'));
  assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.4'));
  const spacing=read('src/styles/leaderboard-v0912.css');
