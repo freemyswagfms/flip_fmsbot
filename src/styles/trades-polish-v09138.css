@@ -1,0 +1,173 @@
+/* FLIP 0.9.13.8 — spacing and presentation of the offers feed.
+   All rules are scoped to the feed; form, transactions and logic stay intact. */
+#flip-trade-live-feed{
+ display:grid;
+ grid-template-columns:minmax(0,1fr);
+ row-gap:16px;
+ align-content:start;
+ min-width:0;
+}
+#flip-trade-live-feed > .flip-trade-sync{
+ margin:3px 1px 0;
+}
+#flip-trade-live-feed > .flip-trade-feed-header{
+ min-width:0;
+ margin:0 0 2px;
+ padding:0 2px;
+ align-items:flex-end;
+}
+#flip-trade-live-feed .flip-trade-feed-header h3{
+ line-height:1.12!important;
+}
+#flip-trade-live-feed .flip-trade-feed-header .outlinebtn{
+ min-height:42px;
+ padding:10px 12px;
+ border:1px solid #4a654d;
+ background:linear-gradient(150deg,#203126,#142219);
+ color:#d8e7d7;
+}
+#flip-trade-live-feed > .flip-trade-feed-panel{
+ min-width:0;
+ margin:0!important;
+ padding:17px 15px 16px!important;
+ border:1px solid #3d5343!important;
+ border-radius:19px!important;
+ background:linear-gradient(155deg,#18221a 0%,#101713 78%)!important;
+ box-shadow:inset 0 1px 0 #c6ffac0b,0 12px 23px #0003;
+}
+#flip-trade-live-feed .flip-trade-feed-head{
+ min-width:0;
+ gap:12px;
+ margin:0 0 14px;
+ align-items:center;
+}
+#flip-trade-live-feed .flip-trade-feed-head h3{
+ display:flex;
+ gap:9px;
+ align-items:center;
+ font-size:12px!important;
+ line-height:1.3!important;
+ letter-spacing:.9px;
+}
+#flip-trade-live-feed .flip-trade-feed-head h3:before{
+ content:'';
+ width:3px;
+ height:15px;
+ border-radius:4px;
+ flex:none;
+ background:var(--trade-lime,#b6ff68);
+ box-shadow:0 0 9px #b6ff6840;
+}
+#flip-trade-live-feed .flip-trade-feed-head>span{
+ min-width:28px;
+ min-height:27px;
+ border:1px solid #4f6c44;
+ padding:4px 8px;
+ border-radius:9px;
+ background:#233a24;
+ color:#b6ff68;
+}
+#flip-trade-live-feed .flip-trade-empty-state{
+ display:flex;
+ flex-direction:column;
+ justify-content:center;
+ align-items:center;
+ gap:6px;
+ min-height:78px;
+ margin:0;
+ padding:14px 10px;
+ border:1px dashed #405744;
+ border-radius:12px;
+ background:linear-gradient(145deg,#121f17,#101813);
+ color:#7e9c86;
+ text-align:center;
+}
+#flip-trade-live-feed .flip-trade-empty-state>span{
+ font:800 20px/1 'Space Grotesk',sans-serif;
+ color:#618269;
+}
+#flip-trade-live-feed .flip-trade-empty-state>small{
+ color:#9db6a4;
+ font:650 10px/1.4 'Manrope',sans-serif;
+}
+#flip-trade-live-feed .flip-trade-offer{
+ margin:0;
+ padding:15px 13px!important;
+ border:1px solid #405746!important;
+ border-radius:14px;
+ background:radial-gradient(ellipse at 96% 0%,#b6ff680b,transparent 55%),
+   linear-gradient(150deg,#192a1e,#101c15);
+ box-shadow:inset 0 1px 0 #ffffff08;
+}
+#flip-trade-live-feed .flip-trade-offer + .flip-trade-offer{margin-top:12px}
+#flip-trade-live-feed .flip-trade-offer.is-fresh{
+ border-color:#b6ff68!important;
+ padding-left:13px!important;
+}
+#flip-trade-live-feed .flip-trade-offer-heading{
+ gap:12px;
+ align-items:flex-start;
+ margin:0 0 15px!important;
+}
+#flip-trade-live-feed .flip-trade-partner{gap:6px}
+#flip-trade-live-feed .flip-trade-partner strong{
+ font-size:13px!important;
+ line-height:1.35;
+}
+#flip-trade-live-feed .flip-trade-profile-link{
+ display:inline-flex;
+ align-items:center;
+ min-height:23px;
+}
+#flip-trade-live-feed .flip-trade-offer .flip-trade-cards{
+ margin:0;
+ border-color:#425e47;
+ border-radius:12px;
+ background:#0b1610;
+}
+#flip-trade-live-feed .flip-trade-offer-side{
+ padding:14px 10px 12px;
+}
+#flip-trade-live-feed .flip-trade-offer .flip-trade-side-top{
+ margin-bottom:12px;
+ gap:6px;
+}
+#flip-trade-live-feed .flip-trade-offer-footer{
+ margin-top:12px;
+ line-height:1.5;
+}
+#flip-trade-live-feed .flip-trade-actions{
+ margin-top:14px;
+ gap:8px;
+}
+#flip-trade-live-feed .flip-trade-status.accepted{
+ background:#294a2e;
+ color:#cbffa9;
+}
+#flip-trade-live-feed .flip-trade-gift-row{
+ padding:12px 3px;
+}
+#flip-trade-live-feed .flip-trade-gift-row + .flip-trade-gift-row{
+ border-top:1px solid #2b4231;
+}
+@media(max-width:365px){
+ #flip-trade-live-feed{row-gap:14px}
+ #flip-trade-live-feed > .flip-trade-feed-panel{
+  padding:15px 11px 14px!important;
+ }
+ #flip-trade-live-feed .flip-trade-offer{
+  padding:13px 10px!important;
+ }
+ #flip-trade-live-feed .flip-trade-offer.is-fresh{
+  padding-left:10px!important;
+ }
+ #flip-trade-live-feed .flip-trade-offer-side{
+  padding:12px 8px 10px;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ #flip-trade-live-feed .flip-trade-offer{
+  animation:none!important;
+  transition:none!important;
+ }
+}

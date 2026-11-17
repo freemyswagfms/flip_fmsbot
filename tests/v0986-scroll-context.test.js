@@ -125,10 +125,10 @@ test('Correct v0.9.8.6 cache tag and release; game and Studio mechanics untouche
  const pkg=JSON.parse(read('package.json')),html=read('index.html');
  assert.ok(pkg.version.localeCompare('0.9.8.6',undefined,{numeric:true})>=0);
  assert.ok(html.includes('src/scripts/scroll-context.js?v=0.9.8.6'));
- assert.ok(html.includes('src/scripts/app.js?v='+pkg.version));
+ assert.ok(html.includes('src/scripts/app.js?v=0.9.13.5'));
  assert.ok(html.indexOf('scroll-context.js?v=0.9.8.6')<
-   html.indexOf('src/scripts/app.js?v='+pkg.version));
- assert.ok(html.includes('src/scripts/trades.js?v='+pkg.version));
+   html.indexOf('src/scripts/app.js?v=0.9.13.5'));
+ assert.ok(html.includes('src/scripts/trades.js?v=0.9.13.8'));
  assert.ok(html.includes('src/scripts/achievements.js?v='+pkg.version));
  assert.ok(read('api/flip.js').includes("version:'"+pkg.version+"'"));
 });

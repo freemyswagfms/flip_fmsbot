@@ -1,4 +1,4 @@
-/* FLIP v0.9.12 — gallery-first trades; original signed transactions unchanged. */
+/* FLIP v0.9.13.8 — polished offer spacing and friendly empty states; signed trades unchanged. */
 (() => {
 'use strict';
 const E=x=>String(x??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -342,11 +342,15 @@ function giftHistory(){
   '</section>';
 }
 function section(title,items){
+  const emptyName=title==='ВХОДЯЩИЕ'?'Пока нет входящих предложений':
+    title==='ИСХОДЯЩИЕ'?'Пока нет исходящих предложений':
+    title==='ИСТОРИЯ'?'Здесь появятся завершённые сделки':'Пока пусто';
   return '<section class="flip-social-panel flip-trade-feed-panel">'+
     '<div class="flip-trade-feed-head"><h3>'+title+'</h3>'+
     '<span>'+items.length+'</span></div>'+
     (items.length?items.map(rowTrade).join(''):
-      '<div class="flip-trade-empty-state" aria-label="Нет предложений">—</div>')+'</section>';
+      '<div class="flip-trade-empty-state" aria-label="'+E(emptyName)+'">'+
+        '<span aria-hidden="true">—</span><small>'+E(emptyName)+'</small></div>')+'</section>';
 }
 function liveStatus(){
   if(s.syncError)return '<div class="flip-trade-sync is-error" role="alert">'+

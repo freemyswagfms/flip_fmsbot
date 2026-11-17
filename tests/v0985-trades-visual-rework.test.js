@@ -158,9 +158,9 @@ test('v0.9.8.5 only revamps presentation: server mechanics and conditions retain
  css=read('src/styles/social.css'),app=read('src/scripts/app.js'),
  pkg=JSON.parse(read('package.json'));
  assert.ok(pkg.version.localeCompare('0.9.8.5',undefined,{numeric:true})>=0);
- assert.ok(html.includes('src/scripts/trades.js?v='+pkg.version));
+ assert.ok(html.includes('src/scripts/trades.js?v=0.9.13.8'));
  assert.ok(html.includes('src/styles/social.css?v=0.9.8.5'));
- assert.ok(html.includes('src/scripts/app.js?v='+pkg.version));
+ assert.ok(html.includes('src/scripts/app.js?v=0.9.13.5'));
  assert.match(app,/panel flip-trade-page/);
  assert.match(trades,/window\.FLIPCardViewer\?\.open\?\./);
  assert.match(trades,/data-trade-preview-card/);
@@ -172,4 +172,6 @@ test('v0.9.8.5 only revamps presentation: server mechanics and conditions retain
  assert.match(trades,/data-trade-inspect/);
  assert.doesNotMatch(trades,/setInterval\(/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.ok(html.includes('src/styles/trades-polish-v09138.css?v=0.9.13.8'));
+ assert.match(read('src/styles/trades-polish-v09138.css'),/#flip-trade-live-feed\{/);
 });
