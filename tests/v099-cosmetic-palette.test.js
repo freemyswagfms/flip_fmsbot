@@ -63,6 +63,6 @@ test('Versioned new stylesheet and game assets load under one release',()=>{
  assert.equal(pkg.version,'0.9.13');
  assert.ok(html.includes('src/styles/cosmetic-v099.css?v=0.9.9'));
  for(const file of ['profile-cosmetics.js','app.js','showcase.js'])
-  assert.ok(html.includes('src/scripts/'+file+'?v='+(file==='app.js'?'0.9.13.5':'0.9.13.6')));
+  assert.ok(html.includes('src/scripts/'+file+'?v='+(file==='app.js'?'0.9.13.5':file==='profile-cosmetics.js'?'0.9.13.7':'0.9.13.6')));
  assert.ok(read('api/flip.js').includes("version:'"+pkg.version+"'"));
 });

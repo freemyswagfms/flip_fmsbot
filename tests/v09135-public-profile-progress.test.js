@@ -93,7 +93,7 @@ test('Public SQL adds only per-level XP, never wallet or internal inventory',()=
 test('Telegram WebView loads updated styles and scripts without changing currency or XP rules',()=>{
  const html=read('index.html');
  for(const file of ['showcase.js','profile-cosmetics.js'])
-  assert.ok(html.includes('src/scripts/'+file+'?v=0.9.13.6'),file);
+  assert.ok(html.includes('src/scripts/'+file+'?v='+(file==='profile-cosmetics.js'?'0.9.13.7':'0.9.13.6')),file);
  assert.ok(html.includes('src/scripts/app.js?v=0.9.13.5'));
  assert.ok(html.includes('src/styles/public-profile-v09135.css?v=0.9.13.6'));
  assert.equal(JSON.parse(read('package.json')).version,'0.9.13');
