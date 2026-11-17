@@ -227,9 +227,9 @@ function profile(){
  const stats='<div class="flip-profile-metrics">'+
   '<div><small>COLLECTION POINTS</small><strong>'+
     Number(state.cp||0).toLocaleString('ru-RU',{maximumFractionDigits:2})+' CP</strong></div>'+
-  '<div><small>РЕЙТИНГОВЫХ</small><strong>'+
+  '<div><small>КАРТОЧЕК</small><strong>'+
     Number(data?.ranked_cards||0).toLocaleString('ru-RU')+'</strong></div>'+
-  '<div><small>РАЗНЫХ РЕЙТИНГОВЫХ</small><strong>'+
+  '<div><small>УНИКАЛЬНЫХ</small><strong>'+
     Number(data?.ranked_variants||0).toLocaleString('ru-RU')+'</strong></div></div>';
  const lowerSkin=escapeHtml(window.FLIPProfileCosmetics?.classes?.(data)||'');
  return '<div class="panel flip-profile-page">'+
@@ -956,7 +956,7 @@ async function claimAchievement(button){
    }catch{}
  }finally{serverBusy=false;}
 }
-function handleTask(i){if(state.claimedTasks.includes(i))return;modal(`<span class="eyebrow">DAILY TASK</span><h3>${taskDefs[i].title}</h3><p>Тестовое задание · без награды.</p><button class="bigbtn" id="closeReveal">ПОНЯТНО</button>`)}
+function handleTask(i){if(state.claimedTasks.includes(i))return;modal(`<span class="eyebrow">DAILY TASK</span><h3>${taskDefs[i].title}</h3><p>Демо-задание · без награды.</p><button class="bigbtn" id="closeReveal">ПОНЯТНО</button>`)}
 document.addEventListener('click',e=>{
    const readAll=e.target.closest('[data-event-read-all]');
    if(readAll){markNotification(null);return;}

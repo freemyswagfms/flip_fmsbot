@@ -37,13 +37,18 @@
      '<small class="flip-showcase-rarity">'+esc(rarityLabel[rarity]||rarity.toUpperCase())+
        '</small></span>';
  }
- function slotButtons(slots,editable=false,slotCount=3,{showLocks=false}={}){
+ function slotButtons(slots,editable=false,slotCount=3,{showLocks=false,hideEmpty=false}={}){
     const source=Array.isArray(slots)?slots:[];
     const max=Math.min(6,Math.max(3,Number(slotCount)||3));
     const limit=showLocks?6:max;
-    return '<div class="flip-showcase-grid '+(limit>3?'is-expanded':'')+'">'+
-      Array.from({length:limit},(_,i)=>{
-       const slot=i+1,locked=slot>max;
+    const visiblePositions=hideEmpty?
+      [...new Set(source.filter(x=>x?.card_id&&cardFromId(x.card_id))
+        .map(x=>Number(x.slot))
+        .filter(n=>Number.isInteger(n)&&n>=1&&n<=max))].sort((a,b)=>a-b):
+      Array.from({length:limit},(_,i)=>i+1);
+    return '<div class="flip-showcase-grid '+(visiblePositions.length>3?'is-expanded':'')+'">'+
+      visiblePositions.map(slot=>{
+       const locked=slot>max;
        if(locked)return '<button type="button" class="flip-showcase-locked" '+
         'data-cosmetic-open-shop aria-label="Открыть дополнительное место '+slot+
         '"><span class="flip-showcase-lock-icon">+</span>'+
@@ -145,11 +150,15 @@
       esc(initial)+'</span>'+photo+'</span>';
     const identity=window.FLIPProfileCosmetics?.identity({profile,name,
       handle:profile.username?'@'+profile.username:'',
-      avatar:avatarContent,level:profile.level,publicMode:true})||
+      avatar:avatarContent,level:profile.level,
+      xp:profile.xp,xpToNext:profile.xp_to_next,publicMode:true})||
       '<section class="flip-identity"><div class="flip-identity-row"><div class="flip-identity-avatar">'+
       avatarContent+'</div><div class="flip-identity-meta"><strong>'+esc(name)+'</strong>'+
       '<span>LVL '+fmt(profile.level)+'</span></div></div></section>';
     const limit=Math.min(6,Math.max(3,Number(profile.slot_count)||3));
+    const filledSlots=(Array.isArray(profile.slots)?profile.slots:[])
+      .filter(s=>Number.isInteger(Number(s?.slot))&&Number(s.slot)>=1&&
+        Number(s.slot)<=limit&&s?.card_id&&cardFromId(s.card_id));
     const extraBadges=unpinnedBadges(profile.badges,profile.pinned_badges);
     // Only other people's public identity cards offer a direct trade.
     // The existing trade backend verifies account age and card ownership.
@@ -162,15 +171,17 @@
       '<section class="content-card flip-showcase-profile '+
         esc(window.FLIPProfileCosmetics?.classes?.(profile)||'')+'">'+
       '<div class="flip-showcase-heading"><div><span class="eyebrow">PLAYER COLLECTION</span>'+
-      '<h3>ВИТРИНА ИГРОКА</h3></div><strong>TOP '+limit+'</strong></div>'+
-        slotButtons(profile.slots,false,limit)+'</section>'+
+      '<h3>ВИТРИНА ИГРОКА</h3></div><strong>TOP '+filledSlots.length+'</strong></div>'+
+        (filledSlots.length?slotButtons(filledSlots,false,limit,{hideEmpty:true}):
+          '<p class="flip-showcase-empty-public">Игрок пока не добавил карточки в витрину.</p>')+
+        '</section>'+
       '<div class="flip-profile-lower '+
         esc(window.FLIPProfileCosmetics?.classes?.(profile)||'')+'">'+
       (window.FLIPProfileCosmetics?.featuredBadges(profile)||'')+
       '<div class="flip-showcase-stats flip-showcase-stats-public">'+
         '<div><small>COLLECTION POINTS</small><strong>'+fmt(profile.cp)+' CP</strong></div>'+
-        '<div><small>РЕЙТИНГОВЫХ КАРТОЧЕК</small><strong>'+fmt(profile.ranked_cards)+'</strong></div>'+
-        '<div><small>РАЗНЫХ РЕЙТИНГОВЫХ</small><strong>'+fmt(profile.ranked_variants)+'</strong></div></div>'+
+        '<div><small>КАРТОЧЕК</small><strong>'+fmt(profile.ranked_cards)+'</strong></div>'+
+        '<div><small>УНИКАЛЬНЫХ</small><strong>'+fmt(profile.ranked_variants)+'</strong></div></div>'+
       (window.FLIPActivity?.publicStats(profile.stats)||'')+
       (extraBadges.length?'<section class="content-card flip-profile-all-badges"><h3>ДРУГИЕ ЗНАЧКИ</h3>'+
         badges(extraBadges)+'</section>':'')+'</div></div>';

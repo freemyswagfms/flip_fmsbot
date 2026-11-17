@@ -159,7 +159,7 @@ test('Versioned social assets and existing app navigation remain intact',()=>{
  const index=read('index.html'),pkg=JSON.parse(read('package.json'));
  assert.equal(pkg.version,'0.9.13');
  for(const p of ['showcase.js','trades.js','app.js'])
-  assert.ok(index.includes('src/scripts/'+p+'?v=0.9.13'),p);
+  assert.ok(index.includes('src/scripts/'+p+'?v='+(p==='trades.js'?'0.9.13':'0.9.13.5')),p);
  assert.ok(index.includes('src/scripts/leaderboard.js?v=0.9.13.4'));
  assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.4'));
  const spacing=read('src/styles/leaderboard-v0912.css');

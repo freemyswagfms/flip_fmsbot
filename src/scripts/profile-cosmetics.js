@@ -53,11 +53,16 @@
    o.showcase_skin?'flip-scene-'+safe('showcase_skin',o.showcase_skin):'flip-scene-default',
    'flip-color-'+safeColor(o.frame_color)].join(' ');
  };
- function identity({profile,name,handle,avatar,level,xp=0,xpToNext=100,publicMode=false,override=null}){
+ function identity({profile,name,handle,avatar,level,xp=0,xpToNext=null,publicMode=false,override=null}){
   const item=override&&override.kind==='title'?override.id:profile?.appearance?.title;
   const title=safe('title',item)?cosmeticNames[item]:null;
   const artist=profile?.favorite_artist?.name||'';
-  const progress=Math.min(100,Math.max(0,100*Number(xp||0)/Math.max(1,Number(xpToNext)||100)));
+  // Live values are supplied by flip_public_profile / flip_snapshot.
+  // Fallback threshold follows the same server progression rule.
+  const currentXp=Math.max(0,Number(xp)||0);
+  const threshold=Math.max(1,Number(xpToNext)||
+    (100+50*(Math.max(1,Number(level)||1)-1)));
+  const progress=Math.min(100,Math.max(0,100*currentXp/threshold));
   return '<section class="flip-identity '+esc(classes(profile,override))+'">'+
    '<div class="flip-identity-art" aria-hidden="true"><i></i><i></i><i></i></div>'+
    '<div class="flip-identity-top"><span>FLIP / COLLECTOR</span>'+
@@ -69,9 +74,13 @@
    '<div class="flip-identity-level"><span>LVL '+fmt(level)+'</span>'+
    '<span>'+fmt(profile?.cp)+' CP</span></div></div></div>'+
    (artist?'<div class="flip-identity-favorite"><span>♪</span> '+esc(artist)+'</div>':'')+
-   (!publicMode?'<div class="flip-identity-progress"><div style="width:'+progress+
-    '%"></div></div><div class="flip-identity-progress-caption"><span>'+
-    fmt(xp)+' / '+fmt(xpToNext)+' XP</span><span>СЛЕДУЮЩИЙ УРОВЕНЬ · +30 F</span></div>':'')+
+   '<div class="flip-identity-progress" role="progressbar" aria-label="Прогресс уровня"'+
+    ' aria-valuemin="0" aria-valuemax="'+esc(threshold)+'"'+
+    ' aria-valuenow="'+esc(Math.min(currentXp,threshold))+'">'+
+    '<div style="width:'+progress+'%"></div></div>'+
+    '<div class="flip-identity-progress-caption"><span>'+
+    fmt(currentXp)+' / '+fmt(threshold)+' XP</span>'+
+    '<span>СЛЕДУЮЩИЙ УРОВЕНЬ · +30 F</span></div>'+
    '</section>';
  }
  function profileSettings(profile,artists,{online=false}={}){

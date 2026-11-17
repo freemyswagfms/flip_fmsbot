@@ -1,0 +1,25 @@
+/* FLIP 0.9.13.5 — compact public identities and honest populated showcases.
+   The existing identity background supplies --identity-ink for the XP track. */
+.flip-public-profile .flip-identity{
+ min-height:0;
+ height:auto;
+}
+.flip-public-profile .flip-identity-row{
+ margin:16px 0 13px;
+}
+.flip-public-profile .flip-identity-progress{
+ margin-top:3px;
+}
+.flip-public-profile .flip-identity-progress>div{
+ background:var(--identity-ink);
+ box-shadow:0 0 10px var(--identity-ink);
+}
+.flip-public-profile .flip-identity-progress-caption span:first-child{
+ color:var(--identity-ink);
+}
+.flip-showcase-empty-public{
+ margin:0!important;padding:13px 11px;
+ border:1px dashed #5a795b;border-radius:12px;
+ color:#a5b7a6;font:650 11px/1.5 'Manrope',sans-serif;
+ text-align:center;
+}
