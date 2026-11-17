@@ -140,7 +140,9 @@ test('Showcase immediately follows identity, then themed leader CTA',()=>{
  assert.match(showcase,/identity\+/);
  assert.match(showcase,/tradePublicId/);
  assert.doesNotMatch(showcase,/identity\+tradeCta/);
- assert.match(showcase,/data-profile-trade/);
+ const identity=read('src/scripts/profile-cosmetics.js');
+ assert.match(identity,/data-profile-trade/);
+ assert.match(identity,/flip-identity-trade/);
  const trades=read('src/scripts/trades.js');
  assert.match(trades,/async function openWithProfile\(publicId\)/);
  assert.match(trades,/api\('profile_target',\{publicId\}\)/);
