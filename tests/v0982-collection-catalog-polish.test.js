@@ -72,8 +72,8 @@ test('Secret cards never appear before ownership, remain accessible once actuall
 test('The five public artistic styles match the approved definitions',()=>{
  const {FLIPCatalog}=runtime();
  assert.deepEqual(JSON.parse(JSON.stringify(FLIPCatalog.rarityStyles)),{
-  common:'Мраморный барельеф',rare:'Витраж',epic:'Масляная живопись',
-  legendary:'Вышивка / гобелен',mythic:'Многослойная бумажная скульптура',
+  common:'Мраморный барельеф',rare:'Вышивка / гобелен',epic:'Витраж',
+  legendary:'Масляная живопись',mythic:'Многослойная бумажная скульптура',
   hidden:'Секретный вариант'
  });
  assert.equal(FLIPCatalog.getCard('carti','die-lit','rare').id,'carti/die-lit/rare');
@@ -108,7 +108,8 @@ test('Final roulette information and action are spaced without changing animatio
 test('v0.9.8.2 asset cache revision is confined to changed public files',()=>{
  const html=source('index.html'),pkg=JSON.parse(source('package.json'));
  assert.ok(pkg.version.localeCompare('0.9.8.2',undefined,{numeric:true})>=0);
- for(const file of ['src/scripts/catalog.js','src/scripts/collection.js','src/scripts/card-viewer.js',
+ assert.ok(html.includes('src/scripts/catalog.js?v=0.9.13.9'));
+ for(const file of ['src/scripts/collection.js','src/scripts/card-viewer.js',
   'src/styles/card-viewer.css']){
   assert.ok(html.includes(file+'?v=0.9.8.2'),file);
  }
