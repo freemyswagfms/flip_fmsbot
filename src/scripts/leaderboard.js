@@ -1,4 +1,4 @@
-/* FLIP 0.9.13 — searched all-player CP ranking with compact identity skins. */
+/* FLIP 0.9.13.3 — lazy Telegram photos with initials as safe fallback. */
 (() => {
  'use strict';
  const E=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39'}[c]));
@@ -9,6 +9,77 @@
  const colors=new Set(['green','pink','red','orange','blue','white','violet','cyan','rgb','glitch']);
  const fmt=n=>Number(n||0).toLocaleString('ru-RU',{maximumFractionDigits:2});
  let root=null,serial=0,searchTimer=null,query='';
+ const photoCache=new Map();
+ const photoRequests=new Map();
+ const photoQueue=[];
+ let photoActive=0,photoObserver=null;
+ const safePhoto=value=>typeof value==='string'&&
+   (/^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/.test(value)||
+    /^https:\/\/[A-Za-z0-9.-]+(?:\/[A-Za-z0-9_./%?&=+-]*)?$/.test(value))?value:null;
+ function resolvePhoto(id){
+   if(photoCache.has(id))return Promise.resolve(photoCache.get(id));
+   if(photoRequests.has(id))return photoRequests.get(id);
+   const promise=fetch('/api/flip?avatar='+encodeURIComponent(id),{
+     cache:'no-store',headers:{'x-telegram-init-data':raw}
+   }).then(async response=>{
+     if(!response.ok)return null;
+     const data=await response.json();
+     return safePhoto(data?.avatar_data);
+   }).catch(()=>null).then(data=>{
+     photoCache.set(id,data);
+     return data;
+   }).finally(()=>photoRequests.delete(id));
+   photoRequests.set(id,promise);
+   return promise;
+ }
+ function pumpPhotos(){
+   // Constrain Telegram lookups when dozens of players appear in a ranking.
+   while(photoActive<3&&photoQueue.length){
+     const element=photoQueue.shift();
+     if(!element?.isConnected)continue;
+     const id=element.getAttribute('data-leader-avatar');
+     if(!validProfileId(id))continue;
+     photoActive++;
+     resolvePhoto(id).then(data=>{
+       if(!data||!element.isConnected||typeof document==='undefined')return;
+       const img=document.createElement('img');
+       img.className='flip-leader-photo';
+       img.alt='';
+       img.loading='lazy';
+       img.decoding='async';
+       img.referrerPolicy='no-referrer';
+       img.addEventListener('error',()=>img.remove(),{once:true});
+       img.src=data;
+       element.appendChild(img);
+     }).finally(()=>{photoActive--;pumpPhotos()});
+   }
+ }
+ function schedulePhoto(element){
+   if(!element?.dataset||element.dataset.photoQueued)return;
+   element.dataset.photoQueued='1';
+   photoQueue.push(element);
+   pumpPhotos();
+ }
+ function hydratePhotos(host){
+   photoObserver?.disconnect();
+   photoObserver=null;
+   const elements=Array.from(host?.querySelectorAll?.('[data-leader-avatar]')||[]);
+   if(!elements.length||!raw)return;
+   if(typeof window.IntersectionObserver==='function'){
+     photoObserver=new window.IntersectionObserver(entries=>{
+       for(const entry of entries){
+         if(!entry.isIntersecting)continue;
+         photoObserver?.unobserve(entry.target);
+         schedulePhoto(entry.target);
+       }
+     },{rootMargin:'160px 0px'});
+     elements.forEach(el=>photoObserver.observe(el));
+   }else{
+     // Old WebViews still get every photo without a parallel request burst.
+     elements.forEach(schedulePhoto);
+   }
+ }
+
  const initials=name=>{
    const str=String(name||'FLIP').replace(/^@/,'').trim();
    const words=str.split(/\s+/).filter(Boolean);
@@ -32,7 +103,9 @@
      ' class="flip-leader-player'+skin(p)+(featured?' is-featured':'')+
      (p.isMe?' is-me':'')+'">'+
      '<span class="flip-leader-rank">#'+E(number)+'</span>'+
-     '<span class="flip-leader-avatar" aria-hidden="true">'+E(initials(p.name))+'</span>'+
+     '<span class="flip-leader-avatar" aria-hidden="true"'+
+       (id?' data-leader-avatar="'+E(id)+'"':'')+'>'+
+       E(initials(p.name))+'</span>'+
      '<span class="flip-leader-person"><strong>'+E(p.name||'FLIP PLAYER')+'</strong>'+
      '<small>LVL '+E(p.level)+' · '+E(p.rankedVariants)+' уник. · '+
      E(p.rankedCards)+' карт.</small></span>'+
@@ -112,6 +185,7 @@
      el.innerHTML=results(data);
      if(el.dataset)el.dataset.loaded='1';
      window.FLIPIcons?.render(el);
+     hydratePhotos(el);
    }catch{
      if(job!==serial||!root?.isConnected)return;
      el.innerHTML='<p class="flip-social-error">Не удалось загрузить игроков.</p>'+

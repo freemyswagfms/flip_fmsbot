@@ -5,6 +5,33 @@ import { createHmac, createHash, timingSafeEqual } from 'node:crypto';
 import {verifySubscription} from './task-bot.js';
 import {getPublicAvatarData} from './profile-avatar.js';
 
+/* Signed leaderboard-photo reads reuse the same private Telegram avatar
+   lookup as public profiles. Short bounded in-memory cache prevents repeated
+   Bot API calls while browsing/searching. No Telegram file URL is returned. */
+const leaderboardAvatarCache=new Map();
+async function leaderboardAvatar(publicId,viewer,db,rpcRequest) {
+  const current=Date.now();
+  const cached=leaderboardAvatarCache.get(publicId);
+  if(cached&&cached.expires>current)return cached.promise;
+  if(cached)leaderboardAvatarCache.delete(publicId);
+  if(leaderboardAvatarCache.size>=128)
+    leaderboardAvatarCache.delete(leaderboardAvatarCache.keys().next().value);
+  const request=(async()=>{
+    const id=Number(await rpcRequest('flip_public_avatar_target',{
+      p_public_id:publicId
+    },db));
+    if(!Number.isSafeInteger(id)||id<=0)return null;
+    if(id===viewer.telegram_id&&viewer.photo_url)return viewer.photo_url;
+    return getPublicAvatarData(id,process.env.TELEGRAM_BOT_TOKEN);
+  })().catch(()=>null);
+  const entry={promise:request,expires:current+90_000};
+  leaderboardAvatarCache.set(publicId,entry);
+  const data=await request;
+  entry.expires=Date.now()+(data?15*60_000:90_000);
+  return data;
+}
+
+
 const MAX_AGE_SECONDS = 24 * 60 * 60;
 const MAX_INIT_DATA_LENGTH = 8192;
 const MAX_BODY_LENGTH = 1024;
@@ -120,6 +147,12 @@ export async function handleRequest(request,env=undefined){
     }
     if(request.method==='GET' && u.searchParams.get('showcase')==='1'){
       return json(await rpc('flip_showcase_own',{p_telegram_id:user.telegram_id},db));
+    }
+    if(request.method==='GET' && u.searchParams.has('avatar')){
+      const publicId=u.searchParams.get('avatar');
+      if(!/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(publicId||''))
+        return json({error:'BAD_REQUEST'},400);
+      return json({avatar_data:await leaderboardAvatar(publicId,user,db,rpc)});
     }
     if(request.method==='GET' && u.searchParams.has('profile')){
       const publicId=u.searchParams.get('profile');

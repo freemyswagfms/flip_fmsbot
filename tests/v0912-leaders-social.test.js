@@ -158,9 +158,10 @@ test('SQL server-only functions do not leak database roles or modify CP economy'
 test('Versioned social assets and existing app navigation remain intact',()=>{
  const index=read('index.html'),pkg=JSON.parse(read('package.json'));
  assert.equal(pkg.version,'0.9.13');
- for(const p of ['leaderboard.js','showcase.js','trades.js','app.js'])
+ for(const p of ['showcase.js','trades.js','app.js'])
   assert.ok(index.includes('src/scripts/'+p+'?v=0.9.13'),p);
- assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.2'));
+ assert.ok(index.includes('src/scripts/leaderboard.js?v=0.9.13.3'));
+ assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.3'));
  const spacing=read('src/styles/leaderboard-v0912.css');
  assert.match(spacing,/\.flip-leader-podium \+ \.flip-leader-list\{margin-top:8px\}/);
  assert.ok(spacing.includes('.flip-leaderboard-page .flip-leader-results-heading{'));

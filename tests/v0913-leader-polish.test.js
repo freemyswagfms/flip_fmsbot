@@ -61,8 +61,9 @@ test('Read-only leaderboard SQL returns self with safe appearance from settings'
 test('Current release is cache-busted for Telegram WebView',()=>{
  const index=read('index.html'),pkg=JSON.parse(read('package.json'));
  assert.equal(pkg.version,'0.9.13');
- for(const p of ['app.js','leaderboard.js','profile-cosmetics.js'])
+ for(const p of ['app.js','profile-cosmetics.js'])
   assert.ok(index.includes('src/scripts/'+p+'?v='+pkg.version),p);
- assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.2'));
+ assert.ok(index.includes('src/scripts/leaderboard.js?v=0.9.13.3'));
+ assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.3'));
  assert.ok(read('api/flip.js').includes("version:'"+pkg.version+"'"));
 });
