@@ -123,7 +123,7 @@
      '<strong>Пока нет уведомлений</strong>'+
      '<small>Обмены, подарки и награды появятся здесь.</small></div>':'')+
     '<div class="flip-event-bottom">'+
-    '<button type="button" data-event-read-all '+(!unread.length?'disabled':'')+
+    '<button type="button" data-event-read-all '+(!totalUnread?'disabled':'')+
       '>ПРОЧИТАТЬ ВСЁ</button>'+
     '<button type="button" data-action="activity">ВСЯ АКТИВНОСТЬ ↗</button></div>';
  }

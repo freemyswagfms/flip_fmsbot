@@ -54,6 +54,13 @@ test('Inbox safely escapes other players names and handles empty, offline and re
  assert.match(readHtml,/ВСЁ ПРОЧИТАНО/);
  assert.match(readHtml,/data-event-read-all disabled/);
 });
+test('Unread server count keeps mark-all available even beyond the first 25 entries',()=>{
+ const older=Array.from({length:25},(_,i)=>({...events[3],id:100+i,read:true}));
+ const html=ui().notifications({notifications:older,unread_count:3},{online:true});
+ assert.match(html,/НОВЫХ · 3/);
+ assert.match(html,/data-event-read-all\s+>/);
+ assert.doesNotMatch(html,/data-event-read-all disabled/);
+});
 test('Activity history retains the partner-profile action while notification tiles do not nest buttons',()=>{
  const e={...events[0],partner_public_id:id};
  const html=ui().eventMarkup(e);
