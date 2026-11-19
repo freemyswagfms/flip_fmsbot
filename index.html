@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="./src/styles/leaderboard-v0912.css?v=0.9.13.4" />
   <link rel="stylesheet" href="./src/styles/public-profile-v09135.css?v=0.9.13.6" />
   <link rel="stylesheet" href="./src/styles/trades-polish-v09138.css?v=0.9.13.8" />
+  <link rel="stylesheet" href="./src/styles/notifications-v0914.css?v=0.9.14" />
   <style>
     /* Critical splash styles are inline to avoid a flash of the unstyled app. */
     #flip-splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;background:#090c0a;color:#f6faf4;font-family:Arial,sans-serif;transition:opacity .4s ease,visibility .4s ease}
@@ -74,8 +75,11 @@
         </div>
       </header>
       <section class="notif-sheet" id="notifications" aria-label="Уведомления">
-        <button class="close" id="closeNotifications" aria-label="Закрыть уведомления">✕</button>
-        <div class="flip-notif-head"><h3>УВЕДОМЛЕНИЯ</h3><small>FLIP / LIVE</small></div>
+        <div class="flip-notif-head">
+          <div class="flip-notif-brand"><span>FLIP / INBOX</span>
+            <h3>УВЕДОМЛЕНИЯ<span>.</span></h3></div>
+          <button class="close flip-notif-close" id="closeNotifications" type="button" aria-label="Закрыть уведомления">✕</button>
+        </div>
         <div id="flip-notifications-body" class="flip-notif-sheet-body" aria-live="polite"></div>
       </section>
       <div class="scroll" id="scroll"><div id="screen"></div></div>
@@ -106,15 +110,15 @@
   <script src="./src/scripts/admin-visual.js?v=0.9.6.4" defer></script>
   <script src="./src/scripts/admin.js?v=0.9.6.4" defer></script>
   <script src="./src/scripts/leaderboard.js?v=0.9.13.4" defer></script>
-  <script src="./src/scripts/trades.js?v=0.9.13.8" defer></script>
+  <script src="./src/scripts/trades.js?v=0.9.14" defer></script>
   <script src="./src/scripts/achievements.js?v=0.9.14" defer></script>
   <script src="./src/scripts/profile-cosmetics.js?v=0.9.13.7" defer></script>
   <script src="./src/scripts/showcase.js?v=0.9.13.6" defer></script>
   <script src="./src/scripts/store.js?v=0.9.8.7" defer></script>
   <script src="./src/scripts/pack-reveal.js?v=0.9.14" defer></script>
-  <script src="./src/scripts/activity.js?v=0.9.8.7" defer></script>
+  <script src="./src/scripts/activity.js?v=0.9.14" defer></script>
   <script src="./src/scripts/delivery-reveal.js?v=0.9.8.3" defer></script>
   <script src="./src/scripts/scroll-context.js?v=0.9.8.6" defer></script>
-  <script src="./src/scripts/app.js?v=0.9.13.5" defer></script>
+  <script src="./src/scripts/app.js?v=0.9.14" defer></script>
 </body>
 </html>
