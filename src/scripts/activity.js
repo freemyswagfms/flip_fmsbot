@@ -1,4 +1,4 @@
-/* FLIP v0.9.6 — real notifications, private activity and player statistics. */
+/* FLIP v0.9.14 — private inbox, grouped notifications and styled activity. */
 (()=>{
  'use strict';
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({
@@ -55,36 +55,75 @@
   }
   return item?.title||'Событие FLIP';
  }
+ function eventTone(kind){
+  const value=String(kind||'');
+  if(value.startsWith('trade_')||value.startsWith('currency_'))return 'trade';
+  if(value.startsWith('gift_'))return 'gift';
+  if(value.startsWith('achievement_'))return 'achievement';
+  if(value==='drop'||value==='pack')return 'collection';
+  return 'general';
+ }
  function eventMarkup(e,{compact=false}={}){
-  const type=types[e.kind]||{icon:'◈',title:'Событие FLIP',route:'activity'};
-  const unread=e.read===false;
-  const id=Number(e.id);
+  const type=types[e?.kind]||{icon:'◈',title:'Событие FLIP',route:'activity'};
+  const unread=e?.read===false;
+  const id=Number(e?.id);
   const validId=Number.isSafeInteger(id)&&id>0;
-  return '<article class="flip-event '+(unread&&compact?'is-unread':'')+
-    '"><span class="flip-event-icon" aria-hidden="true">'+type.icon+'</span>'+
-    '<div class="flip-event-copy"><strong>'+esc(type.title)+'</strong>'+
-      '<p>'+esc(detail(e))+'</p>'+
-      '<small>'+esc(when(e.created_at))+' · МСК</small></div>'+
-    (compact?'<button type="button" class="flip-event-open" '+
-      'data-event-route="'+esc(type.route)+'"'+
-      (validId?' data-event-read="'+id+'"':'')+
-      ' aria-label="Открыть: '+esc(type.title)+'">↗</button>':
-      ((e.kind?.startsWith('trade_')||e.kind?.startsWith('currency_')||e.kind?.startsWith('gift_'))&&e.partner_public_id?
+  const tone=eventTone(e?.kind);
+  const css='flip-event flip-event--'+tone+(unread?' is-unread':'');
+  const content='<span class="flip-event-icon" aria-hidden="true">'+type.icon+'</span>'+
+    '<span class="flip-event-copy"><strong>'+esc(type.title)+'</strong>'+
+    '<span class="flip-event-description">'+esc(detail(e))+'</span>'+
+    '<small>'+esc(when(e.created_at))+' · МСК</small></span>';
+  if(compact){
+   // Entire tile is accessible and tappable, without nested buttons.
+   return '<button type="button" class="'+css+' flip-notif-item"'+
+     ' data-event-route="'+esc(type.route)+'"'+
+     (validId?' data-event-read="'+id+'"':'')+
+     ' aria-label="Открыть: '+esc(type.title)+'">'+
+     content+(unread?'<span class="flip-notif-new" aria-hidden="true"></span>':'')+
+     '<span class="flip-event-open" aria-hidden="true">↗</span></button>';
+  }
+  return '<article class="'+css+'">'+content+
+   ((e?.kind?.startsWith('trade_')||e?.kind?.startsWith('currency_')||
+      e?.kind?.startsWith('gift_'))&&e?.partner_public_id?
        '<button type="button" class="flip-event-profile" data-player-profile="'+
-        esc(e.partner_public_id)+'">ПРОФИЛЬ ↗</button>':''))+
-    '</article>';
+        esc(e.partner_public_id)+'">ПРОФИЛЬ ↗</button>':'')+
+   '</article>';
  }
  function notifications(hub,{online=false,loading=false}={}){
-  const list=Array.isArray(hub?.notifications)?hub.notifications:[];
+  const list=Array.isArray(hub?.notifications)?hub.notifications.slice(0,25):[];
   const ready=Math.max(0,Number(hub?.rewards_ready)||0);
-  if(!online)return '<p class="flip-event-empty">Уведомления доступны после входа через Telegram.</p>';
-  if(loading&&!hub)return '<p class="flip-event-empty">Обновляем уведомления…</p>';
-  return (ready?'<button type="button" class="flip-event-reward" data-event-route="achievements">'+
-    '✦ '+fmt(ready)+' наград доступно в достижениях <span>↗</span></button>':'')+
-   (list.length?list.slice(0,25).map(e=>eventMarkup(e,{compact:true})).join(''):
-     '<p class="flip-event-empty">Пока нет уведомлений.</p>')+
+  const unread=list.filter(e=>e?.read===false);
+  const earlier=list.filter(e=>e?.read!==false);
+  const totalUnread=Math.max(unread.length,Number(hub?.unread_count)||0);
+  if(!online)return '<div class="flip-notif-empty">'+
+    '<span class="flip-notif-empty-icon" aria-hidden="true">◈</span>'+
+    '<strong>Уведомления недоступны</strong>'+
+    '<small>Открой FLIP через Telegram, чтобы получать новости коллекции и обменов.</small></div>';
+  if(loading&&!hub)return '<div class="flip-notif-empty">'+
+    '<span class="flip-notif-empty-icon" aria-hidden="true">◷</span>'+
+    '<strong>Загружаем уведомления</strong>'+
+    '<small>Новые события появятся здесь.</small></div>';
+  return '<div class="flip-notif-summary">'+
+    '<span><i aria-hidden="true"></i> '+(totalUnread?'НОВЫХ · '+fmt(totalUnread):'ВСЁ ПРОЧИТАНО')+'</span>'+
+    '<small>ТВОЙ FLIP</small></div>'+
+   (ready?'<button type="button" class="flip-event-reward" data-event-route="achievements">'+
+     '<span class="flip-notif-reward-icon" aria-hidden="true">✦</span>'+
+     '<span class="flip-notif-reward-copy"><strong>Есть награды!</strong>'+
+     '<small>'+fmt(ready)+' наград ждут в достижениях</small></span>'+
+     '<span class="flip-notif-reward-arrow" aria-hidden="true">↗</span></button>':'')+
+   (unread.length?'<section class="flip-notif-group" aria-label="Новые уведомления">'+
+     '<div class="flip-notif-group-head"><span>НОВЫЕ</span><b>'+fmt(unread.length)+'</b></div>'+
+     unread.map(e=>eventMarkup(e,{compact:true})).join('')+'</section>':'')+
+   (earlier.length?'<section class="flip-notif-group is-earlier" aria-label="Ранее">'+
+     '<div class="flip-notif-group-head"><span>РАНЕЕ</span><b>'+fmt(earlier.length)+'</b></div>'+
+     earlier.map(e=>eventMarkup(e,{compact:true})).join('')+'</section>':'')+
+   (!list.length&&!ready?'<div class="flip-notif-empty">'+
+     '<span class="flip-notif-empty-icon" aria-hidden="true">✦</span>'+
+     '<strong>Пока нет уведомлений</strong>'+
+     '<small>Обмены, подарки и награды появятся здесь.</small></div>':'')+
     '<div class="flip-event-bottom">'+
-    '<button type="button" data-event-read-all '+(!list.some(e=>e.read===false)?'disabled':'')+
+    '<button type="button" data-event-read-all '+(!unread.length?'disabled':'')+
       '>ПРОЧИТАТЬ ВСЁ</button>'+
     '<button type="button" data-action="activity">ВСЯ АКТИВНОСТЬ ↗</button></div>';
  }

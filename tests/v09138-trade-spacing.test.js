@@ -64,6 +64,6 @@ test('Scoped CSS is loaded after base social stylesheet with refreshed cache',()
  assert.ok(html.includes('src/styles/trades-polish-v09138.css?v=0.9.13.8'));
  assert.ok(html.indexOf('src/styles/trades-polish-v09138.css')>
    html.indexOf('src/styles/social.css'));
- assert.ok(html.includes('src/scripts/trades.js?v=0.9.13.8'));
- assert.equal(JSON.parse(read('package.json')).version,'0.9.13');
+ assert.ok(html.includes('src/scripts/trades.js?v=0.9.14'));
+ assert.equal(JSON.parse(read('package.json')).version,'0.9.14');
 });

@@ -62,7 +62,7 @@ test('Trades preserve rules and show concise live sync without internal errors',
  assert.doesNotMatch(t,/СИНХРОНИЗИРОВАНО|~45 С|FLIP \/ PLAYER|Повтор безопасен с теми же параметрами/);
  assert.match(t,/TRADE_CARD_UNAVAILABLE:'Карточка недоступна/);
  assert.match(t,/if\(s\.syncError\)return/);
- assert.match(t,/АВТО · 15 С/);
+ assert.doesNotMatch(t,/АВТО · 15 С|ОБНОВЛЕНО/);
 });
 test('Stats, rating and history are concise without revealing secret CP value',()=>{
  const activity=evaluate('src/scripts/activity.js').FLIPActivity;
@@ -92,7 +92,7 @@ test('Release is v0.9.8.3 without modifying admin, backend mechanics or previous
  'src/scripts/achievements.js','src/scripts/showcase.js','src/scripts/leaderboard.js',
  'src/scripts/activity.js','src/scripts/pack-reveal.js','src/scripts/delivery-reveal.js',
  'src/styles/collection.css','src/styles/social.css','src/styles/delivery-reveal.css']){
-  assert.ok(html.includes(file+'?v='+(file==='src/scripts/leaderboard.js'?'0.9.13.4':file==='src/scripts/trades.js'?'0.9.13.8':file==='src/scripts/showcase.js'?'0.9.13.6':file==='src/scripts/app.js'?'0.9.13.5':['src/scripts/app.js','src/scripts/showcase.js','src/scripts/trades.js','src/scripts/achievements.js','src/scripts/pack-reveal.js'].includes(file)?pkg.version:['src/scripts/store.js','src/scripts/activity.js'].includes(file)?'0.9.8.7':['src/styles/social.css'].includes(file)?'0.9.8.5':'0.9.8.3')),file);
+  assert.ok(html.includes(file+'?v='+(file==='src/scripts/leaderboard.js'?'0.9.13.4':file==='src/scripts/showcase.js'?'0.9.13.6':['src/scripts/app.js','src/scripts/trades.js','src/scripts/achievements.js','src/scripts/pack-reveal.js','src/scripts/activity.js'].includes(file)?pkg.version:['src/scripts/store.js'].includes(file)?'0.9.8.7':['src/styles/social.css'].includes(file)?'0.9.8.5':'0.9.8.3')),file);
  }
  assert.match(html,/src\/scripts\/reveal\.js\?v=0\.9\.8\.1/);
  assert.match(html,/src\/scripts\/admin\.js\?v=0\.9\.6\.4/);

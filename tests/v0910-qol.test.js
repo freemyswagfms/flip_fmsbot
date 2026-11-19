@@ -22,7 +22,7 @@ test('Signed trade polling updates only the visible tab, no faster than every 15
   setTimeout,clearTimeout,confirm(){return true}};
  runInNewContext(read('src/scripts/trades.js'),context);
  const trades=context.window.FLIPTrades;trades.mount(root);await flush();
- assert.equal(calls,1);assert.match(feed.innerHTML,/АВТО · 15 С/);
+ assert.equal(calls,1);assert.doesNotMatch(feed.innerHTML,/АВТО · 15 С|ОБНОВЛЕНО/);
  assert.equal(trades.tickVisible(),null);
  clock+=14999;assert.equal(trades.tickVisible(),null);
  clock+=1;await trades.tickVisible();assert.equal(calls,2);
@@ -74,11 +74,11 @@ test('Personal skin, smart hub rerender and spare requests are guarded',()=>{
 });
 test('Economy remains server-authoritative; new release has correct cache stamps',()=>{
  const pkg=JSON.parse(read('package.json')),index=read('index.html');
- assert.equal(pkg.version,'0.9.13');
+ assert.equal(pkg.version,'0.9.14');
  for(const p of ['app.js','trades.js','showcase.js','achievements.js'])
-  assert.ok(index.includes('src/scripts/'+p+'?v='+(p==='showcase.js'?'0.9.13.6':p==='app.js'?'0.9.13.5':pkg.version)),p);
+  assert.ok(index.includes('src/scripts/'+p+'?v='+(p==='showcase.js'?'0.9.13.6':pkg.version)),p);
  assert.ok(index.includes('src/styles/qol-v0910.css?v='+pkg.version));
- assert.ok(read('api/flip.js').includes("version:'0.9.13'"));
+ assert.ok(read('api/flip.js').includes("version:'0.9.14'"));
  assert.match(read('src/scripts/server.js'),/return makeState\(data.state\)/);
  assert.match(read('src/scripts/trades.js'),/const factors=\[1,\.25,\.10,\.05,\.05,\.01/);
 });

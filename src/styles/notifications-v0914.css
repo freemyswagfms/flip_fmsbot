@@ -1,0 +1,347 @@
+/* FLIP 0.9.14 — premium, compact and accessible notification inbox.
+   All rules are scoped to notifications and private activity surfaces. */
+#notifications.notif-sheet{
+ z-index:9!important;
+ inset:64px 12px auto;
+ max-height:min(78dvh,690px);
+ padding:0;
+ overflow-y:auto;
+ overflow-x:hidden;
+ overscroll-behavior:contain;
+ border:1px solid #466149;
+ border-radius:22px;
+ background:radial-gradient(ellipse at 82% -8%,#2e522440,transparent 48%),
+   linear-gradient(155deg,#19241d 0%,#101713 83%);
+ box-shadow:0 28px 75px #000c,inset 0 1px #ecffdd15;
+ scrollbar-width:thin;
+ scrollbar-color:#42583e transparent;
+}
+#notifications .flip-notif-head{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:12px;
+ position:sticky;
+ top:0;
+ z-index:2;
+ margin:0;
+ padding:18px 17px 15px;
+ border-bottom:1px solid #2b4431;
+ background:linear-gradient(155deg,#213323f5,#152019f8);
+ backdrop-filter:blur(14px);
+ -webkit-backdrop-filter:blur(14px);
+}
+#notifications .flip-notif-brand{
+ display:flex;
+ flex-direction:column;
+ gap:6px;
+ min-width:0;
+}
+#notifications .flip-notif-brand>span{
+ font:800 9px/1.2 'Space Grotesk',sans-serif;
+ color:#a5cc86;
+ letter-spacing:1.4px;
+}
+#notifications .flip-notif-head h3{
+ font:900 20px/1.05 'Space Grotesk',sans-serif;
+ letter-spacing:-.55px;
+ color:#eef9eb;
+ margin:0;
+}
+#notifications .flip-notif-head h3>span{color:#baff67}
+#notifications .flip-notif-close{
+ float:none;
+ flex:none;
+ display:grid;
+ place-items:center;
+ width:36px;height:36px;
+ padding:0;
+ border:1px solid #49634b;
+ border-radius:11px;
+ background:#26382b;
+ color:#c5d8c0;
+}
+#notifications .flip-notif-close .flip-svg{width:17px;height:17px}
+#notifications .flip-notif-close:focus-visible,
+#notifications .flip-notif-item:focus-visible,
+#notifications .flip-event-bottom button:focus-visible{
+ outline:2px solid #baff67;
+ outline-offset:2px;
+}
+#notifications .flip-notif-sheet-body{
+ min-width:0;
+ padding:14px 14px 16px;
+}
+#notifications .flip-notif-summary{
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:8px;
+ padding:0 3px;
+ margin:0 0 17px;
+}
+#notifications .flip-notif-summary>span{
+ display:inline-flex;
+ align-items:center;
+ gap:7px;
+ font:800 10px/1.3 'Space Grotesk',sans-serif;
+ color:#d4fbb7;
+ letter-spacing:.45px;
+}
+#notifications .flip-notif-summary i{
+ width:7px;height:7px;
+ border-radius:100%;
+ background:#baff67;
+ box-shadow:0 0 11px #a9fa6c7a;
+}
+#notifications .flip-notif-summary>small{
+ font:750 9px 'Space Grotesk',sans-serif;
+ color:#758f79;
+ letter-spacing:.9px;
+}
+#notifications .flip-notif-group{min-width:0;margin:0 0 14px}
+#notifications .flip-notif-group-head{
+ display:flex;
+ align-items:center;
+ gap:8px;
+ margin:0 2px 10px;
+ font:850 10px/1.2 'Space Grotesk',sans-serif;
+ color:#d0e9c3;
+ letter-spacing:1.2px;
+}
+#notifications .flip-notif-group-head:after{
+ content:'';
+ flex:1;height:1px;
+ background:linear-gradient(90deg,#344e37,transparent);
+}
+#notifications .flip-notif-group-head>b{
+ order:0;
+ display:inline-grid;place-items:center;
+ min-width:21px;height:21px;
+ padding:2px 5px;
+ border:1px solid #476844;
+ border-radius:7px;
+ background:#243a26;
+ color:#baff67;
+ font:850 10px 'Space Grotesk',sans-serif;
+ letter-spacing:0;
+}
+#notifications .flip-notif-group.is-earlier .flip-notif-group-head{
+ color:#859d88;
+}
+#notifications .flip-notif-group.is-earlier .flip-notif-group-head>b{
+ border-color:#34473a;background:#1b2920;color:#8fa897;
+}
+#notifications .flip-notif-item{
+ --event-ink:#a8ef75;
+ --event-surface:#29402a;
+ --event-border:#3b5a3e;
+ position:relative;
+ isolation:isolate;
+ display:flex;
+ width:100%;
+ min-width:0;
+ min-height:82px;
+ margin:0 0 9px;
+ padding:13px 11px!important;
+ gap:11px;
+ align-items:center;
+ text-align:left;
+ border:1px solid #34473a;
+ border-radius:14px;
+ background:linear-gradient(145deg,#18261c,#111b16);
+ color:#e4f0df;
+ box-shadow:inset 0 1px 0 #ffffff08;
+ cursor:pointer;
+ transition:border-color .18s ease,background .18s ease,transform .18s ease;
+}
+#notifications .flip-notif-item:last-child{margin-bottom:0}
+#notifications .flip-notif-item.is-unread{
+ border-color:var(--event-border);
+ background:linear-gradient(120deg,var(--event-surface),#152019 78%);
+}
+#notifications .flip-notif-item.is-unread:before{
+ content:'';
+ position:absolute;
+ top:12px;bottom:12px;left:0;
+ border-radius:0 4px 4px 0;
+ width:2px;background:var(--event-ink);
+}
+#notifications .flip-notif-item.flip-event--trade{
+ --event-ink:#93b9ff;--event-surface:#1a2c3b;--event-border:#41638d;
+}
+#notifications .flip-notif-item.flip-event--gift{
+ --event-ink:#f0b0e9;--event-surface:#322538;--event-border:#865c87;
+}
+#notifications .flip-notif-item.flip-event--achievement{
+ --event-ink:#f4d583;--event-surface:#352e21;--event-border:#776339;
+}
+#notifications .flip-notif-item.flip-event--collection{
+ --event-ink:#baff67;--event-surface:#293824;--event-border:#5f8445;
+}
+#notifications .flip-notif-item .flip-event-icon{
+ display:grid;
+ place-items:center;
+ flex:none;
+ width:39px;height:39px;
+ border:1px solid var(--event-border);
+ border-radius:12px;
+ background:var(--event-surface);
+ color:var(--event-ink);
+ box-shadow:inset 0 1px #ffffff14;
+}
+#notifications .flip-notif-item .flip-event-icon .flip-svg{
+ display:block;width:20px;height:20px;stroke-width:2;
+}
+#notifications .flip-notif-item .flip-event-copy{
+ display:flex;flex-direction:column;
+ gap:5px;
+ flex:1;min-width:0;
+}
+#notifications .flip-notif-item .flip-event-copy strong{
+ font:850 11px/1.35 'Space Grotesk',sans-serif;
+ letter-spacing:-.1px;
+ color:#eff7e9;
+}
+#notifications .flip-notif-item .flip-event-copy .flip-event-description{
+ display:block;
+ overflow-wrap:anywhere;
+ font:600 10px/1.5 'Manrope',sans-serif;
+ color:#b2c6b3;
+}
+#notifications .flip-notif-item .flip-event-copy small{
+ font:650 9px/1.3 'Manrope',sans-serif;
+ color:#8da593;
+}
+#notifications .flip-notif-item:not(.is-unread){
+ border-color:#29392f;background:#121b16;opacity:.85;
+}
+#notifications .flip-notif-item:not(.is-unread) .flip-event-icon{
+ filter:saturate(.65);
+}
+#notifications .flip-notif-new{
+ position:absolute;right:10px;top:9px;
+ width:6px;height:6px;border-radius:50%;
+ background:var(--event-ink);
+ box-shadow:0 0 9px var(--event-ink);
+}
+#notifications .flip-notif-item .flip-event-open{
+ flex:none;
+ display:grid;place-items:center;
+ width:28px;height:30px;
+ align-self:center;
+ margin:0;
+ padding:0;
+ border:1px solid #3b5340;
+ border-radius:9px;
+ background:#223226;
+ color:#bfd7b3;
+}
+#notifications .flip-notif-item .flip-event-open .flip-svg{
+ width:15px;height:15px;
+}
+#notifications .flip-notif-item.is-unread .flip-event-open{
+ border-color:var(--event-border);color:var(--event-ink);
+}
+#notifications .flip-event-reward{
+ display:flex;align-items:center;
+ width:100%;
+ gap:11px;
+ margin:0 0 20px;
+ padding:13px 12px;
+ text-align:left;
+ border:1px solid #73603b;
+ border-radius:14px;
+ background:linear-gradient(115deg,#33291b,#211f19);
+ color:#f5e8b9;
+ box-shadow:inset 0 1px 0 #fff1b017;
+}
+#notifications .flip-notif-reward-icon{
+ display:grid;place-items:center;
+ width:38px;height:38px;flex:none;
+ background:#514126;border:1px solid #907143;border-radius:11px;
+ color:#ffe19b;
+}
+#notifications .flip-notif-reward-icon .flip-svg{width:19px;height:19px}
+#notifications .flip-notif-reward-copy{
+ flex:1;min-width:0;
+ display:flex;flex-direction:column;gap:4px;
+}
+#notifications .flip-notif-reward-copy strong{font:850 12px 'Space Grotesk',sans-serif}
+#notifications .flip-notif-reward-copy small{
+ color:#cdbd93;font:650 10px/1.3 'Manrope',sans-serif;
+}
+#notifications .flip-notif-reward-arrow .flip-svg{width:16px;height:16px}
+#notifications .flip-notif-empty{
+ display:flex;flex-direction:column;
+ align-items:center;text-align:center;
+ gap:8px;margin:8px 0 14px;padding:26px 14px;
+ border:1px dashed #455c46;
+ border-radius:15px;
+ background:radial-gradient(circle at 50% 15%,#2c49202b,transparent 65%),#131f16;
+}
+#notifications .flip-notif-empty-icon{
+ display:grid;place-items:center;
+ width:46px;height:46px;
+ border:1px solid #53794a;
+ border-radius:14px;
+ background:#223726;color:#baff67;
+}
+#notifications .flip-notif-empty-icon .flip-svg{width:22px;height:22px}
+#notifications .flip-notif-empty strong{
+ color:#e5f3df;font:850 13px 'Space Grotesk',sans-serif;
+}
+#notifications .flip-notif-empty small{
+ max-width:230px;color:#a1b8a3;
+ font:600 10px/1.55 'Manrope',sans-serif;
+}
+#notifications .flip-event-bottom{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:9px;
+ margin:16px 0 0;
+}
+#notifications .flip-event-bottom button{
+ min-width:0;min-height:40px;
+ padding:9px 7px;
+ border:1px solid #465c45;
+ border-radius:11px;
+ background:#1a2920;
+ color:#cce6c2;
+ font:800 9px/1.3 'Space Grotesk',sans-serif;
+}
+#notifications .flip-event-bottom button:last-child{
+ border-color:#729852;
+ background:#263b27;color:#d4ffa6;
+}
+#notifications .flip-event-bottom button:disabled{
+ opacity:.35;
+}
+.flip-activity-page .flip-event-copy .flip-event-description{
+ display:block;
+ margin:5px 0!important;
+ color:#adc6b0;
+ font:600 10px/1.5 'Manrope',sans-serif;
+ overflow-wrap:anywhere;
+}
+.flip-activity-page .flip-event--trade .flip-event-icon{color:#9ac2ff;border-color:#496c95}
+.flip-activity-page .flip-event--gift .flip-event-icon{color:#efafdf;border-color:#725475}
+.flip-activity-page .flip-event--achievement .flip-event-icon{color:#f4d28d;border-color:#806942}
+@media(hover:hover){
+ #notifications .flip-notif-item:hover{
+  border-color:var(--event-border);
+  transform:translateY(-1px);
+ }
+}
+@media(max-width:370px){
+ #notifications.notif-sheet{inset:60px 9px auto;max-height:80dvh}
+ #notifications .flip-notif-sheet-body{padding:12px 10px 13px}
+ #notifications .flip-notif-head{padding:15px 13px 12px}
+ #notifications .flip-notif-item{gap:8px;padding:10px 9px!important}
+ #notifications .flip-notif-item .flip-event-icon{width:34px;height:34px}
+ #notifications .flip-notif-item .flip-event-copy strong{font-size:10px}
+ #notifications .flip-notif-item .flip-event-open{width:25px}
+}
+@media(prefers-reduced-motion:reduce){
+ #notifications .flip-notif-item{transition:none!important}
+}

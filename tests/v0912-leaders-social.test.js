@@ -161,9 +161,9 @@ test('SQL server-only functions do not leak database roles or modify CP economy'
 });
 test('Versioned social assets and existing app navigation remain intact',()=>{
  const index=read('index.html'),pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'0.9.13');
+ assert.equal(pkg.version,'0.9.14');
  for(const p of ['showcase.js','trades.js','app.js'])
-  assert.ok(index.includes('src/scripts/'+p+'?v='+(p==='trades.js'?'0.9.13.8':p==='showcase.js'?'0.9.13.6':'0.9.13.5')),p);
+  assert.ok(index.includes('src/scripts/'+p+'?v='+(p==='showcase.js'?'0.9.13.6':pkg.version)),p);
  assert.ok(index.includes('src/scripts/leaderboard.js?v=0.9.13.4'));
  assert.ok(index.includes('src/styles/leaderboard-v0912.css?v=0.9.13.4'));
  const spacing=read('src/styles/leaderboard-v0912.css');
@@ -175,5 +175,5 @@ test('Versioned social assets and existing app navigation remain intact',()=>{
  assert.match(spacing,/\.flip-leader-list\{display:grid;gap:8px;margin-top:0\}/);
  assert.match(index,/data-tab="home"/);
  assert.match(index,/data-tab="profile"/);
- assert.ok(read('api/flip.js').includes("version:'0.9.13'"));
+ assert.ok(read('api/flip.js').includes("version:'0.9.14'"));
 });

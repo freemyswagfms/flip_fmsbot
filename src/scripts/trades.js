@@ -355,11 +355,8 @@ function section(title,items){
 function liveStatus(){
   if(s.syncError)return '<div class="flip-trade-sync is-error" role="alert">'+
     '<i aria-hidden="true"></i><span>НЕТ СОЕДИНЕНИЯ · НАЖМИ «ОБНОВИТЬ»</span></div>';
-  const clock=s.lastChecked?new Date(s.lastChecked).toLocaleTimeString('ru-RU',{
-    hour:'2-digit',minute:'2-digit'}):null;
-  return '<div class="flip-trade-sync is-live" aria-label="Автообновление обменов">'+
-    '<i aria-hidden="true"></i><span>'+(clock?'ОБНОВЛЕНО '+clock+' · ':'')+
-    'АВТО · 15 С</span></div>';
+  // Keep 15-second synchronization, hide the technical timestamp from players.
+  return '';
 }
 function feedMarkup(){
   const trades=visibleTrades();
